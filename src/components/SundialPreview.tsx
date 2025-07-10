@@ -1,8 +1,11 @@
-// src/components/SundialPreview.tsx
-
 import React from 'react';
 import { getAnalemmaPointsProjected } from '../utils/analemmaGenerator';
-import type { Orientation } from '../utils/analemmaGenerator';
+
+const pageSizeMap = {
+  Letter: { width: 8.5 * 25.4, height: 11 * 25.4 },
+  A4: { width: 210, height: 297 },
+  Custom: { width: 8.5 * 25.4, height: 11 * 25.4 }, // fallback for now
+};
 
 type Props = {
   lat: number;
@@ -12,7 +15,8 @@ type Props = {
   gnomonHeight: number;
   startHour: number;
   stopHour: number;
-  orientation: Orientation;
+  orientation: 'Landscape' | 'Portrait';
+  pageSize: 'A4' | 'Letter' | 'Custom';
 };
 
 const colorForHour = (hour: number) => {
@@ -29,7 +33,12 @@ const SundialPreview: React.FC<Props> = ({
   startHour,
   stopHour,
   orientation,
+  pageSize,
 }) => {
+  let { width, height } = pageSizeMap[pageSize] || pageSizeMap.Letter;
+  if (orientation === 'Landscape') {
+    [width, height] = [height, width];
+  }
   const hourCurves = [];
 
   for (let h = startHour; h <= stopHour; h++) {
@@ -39,7 +48,7 @@ const SundialPreview: React.FC<Props> = ({
       tzMeridian,
       hour: h,
       gnomonHeight,
-      orientation,
+      orientation: 'Horizontal', // Always use 'Horizontal' for analemma
     });
 
     if (points.length === 0) continue;
@@ -75,16 +84,18 @@ const SundialPreview: React.FC<Props> = ({
   return (
     <fieldset style={{ marginTop: '1rem' }}>
       <legend>
-        <strong>Projected Shadow Preview</strong> ({orientation} Dial)
+        <strong>Projected Shadow Preview</strong> ({orientation})
       </legend>
       <svg
-        width={600}
-        height={600}
-        viewBox="-300 -300 600 600"
-        style={{ border: '1px solid #ccc' }}
+        width={width}
+        height={height}
+        viewBox={`-${width / 2} -${height / 2} ${width} ${height}`}
+        style={{ border: '1px solid #ccc', background: '#fff' }}
       >
-        <circle cx={0} cy={0} r={3} fill="red" />
-        {hourCurves}
+        <g transform={`translate(0, 0)`}>
+          <circle cx={0} cy={0} r={3} fill="red" />
+          {hourCurves}
+        </g>
       </svg>
     </fieldset>
   );

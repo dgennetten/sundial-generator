@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import PageSettings from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
-import HourLineDisplay from './components/HourLineDisplay';
 import DesignExport from './components/DesignExport';
 import SundialPreview from './components/SundialPreview';
 
@@ -12,11 +11,11 @@ const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);
   const [longitude, setLongitude] = useState(-105.0844);
   const [tzMeridian, setTzMeridian] = useState(-105);
-  const [startHour, setStartHour] = useState(6);
-  const [stopHour, setStopHour] = useState(18);
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
-  const [orientation, setOrientation] = useState<'Horizontal' | 'Vertical' | 'Equatorial'>('Horizontal');
+  const [pageSize, setPageSize] = useState<'A4' | 'Letter' | 'Custom'>('Letter');
+  const [scaleFactor, setScaleFactor] = useState<number>(1);
+  const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
 
   const effectiveGnomonHeight =
     gnomonMode === 'auto'
@@ -42,24 +41,20 @@ const App: React.FC = () => {
         mode={gnomonMode}
         height={gnomonHeight}
         latitude={latitude}
-        orientation={orientation}
-        onChange={({ mode, height, orientation }) => {
+        onChange={({ mode, height }) => {
           setGnomonMode(mode);
           setGnomonHeight(height);
-          setOrientation(orientation);
         }}
       />
 
-      <HourLineDisplay
-        startHour={startHour}
-        stopHour={stopHour}
-        onChange={({ start, stop }) => {
-          setStartHour(start);
-          setStopHour(stop);
-        }}
+      <PageSettings
+        pageSize={pageSize}
+        setPageSize={setPageSize}
+        scaleFactor={scaleFactor}
+        setScaleFactor={setScaleFactor}
+        orientation={orientation}
+        setOrientation={setOrientation}
       />
-
-      <PageSettings />
       <DesignExport />
 
       <SundialPreview
@@ -67,10 +62,11 @@ const App: React.FC = () => {
         lng={longitude}
         tzMeridian={tzMeridian}
         gnomonHeight={effectiveGnomonHeight}
-        startHour={startHour}
-        stopHour={stopHour}
-        scale={1}
+        startHour={6}
+        stopHour={18}
+        scale={scaleFactor}
         orientation={orientation}
+        pageSize={pageSize}
       />
     </div>
   );

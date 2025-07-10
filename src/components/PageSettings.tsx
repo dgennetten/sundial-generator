@@ -1,14 +1,26 @@
 // src/components/PageSettings.tsx
-import React, { useState } from 'react';
+import React from 'react';
 
 type PageSize = 'A4' | 'Letter' | 'Custom';
-type Orientation = 'Horizontal' | 'Vertical' | 'Equatorial';
+type Orientation = 'Landscape' | 'Portrait';
 
-const PageSettings: React.FC = () => {
-  const [pageSize, setPageSize] = useState<PageSize>('Letter');
-  const [scaleFactor, setScaleFactor] = useState<number>(1);
-  const [orientation, setOrientation] = useState<Orientation>('Horizontal');
+interface PageSettingsProps {
+  pageSize: PageSize;
+  setPageSize: (size: PageSize) => void;
+  scaleFactor: number;
+  setScaleFactor: (factor: number) => void;
+  orientation: Orientation;
+  setOrientation: (o: Orientation) => void;
+}
 
+const PageSettings: React.FC<PageSettingsProps> = ({
+  pageSize,
+  setPageSize,
+  scaleFactor,
+  setScaleFactor,
+  orientation,
+  setOrientation,
+}) => {
   return (
     <fieldset style={{ marginBottom: '1rem' }}>
       <legend><strong>Page Settings</strong></legend>
@@ -45,9 +57,8 @@ const PageSettings: React.FC = () => {
           value={orientation}
           onChange={(e) => setOrientation(e.target.value as Orientation)}
         >
-          <option value="Horizontal">Horizontal</option>
-          <option value="Vertical">Vertical</option>
-          <option value="Equatorial">Equatorial</option>
+          <option value="Landscape">Landscape</option>
+          <option value="Portrait">Portrait</option>
         </select>
       </label>
     </fieldset>
