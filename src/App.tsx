@@ -9,6 +9,9 @@ import SundialPreview from './components/SundialPreview';
 import HourlineSettings from './components/HourlineSettings';
 import LineSettings, { loadLineStyles } from './components/LineSettings';
 import type { LineStyle } from './components/LineSettings';
+import DeclinationLineOptions, { loadDeclinationLines } from './components/DeclinationLineOptions';
+import type { DeclinationLine } from './components/DeclinationLineOptions';
+import HourRangeControls from './components/HourRangeControls';
 
 const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);
@@ -24,6 +27,11 @@ const App: React.FC = () => {
     return loadLineStyles();
   });
   const [selectedHourlineStyle, setSelectedHourlineStyle] = useState<string>('default-hairline');
+  const [declinationLines, setDeclinationLines] = useState<DeclinationLine[]>(() => {
+    return loadDeclinationLines();
+  });
+  const [startHour, setStartHour] = useState<number>(6);
+  const [stopHour, setStopHour] = useState<number>(18);
 
   useEffect(() => {
     // Ensure selected style is valid
@@ -31,6 +39,12 @@ const App: React.FC = () => {
       setSelectedHourlineStyle('default-hairline');
     }
   }, [lineStyles]);
+
+  // Debug: log declinationLines before filtering
+  React.useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log('App declinationLines state:', declinationLines);
+  }, [declinationLines]);
 
   // Page size map (mm)
   const pageSizeMap = {
@@ -85,12 +99,23 @@ const App: React.FC = () => {
         lineStyles={lineStyles}
         setLineStyles={setLineStyles}
       />
+      <DeclinationLineOptions
+        lineStyles={lineStyles}
+        declinationLines={declinationLines}
+        setDeclinationLines={setDeclinationLines}
+      />
       <HourlineSettings
         dateRange={hourlineDateRange}
         setDateRange={setHourlineDateRange}
         lineStyles={lineStyles}
         selectedStyle={selectedHourlineStyle}
         setSelectedStyle={setSelectedHourlineStyle}
+      />
+      <HourRangeControls
+        onUpdate={(start, stop) => {
+          setStartHour(start);
+          setStopHour(stop);
+        }}
       />
       <DesignExport />
 
@@ -99,13 +124,21 @@ const App: React.FC = () => {
         lng={longitude}
         tzMeridian={tzMeridian}
         gnomonHeight={effectiveGnomonHeight}
-        startHour={6}
-        stopHour={18}
+        startHour={startHour}
+        stopHour={stopHour}
         scale={scaleFactor}
         orientation={orientation}
         pageSize={pageSize}
         dateRange={hourlineDateRange}
         hourlineStyle={lineStyles.find(s => s.id === selectedHourlineStyle || s.name === selectedHourlineStyle) || lineStyles[0]}
+        declinationLines={declinationLines
+          .map(l => ({
+            ...l,
+            id: l.id || `user-${Date.now()}-${Math.random()}`,
+            styleId: l.styleId || 'default-hairline',
+          }))
+          .filter(l => l.active && l.date && l.styleId)}
+        lineStyles={lineStyles}
       />
     </div>
   );

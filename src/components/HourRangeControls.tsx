@@ -9,11 +9,12 @@ const HourRangeControls: React.FC<Props> = ({ onUpdate }) => {
   const [startHour, setStartHour] = useState<number>(6);
   const [stopHour, setStopHour] = useState<number>(18);
 
-  const handleUpdate = () => {
+  // Update preview automatically when startHour or stopHour changes
+  React.useEffect(() => {
     if (startHour < stopHour) {
       onUpdate(startHour, stopHour);
     }
-  };
+  }, [startHour, stopHour, onUpdate]);
 
   return (
     <fieldset style={{ marginBottom: '1rem' }}>
@@ -43,7 +44,6 @@ const HourRangeControls: React.FC<Props> = ({ onUpdate }) => {
       </label>
       <br /><br />
 
-      <button onClick={handleUpdate}>Update Preview</button>
     </fieldset>
   );
 };
