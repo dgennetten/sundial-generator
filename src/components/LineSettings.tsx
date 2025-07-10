@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 export type LineStyle = {
   width: string; // e.g. 'hairline', '0.5mm'
@@ -115,17 +115,16 @@ const LineSettings: React.FC<{
           </tr>
         </thead>
         <tbody>
-          {(lineStyles[lineStyles.length - 1]?.id === '' ? lineStyles : [...lineStyles, { ...emptyLine }]).map((style, idx, arr) => {
+          {(lineStyles[lineStyles.length - 1]?.id === '' ? lineStyles : [...lineStyles, { ...emptyLine }]).map((style, idx) => {
             const isBlank = !style.id && !style.name && !style.width && !style.color;
             const isDefault = style.fixed;
             const showDelete = !isDefault && !isBlank && style.name;
             // Determine color sample
-            let colorSample = '#000000';
             if (style.color) {
               if (style.color.startsWith('#') && /^#[0-9a-fA-F]{3,8}$/.test(style.color)) {
-                colorSample = style.color;
+                // colorSample = style.color;
               } else if (isValidCssColor(style.color)) {
-                colorSample = style.color;
+                // colorSample = style.color;
               }
             }
             return (

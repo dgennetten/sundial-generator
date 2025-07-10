@@ -6,7 +6,8 @@ import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
 import DesignExport from './components/DesignExport';
 import SundialPreview from './components/SundialPreview';
-import HourlineSettings from './components/HourlineSettings';
+import HourlineSettings, { loadHourlineIntervals } from './components/HourlineSettings';
+import type { HourlineInterval } from './components/HourlineSettings';
 import LineSettings, { loadLineStyles } from './components/LineSettings';
 import type { LineStyle } from './components/LineSettings';
 import DeclinationLineOptions, { loadDeclinationLines } from './components/DeclinationLineOptions';
@@ -26,19 +27,29 @@ const App: React.FC = () => {
   const [lineStyles, setLineStyles] = useState<LineStyle[]>(() => {
     return loadLineStyles();
   });
-  const [selectedHourlineStyle, setSelectedHourlineStyle] = useState<string>('default-hairline');
+  const [hourlineIntervals, setHourlineIntervals] = useState<HourlineInterval[]>(() => {
+    return loadHourlineIntervals();
+  });
   const [declinationLines, setDeclinationLines] = useState<DeclinationLine[]>(() => {
     return loadDeclinationLines();
   });
   const [startHour, setStartHour] = useState<number>(6);
   const [stopHour, setStopHour] = useState<number>(18);
+  const [use24Hour, setUse24Hour] = useState<boolean>(true);
 
   useEffect(() => {
     // Ensure selected style is valid
-    if (!lineStyles.some(s => s.id === selectedHourlineStyle)) {
-      setSelectedHourlineStyle('default-hairline');
+    // Ensure all hourline intervals have valid styles
+    const updated = hourlineIntervals.map(interval => ({
+      ...interval,
+      styleId: lineStyles.some(s => s.id === interval.styleId || s.name === interval.styleId) 
+        ? interval.styleId 
+        : 'default-hairline'
+    }));
+    if (JSON.stringify(updated) !== JSON.stringify(hourlineIntervals)) {
+      setHourlineIntervals(updated);
     }
-  }, [lineStyles]);
+  }, [lineStyles, hourlineIntervals]);
 
   // Debug: log declinationLines before filtering
   React.useEffect(() => {
@@ -108,13 +119,14 @@ const App: React.FC = () => {
         dateRange={hourlineDateRange}
         setDateRange={setHourlineDateRange}
         lineStyles={lineStyles}
-        selectedStyle={selectedHourlineStyle}
-        setSelectedStyle={setSelectedHourlineStyle}
+        hourlineIntervals={hourlineIntervals}
+        setHourlineIntervals={setHourlineIntervals}
       />
       <HourRangeControls
-        onUpdate={(start, stop) => {
+        onUpdate={(start, stop, use24) => {
           setStartHour(start);
           setStopHour(stop);
+          setUse24Hour(use24);
         }}
       />
       <DesignExport />
@@ -126,11 +138,13 @@ const App: React.FC = () => {
         gnomonHeight={effectiveGnomonHeight}
         startHour={startHour}
         stopHour={stopHour}
+        use24Hour={use24Hour}
         scale={scaleFactor}
         orientation={orientation}
         pageSize={pageSize}
         dateRange={hourlineDateRange}
-        hourlineStyle={lineStyles.find(s => s.id === selectedHourlineStyle || s.name === selectedHourlineStyle) || lineStyles[0]}
+        hourlineIntervals={hourlineIntervals.filter(i => i.active)}
+        lineStyles={lineStyles}
         declinationLines={declinationLines
           .map(l => ({
             ...l,
@@ -138,7 +152,6 @@ const App: React.FC = () => {
             styleId: l.styleId || 'default-hairline',
           }))
           .filter(l => l.active && l.date && l.styleId)}
-        lineStyles={lineStyles}
       />
     </div>
   );

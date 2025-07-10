@@ -1,7 +1,9 @@
 import React from 'react';
+import type { JSX } from 'react';
 import { getAnalemmaPointsProjected, degreesToRadians, getSolarDeclination, projectShadowToSurface } from '../utils/analemmaGenerator';
 import type { DeclinationLine } from './DeclinationLineOptions';
 import type { LineStyle } from './LineSettings';
+import type { HourlineInterval } from './HourlineSettings';
 
 const pageSizeMap = {
   Letter: { width: 8.5 * 25.4, height: 11 * 25.4 },
@@ -17,22 +19,13 @@ type Props = {
   gnomonHeight: number;
   startHour: number;
   stopHour: number;
+  use24Hour: boolean;
   orientation: 'Landscape' | 'Portrait';
   pageSize: 'A4' | 'Letter' | 'Custom';
   dateRange: 'FullYear' | 'SummerToWinter' | 'WinterToSummer';
-  hourlineStyle?: {
-    width: string;
-    color: string;
-    style: 'solid' | 'dashed';
-    name: string;
-  };
+  hourlineIntervals?: HourlineInterval[];
   declinationLines?: DeclinationLine[];
   lineStyles?: LineStyle[];
-};
-
-const colorForHour = (hour: number) => {
-  const hue = 200 + (hour - 6) * 12;
-  return `hsl(${hue}, 70%, 50%)`;
 };
 
 const SundialPreview: React.FC<Props> = ({
@@ -43,10 +36,11 @@ const SundialPreview: React.FC<Props> = ({
   gnomonHeight,
   startHour,
   stopHour,
+  use24Hour,
   orientation,
   pageSize,
   dateRange,
-  hourlineStyle,
+  hourlineIntervals = [],
   declinationLines = [],
   lineStyles = [],
 }) => {
@@ -54,7 +48,6 @@ const SundialPreview: React.FC<Props> = ({
   if (orientation === 'Landscape') {
     [width, height] = [height, width];
   }
-  const hourCurves = [];
 
   // Helper to get day range
   function getDayRange(dateRange: 'FullYear' | 'SummerToWinter' | 'WinterToSummer') {
@@ -71,6 +64,146 @@ const SundialPreview: React.FC<Props> = ({
     const seg2 = points.filter((p: { day: number; x: number; y: number }) => p.day <= 172);
     return [seg1, seg2];
   }
+
+  // Helper to get interval step in hours
+  function getIntervalStep(intervalName: string): number {
+    switch (intervalName) {
+      case 'Hour': return 1;
+      case 'Half-hour': return 0.5;
+      case 'Quarter-hour': return 0.25;
+      case '5-minute': return 1/12; // 5 minutes = 1/12 hour
+      default: return 1;
+    }
+  }
+
+  // Helper to get interval priority (lower number = higher priority)
+  function getIntervalPriority(intervalName: string): number {
+    switch (intervalName) {
+      case 'Hour': return 1;
+      case 'Half-hour': return 2;
+      case 'Quarter-hour': return 3;
+      case '5-minute': return 4;
+      default: return 5;
+    }
+  }
+
+  // Helper to check if a time slot is covered by a higher priority interval
+  function isTimeSlotCovered(time: number, currentIntervalName: string, activeIntervals: HourlineInterval[]): boolean {
+    const currentIntervalPriority = getIntervalPriority(currentIntervalName);
+    return activeIntervals.some(activeInterval => {
+      const activePriority = getIntervalPriority(activeInterval.name);
+      const activeStep = getIntervalStep(activeInterval.name);
+      // Check if this active interval has higher priority AND would draw at this time
+      return activePriority < currentIntervalPriority && Math.abs(time % activeStep) < 0.001;
+    });
+  }
+
+  // Helper to format hour for display
+  function formatHour(hour: number): string {
+    if (use24Hour) {
+      return Math.round(hour).toString();
+    } else {
+      const h = Math.round(hour);
+      if (h === 0) return '12';
+      if (h > 12) return (h - 12).toString();
+      return h.toString();
+    }
+  }
+
+  // Draw hourlines for each active interval
+  const hourlineElements = hourlineIntervals
+    .filter(interval => interval.active)
+    .flatMap((interval) => {
+      const style = lineStyles.find(s => s.id === interval.styleId || s.name === interval.styleId);
+      if (!style) return [];
+      
+      const step = getIntervalStep(interval.name);
+      const elements: JSX.Element[] = [];
+      
+      for (let h = startHour; h <= stopHour; h += step) {
+        // Skip if a higher priority interval is already drawing at this time
+        if (isTimeSlotCovered(h, interval.name, hourlineIntervals)) continue;
+        
+        let points = getAnalemmaPointsProjected({
+          lat,
+          lng,
+          tzMeridian,
+          hour: h,
+          gnomonHeight,
+          orientation: 'Horizontal',
+        });
+        
+        // Filter points by date range
+        if (dateRange === 'WinterToSummer') {
+          const [seg1, seg2] = splitWinterToSummer(points);
+          [seg1, seg2].forEach((segment, idx) => {
+            if (segment.length === 0) return;
+            const pathData = segment
+              .map((p: { x: number; y: number }, i: number) => {
+                const x = scale * p.x;
+                const y = scale * p.y;
+                return `${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
+              })
+              .join(' ');
+            elements.push(
+              <g key={`${h}-${interval.id}-seg${idx}`}>
+                <path
+                  d={pathData}
+                  stroke={style.color || 'black'}
+                  fill="none"
+                  strokeWidth={style.width === 'hairline' ? 1 : (style.width?.endsWith('mm') ? parseFloat(style.width) * 3.78 : 1)}
+                  strokeDasharray={style.style === 'dashed' ? '6,4' : undefined}
+                />
+                {idx === 0 && interval.name === 'Hour' && (
+                  <text
+                    x={scale * segment[0].x}
+                    y={scale * segment[0].y - 4}
+                    fontSize="10"
+                    fill={style.color || 'black'}
+                  >
+                    {formatHour(h)}
+                  </text>
+                )}
+              </g>
+            );
+          });
+        } else {
+          const [start, end] = getDayRange(dateRange);
+          points = points.filter((p: { day: number }) => p.day >= start && p.day <= end);
+          if (points.length === 0) continue;
+          const pathData = points
+            .map((p: { x: number; y: number }, i: number) => {
+              const x = scale * p.x;
+              const y = scale * p.y;
+              return `${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
+            })
+            .join(' ');
+          elements.push(
+            <g key={`${h}-${interval.id}`}>
+              <path
+                d={pathData}
+                stroke={style.color || 'black'}
+                fill="none"
+                strokeWidth={style.width === 'hairline' ? 1 : (style.width?.endsWith('mm') ? parseFloat(style.width) * 3.78 : 1)}
+                strokeDasharray={style.style === 'dashed' ? '6,4' : undefined}
+              />
+              {interval.name === 'Hour' && (
+                <text
+                  x={scale * points[0].x}
+                  y={scale * points[0].y - 4}
+                  fontSize="10"
+                  fill={style.color || 'black'}
+                >
+                  {formatHour(h)}
+                </text>
+              )}
+            </g>
+          );
+        }
+      }
+      
+      return elements;
+    });
 
   // Helper to get declination for a declination line
   function getDeclinationForLine(line: DeclinationLine): number | null {
@@ -132,90 +265,6 @@ const SundialPreview: React.FC<Props> = ({
     const minY = Math.min(...yVals);
     const maxY = Math.max(...yVals);
     noonYCenter = (minY + maxY) / 2;
-  }
-
-  // Determine stroke width and dasharray from hourlineStyle
-  const strokeColor = hourlineStyle?.color || 'black';
-  let strokeWidth = 1;
-  if (hourlineStyle?.width === 'hairline') strokeWidth = 1;
-  else if (hourlineStyle?.width?.endsWith('mm')) strokeWidth = parseFloat(hourlineStyle.width) * 3.78 || 1; // 1mm ≈ 3.78px
-  const strokeDasharray = hourlineStyle?.style === 'dashed' ? '6,4' : undefined;
-
-  for (let h = startHour; h <= stopHour; h++) {
-    let points = getAnalemmaPointsProjected({
-      lat,
-      lng,
-      tzMeridian,
-      hour: h,
-      gnomonHeight,
-      orientation: 'Horizontal', // Always use 'Horizontal' for analemma
-    });
-    // Filter points by date range
-    if (dateRange === 'WinterToSummer') {
-      const [seg1, seg2] = splitWinterToSummer(points);
-      [seg1, seg2].forEach((segment, idx) => {
-        if (segment.length === 0) return;
-        const pathData = segment
-          .map((p: { x: number; y: number }, i: number) => {
-            const x = scale * p.x;
-            const y = scale * p.y;
-            return `${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
-          })
-          .join(' ');
-        hourCurves.push(
-          <g key={`${h}-seg${idx}`}>
-            <path
-              d={pathData}
-              stroke={strokeColor}
-              fill="none"
-              strokeWidth={strokeWidth}
-              strokeDasharray={strokeDasharray}
-            />
-            {idx === 0 && (
-              <text
-                x={scale * segment[0].x}
-                y={scale * segment[0].y - 4}
-                fontSize="10"
-                fill={strokeColor}
-              >
-                {h}:00
-              </text>
-            )}
-          </g>
-        );
-      });
-      continue;
-    } else {
-      const [start, end] = getDayRange(dateRange);
-      points = points.filter((p: { day: number }) => p.day >= start && p.day <= end);
-    }
-    if (points.length === 0) continue;
-    const pathData = points
-      .map((p: { x: number; y: number }, i: number) => {
-        const x = scale * p.x;
-        const y = scale * p.y;
-        return `${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
-      })
-      .join(' ');
-    hourCurves.push(
-      <g key={h}>
-        <path
-          d={pathData}
-          stroke={strokeColor}
-          fill="none"
-          strokeWidth={strokeWidth}
-          strokeDasharray={strokeDasharray}
-        />
-        <text
-          x={scale * points[0].x}
-          y={scale * points[0].y - 4}
-          fontSize="10"
-          fill={strokeColor}
-        >
-          {h}:00
-        </text>
-      </g>
-    );
   }
 
   // Draw declination lines
@@ -324,7 +373,7 @@ const SundialPreview: React.FC<Props> = ({
         >
           <g transform={`translate(0, ${-noonYCenter})`}>
             <circle cx={0} cy={0} r={3} fill="red" />
-            {hourCurves}
+            {hourlineElements.flat()}
             {declinationLineElements}
           </g>
         </svg>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import type { LineStyle } from './LineSettings';
 
 export type DeclinationLine = {
