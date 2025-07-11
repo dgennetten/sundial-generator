@@ -194,51 +194,145 @@ const SundialPreview: React.FC<Props> = ({
         // Filter points by date range
         if (dateRange === 'WinterToSummer') {
           const [seg1, seg2] = splitWinterToSummer(points);
-          points = [...seg1, ...seg2];
+          // Sort segments by day
+          const sortedSeg1 = [...seg1].sort((a, b) => a.day - b.day);
+          const sortedSeg2 = [...seg2].sort((a, b) => a.day - b.day);
+          // If labelWinterSide, place at start of first segment (day 355)
+          if (labelWinterSide && sortedSeg1.length > 0) {
+            const pt = sortedSeg1[0];
+            const { nx, ny } = getNormalAtPoint(sortedSeg1, 0);
+            const x = scale * pt.x + nx * labelOffsetPx;
+            const y = scale * pt.y + ny * labelOffsetPx;
+            hourLabelElements.push(
+              <text
+                key={`label-${h}-355`}
+                x={x}
+                y={y}
+                fontSize={fontSizePx}
+                fill={style.color || 'black'}
+                textAnchor="middle"
+                alignmentBaseline="middle"
+                style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+              >
+                {formatHour(h)}
+              </text>
+            );
+          }
+          // If labelSummerSide, place at end of last segment (day 172)
+          if (labelSummerSide && sortedSeg2.length > 0) {
+            const lastIdx = sortedSeg2.length - 1;
+            const pt = sortedSeg2[lastIdx];
+            const { nx, ny } = getNormalAtPoint(sortedSeg2, lastIdx);
+            const x = scale * pt.x - nx * labelOffsetPx;
+            const y = scale * pt.y - ny * labelOffsetPx;
+            hourLabelElements.push(
+              <text
+                key={`label-${h}-172`}
+                x={x}
+                y={y}
+                fontSize={fontSizePx}
+                fill={style.color || 'black'}
+                textAnchor="middle"
+                alignmentBaseline="middle"
+                style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+              >
+                {formatHour(h)}
+              </text>
+            );
+          }
+        } else if (dateRange === 'SummerToWinter') {
+          // Only one segment: days 172 to 355
+          const [start, end] = getDayRange(dateRange);
+          points = points.filter((p: { day: number }) => p.day >= start && p.day <= end);
+          if (points.length === 0) continue;
+          // Sort points by day
+          const sortedPoints = [...points].sort((a, b) => a.day - b.day);
+          // If labelSummerSide, place at start (day 172)
+          if (labelSummerSide) {
+            const pt = sortedPoints[0];
+            const { nx, ny } = getNormalAtPoint(sortedPoints, 0);
+            const x = scale * pt.x - nx * labelOffsetPx;
+            const y = scale * pt.y - ny * labelOffsetPx;
+            hourLabelElements.push(
+              <text
+                key={`label-${h}-172`}
+                x={x}
+                y={y}
+                fontSize={fontSizePx}
+                fill={style.color || 'black'}
+                textAnchor="middle"
+                alignmentBaseline="middle"
+                style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+              >
+                {formatHour(h)}
+              </text>
+            );
+          }
+          // If labelWinterSide, place at end (day 355)
+          if (labelWinterSide) {
+            const lastIdx = sortedPoints.length - 1;
+            const pt = sortedPoints[lastIdx];
+            const { nx, ny } = getNormalAtPoint(sortedPoints, lastIdx);
+            const x = scale * pt.x + nx * labelOffsetPx;
+            const y = scale * pt.y + ny * labelOffsetPx;
+            hourLabelElements.push(
+              <text
+                key={`label-${h}-355`}
+                x={x}
+                y={y}
+                fontSize={fontSizePx}
+                fill={style.color || 'black'}
+                textAnchor="middle"
+                alignmentBaseline="middle"
+                style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+              >
+                {formatHour(h)}
+              </text>
+            );
+          }
         } else {
           const [start, end] = getDayRange(dateRange);
           points = points.filter((p: { day: number }) => p.day >= start && p.day <= end);
-        }
-        if (points.length === 0) continue;
-        // Find solstice points
-        const solsticeDays = [];
-        if (labelSummerSide) solsticeDays.push(172); // Summer solstice
-        if (labelWinterSide) solsticeDays.push(355); // Winter solstice
-        solsticeDays.forEach((solsticeDay) => {
-          // Find closest point to solsticeDay
-          let idx = points.findIndex(p => p.day === solsticeDay);
-          if (idx === -1) {
-            // If not found, find closest
-            let minDist = 9999, minIdx = 0;
-            for (let i = 0; i < points.length; ++i) {
-              const d = Math.abs(points[i].day - solsticeDay);
-              if (d < minDist) { minDist = d; minIdx = i; }
+          if (points.length === 0) continue;
+          // Find solstice points
+          const solsticeDays = [];
+          if (labelSummerSide) solsticeDays.push(172); // Summer solstice
+          if (labelWinterSide) solsticeDays.push(355); // Winter solstice
+          solsticeDays.forEach((solsticeDay) => {
+            let idx = points.findIndex(p => p.day === solsticeDay);
+            if (idx === -1) {
+              // If not found, find closest
+              let minDist = 9999, minIdx = 0;
+              for (let i = 0; i < points.length; ++i) {
+                const d = Math.abs(points[i].day - solsticeDay);
+                if (d < minDist) { minDist = d; minIdx = i; }
+              }
+              idx = minIdx;
             }
-            idx = minIdx;
-          }
-          const pt = points[idx];
-          const { nx, ny } = getNormalAtPoint(points, idx);
-          // Offset outward by labelOffsetPx (mm to px)
-          // For summer side, use negative direction; for winter, positive
-          const isSummer = solsticeDay === 172;
-          const offset = isSummer ? -labelOffsetPx : labelOffsetPx;
-          const x = scale * pt.x + nx * offset;
-          const y = scale * pt.y + ny * offset;
-          hourLabelElements.push(
-            <text
-              key={`label-${h}-${solsticeDay}`}
-              x={x}
-              y={y}
-              fontSize={fontSizePx}
-              fill={style.color || 'black'}
-              textAnchor="middle"
-              alignmentBaseline="middle"
-              style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
-            >
-              {formatHour(h)}
-            </text>
-          );
-        });
+            const pt = points[idx];
+            const { nx, ny } = getNormalAtPoint(points, idx);
+            // Offset outward by labelOffsetPx (mm to px)
+            // For summer side, use negative direction; for winter, positive
+            const isSummer = solsticeDay === 172;
+            const offset = isSummer ? -labelOffsetPx : labelOffsetPx;
+            const x = scale * pt.x + nx * offset;
+            const y = scale * pt.y + ny * offset;
+            hourLabelElements.push(
+              <text
+                key={`label-${h}-${solsticeDay}`}
+                x={x}
+                y={y}
+                fontSize={fontSizePx}
+                fill={style.color || 'black'}
+                textAnchor="middle"
+                alignmentBaseline="middle"
+                style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+              >
+                {formatHour(h)}
+              </text>
+            );
+          });
+        }
       }
     });
   }
@@ -267,7 +361,9 @@ const SundialPreview: React.FC<Props> = ({
           const [seg1, seg2] = splitWinterToSummer(points);
           [seg1, seg2].forEach((segment, idx) => {
             if (segment.length === 0) return;
-            const pathData = segment
+            // Sort segment by day to avoid a straight line between segments
+            const sortedSegment = [...segment].sort((a, b) => a.day - b.day);
+            const pathData = sortedSegment
               .map((p: { x: number; y: number }, i: number) => {
                 const x = scale * p.x;
                 const y = scale * p.y;
