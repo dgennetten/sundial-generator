@@ -107,6 +107,9 @@ export function getAnalemmaPointsProjected(params: AnalemmaParams): {
     const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, orientation, lat);
     points.push({ day, x: coords.x, y: coords.y });
   }
-
+  // Close the loop if possible
+  if (points.length > 1) {
+    points.push({ ...points[0] });
+  }
   return points;
 }

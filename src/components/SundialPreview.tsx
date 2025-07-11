@@ -110,6 +110,15 @@ const SundialPreview: React.FC<Props> = ({
     }
   }
 
+  // Helper to get stroke width from style
+  function getStrokeWidth(width: string | undefined): number {
+    if (!width) return 1;
+    if (width === 'hairline') return 1;
+    if (width.endsWith('mm')) return parseFloat(width) * 3.78 || 1; // 1mm ≈ 3.78px
+    if (width.endsWith('px')) return parseFloat(width) || 1;
+    return 1;
+  }
+
   // Draw hourlines for each active interval
   const hourlineElements = hourlineIntervals
     .filter(interval => interval.active)
@@ -151,8 +160,9 @@ const SundialPreview: React.FC<Props> = ({
                   d={pathData}
                   stroke={style.color || 'black'}
                   fill="none"
-                  strokeWidth={style.width === 'hairline' ? 1 : (style.width?.endsWith('mm') ? parseFloat(style.width) * 3.78 : 1)}
+                  strokeWidth={getStrokeWidth(style.width)}
                   strokeDasharray={style.style === 'dashed' ? '6,4' : undefined}
+                  vectorEffect="non-scaling-stroke"
                 />
                 {idx === 0 && interval.name === 'Hour' && (
                   <text
@@ -184,8 +194,9 @@ const SundialPreview: React.FC<Props> = ({
                 d={pathData}
                 stroke={style.color || 'black'}
                 fill="none"
-                strokeWidth={style.width === 'hairline' ? 1 : (style.width?.endsWith('mm') ? parseFloat(style.width) * 3.78 : 1)}
+                strokeWidth={getStrokeWidth(style.width)}
                 strokeDasharray={style.style === 'dashed' ? '6,4' : undefined}
+                vectorEffect="non-scaling-stroke"
               />
               {interval.name === 'Hour' && (
                 <text
@@ -305,8 +316,9 @@ const SundialPreview: React.FC<Props> = ({
           d={pathData}
           stroke={style?.color || 'black'}
           fill="none"
-          strokeWidth={style?.width === 'hairline' ? 1 : (style?.width?.endsWith('mm') ? parseFloat(style.width) * 3.78 : 1)}
+          strokeWidth={getStrokeWidth(style?.width)}
           strokeDasharray={style?.style === 'dashed' ? '6,4' : undefined}
+          vectorEffect="non-scaling-stroke"
         />
       );
     }
@@ -352,8 +364,9 @@ const SundialPreview: React.FC<Props> = ({
           d={pathData}
           stroke={style?.color || 'black'}
           fill="none"
-          strokeWidth={style?.width === 'hairline' ? 1 : (style?.width?.endsWith('mm') ? parseFloat(style.width) * 3.78 : 1)}
+          strokeWidth={getStrokeWidth(style?.width)}
           strokeDasharray={style?.style === 'dashed' ? '6,4' : undefined}
+          vectorEffect="non-scaling-stroke"
         />
       );
     });
