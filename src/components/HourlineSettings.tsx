@@ -16,6 +16,7 @@ const BUILTIN_HOURLINE_INTERVALS: HourlineInterval[] = [
   { active: true, name: 'Half-hour', styleId: 'default-hairline', fixed: true, id: 'half-hour' },
   { active: false, name: 'Quarter-hour', styleId: 'dashed-hairline', fixed: true, id: 'quarter-hour' },
   { active: false, name: '5-minute', styleId: 'dotted-hairline', fixed: true, id: '5-minute' },
+  { active: false, name: '2-minute', styleId: 'dotted-hairline', fixed: true, id: '2-minute' },
 ];
 
 const LOCAL_STORAGE_KEY = 'sundial-hourline-intervals';
@@ -84,9 +85,9 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
-            <th>Active</th>
-            <th>Interval</th>
-            <th>Line Style</th>
+            <th style={{ textAlign: 'left' }}>Active</th>
+            <th style={{ textAlign: 'left' }}>Interval</th>
+            <th style={{ textAlign: 'left' }}>Line Style</th>
           </tr>
         </thead>
         <tbody>

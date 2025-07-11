@@ -3,7 +3,7 @@ import React from 'react';
 export type LineStyle = {
   width: string; // e.g. 'hairline', '0.5mm'
   color: string; // e.g. 'black', '#ff0000'
-  style: 'solid' | 'dashed';
+  style: 'solid' | 'dashed' | 'dotted';
   name: string;
   id: string; // unique id for each style
   fixed?: boolean; // true for the default, non-deletable
@@ -24,6 +24,15 @@ const DEFAULT_LINE_STYLES: LineStyle[] = [
     style: 'dashed',
     name: 'dashed hairline',
     id: 'dashed-hairline',
+    fixed: true,
+  },
+  {
+    width: 'hairline',
+    color: 'black',
+    style: 'dotted',
+    name: 'dotted hairline',
+    id: 'dotted-hairline',
+    fixed: true,
   },
   {
     width: '0.5mm',
@@ -107,11 +116,11 @@ const LineSettings: React.FC<{
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Width</th>
-            <th>Color</th>
-            <th>Style</th>
-            <th></th>
+            <th style={{ textAlign: 'left' }}>Name</th>
+            <th style={{ textAlign: 'left' }}>Width</th>
+            <th style={{ textAlign: 'left' }}>Color</th>
+            <th style={{ textAlign: 'left' }}>Style</th>
+            <th style={{ textAlign: 'left' }}></th>
           </tr>
         </thead>
         <tbody>
@@ -171,6 +180,7 @@ const LineSettings: React.FC<{
                   >
                     <option value="solid">Solid</option>
                     <option value="dashed">Dashed</option>
+                    <option value="dotted">Dotted</option>
                   </select>
                 </td>
                 <td>

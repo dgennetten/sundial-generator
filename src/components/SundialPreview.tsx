@@ -82,6 +82,7 @@ const SundialPreview: React.FC<Props> = ({
       case 'Half-hour': return 0.5;
       case 'Quarter-hour': return 0.25;
       case '5-minute': return 1/12; // 5 minutes = 1/12 hour
+      case '2-minute': return 1/30; // 2 minutes = 1/30 hour
       default: return 1;
     }
   }
@@ -93,6 +94,7 @@ const SundialPreview: React.FC<Props> = ({
       case 'Half-hour': return 2;
       case 'Quarter-hour': return 3;
       case '5-minute': return 4;
+      case '2-minute': return 5;
       default: return 5;
     }
   }
@@ -127,6 +129,20 @@ const SundialPreview: React.FC<Props> = ({
     if (width.endsWith('mm')) return parseFloat(width) * 3.78 || 1; // 1mm ≈ 3.78px
     if (width.endsWith('px')) return parseFloat(width) || 1;
     return 1;
+  }
+
+  // Helper to get stroke dasharray and linecap for style
+  function getStrokeDashProps(style: LineStyle | undefined): { dasharray?: string; linecap?: 'round' | 'inherit' | 'butt' | 'square' | undefined } {
+    if (!style) return {};
+    if (style.style === 'dashed') {
+      return { dasharray: '6,4', linecap: undefined };
+    }
+    if (style.style === 'dotted') {
+      const dotWidth = getStrokeWidth(style.width);
+      const gap = 4 * dotWidth;
+      return { dasharray: `${dotWidth},${gap}`, linecap: 'round' };
+    }
+    return { linecap: undefined };
   }
 
   // Helper to compute normal at a point on the analemma
@@ -265,7 +281,8 @@ const SundialPreview: React.FC<Props> = ({
                   stroke={style.color || 'black'}
                   fill="none"
                   strokeWidth={getStrokeWidth(style.width)}
-                  strokeDasharray={style.style === 'dashed' ? '6,4' : undefined}
+                  strokeDasharray={getStrokeDashProps(style).dasharray}
+                  strokeLinecap={getStrokeDashProps(style).linecap}
                   vectorEffect="non-scaling-stroke"
                 />
               </g>
@@ -289,7 +306,8 @@ const SundialPreview: React.FC<Props> = ({
                 stroke={style.color || 'black'}
                 fill="none"
                 strokeWidth={getStrokeWidth(style.width)}
-                strokeDasharray={style.style === 'dashed' ? '6,4' : undefined}
+                strokeDasharray={getStrokeDashProps(style).dasharray}
+                strokeLinecap={getStrokeDashProps(style).linecap}
                 vectorEffect="non-scaling-stroke"
               />
             </g>
@@ -468,7 +486,9 @@ const SundialPreview: React.FC<Props> = ({
           preserveAspectRatio="xMidYMid meet"
         >
           <g transform={`translate(0, ${-noonYCenter})`}>
-            <circle cx={0} cy={0} r={3} fill="red" />
+            {/* Small red hairline gnomon mark: a "+" at (0,0), 6px long arms */}
+            <line x1={-3} y1={0} x2={3} y2={0} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+            <line x1={0} y1={-3} x2={0} y2={3} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
             {hourlineElements.flat()}
             {hourLabelElements}
             {declinationLineElements}

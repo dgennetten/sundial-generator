@@ -87,10 +87,10 @@ const DeclinationLineOptions: React.FC<{
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
-            <th>Active</th>
-            <th>Date</th>
-            <th>Line Style</th>
-            <th></th>
+            <th style={{ textAlign: 'left' }}>Active</th>
+            <th style={{ textAlign: 'left' }}>Date</th>
+            <th style={{ textAlign: 'left' }}>Line Style</th>
+            <th style={{ textAlign: 'left' }}></th>
           </tr>
         </thead>
         <tbody>
@@ -120,7 +120,6 @@ const DeclinationLineOptions: React.FC<{
                   <select
                     value={line.styleId}
                     onChange={e => handleChange(idx, 'styleId', e.target.value)}
-                    disabled={!!isFixed}
                   >
                     {lineStyles.filter(s => s.name && s.name.trim()).map(style => (
                       <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
