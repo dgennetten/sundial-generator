@@ -1,48 +1,39 @@
 // src/components/HourLineDisplay.tsx
 import React, { useState } from 'react';
 
-const HourLineDisplay: React.FC = () => {
-  const [interval, setInterval] = useState<number>(1); // 1-hour default
-  const [lineStyle, setLineStyle] = useState<'solid' | 'dotted' | 'curved'>('solid');
-  const [showLabels, setShowLabels] = useState<boolean>(true);
+const HourLineSettings: React.FC = () => {
+  const [startHour, setStartHour] = useState<number>(6);
+  const [stopHour, setStopHour] = useState<number>(18);
 
   return (
     <fieldset style={{ marginBottom: '1rem' }}>
-      <legend><strong>Hour Line Display</strong></legend>
-
-      <label>
-        Hour Interval (hrs):&nbsp;
+      <legend><strong>Hour Line Settings</strong></legend>
+      {/* Date Range controls would be here */}
+      <div style={{ marginBottom: 8 }}>
+        <em>Date Range controls go here</em>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: 8 }}>
+        <label style={{ marginRight: 8 }}>Hour Range:</label>
         <input
           type="number"
-          min={0.25}
-          max={2}
-          step={0.25}
-          value={interval}
-          onChange={(e) => setInterval(parseFloat(e.target.value))}
+          min={0}
+          max={23}
+          value={startHour}
+          onChange={e => setStartHour(Number(e.target.value))}
+          style={{ width: 50 }}
         />
-      </label>
-      <br /><br />
-
-      <label>
-        Line Style:&nbsp;
-        <select value={lineStyle} onChange={(e) => setLineStyle(e.target.value as 'solid' | 'dotted' | 'curved')}>
-          <option value="solid">Solid</option>
-          <option value="dotted">Dotted</option>
-          <option value="curved">Curved</option>
-        </select>
-      </label>
-      <br /><br />
-
-      <label>
-        Show Analemma Labels:&nbsp;
+        <span>to</span>
         <input
-          type="checkbox"
-          checked={showLabels}
-          onChange={(e) => setShowLabels(e.target.checked)}
+          type="number"
+          min={startHour + 1}
+          max={24}
+          value={stopHour}
+          onChange={e => setStopHour(Number(e.target.value))}
+          style={{ width: 50 }}
         />
-      </label>
+      </div>
     </fieldset>
   );
 };
 
-export default HourLineDisplay;
+export default HourLineSettings;

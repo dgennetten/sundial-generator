@@ -26,47 +26,42 @@ const HourRangeControls: React.FC<Props> = ({ onUpdate }) => {
 
   // Update preview automatically when startHour or stopHour changes
   React.useEffect(() => {
-    if (startHour < stopHour) {
-      onUpdate(
-        startHour,
-        stopHour,
-        use24Hour,
-        labelWinterSide,
-        labelSummerSide,
-        labelOffset,
-        fontFamily,
-        fontSize
-      );
-    }
+    onUpdate(
+      startHour,
+      stopHour,
+      use24Hour,
+      labelWinterSide,
+      labelSummerSide,
+      labelOffset,
+      fontFamily,
+      fontSize
+    );
   }, [startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, onUpdate]);
 
   return (
     <fieldset style={{ marginBottom: '1rem' }}>
-      <legend><strong>Hour Lines</strong></legend>
-
-      <label>
-        Start Hour:&nbsp;
+      <legend><strong>Hour Line Labels</strong></legend>
+      {/* Date Range control would be here */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: 8, marginBottom: 8 }}>
+        <label style={{ marginRight: 8 }}>Hour Range:</label>
         <input
           type="number"
           min={0}
           max={23}
           value={startHour}
-          onChange={(e) => setStartHour(parseInt(e.target.value))}
+          onChange={e => setStartHour(Number(e.target.value))}
+          style={{ width: 50 }}
         />
-      </label>
-      <br /><br />
-
-      <label>
-        Stop Hour:&nbsp;
+        <span>to</span>
         <input
           type="number"
           min={startHour + 1}
           max={24}
           value={stopHour}
-          onChange={(e) => setStopHour(parseInt(e.target.value))}
+          onChange={e => setStopHour(Number(e.target.value))}
+          style={{ width: 50 }}
         />
-      </label>
-      <br /><br />
+      </div>
 
       <label>
         <input

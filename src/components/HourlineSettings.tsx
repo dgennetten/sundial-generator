@@ -67,7 +67,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
 
   return (
     <fieldset style={{ marginBottom: '1rem' }}>
-      <legend><strong>Hourline Settings</strong></legend>
+      <legend><strong>Hour Line Settings</strong></legend>
       
       <label>
         Date Range:&nbsp;
