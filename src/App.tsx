@@ -36,6 +36,11 @@ const App: React.FC = () => {
   const [startHour, setStartHour] = useState<number>(6);
   const [stopHour, setStopHour] = useState<number>(18);
   const [use24Hour, setUse24Hour] = useState<boolean>(true);
+  const [labelWinterSide, setLabelWinterSide] = useState<boolean>(true);
+  const [labelSummerSide, setLabelSummerSide] = useState<boolean>(true);
+  const [labelOffset, setLabelOffset] = useState<number>(3);
+  const [fontFamily, setFontFamily] = useState<string>('sans-serif');
+  const [fontSize, setFontSize] = useState<number>(10);
 
   useEffect(() => {
     // Ensure selected style is valid
@@ -123,10 +128,15 @@ const App: React.FC = () => {
         setHourlineIntervals={setHourlineIntervals}
       />
       <HourRangeControls
-        onUpdate={(start, stop, use24) => {
+        onUpdate={(start, stop, use24, winter, summer, offset, fontFam, fontSz) => {
           setStartHour(start);
           setStopHour(stop);
           setUse24Hour(use24);
+          setLabelWinterSide(winter);
+          setLabelSummerSide(summer);
+          setLabelOffset(offset);
+          setFontFamily(fontFam);
+          setFontSize(fontSz);
         }}
       />
       <DesignExport />
@@ -152,6 +162,11 @@ const App: React.FC = () => {
             styleId: l.styleId || 'default-hairline',
           }))
           .filter(l => l.active && l.date && l.styleId)}
+        labelWinterSide={labelWinterSide}
+        labelSummerSide={labelSummerSide}
+        labelOffset={labelOffset}
+        fontFamily={fontFamily}
+        fontSize={fontSize}
       />
     </div>
   );

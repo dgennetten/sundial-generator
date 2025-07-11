@@ -26,6 +26,11 @@ type Props = {
   hourlineIntervals?: HourlineInterval[];
   declinationLines?: DeclinationLine[];
   lineStyles?: LineStyle[];
+  labelWinterSide?: boolean;
+  labelSummerSide?: boolean;
+  labelOffset?: number;
+  fontFamily?: string;
+  fontSize?: number;
 };
 
 const SundialPreview: React.FC<Props> = ({
@@ -43,6 +48,11 @@ const SundialPreview: React.FC<Props> = ({
   hourlineIntervals = [],
   declinationLines = [],
   lineStyles = [],
+  labelWinterSide = true,
+  labelSummerSide = true,
+  labelOffset = 12, // now in mm
+  fontFamily = 'sans-serif',
+  fontSize = 10, // in pt
 }) => {
   let { width, height } = pageSizeMap[pageSize] || pageSizeMap.Letter;
   if (orientation === 'Landscape') {
@@ -119,20 +129,44 @@ const SundialPreview: React.FC<Props> = ({
     return 1;
   }
 
-  // Draw hourlines for each active interval
-  const hourlineElements = hourlineIntervals
-    .filter(interval => interval.active)
-    .flatMap((interval) => {
+  // Helper to compute normal at a point on the analemma
+  function getNormalAtPoint(points: { x: number; y: number }[], idx: number): { nx: number; ny: number } {
+    // Use central difference if possible, else forward/backward
+    let dx, dy;
+    if (idx > 0 && idx < points.length - 1) {
+      dx = points[idx + 1].x - points[idx - 1].x;
+      dy = points[idx + 1].y - points[idx - 1].y;
+    } else if (idx < points.length - 1) {
+      dx = points[idx + 1].x - points[idx].x;
+      dy = points[idx + 1].y - points[idx].y;
+    } else if (idx > 0) {
+      dx = points[idx].x - points[idx - 1].x;
+      dy = points[idx].y - points[idx - 1].y;
+    } else {
+      dx = 1; dy = 0;
+    }
+    // Normal is (-dy, dx)
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    return { nx: -dy / len, ny: dx / len };
+  }
+
+  // Convert labelOffset from mm to px
+  const labelOffsetPx = labelOffset * 3.78;
+
+  // Convert fontSize from pt to px for SVG
+  const fontSizePx = fontSize * 1.333;
+
+  // Improved hour label placement
+  const hourLabelElements: JSX.Element[] = [];
+  if (hourlineIntervals) {
+    hourlineIntervals.forEach((interval) => {
+      if (interval.name !== 'Hour') return;
       const style = lineStyles.find(s => s.id === interval.styleId || s.name === interval.styleId);
-      if (!style) return [];
-      
+      if (!style) return;
       const step = getIntervalStep(interval.name);
-      const elements: JSX.Element[] = [];
-      
       for (let h = startHour; h <= stopHour; h += step) {
         // Skip if a higher priority interval is already drawing at this time
         if (isTimeSlotCovered(h, interval.name, hourlineIntervals)) continue;
-        
         let points = getAnalemmaPointsProjected({
           lat,
           lng,
@@ -141,7 +175,77 @@ const SundialPreview: React.FC<Props> = ({
           gnomonHeight,
           orientation: 'Horizontal',
         });
-        
+        // Filter points by date range
+        if (dateRange === 'WinterToSummer') {
+          const [seg1, seg2] = splitWinterToSummer(points);
+          points = [...seg1, ...seg2];
+        } else {
+          const [start, end] = getDayRange(dateRange);
+          points = points.filter((p: { day: number }) => p.day >= start && p.day <= end);
+        }
+        if (points.length === 0) continue;
+        // Find solstice points
+        const solsticeDays = [];
+        if (labelSummerSide) solsticeDays.push(172); // Summer solstice
+        if (labelWinterSide) solsticeDays.push(355); // Winter solstice
+        solsticeDays.forEach((solsticeDay) => {
+          // Find closest point to solsticeDay
+          let idx = points.findIndex(p => p.day === solsticeDay);
+          if (idx === -1) {
+            // If not found, find closest
+            let minDist = 9999, minIdx = 0;
+            for (let i = 0; i < points.length; ++i) {
+              const d = Math.abs(points[i].day - solsticeDay);
+              if (d < minDist) { minDist = d; minIdx = i; }
+            }
+            idx = minIdx;
+          }
+          const pt = points[idx];
+          const { nx, ny } = getNormalAtPoint(points, idx);
+          // Offset outward by labelOffsetPx (mm to px)
+          // For summer side, use negative direction; for winter, positive
+          const isSummer = solsticeDay === 172;
+          const offset = isSummer ? -labelOffsetPx : labelOffsetPx;
+          const x = scale * pt.x + nx * offset;
+          const y = scale * pt.y + ny * offset;
+          hourLabelElements.push(
+            <text
+              key={`label-${h}-${solsticeDay}`}
+              x={x}
+              y={y}
+              fontSize={fontSizePx}
+              fill={style.color || 'black'}
+              textAnchor="middle"
+              alignmentBaseline="middle"
+              style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+            >
+              {formatHour(h)}
+            </text>
+          );
+        });
+      }
+    });
+  }
+
+  // Draw hourlines for each active interval
+  const hourlineElements = hourlineIntervals
+    .filter(interval => interval.active)
+    .flatMap((interval) => {
+      const style = lineStyles.find(s => s.id === interval.styleId || s.name === interval.styleId);
+      if (!style) return [];
+      const step = getIntervalStep(interval.name);
+      const elements: JSX.Element[] = [];
+      for (let h = startHour; h <= stopHour; h += step) {
+        // Skip if a higher priority interval is already drawing at this time
+        if (isTimeSlotCovered(h, interval.name, hourlineIntervals)) continue;
+        let points = getAnalemmaPointsProjected({
+          lat,
+          lng,
+          tzMeridian,
+          hour: h,
+          gnomonHeight,
+          orientation: 'Horizontal',
+        });
         // Filter points by date range
         if (dateRange === 'WinterToSummer') {
           const [seg1, seg2] = splitWinterToSummer(points);
@@ -164,16 +268,6 @@ const SundialPreview: React.FC<Props> = ({
                   strokeDasharray={style.style === 'dashed' ? '6,4' : undefined}
                   vectorEffect="non-scaling-stroke"
                 />
-                {idx === 0 && interval.name === 'Hour' && (
-                  <text
-                    x={scale * segment[0].x}
-                    y={scale * segment[0].y - 4}
-                    fontSize="10"
-                    fill={style.color || 'black'}
-                  >
-                    {formatHour(h)}
-                  </text>
-                )}
               </g>
             );
           });
@@ -198,21 +292,10 @@ const SundialPreview: React.FC<Props> = ({
                 strokeDasharray={style.style === 'dashed' ? '6,4' : undefined}
                 vectorEffect="non-scaling-stroke"
               />
-              {interval.name === 'Hour' && (
-                <text
-                  x={scale * points[0].x}
-                  y={scale * points[0].y - 4}
-                  fontSize="10"
-                  fill={style.color || 'black'}
-                >
-                  {formatHour(h)}
-                </text>
-              )}
             </g>
           );
         }
       }
-      
       return elements;
     });
 
@@ -387,6 +470,7 @@ const SundialPreview: React.FC<Props> = ({
           <g transform={`translate(0, ${-noonYCenter})`}>
             <circle cx={0} cy={0} r={3} fill="red" />
             {hourlineElements.flat()}
+            {hourLabelElements}
             {declinationLineElements}
           </g>
         </svg>
