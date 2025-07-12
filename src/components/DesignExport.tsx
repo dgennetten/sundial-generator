@@ -11,7 +11,6 @@ interface DesignExportProps {
 
 const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, lineStyles }) => {
   const [format, setFormat] = useState<ExportFormat>('SVG');
-  const [includeMotif, setIncludeMotif] = useState<boolean>(false);
   const [showBorder, setShowBorder] = useState<boolean>(true);
   const [margin, setMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
@@ -129,18 +128,7 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, lineStyles 
       </label>
       <br /><br />
 
-      <label>
-        Overlay Motif:&nbsp;
-        <input
-          type="checkbox"
-          checked={includeMotif}
-          onChange={(e) => setIncludeMotif(e.target.checked)}
-        />
-        <span style={{ marginLeft: '0.5rem', fontSize: '0.9em', color: '#666' }}>
-          (adds custom graphic layer)
-        </span>
-      </label>
-      <br /><br />
+
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         <label>
