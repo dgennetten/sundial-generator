@@ -6,12 +6,14 @@ type ExportFormat = 'SVG' | 'PNG' | 'PDF';
 
 interface DesignExportProps {
   onBorderChange: (showBorder: boolean, margin: number, borderStyle: string) => void;
+  onLocationChange: (showLocation: boolean) => void;
   lineStyles: LineStyle[];
 }
 
-const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, lineStyles }) => {
+const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onLocationChange, lineStyles }) => {
   const [format, setFormat] = useState<ExportFormat>('SVG');
   const [showBorder, setShowBorder] = useState<boolean>(true);
+  const [showLocation, setShowLocation] = useState<boolean>(true);
   const [margin, setMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
 
@@ -87,6 +89,20 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, lineStyles 
   return (
     <fieldset style={{ marginBottom: '1rem' }}>
       <legend><strong>Design & Export</strong></legend>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+        <label>
+          <input
+            type="checkbox"
+            checked={showLocation}
+            onChange={(e) => {
+              setShowLocation(e.target.checked);
+              onLocationChange(e.target.checked);
+            }}
+          />
+          &nbsp;Location
+        </label>
+      </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
         <label>

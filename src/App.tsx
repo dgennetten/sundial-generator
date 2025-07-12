@@ -43,6 +43,7 @@ const App: React.FC = () => {
   const [fontFamily, setFontFamily] = useState<string>('sans-serif');
   const [fontSize, setFontSize] = useState<number>(5);
   const [showBorder, setShowBorder] = useState<boolean>(true);
+  const [showLocation, setShowLocation] = useState<boolean>(true);
   const [borderMargin, setBorderMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
 
@@ -150,6 +151,9 @@ const App: React.FC = () => {
           setBorderMargin(margin);
           setBorderStyle(style);
         }}
+        onLocationChange={(showLocation) => {
+          setShowLocation(showLocation);
+        }}
       />
 
       <SundialPreview
@@ -180,6 +184,7 @@ const App: React.FC = () => {
         fontFamily={fontFamily}
         fontSize={fontSize}
         showBorder={showBorder}
+        showLocation={showLocation}
         borderMargin={borderMargin}
         borderStyle={borderStyle}
       />

@@ -33,6 +33,7 @@ type Props = {
   fontFamily?: string;
   fontSize?: number;
   showBorder?: boolean;
+  showLocation?: boolean;
   borderMargin?: number; // in inches
   borderStyle?: string;
 };
@@ -59,6 +60,7 @@ const SundialPreview: React.FC<Props> = ({
   fontFamily = 'sans-serif',
   fontSize = 5, // in pt
   showBorder = true,
+  showLocation = true,
   borderMargin = 0.25, // in inches
   borderStyle = 'default-hairline',
 }) => {
@@ -179,6 +181,21 @@ const SundialPreview: React.FC<Props> = ({
 
   // Convert fontSize from pt to px for SVG
   const fontSizePx = fontSize * 1.333;
+
+  // Helper function to get location name from coordinates
+  function getLocationName(lat: number, lng: number): string {
+    // Check if coordinates match predefined locations
+    if (Math.abs(lat - 40.5853) < 0.001 && Math.abs(lng - (-105.0844)) < 0.001) {
+      return 'Fort Collins, CO';
+    }
+    if (Math.abs(lat - 39.0722) < 0.001 && Math.abs(lng - (-107.1895)) < 0.001) {
+      return 'Marble, CO';
+    }
+    if (Math.abs(lat - 34.9496) < 0.001 && Math.abs(lng - (-81.9321)) < 0.001) {
+      return 'Spartanburg, SC';
+    }
+    return 'Custom Location';
+  }
 
   // Improved hour label placement
   const hourLabelElements: JSX.Element[] = [];
@@ -635,6 +652,45 @@ const SundialPreview: React.FC<Props> = ({
                   vectorEffect="non-scaling-stroke"
                 />
               </>
+            )}
+            
+            {/* Location text within triangle area */}
+            {showLocation && (
+              <g>
+                <text
+                  x={0}
+                  y={-gnomonHeight * 0.7}
+                  fontSize={fontSizePx * 0.8}
+                  fill="black"
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+                >
+                  {getLocationName(lat, lng)}
+                </text>
+                <text
+                  x={0}
+                  y={-gnomonHeight * 0.5}
+                  fontSize={fontSizePx * 0.6}
+                  fill="black"
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+                >
+                  Lat: {lat.toFixed(4)}
+                </text>
+                <text
+                  x={0}
+                  y={-gnomonHeight * 0.3}
+                  fontSize={fontSizePx * 0.6}
+                  fill="black"
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+                >
+                  Long: {lng.toFixed(4)}
+                </text>
+              </g>
             )}
             {hourlineElements.flat()}
             {hourLabelElements}
