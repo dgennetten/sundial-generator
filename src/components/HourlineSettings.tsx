@@ -74,7 +74,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
   const [use24Hour, setUse24Hour] = useState<boolean>(true);
   const [labelWinterSide, setLabelWinterSide] = useState<boolean>(true);
   const [labelSummerSide, setLabelSummerSide] = useState<boolean>(true);
-  const [labelOffset, setLabelOffset] = useState<number>(3);
+  const [labelOffset, setLabelOffset] = useState<number>(1.5);
   const [fontFamily, setFontFamily] = useState<string>('sans-serif');
   const [fontSize, setFontSize] = useState<number>(6);
 

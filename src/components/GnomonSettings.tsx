@@ -2,18 +2,21 @@
 import React, { useEffect, useState } from 'react';
 
 type Mode = 'auto' | 'manual';
+type GnomonType = 'crosshair' | 'sized-base-triangle';
 
 interface Props {
   mode: Mode;
   height: number;
   latitude: number;
-  onChange: (values: { mode: Mode; height: number }) => void;
+  gnomonType: GnomonType;
+  onChange: (values: { mode: Mode; height: number; gnomonType: GnomonType }) => void;
 }
 
 const GnomonSettings: React.FC<Props> = ({
   mode,
   height,
   latitude,
+  gnomonType,
   onChange,
 }) => {
   const [autoHeight, setAutoHeight] = useState<number>(0);
@@ -23,24 +26,44 @@ const GnomonSettings: React.FC<Props> = ({
       const computed = Math.tan((latitude * Math.PI) / 180) * 100;
 
       setAutoHeight(parseFloat(computed.toFixed(2)));
-      onChange({ mode, height: computed });
+      onChange({ mode, height: computed, gnomonType });
     } else {
-      onChange({ mode, height });
+      onChange({ mode, height, gnomonType });
     }
-  }, [mode, height, latitude]);
+  }, [mode, height, latitude, gnomonType]);
 
   return (
     <fieldset style={{ marginBottom: '1rem' }}>
       <legend><strong>Gnomon Options</strong></legend>
 
       <label>
-        Mode:&nbsp;
+        Gnomon Type:&nbsp;
+        <select
+          value={gnomonType}
+          onChange={(e) =>
+            onChange({
+              mode,
+              height,
+              gnomonType: e.target.value as GnomonType,
+            })
+          }
+          style={{ width: 150 }}
+        >
+          <option value="crosshair">Crosshair</option>
+          <option value="sized-base-triangle">Sized Base Triangle</option>
+        </select>
+      </label>
+      <br /><br />
+
+      <label>
+        Height Mode:&nbsp;
         <select
           value={mode}
           onChange={(e) =>
             onChange({
               mode: e.target.value as Mode,
               height,
+              gnomonType,
             })
           }
         >
@@ -60,10 +83,11 @@ const GnomonSettings: React.FC<Props> = ({
             step={1}
             value={height}
             onChange={(e) =>
-              onChange({
-                mode,
-                height: parseFloat(e.target.value),
-              })
+                          onChange({
+              mode,
+              height: parseFloat(e.target.value),
+              gnomonType,
+            })
             }
           />
         </label>

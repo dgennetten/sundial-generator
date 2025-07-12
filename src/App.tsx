@@ -20,6 +20,7 @@ const App: React.FC = () => {
   const [tzMeridian, setTzMeridian] = useState(-105);
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
+  const [gnomonType, setGnomonType] = useState<'crosshair' | 'sized-base-triangle'>('crosshair');
   const [pageSize, setPageSize] = useState<'A4' | 'Letter' | 'Custom'>('Letter');
   const [scaleFactor, setScaleFactor] = useState<number>(1);
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
@@ -38,7 +39,7 @@ const App: React.FC = () => {
   const [use24Hour, setUse24Hour] = useState<boolean>(true);
   const [labelWinterSide, setLabelWinterSide] = useState<boolean>(true);
   const [labelSummerSide, setLabelSummerSide] = useState<boolean>(true);
-  const [labelOffset, setLabelOffset] = useState<number>(3);
+  const [labelOffset, setLabelOffset] = useState<number>(1.5);
   const [fontFamily, setFontFamily] = useState<string>('sans-serif');
   const [fontSize, setFontSize] = useState<number>(10);
   const [showBorder, setShowBorder] = useState<boolean>(true);
@@ -78,7 +79,7 @@ const App: React.FC = () => {
 
   const effectiveGnomonHeight =
     gnomonMode === 'auto'
-      ? parseFloat((Math.tan((latitude * Math.PI) / 180) * 100 * 5 / 8).toFixed(2))
+      ? parseFloat((Math.tan((latitude * Math.PI) / 180) * 100 * 3.7 / 8).toFixed(2))
       : gnomonHeight;
 
   return (
@@ -109,9 +110,11 @@ const App: React.FC = () => {
         mode={gnomonMode}
         height={gnomonHeight}
         latitude={latitude}
-        onChange={({ mode, height }) => {
+        gnomonType={gnomonType}
+        onChange={({ mode, height, gnomonType }) => {
           setGnomonMode(mode);
           setGnomonHeight(height);
+          setGnomonType(gnomonType);
         }}
       />
       <LineSettings
@@ -154,6 +157,7 @@ const App: React.FC = () => {
         lng={longitude}
         tzMeridian={tzMeridian}
         gnomonHeight={effectiveGnomonHeight}
+        gnomonType={gnomonType}
         startHour={startHour}
         stopHour={stopHour}
         use24Hour={use24Hour}

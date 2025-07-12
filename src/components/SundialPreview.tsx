@@ -17,6 +17,7 @@ type Props = {
   tzMeridian: number;
   scale: number;
   gnomonHeight: number;
+  gnomonType: 'crosshair' | 'sized-base-triangle';
   startHour: number;
   stopHour: number;
   use24Hour: boolean;
@@ -42,6 +43,7 @@ const SundialPreview: React.FC<Props> = ({
   tzMeridian,
   scale,
   gnomonHeight,
+  gnomonType,
   startHour,
   stopHour,
   use24Hour,
@@ -53,7 +55,7 @@ const SundialPreview: React.FC<Props> = ({
   lineStyles = [],
   labelWinterSide = true,
   labelSummerSide = true,
-  labelOffset = 12, // now in mm
+  labelOffset = 6, // now in mm
   fontFamily = 'sans-serif',
   fontSize = 10, // in pt
   showBorder = true,
@@ -318,7 +320,7 @@ const SundialPreview: React.FC<Props> = ({
             const pt = points[idx];
             const { nx, ny } = getNormalAtPoint(points, idx);
             // Offset outward by labelOffsetPx (mm to px)
-            // For summer side, use negative direction; for winter, positive
+            // Summer labels go above (negative offset), Winter labels go below (positive offset)
             const isSummer = solsticeDay === 172;
             const offset = isSummer ? -labelOffsetPx : labelOffsetPx;
             const x = scale * pt.x + nx * offset;
@@ -615,9 +617,25 @@ const SundialPreview: React.FC<Props> = ({
         >
           {borderRect}
           <g transform={`translate(0, ${-noonYCenter})`}>
-            {/* Small red hairline gnomon mark: a "+" at (0,0), 6px long arms */}
-            <line x1={-3} y1={0} x2={3} y2={0} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
-            <line x1={0} y1={-3} x2={0} y2={3} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+            {/* Gnomon mark at (0,0) */}
+            {gnomonType === 'crosshair' ? (
+              <>
+                {/* Crosshair gnomon: a "+" at (0,0), 6px long arms */}
+                <line x1={-3} y1={0} x2={3} y2={0} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+                <line x1={0} y1={-3} x2={0} y2={3} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+              </>
+            ) : (
+              <>
+                {/* Sized Base Triangle: right triangle pointing up */}
+                <polygon
+                  points={`0,0 ${-gnomonHeight},${-gnomonHeight} ${gnomonHeight},${-gnomonHeight}`}
+                  fill="none"
+                  stroke="red"
+                  strokeWidth={1}
+                  vectorEffect="non-scaling-stroke"
+                />
+              </>
+            )}
             {hourlineElements.flat()}
             {hourLabelElements}
             {declinationLineElements}
