@@ -41,7 +41,7 @@ const App: React.FC = () => {
   const [labelSummerSide, setLabelSummerSide] = useState<boolean>(true);
   const [labelOffset, setLabelOffset] = useState<number>(1.5);
   const [fontFamily, setFontFamily] = useState<string>('sans-serif');
-  const [fontSize, setFontSize] = useState<number>(10);
+  const [fontSize, setFontSize] = useState<number>(5);
   const [showBorder, setShowBorder] = useState<boolean>(true);
   const [borderMargin, setBorderMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
