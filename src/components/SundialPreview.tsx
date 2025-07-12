@@ -194,6 +194,9 @@ const SundialPreview: React.FC<Props> = ({
     if (Math.abs(lat - 34.9496) < 0.001 && Math.abs(lng - (-81.9321)) < 0.001) {
       return 'Spartanburg, SC';
     }
+    if (Math.abs(lat - 47.4307) < 0.001 && Math.abs(lng - (-117.3796)) < 0.001) {
+      return 'Spangle, WA';
+    }
     return 'Custom Location';
   }
 
@@ -644,12 +647,36 @@ const SundialPreview: React.FC<Props> = ({
               </>
             ) : (
               <>
-                {/* Sized Base Triangle: right triangle pointing up */}
-                <polygon
-                  points={`0,0 ${-gnomonHeight},${-gnomonHeight} ${gnomonHeight},${-gnomonHeight}`}
-                  fill="none"
+                {/* Sized Base Triangle: right triangle pointing up with dashed left side */}
+                {/* Right side (solid) */}
+                <line
+                  x1={0}
+                  y1={0}
+                  x2={gnomonHeight}
+                  y2={-gnomonHeight}
                   stroke="red"
                   strokeWidth={1}
+                  vectorEffect="non-scaling-stroke"
+                />
+                {/* Base side (solid) */}
+                <line
+                  x1={-gnomonHeight}
+                  y1={-gnomonHeight}
+                  x2={gnomonHeight}
+                  y2={-gnomonHeight}
+                  stroke="red"
+                  strokeWidth={1}
+                  vectorEffect="non-scaling-stroke"
+                />
+                {/* Left side (dashed) */}
+                <line
+                  x1={0}
+                  y1={0}
+                  x2={-gnomonHeight}
+                  y2={-gnomonHeight}
+                  stroke="red"
+                  strokeWidth={1}
+                  strokeDasharray="3,3"
                   vectorEffect="non-scaling-stroke"
                 />
               </>

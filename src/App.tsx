@@ -12,6 +12,7 @@ import LineSettings, { loadLineStyles } from './components/LineSettings';
 import type { LineStyle } from './components/LineSettings';
 import DeclinationLineOptions, { loadDeclinationLines } from './components/DeclinationLineOptions';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
+import { getSolarPosition, projectShadowToSurface } from './utils/analemmaGenerator';
 
 
 const App: React.FC = () => {
@@ -78,9 +79,40 @@ const App: React.FC = () => {
     [pageWidth, pageHeight] = [pageHeight, pageWidth];
   }
 
+  // Function to calculate gnomon height based on winter-to-summer solstice distance
+  const calculateAutoGnomonHeight = (lat: number, pageHeight: number): number => {
+    // Winter solstice is around day 355, Summer solstice is around day 172
+    const winterSolsticeDay = 355;
+    const summerSolsticeDay = 172;
+    const noonHour = 12;
+    
+    // Calculate shadow positions for winter and summer solstices at noon
+    const winterPos = getSolarPosition(winterSolsticeDay, lat, longitude, tzMeridian, noonHour);
+    const summerPos = getSolarPosition(summerSolsticeDay, lat, longitude, tzMeridian, noonHour);
+    
+    if (winterPos.altitude <= 0 || summerPos.altitude <= 0) {
+      // Fallback to original calculation if sun is below horizon
+      return parseFloat((Math.tan((lat * Math.PI) / 180) * 100 * 3.7 / 8).toFixed(2));
+    }
+    
+    // Project shadows to surface (using a temporary gnomon height of 1)
+    const tempGnomonHeight = 1;
+    const winterShadow = projectShadowToSurface(winterPos.altitude, winterPos.azimuth, tempGnomonHeight, 'Horizontal', lat);
+    const summerShadow = projectShadowToSurface(summerPos.altitude, summerPos.azimuth, tempGnomonHeight, 'Horizontal', lat);
+    
+    // Calculate the distance between winter and summer shadows
+    const shadowDistance = Math.abs(winterShadow.y - summerShadow.y);
+    
+    // Calculate required gnomon height to make this distance 40% of page height
+    const targetDistance = pageHeight * 0.4;
+    const requiredGnomonHeight = targetDistance / shadowDistance;
+    
+    return parseFloat(requiredGnomonHeight.toFixed(2));
+  };
+
   const effectiveGnomonHeight =
     gnomonMode === 'auto'
-      ? parseFloat((Math.tan((latitude * Math.PI) / 180) * 100 * 3.7 / 8).toFixed(2))
+      ? calculateAutoGnomonHeight(latitude, pageHeight)
       : gnomonHeight;
 
   return (
@@ -113,6 +145,9 @@ const App: React.FC = () => {
           mode={gnomonMode}
           height={gnomonHeight}
           latitude={latitude}
+          longitude={longitude}
+          tzMeridian={tzMeridian}
+          pageHeight={pageHeight}
           gnomonType={gnomonType}
           onChange={({ mode, height, gnomonType }) => {
             setGnomonMode(mode);
