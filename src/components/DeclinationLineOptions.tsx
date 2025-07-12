@@ -87,9 +87,9 @@ const DeclinationLineOptions: React.FC<{
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
-            <th style={{ textAlign: 'left' }}>Active</th>
             <th style={{ textAlign: 'left' }}>Date</th>
             <th style={{ textAlign: 'left' }}>Line Style</th>
+            <th style={{ textAlign: 'left' }}>Active</th>
             <th style={{ textAlign: 'left' }}></th>
           </tr>
         </thead>
@@ -100,13 +100,6 @@ const DeclinationLineOptions: React.FC<{
             const showDelete = !isFixed && !isBlank && line.date;
             return (
               <tr key={line.id || `blank-${idx}`}>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={!!line.active}
-                    onChange={e => handleChange(idx, 'active', e.target.checked)}
-                  />
-                </td>
                 <td>
                   <input
                     type="text"
@@ -125,6 +118,13 @@ const DeclinationLineOptions: React.FC<{
                       <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
                     ))}
                   </select>
+                </td>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={!!line.active}
+                    onChange={e => handleChange(idx, 'active', e.target.checked)}
+                  />
                 </td>
                 <td>
                   {showDelete && (

@@ -2,41 +2,36 @@
 import React, { useEffect, useState } from 'react';
 
 type Mode = 'auto' | 'manual';
-type Orientation = 'Horizontal' | 'Vertical' | 'Equatorial';
 
 interface Props {
   mode: Mode;
   height: number;
   latitude: number;
-  orientation?: Orientation;
-  onChange: (values: { mode: Mode; height: number; orientation: Orientation }) => void;
+  onChange: (values: { mode: Mode; height: number }) => void;
 }
 
 const GnomonSettings: React.FC<Props> = ({
   mode,
   height,
   latitude,
-  orientation = 'Horizontal',
   onChange,
 }) => {
   const [autoHeight, setAutoHeight] = useState<number>(0);
 
   useEffect(() => {
     if (mode === 'auto') {
-      const computed = orientation === 'Equatorial'
-        ? 100 // placeholder for equatorial calculation
-        : Math.tan((latitude * Math.PI) / 180) * 100;
+      const computed = Math.tan((latitude * Math.PI) / 180) * 100;
 
       setAutoHeight(parseFloat(computed.toFixed(2)));
-      onChange({ mode, height: computed, orientation });
+      onChange({ mode, height: computed });
     } else {
-      onChange({ mode, height, orientation });
+      onChange({ mode, height });
     }
-  }, [mode, height, latitude, orientation]);
+  }, [mode, height, latitude]);
 
   return (
     <fieldset style={{ marginBottom: '1rem' }}>
-      <legend><strong>Gnomon Settings</strong></legend>
+      <legend><strong>Gnomon Options</strong></legend>
 
       <label>
         Mode:&nbsp;
@@ -46,7 +41,6 @@ const GnomonSettings: React.FC<Props> = ({
             onChange({
               mode: e.target.value as Mode,
               height,
-              orientation,
             })
           }
         >
@@ -69,7 +63,6 @@ const GnomonSettings: React.FC<Props> = ({
               onChange({
                 mode,
                 height: parseFloat(e.target.value),
-                orientation,
               })
             }
           />
@@ -81,26 +74,6 @@ const GnomonSettings: React.FC<Props> = ({
           Auto-calculated height: <strong>{autoHeight} mm</strong> (based on latitude: {latitude}°)
         </p>
       )}
-
-      <br />
-
-      <label>
-        Orientation:&nbsp;
-        <select
-          value={orientation}
-          onChange={(e) =>
-            onChange({
-              mode,
-              height,
-              orientation: e.target.value as Orientation,
-            })
-          }
-        >
-          <option value="Horizontal">Horizontal</option>
-          <option value="Vertical">Vertical</option>
-          <option value="Equatorial">Equatorial</option>
-        </select>
-      </label>
     </fieldset>
   );
 };

@@ -12,7 +12,7 @@ import LineSettings, { loadLineStyles } from './components/LineSettings';
 import type { LineStyle } from './components/LineSettings';
 import DeclinationLineOptions, { loadDeclinationLines } from './components/DeclinationLineOptions';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
-import HourRangeControls from './components/HourRangeControls';
+
 
 const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);
@@ -93,6 +93,15 @@ const App: React.FC = () => {
         }}
       />
 
+      <PageSettings
+        pageSize={pageSize}
+        setPageSize={setPageSize}
+        scaleFactor={scaleFactor}
+        setScaleFactor={setScaleFactor}
+        orientation={orientation}
+        setOrientation={setOrientation}
+      />
+
       <GnomonSettings
         mode={gnomonMode}
         height={gnomonHeight}
@@ -101,15 +110,6 @@ const App: React.FC = () => {
           setGnomonMode(mode);
           setGnomonHeight(height);
         }}
-      />
-
-      <PageSettings
-        pageSize={pageSize}
-        setPageSize={setPageSize}
-        scaleFactor={scaleFactor}
-        setScaleFactor={setScaleFactor}
-        orientation={orientation}
-        setOrientation={setOrientation}
       />
       <LineSettings
         lineStyles={lineStyles}
@@ -126,8 +126,6 @@ const App: React.FC = () => {
         lineStyles={lineStyles}
         hourlineIntervals={hourlineIntervals}
         setHourlineIntervals={setHourlineIntervals}
-      />
-      <HourRangeControls
         onUpdate={(start, stop, use24, winter, summer, offset, fontFam, fontSz) => {
           setStartHour(start);
           setStopHour(stop);

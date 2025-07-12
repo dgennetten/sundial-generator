@@ -112,7 +112,7 @@ const LineSettings: React.FC<{
 
   return (
     <fieldset style={{ marginBottom: '1rem' }}>
-      <legend><strong>Line Settings</strong></legend>
+      <legend><strong>Line Options</strong></legend>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
