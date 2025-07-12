@@ -621,15 +621,16 @@ const SundialPreview: React.FC<Props> = ({
   ) : null;
 
   return (
-    <fieldset style={{ marginTop: '1rem' }}>
+    <fieldset style={{ marginTop: '1rem', width: '100%', height: '100%' }}>
       <legend>
         <strong>Projected Shadow Preview</strong> ({orientation})
       </legend>
-      <div style={{ width: '100%', maxWidth: '1000px', margin: 'auto' }}>
+      <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <svg
           width="100%"
+          height="100%"
           viewBox={`-${width / 2} -${height / 2} ${width} ${height}`}
-          style={{ display: 'block', border: '1px solid #ccc', background: '#fff', width: '100%' }}
+          style={{ display: 'block', border: '1px solid #ccc', background: '#fff', width: '100%', height: '100%', objectFit: 'contain' }}
           preserveAspectRatio="xMidYMid meet"
         >
           {borderRect}

@@ -84,110 +84,116 @@ const App: React.FC = () => {
       : gnomonHeight;
 
   return (
-    <div style={{ padding: '1rem', fontFamily: 'sans-serif' }}>
-      <h1>Sundial Generator</h1>
+    <div className="app-container">
+      {/* Controls Panel - Left Side */}
+      <div className="controls-panel">
+        <h1>Sundial Generator</h1>
 
-      <LocationInputs
-        latitude={latitude}
-        longitude={longitude}
-        tzMeridian={tzMeridian}
-        onChange={({ lat, lng, tz }) => {
-          setLatitude(lat);
-          setLongitude(lng);
-          setTzMeridian(tz);
-        }}
-      />
+        <LocationInputs
+          latitude={latitude}
+          longitude={longitude}
+          tzMeridian={tzMeridian}
+          onChange={({ lat, lng, tz }) => {
+            setLatitude(lat);
+            setLongitude(lng);
+            setTzMeridian(tz);
+          }}
+        />
 
-      <PageSettings
-        pageSize={pageSize}
-        setPageSize={setPageSize}
-        scaleFactor={scaleFactor}
-        setScaleFactor={setScaleFactor}
-        orientation={orientation}
-        setOrientation={setOrientation}
-      />
+        <PageSettings
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          scaleFactor={scaleFactor}
+          setScaleFactor={setScaleFactor}
+          orientation={orientation}
+          setOrientation={setOrientation}
+        />
 
-      <GnomonSettings
-        mode={gnomonMode}
-        height={gnomonHeight}
-        latitude={latitude}
-        gnomonType={gnomonType}
-        onChange={({ mode, height, gnomonType }) => {
-          setGnomonMode(mode);
-          setGnomonHeight(height);
-          setGnomonType(gnomonType);
-        }}
-      />
-      <LineSettings
-        lineStyles={lineStyles}
-        setLineStyles={setLineStyles}
-      />
-      <DeclinationLineOptions
-        lineStyles={lineStyles}
-        declinationLines={declinationLines}
-        setDeclinationLines={setDeclinationLines}
-      />
-      <HourlineSettings
-        dateRange={hourlineDateRange}
-        setDateRange={setHourlineDateRange}
-        lineStyles={lineStyles}
-        hourlineIntervals={hourlineIntervals}
-        setHourlineIntervals={setHourlineIntervals}
-        onUpdate={(start, stop, use24, winter, summer, offset, fontFam, fontSz) => {
-          setStartHour(start);
-          setStopHour(stop);
-          setUse24Hour(use24);
-          setLabelWinterSide(winter);
-          setLabelSummerSide(summer);
-          setLabelOffset(offset);
-          setFontFamily(fontFam);
-          setFontSize(fontSz);
-        }}
-      />
-      <DesignExport 
-        lineStyles={lineStyles}
-        onBorderChange={(showBorder, margin, style) => {
-          setShowBorder(showBorder);
-          setBorderMargin(margin);
-          setBorderStyle(style);
-        }}
-        onLocationChange={(showLocation) => {
-          setShowLocation(showLocation);
-        }}
-      />
+        <GnomonSettings
+          mode={gnomonMode}
+          height={gnomonHeight}
+          latitude={latitude}
+          gnomonType={gnomonType}
+          onChange={({ mode, height, gnomonType }) => {
+            setGnomonMode(mode);
+            setGnomonHeight(height);
+            setGnomonType(gnomonType);
+          }}
+        />
+        <LineSettings
+          lineStyles={lineStyles}
+          setLineStyles={setLineStyles}
+        />
+        <DeclinationLineOptions
+          lineStyles={lineStyles}
+          declinationLines={declinationLines}
+          setDeclinationLines={setDeclinationLines}
+        />
+        <HourlineSettings
+          dateRange={hourlineDateRange}
+          setDateRange={setHourlineDateRange}
+          lineStyles={lineStyles}
+          hourlineIntervals={hourlineIntervals}
+          setHourlineIntervals={setHourlineIntervals}
+          onUpdate={(start, stop, use24, winter, summer, offset, fontFam, fontSz) => {
+            setStartHour(start);
+            setStopHour(stop);
+            setUse24Hour(use24);
+            setLabelWinterSide(winter);
+            setLabelSummerSide(summer);
+            setLabelOffset(offset);
+            setFontFamily(fontFam);
+            setFontSize(fontSz);
+          }}
+        />
+        <DesignExport 
+          lineStyles={lineStyles}
+          onBorderChange={(showBorder, margin, style) => {
+            setShowBorder(showBorder);
+            setBorderMargin(margin);
+            setBorderStyle(style);
+          }}
+          onLocationChange={(showLocation) => {
+            setShowLocation(showLocation);
+          }}
+        />
+      </div>
 
-      <SundialPreview
-        lat={latitude}
-        lng={longitude}
-        tzMeridian={tzMeridian}
-        gnomonHeight={effectiveGnomonHeight}
-        gnomonType={gnomonType}
-        startHour={startHour}
-        stopHour={stopHour}
-        use24Hour={use24Hour}
-        scale={scaleFactor}
-        orientation={orientation}
-        pageSize={pageSize}
-        dateRange={hourlineDateRange}
-        hourlineIntervals={hourlineIntervals.filter(i => i.active)}
-        lineStyles={lineStyles}
-        declinationLines={declinationLines
-          .map(l => ({
-            ...l,
-            id: l.id || `user-${Date.now()}-${Math.random()}`,
-            styleId: l.styleId || 'default-hairline',
-          }))
-          .filter(l => l.active && l.date && l.styleId)}
-        labelWinterSide={labelWinterSide}
-        labelSummerSide={labelSummerSide}
-        labelOffset={labelOffset}
-        fontFamily={fontFamily}
-        fontSize={fontSize}
-        showBorder={showBorder}
-        showLocation={showLocation}
-        borderMargin={borderMargin}
-        borderStyle={borderStyle}
-      />
+      {/* Preview Panel - Right Side */}
+      <div className="preview-panel">
+        <SundialPreview
+          lat={latitude}
+          lng={longitude}
+          tzMeridian={tzMeridian}
+          gnomonHeight={effectiveGnomonHeight}
+          gnomonType={gnomonType}
+          startHour={startHour}
+          stopHour={stopHour}
+          use24Hour={use24Hour}
+          scale={scaleFactor}
+          orientation={orientation}
+          pageSize={pageSize}
+          dateRange={hourlineDateRange}
+          hourlineIntervals={hourlineIntervals.filter(i => i.active)}
+          lineStyles={lineStyles}
+          declinationLines={declinationLines
+            .map(l => ({
+              ...l,
+              id: l.id || `user-${Date.now()}-${Math.random()}`,
+              styleId: l.styleId || 'default-hairline',
+            }))
+            .filter(l => l.active && l.date && l.styleId)}
+          labelWinterSide={labelWinterSide}
+          labelSummerSide={labelSummerSide}
+          labelOffset={labelOffset}
+          fontFamily={fontFamily}
+          fontSize={fontSize}
+          showBorder={showBorder}
+          showLocation={showLocation}
+          borderMargin={borderMargin}
+          borderStyle={borderStyle}
+        />
+      </div>
     </div>
   );
 };

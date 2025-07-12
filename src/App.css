@@ -1,8 +1,8 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
 }
 
 .logo {
@@ -39,4 +39,51 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.app-container {
+  padding: 1rem;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  min-height: 100vh;
+}
+
+.controls-panel {
+  flex: 0 0 450px;
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
+.preview-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 2rem);
+  overflow: hidden;
+}
+
+/* Responsive breakpoint */
+@media (max-width: 1200px) {
+  .app-container {
+    flex-direction: column;
+  }
+  
+  .controls-panel {
+    flex: none;
+    width: 100%;
+    overflow-y: visible;
+    max-height: none;
+  }
+  
+  .preview-panel {
+    flex: none;
+    width: 100%;
+    min-height: 600px;
+    height: auto;
+    overflow: visible;
+  }
 }
