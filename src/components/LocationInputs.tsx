@@ -23,6 +23,12 @@ const timeZoneToMeridian: { [key: string]: number } = {
   'NZST': 180
 };
 
+// Location data
+const locations: { [key: string]: { lat: number; lng: number; tz: string } } = {
+  'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844, tz: 'MST' },
+  'Marble, CO USA': { lat: 39.0722, lng: -107.1895, tz: 'MST' }
+};
+
 const meridianToTimeZone: { [key: number]: string } = Object.fromEntries(
   Object.entries(timeZoneToMeridian).map(([tz, meridian]) => [meridian, tz])
 );
@@ -38,6 +44,30 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
   // Get current time zone from meridian
   const currentTimeZone = meridianToTimeZone[tzMeridian] || 'MST';
 
+  // Find current location based on lat/lng
+  const getCurrentLocation = () => {
+    for (const [name, data] of Object.entries(locations)) {
+      if (Math.abs(data.lat - latitude) < 0.001 && Math.abs(data.lng - longitude) < 0.001) {
+        return name;
+      }
+    }
+    return 'Custom Location';
+  };
+
+  const handleLocationChange = (locationName: string) => {
+    if (locationName === 'Custom Location') return; // Don't change anything for custom
+    
+    const locationData = locations[locationName];
+    if (locationData) {
+      const newMeridian = timeZoneToMeridian[locationData.tz] || -105;
+      onChange({ 
+        lat: locationData.lat, 
+        lng: locationData.lng, 
+        tz: newMeridian 
+      });
+    }
+  };
+
   const handleTimeZoneChange = (timeZone: string) => {
     const newMeridian = timeZoneToMeridian[timeZone] || -105; // Default to MST
     onChange({ lat: latitude, lng: longitude, tz: newMeridian });
@@ -46,6 +76,21 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
   return (
     <fieldset style={{ marginBottom: '1rem' }}>
       <legend><strong>Location</strong></legend>
+
+      <label>
+        Location:&nbsp;
+        <select
+          value={getCurrentLocation()}
+          onChange={(e) => handleLocationChange(e.target.value)}
+          style={{ width: 200 }}
+        >
+          {Object.keys(locations).map(location => (
+            <option key={location} value={location}>{location}</option>
+          ))}
+          <option value="Custom Location">Custom Location</option>
+        </select>
+      </label>
+      <br /><br />
 
       <label>
         Latitude:&nbsp;
