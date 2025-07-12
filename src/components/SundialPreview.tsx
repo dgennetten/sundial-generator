@@ -31,6 +31,9 @@ type Props = {
   labelOffset?: number;
   fontFamily?: string;
   fontSize?: number;
+  showBorder?: boolean;
+  borderMargin?: number; // in inches
+  borderStyle?: string;
 };
 
 const SundialPreview: React.FC<Props> = ({
@@ -53,6 +56,9 @@ const SundialPreview: React.FC<Props> = ({
   labelOffset = 12, // now in mm
   fontFamily = 'sans-serif',
   fontSize = 10, // in pt
+  showBorder = true,
+  borderMargin = 0.25, // in inches
+  borderStyle = 'default-hairline',
 }) => {
   let { width, height } = pageSizeMap[pageSize] || pageSizeMap.Letter;
   if (orientation === 'Landscape') {
@@ -569,6 +575,32 @@ const SundialPreview: React.FC<Props> = ({
     });
   });
 
+  // Convert border margin from inches to mm
+  const borderMarginMm = borderMargin * 25.4;
+  
+  // Get border line style
+  const borderLineStyle = lineStyles.find(s => s.id === borderStyle || s.name === borderStyle);
+  
+
+  
+
+
+  // Create border rectangle if border is enabled
+  const borderRect = showBorder ? (
+    <rect
+      x={-width / 2 + borderMarginMm}
+      y={-height / 2 + borderMarginMm}
+      width={width - 2 * borderMarginMm}
+      height={height - 2 * borderMarginMm}
+      stroke={borderLineStyle?.color || 'black'}
+      fill="none"
+      strokeWidth={getStrokeWidth(borderLineStyle?.width)}
+      strokeDasharray={getStrokeDashProps(borderLineStyle).dasharray}
+      strokeLinecap={getStrokeDashProps(borderLineStyle).linecap}
+      vectorEffect="non-scaling-stroke"
+    />
+  ) : null;
+
   return (
     <fieldset style={{ marginTop: '1rem' }}>
       <legend>
@@ -581,6 +613,7 @@ const SundialPreview: React.FC<Props> = ({
           style={{ display: 'block', border: '1px solid #ccc', background: '#fff', width: '100%' }}
           preserveAspectRatio="xMidYMid meet"
         >
+          {borderRect}
           <g transform={`translate(0, ${-noonYCenter})`}>
             {/* Small red hairline gnomon mark: a "+" at (0,0), 6px long arms */}
             <line x1={-3} y1={0} x2={3} y2={0} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />

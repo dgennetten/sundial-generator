@@ -41,6 +41,9 @@ const App: React.FC = () => {
   const [labelOffset, setLabelOffset] = useState<number>(3);
   const [fontFamily, setFontFamily] = useState<string>('sans-serif');
   const [fontSize, setFontSize] = useState<number>(10);
+  const [showBorder, setShowBorder] = useState<boolean>(true);
+  const [borderMargin, setBorderMargin] = useState<number>(0.25); // in inches
+  const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
 
   useEffect(() => {
     // Ensure selected style is valid
@@ -137,7 +140,14 @@ const App: React.FC = () => {
           setFontSize(fontSz);
         }}
       />
-      <DesignExport />
+      <DesignExport 
+        lineStyles={lineStyles}
+        onBorderChange={(showBorder, margin, style) => {
+          setShowBorder(showBorder);
+          setBorderMargin(margin);
+          setBorderStyle(style);
+        }}
+      />
 
       <SundialPreview
         lat={latitude}
@@ -165,6 +175,9 @@ const App: React.FC = () => {
         labelOffset={labelOffset}
         fontFamily={fontFamily}
         fontSize={fontSize}
+        showBorder={showBorder}
+        borderMargin={borderMargin}
+        borderStyle={borderStyle}
       />
     </div>
   );
