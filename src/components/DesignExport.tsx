@@ -4,23 +4,12 @@ import React, { useState } from 'react';
 type ExportFormat = 'SVG' | 'PNG' | 'PDF';
 
 const DesignExport: React.FC = () => {
-  const [color, setColor] = useState<string>('#1f77b4');
   const [format, setFormat] = useState<ExportFormat>('SVG');
   const [includeMotif, setIncludeMotif] = useState<boolean>(false);
 
   return (
     <fieldset style={{ marginBottom: '1rem' }}>
       <legend><strong>Design & Export</strong></legend>
-
-      <label>
-        Color Theme:&nbsp;
-        <input
-          type="color"
-          value={color}
-          onChange={(e) => setColor(e.target.value)}
-        />
-      </label>
-      <br /><br />
 
       <label>
         Overlay Motif:&nbsp;
