@@ -7,8 +7,6 @@ type Orientation = 'Landscape' | 'Portrait';
 interface PageSettingsProps {
   pageSize: PageSize;
   setPageSize: (size: PageSize) => void;
-  scaleFactor: number;
-  setScaleFactor: (factor: number) => void;
   orientation: Orientation;
   setOrientation: (o: Orientation) => void;
 }
@@ -16,8 +14,6 @@ interface PageSettingsProps {
 const PageSettings: React.FC<PageSettingsProps> = ({
   pageSize,
   setPageSize,
-  scaleFactor,
-  setScaleFactor,
   orientation,
   setOrientation,
 }) => {
@@ -38,18 +34,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
       </label>
       <br /><br />
 
-      <label>
-        Scale Factor:&nbsp;
-        <input
-          type="number"
-          min={0.1}
-          max={10}
-          step={0.1}
-          value={scaleFactor}
-          onChange={(e) => setScaleFactor(parseFloat(e.target.value))}
-        />
-      </label>
-      <br /><br />
+
 
       <label>
         Orientation:&nbsp;

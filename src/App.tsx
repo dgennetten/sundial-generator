@@ -23,7 +23,6 @@ const App: React.FC = () => {
   const [gnomonHeight, setGnomonHeight] = useState(10);
   const [gnomonType, setGnomonType] = useState<'crosshair' | 'sized-base-triangle'>('crosshair');
   const [pageSize, setPageSize] = useState<'A4' | 'Letter' | 'Custom'>('Letter');
-  const [scaleFactor, setScaleFactor] = useState<number>(1);
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToWinter' | 'WinterToSummer'>('FullYear');
   const [lineStyles, setLineStyles] = useState<LineStyle[]>(() => {
@@ -135,8 +134,6 @@ const App: React.FC = () => {
         <PageSettings
           pageSize={pageSize}
           setPageSize={setPageSize}
-          scaleFactor={scaleFactor}
-          setScaleFactor={setScaleFactor}
           orientation={orientation}
           setOrientation={setOrientation}
         />
@@ -205,7 +202,7 @@ const App: React.FC = () => {
           startHour={startHour}
           stopHour={stopHour}
           use24Hour={use24Hour}
-          scale={scaleFactor}
+          scale={1}
           orientation={orientation}
           pageSize={pageSize}
           dateRange={hourlineDateRange}
