@@ -1,5 +1,6 @@
 // src/components/LocationInputs.tsx
 import React from 'react';
+import { MapPin } from 'lucide-react';
 
 // Time zone to meridian mapping
 const timeZoneToMeridian: { [key: string]: number } = {
@@ -79,7 +80,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title">📍 Location</h3>
+        <h3 className="card-title"><MapPin color="#2563eb" size={20} style={{marginRight: 6}} /> Location</h3>
       </div>
       <div className="card-content">
         <div className="form-group">

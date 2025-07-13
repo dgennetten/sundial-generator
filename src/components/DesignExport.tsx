@@ -1,6 +1,7 @@
 // src/components/DesignExport.tsx
 import React, { useState } from 'react';
 import type { LineStyle } from './LineSettings';
+import { Save } from 'lucide-react';
 
 // Utility to convert named color to hex
 function colorToHex(color: string): string {
@@ -116,7 +117,7 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title">💾 Design & Export</h3>
+        <h3 className="card-title"><Save color="#2563eb" size={20} style={{marginRight: 6}} /> Design & Export</h3>
       </div>
       <div className="card-content">
         <div className="form-group">

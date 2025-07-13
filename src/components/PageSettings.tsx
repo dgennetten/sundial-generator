@@ -1,5 +1,6 @@
 // src/components/PageSettings.tsx
 import React from 'react';
+import { FileText } from 'lucide-react';
 
 type PageSize = 'A4' | 'Letter' | 'Custom';
 type Orientation = 'Landscape' | 'Portrait';
@@ -20,7 +21,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title">📄 Page Settings</h3>
+        <h3 className="card-title"><FileText color="#2563eb" size={20} style={{marginRight: 6}} /> Page Settings</h3>
       </div>
       <div className="card-content">
         <div className="form-row">

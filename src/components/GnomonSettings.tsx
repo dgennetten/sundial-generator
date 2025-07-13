@@ -1,6 +1,7 @@
 // src/components/GnomonSettings.tsx
 import React, { useEffect, useState } from 'react';
 import { getSolarPosition, projectShadowToSurface } from '../utils/analemmaGenerator';
+import { Crosshair } from 'lucide-react';
 
 type Mode = 'auto' | 'manual';
 type GnomonType = 'crosshair' | 'sized-base-triangle';
@@ -73,7 +74,7 @@ const GnomonSettings: React.FC<Props> = ({
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title">📍 Gnomon Settings</h3>
+        <h3 className="card-title"><Crosshair color="#2563eb" size={20} style={{marginRight: 6}} /> Gnomon Settings</h3>
       </div>
       <div className="card-content">
         <div className="form-group">

@@ -4,6 +4,7 @@ import { getAnalemmaPointsProjected, degreesToRadians, getSolarDeclination, proj
 import type { DeclinationLine } from './DeclinationLineOptions';
 import type { LineStyle } from './LineSettings';
 import type { HourlineInterval } from './HourlineSettings';
+import { Sun } from 'lucide-react';
 
 const pageSizeMap = {
   Letter: { width: 8.5 * 25.4, height: 11 * 25.4 },
@@ -841,7 +842,7 @@ const SundialPreview: React.FC<Props> = ({
   return (
     <div className="card" style={{ width: '100%', margin: 0 }}>
       <div className="card-header">
-        <h3 className="card-title">🕐 Sundial Preview ({orientation})</h3>
+        <h3 className="card-title"><Sun color="#2563eb" size={20} style={{marginRight: 6}} /> Sundial Preview ({orientation})</h3>
       </div>
       <div style={{ width: '100%', minHeight: '400px', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible' }}>
         <svg

@@ -1,5 +1,6 @@
 import React from 'react';
 import type { LineStyle } from './LineSettings';
+import { Calendar } from 'lucide-react';
 
 export type DeclinationLine = {
   active: boolean;
@@ -86,7 +87,7 @@ const DeclinationLineOptions: React.FC<{
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title">📅 Declination Lines</h3>
+        <h3 className="card-title"><Calendar color="#2563eb" size={20} style={{marginRight: 6}} /> Declination Lines</h3>
       </div>
       <div className="card-content">
         <div style={{ overflowX: 'auto' }}>

@@ -1,4 +1,6 @@
 import React from 'react';
+import { Palette } from 'lucide-react';
+import { saveLineStyles, isValidCssColor, emptyLine } from './lineStyleUtils';
 
 export type LineStyle = {
   width: string; // e.g. 'hairline', '0.5mm'
@@ -7,80 +9,6 @@ export type LineStyle = {
   name: string;
   id: string; // unique id for each style
   fixed?: boolean; // true for the default, non-deletable
-};
-
-const DEFAULT_LINE_STYLES: LineStyle[] = [
-  {
-    width: 'hairline',
-    color: 'black',
-    style: 'solid',
-    name: 'default hairline',
-    id: 'default-hairline',
-    fixed: true,
-  },
-  {
-    width: 'hairline',
-    color: 'black',
-    style: 'dashed',
-    name: 'dashed hairline',
-    id: 'dashed-hairline',
-    fixed: true,
-  },
-  {
-    width: 'hairline',
-    color: 'black',
-    style: 'dotted',
-    name: 'dotted hairline',
-    id: 'dotted-hairline',
-    fixed: true,
-  },
-  {
-    width: '0.5mm',
-    color: 'black',
-    style: 'solid',
-    name: '.5mm black',
-    id: '0.5mm-black',
-  },
-];
-
-const LOCAL_STORAGE_KEY = 'sundial-line-styles';
-
-function loadLineStyles(): LineStyle[] {
-  const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-  if (!raw) return DEFAULT_LINE_STYLES;
-  try {
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      // Always ensure the default is present
-      const hasDefault = parsed.some((s) => s.id === 'default-hairline');
-      if (!hasDefault) return [DEFAULT_LINE_STYLES[0], ...parsed];
-      return parsed;
-    }
-    return DEFAULT_LINE_STYLES;
-  } catch {
-    return DEFAULT_LINE_STYLES;
-  }
-}
-
-function saveLineStyles(styles: LineStyle[]) {
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(styles));
-}
-
-// Utility to check if a string is a valid CSS color
-function isValidCssColor(str: string) {
-  if (!str) return false;
-  const s = new Option().style;
-  s.color = '';
-  s.color = str;
-  return !!s.color;
-}
-
-const emptyLine: LineStyle = {
-  width: '',
-  color: '',
-  style: 'solid',
-  name: '',
-  id: '',
 };
 
 const LineSettings: React.FC<{
@@ -113,7 +41,7 @@ const LineSettings: React.FC<{
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title">🎨 Line Styles</h3>
+        <h3 className="card-title"><Palette color="#2563eb" size={20} style={{marginRight: 6}} /> Line Styles</h3>
       </div>
       <div className="card-content">
         <div style={{ overflowX: 'auto' }}>
@@ -215,5 +143,4 @@ const LineSettings: React.FC<{
   );
 };
 
-export { loadLineStyles, saveLineStyles };
 export default LineSettings; 

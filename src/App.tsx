@@ -1,6 +1,7 @@
 // src/App.tsx
 
 import React, { useState, useEffect } from 'react';
+import { Text } from 'lucide-react';
 import PageSettings from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
@@ -8,7 +9,8 @@ import DesignExport from './components/DesignExport';
 import SundialPreview from './components/SundialPreview';
 import HourlineSettings, { loadHourlineIntervals } from './components/HourlineSettings';
 import type { HourlineInterval } from './components/HourlineSettings';
-import LineSettings, { loadLineStyles } from './components/LineSettings';
+import LineSettings from './components/LineSettings';
+import { loadLineStyles } from './components/lineStyleUtils';
 import type { LineStyle } from './components/LineSettings';
 import DeclinationLineOptions, { loadDeclinationLines } from './components/DeclinationLineOptions';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
@@ -209,7 +211,7 @@ const App: React.FC = () => {
         />
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title">📝 Dial Text Block</h3>
+            <h3 className="card-title"><Text color="#2563eb" size={20} style={{marginRight: 6}} /> Dial Text Block</h3>
           </div>
           <div className="card-content">
             <div className="form-group">
