@@ -626,7 +626,7 @@ const SundialPreview: React.FC<Props> = ({
   return (
     <fieldset style={{ marginTop: '1rem', width: '100%', height: '100%' }}>
       <legend>
-        <strong>Projected Shadow Preview</strong> ({orientation})
+        <strong>Sundial Preview</strong> ({orientation})
       </legend>
       <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <svg
