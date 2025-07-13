@@ -207,18 +207,6 @@ const App: React.FC = () => {
             setFontSize(fontSz);
           }}
         />
-        <DesignExport 
-          lineStyles={lineStyles}
-          onBorderChange={(showBorder, margin, style) => {
-            setShowBorder(showBorder);
-            setBorderMargin(margin);
-            setBorderStyle(style);
-          }}
-          onBackgroundChange={(showBackground, backgroundColor) => {
-            setShowBackground(showBackground);
-            setBackgroundColor(backgroundColor);
-          }}
-        />
         <div className="card">
           <div className="card-header">
             <h3 className="card-title">📝 Dial Text Block</h3>
@@ -241,11 +229,11 @@ const App: React.FC = () => {
                 rows={3}
                 value={dialTextBlock}
                 onChange={e => setDialTextBlock(e.target.value)}
-                style={{ width: '100%', fontFamily: dialTextBlockFontFamily, fontSize: `${dialTextBlockFontSize}pt` }}
+                style={{ width: '100%', fontFamily: dialTextBlockFontFamily, fontSize: `${Math.max(dialTextBlockFontSize, 12)}pt`, maxWidth: '100%', boxSizing: 'border-box' }}
               />
             </div>
-            <div className="form-row">
-              <div className="form-group">
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end' }}>
+              <div className="form-group" style={{ flex: '0 0 auto' }}>
                 <label className="form-label">Font Size (pt)</label>
                 <input
                   type="number"
@@ -254,16 +242,16 @@ const App: React.FC = () => {
                   max={24}
                   value={dialTextBlockFontSize}
                   onChange={e => setDialTextBlockFontSize(Number(e.target.value))}
-                  style={{ width: '60px' }}
+                  style={{ width: '80px' }}
                 />
               </div>
-              <div className="form-group">
+              <div className="form-group" style={{ flex: '1 1 auto' }}>
                 <label className="form-label">Font Family</label>
                 <select
                   className="form-select"
                   value={dialTextBlockFontFamily}
                   onChange={e => setDialTextBlockFontFamily(e.target.value)}
-                  style={{ width: '140px' }}
+                  style={{ width: '100%' }}
                 >
                   <option value="sans-serif">Sans-serif</option>
                   <option value="serif">Serif</option>
@@ -277,6 +265,18 @@ const App: React.FC = () => {
             </div>
           </div>
         </div>
+        <DesignExport 
+          lineStyles={lineStyles}
+          onBorderChange={(showBorder, margin, style) => {
+            setShowBorder(showBorder);
+            setBorderMargin(margin);
+            setBorderStyle(style);
+          }}
+          onBackgroundChange={(showBackground, backgroundColor) => {
+            setShowBackground(showBackground);
+            setBackgroundColor(backgroundColor);
+          }}
+        />
       </div>
 
       {/* Preview Panel - Right Side */}
