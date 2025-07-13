@@ -12,7 +12,8 @@ import type { HourlineInterval } from './components/HourlineSettings';
 import LineSettings from './components/LineSettings';
 import { loadLineStyles } from './components/lineStyleUtils';
 import type { LineStyle } from './components/LineSettings';
-import DeclinationLineOptions, { loadDeclinationLines } from './components/DeclinationLineOptions';
+import DeclinationLineOptions from './components/DeclinationLineOptions';
+import { loadDeclinationLines } from './components/declinationLineUtils';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
 import { getSolarPosition, projectShadowToSurface } from './utils/analemmaGenerator';
 

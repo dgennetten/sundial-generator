@@ -49,9 +49,9 @@ const LineSettings: React.FC<{
             <thead>
               <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
                 <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Name</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Width</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Color</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Style</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem 0.25rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Width</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem 0.25rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Color</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem 0.25rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Style</th>
                 <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}></th>
               </tr>
             </thead>
@@ -62,7 +62,7 @@ const LineSettings: React.FC<{
                 const showDelete = !isDefault && !isBlank && style.name;
                 return (
                   <tr key={style.id || `blank-${idx}`} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '0.75rem 0.5rem', minWidth: '90px' }}>
+                    <td style={{ padding: '0.75rem 0.5rem', minWidth: '70px' }}>
                       <input
                         type="text"
                         className="form-input"
@@ -72,7 +72,7 @@ const LineSettings: React.FC<{
                         style={{ width: '100%', fontSize: '0.9rem' }}
                       />
                     </td>
-                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                    <td style={{ padding: '0.75rem 0.25rem' }}>
                       <input
                         type="text"
                         className="form-input"
@@ -81,7 +81,7 @@ const LineSettings: React.FC<{
                         style={{ width: '50px', fontSize: '0.9rem' }}
                       />
                     </td>
-                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                    <td style={{ padding: '0.75rem 0.25rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.125rem' }}>
                         <input
                           type="text"
@@ -107,7 +107,7 @@ const LineSettings: React.FC<{
                         />
                       </div>
                     </td>
-                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                    <td style={{ padding: '0.75rem 0.25rem' }}>
                       <select
                         className="form-select"
                         value={style.style}
