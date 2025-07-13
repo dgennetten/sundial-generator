@@ -85,6 +85,36 @@ const SundialPreview: React.FC<Props> = ({
     [width, height] = [height, width];
   }
 
+  // Convert border margin from inches to mm (moved up to avoid initialization error)
+  const borderMarginMm = borderMargin * 25.4;
+
+  // Calculate noon analemma vertical center (moved up to avoid initialization error)
+  const noonHour = 12;
+  let noonPoints = getAnalemmaPointsProjected({
+    lat,
+    lng,
+    tzMeridian,
+    hour: noonHour,
+    gnomonHeight,
+    orientation: 'Horizontal',
+  });
+  // Filter noonPoints by date range
+  if (dateRange === 'WinterToSummer') {
+    // Split into two segments and combine for y-centering
+    const [seg1, seg2] = splitWinterToSummer(noonPoints);
+    noonPoints = [...seg1, ...seg2];
+  } else {
+    const [start, end] = getDayRange(dateRange);
+    noonPoints = noonPoints.filter(p => p.day >= start && p.day <= end);
+  }
+  let noonYCenter = 0;
+  if (noonPoints.length > 0) {
+    const yVals = noonPoints.map((p) => scale * p.y);
+    const minY = Math.min(...yVals);
+    const maxY = Math.max(...yVals);
+    noonYCenter = (minY + maxY) / 2;
+  }
+
   // Helper to get day range
   function getDayRange(dateRange: 'FullYear' | 'SummerToWinter' | 'WinterToSummer') {
     // Approximate: Summer solstice ~ day 172, Winter solstice ~ day 355 (northern hemisphere)
@@ -190,6 +220,126 @@ const SundialPreview: React.FC<Props> = ({
     // Normal is (-dy, dx)
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
     return { nx: -dy / len, ny: dx / len };
+  }
+
+  // Line clipping using Cohen-Sutherland algorithm
+  function clipLineToRectangle(
+    x1: number, y1: number, x2: number, y2: number,
+    left: number, top: number, right: number, bottom: number
+  ): { x1: number; y1: number; x2: number; y2: number } | null {
+    // Cohen-Sutherland region codes
+    const INSIDE = 0;
+    const LEFT = 1;
+    const RIGHT = 2;
+    const BOTTOM = 4;
+    const TOP = 8;
+
+    function computeCode(x: number, y: number): number {
+      let code = INSIDE;
+      if (x < left) code |= LEFT;
+      else if (x > right) code |= RIGHT;
+      if (y < top) code |= TOP;
+      else if (y > bottom) code |= BOTTOM;
+      return code;
+    }
+
+    let code1 = computeCode(x1, y1);
+    let code2 = computeCode(x2, y2);
+
+    while (true) {
+      if ((code1 | code2) === 0) {
+        // Both endpoints inside window
+        return { x1, y1, x2, y2 };
+      } else if ((code1 & code2) !== 0) {
+        // Both endpoints outside window, in same region
+        return null;
+      } else {
+        // Some segment may be inside
+        const codeOut = code1 !== 0 ? code1 : code2;
+        let x = 0, y = 0;
+
+        // Find intersection point using formulas:
+        // slope = (y2 - y1) / (x2 - x1)
+        // x = x1 + (1 / slope) * (ym - y1), where ym is clip edge
+        // y = y1 + slope * (xm - x1), where xm is clip edge
+        if (codeOut & TOP) {
+          x = x1 + (x2 - x1) * (top - y1) / (y2 - y1);
+          y = top;
+        } else if (codeOut & BOTTOM) {
+          x = x1 + (x2 - x1) * (bottom - y1) / (y2 - y1);
+          y = bottom;
+        } else if (codeOut & RIGHT) {
+          y = y1 + (y2 - y1) * (right - x1) / (x2 - x1);
+          x = right;
+        } else if (codeOut & LEFT) {
+          y = y1 + (y2 - y1) * (left - x1) / (x2 - x1);
+          x = left;
+        }
+
+        // Replace point outside with intersection point
+        if (codeOut === code1) {
+          x1 = x;
+          y1 = y;
+          code1 = computeCode(x1, y1);
+        } else {
+          x2 = x;
+          y2 = y;
+          code2 = computeCode(x2, y2);
+        }
+      }
+    }
+  }
+
+  // Clip a series of points to the border rectangle
+  function clipPathData(points: { x: number; y: number }[]): string | null {
+    if (points.length < 2) return null;
+
+    const left = -width / 2 + borderMarginMm;
+    const top = -height / 2 + borderMarginMm + noonYCenter;
+    const right = width / 2 - borderMarginMm;
+    const bottom = height / 2 - borderMarginMm + noonYCenter;
+
+    const clippedSegments: string[] = [];
+    let currentSegment: { x: number; y: number }[] = [];
+
+    for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      
+      const x1 = scale * p1.x;
+      const y1 = scale * p1.y;
+      const x2 = scale * p2.x;
+      const y2 = scale * p2.y;
+
+      const clipped = clipLineToRectangle(x1, y1, x2, y2, left, top, right, bottom);
+      
+      if (clipped) {
+        // If this is the start of a new segment
+        if (currentSegment.length === 0) {
+          currentSegment.push({ x: clipped.x1, y: clipped.y1 });
+        }
+        currentSegment.push({ x: clipped.x2, y: clipped.y2 });
+      } else {
+        // Line segment is completely outside, end current segment
+        if (currentSegment.length > 0) {
+          const pathData = currentSegment
+            .map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`)
+            .join(' ');
+          clippedSegments.push(pathData);
+          currentSegment = [];
+        }
+      }
+    }
+
+    // Add final segment if any
+    if (currentSegment.length > 0) {
+      const pathData = currentSegment
+        .map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`)
+        .join(' ');
+      clippedSegments.push(pathData);
+    }
+
+    return clippedSegments.join(' ');
   }
 
   // Convert labelOffset from mm to px
@@ -389,15 +539,31 @@ const SundialPreview: React.FC<Props> = ({
             if (segment.length === 0) return;
             // Sort segment by day to avoid a straight line between segments
             const sortedSegment = [...segment].sort((a, b) => a.day - b.day);
-            const pathData = sortedSegment
-              .map((p: { x: number; y: number }, i: number) => {
-                const x = scale * p.x;
-                const y = scale * p.y;
-                return `${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
-              })
-              .join(' ');
+            const pathData = clipPathData(sortedSegment);
+            if (pathData) {
+              elements.push(
+                <g key={`${h}-${interval.id}-seg${idx}`}>
+                  <path
+                    d={pathData}
+                    stroke={style.color || 'black'}
+                    fill="none"
+                    strokeWidth={getStrokeWidth(style.width)}
+                    strokeDasharray={getStrokeDashProps(style).dasharray}
+                    strokeLinecap={getStrokeDashProps(style).linecap}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                </g>
+              );
+            }
+          });
+        } else {
+          const [start, end] = getDayRange(dateRange);
+          points = points.filter((p: { day: number }) => p.day >= start && p.day <= end);
+          if (points.length === 0) continue;
+          const pathData = clipPathData(points);
+          if (pathData) {
             elements.push(
-              <g key={`${h}-${interval.id}-seg${idx}`}>
+              <g key={`${h}-${interval.id}`}>
                 <path
                   d={pathData}
                   stroke={style.color || 'black'}
@@ -409,31 +575,7 @@ const SundialPreview: React.FC<Props> = ({
                 />
               </g>
             );
-          });
-        } else {
-          const [start, end] = getDayRange(dateRange);
-          points = points.filter((p: { day: number }) => p.day >= start && p.day <= end);
-          if (points.length === 0) continue;
-          const pathData = points
-            .map((p: { x: number; y: number }, i: number) => {
-              const x = scale * p.x;
-              const y = scale * p.y;
-              return `${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
-            })
-            .join(' ');
-          elements.push(
-            <g key={`${h}-${interval.id}`}>
-              <path
-                d={pathData}
-                stroke={style.color || 'black'}
-                fill="none"
-                strokeWidth={getStrokeWidth(style.width)}
-                strokeDasharray={getStrokeDashProps(style).dasharray}
-                strokeLinecap={getStrokeDashProps(style).linecap}
-                vectorEffect="non-scaling-stroke"
-              />
-            </g>
-          );
+          }
         }
       }
       return elements;
@@ -474,33 +616,6 @@ const SundialPreview: React.FC<Props> = ({
     return null;
   }
 
-  // Calculate noon analemma vertical center
-  const noonHour = 12;
-  let noonPoints = getAnalemmaPointsProjected({
-    lat,
-    lng,
-    tzMeridian,
-    hour: noonHour,
-    gnomonHeight,
-    orientation: 'Horizontal',
-  });
-  // Filter noonPoints by date range
-  if (dateRange === 'WinterToSummer') {
-    // Split into two segments and combine for y-centering
-    const [seg1, seg2] = splitWinterToSummer(noonPoints);
-    noonPoints = [...seg1, ...seg2];
-  } else {
-    const [start, end] = getDayRange(dateRange);
-    noonPoints = noonPoints.filter(p => p.day >= start && p.day <= end);
-  }
-  let noonYCenter = 0;
-  if (noonPoints.length > 0) {
-    const yVals = noonPoints.map((p) => scale * p.y);
-    const minY = Math.min(...yVals);
-    const maxY = Math.max(...yVals);
-    noonYCenter = (minY + maxY) / 2;
-  }
-
   // Draw declination lines
   if (declinationLines.length > 0) {
     // eslint-disable-next-line no-console
@@ -532,7 +647,8 @@ const SundialPreview: React.FC<Props> = ({
         }
       }
       if (points.length < 2) return null;
-      const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(' ');
+      const pathData = clipPathData(points);
+      if (!pathData) return null;
       return (
         <path
           key={line.id || line.date || idx}
@@ -580,7 +696,8 @@ const SundialPreview: React.FC<Props> = ({
         }
         return null;
       }
-      const pathData = segment.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(' ');
+      const pathData = clipPathData(segment);
+      if (!pathData) return null;
       return (
         <path
           key={segIdx}
@@ -595,9 +712,6 @@ const SundialPreview: React.FC<Props> = ({
     });
   });
 
-  // Convert border margin from inches to mm
-  const borderMarginMm = borderMargin * 25.4;
-  
   // Get border line style
   const borderLineStyle = lineStyles.find(s => s.id === borderStyle || s.name === borderStyle);
   
@@ -618,6 +732,22 @@ const SundialPreview: React.FC<Props> = ({
       strokeDasharray={getStrokeDashProps(borderLineStyle).dasharray}
       strokeLinecap={getStrokeDashProps(borderLineStyle).linecap}
       vectorEffect="non-scaling-stroke"
+    />
+  ) : null;
+
+  // Show clipping boundary when border is not visible (for debugging)
+  const clippingBoundary = !showBorder ? (
+    <rect
+      x={-width / 2 + borderMarginMm}
+      y={-height / 2 + borderMarginMm}
+      width={width - 2 * borderMarginMm}
+      height={height - 2 * borderMarginMm}
+      stroke="#ccc"
+      fill="none"
+      strokeWidth={1}
+      strokeDasharray="5,5"
+      vectorEffect="non-scaling-stroke"
+      opacity={0.5}
     />
   ) : null;
 
@@ -722,6 +852,7 @@ const SundialPreview: React.FC<Props> = ({
           preserveAspectRatio="xMidYMid meet"
         >
           {borderRect}
+          {clippingBoundary}
           <g transform={`translate(0, ${-noonYCenter})`}>
             {/* Gnomon mark at (0,0) */}
             {gnomonType === 'crosshair' ? (
