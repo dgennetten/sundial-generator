@@ -771,7 +771,6 @@ const SundialPreview: React.FC<Props> = ({
         </svg>
       </div>
     </div>
-
+  );
 };
-
 export default SundialPreview;
