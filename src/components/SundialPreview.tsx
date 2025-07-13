@@ -35,6 +35,8 @@ type Props = {
   showBorder?: boolean;
   borderMargin?: number; // in inches
   borderStyle?: string;
+  showBackground?: boolean;
+  backgroundColor?: string;
 };
 
 const SundialPreview: React.FC<Props> = ({
@@ -61,6 +63,8 @@ const SundialPreview: React.FC<Props> = ({
   showBorder = true,
   borderMargin = 0.25, // in inches
   borderStyle = 'default-hairline',
+  showBackground = true,
+  backgroundColor = 'Cornsilk',
 }) => {
   let { width, height } = pageSizeMap[pageSize] || pageSizeMap.Letter;
   if (orientation === 'Landscape') {
@@ -613,7 +617,7 @@ const SundialPreview: React.FC<Props> = ({
           width="100%"
           height="100%"
           viewBox={`-${width / 2} -${height / 2} ${width} ${height}`}
-          style={{ display: 'block', border: '1px solid #ccc', background: '#fff', width: '100%', height: '100%', objectFit: 'contain' }}
+          style={{ display: 'block', border: '1px solid #ccc', background: showBackground ? backgroundColor : '#fff', width: '100%', height: '100%', objectFit: 'contain' }}
           preserveAspectRatio="xMidYMid meet"
         >
           {borderRect}

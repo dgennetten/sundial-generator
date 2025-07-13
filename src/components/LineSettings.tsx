@@ -161,15 +161,22 @@ const LineSettings: React.FC<{
                           value={style.color}
                           onChange={e => handleChange(idx, 'color', e.target.value)}
                           style={{ width: '45px', fontSize: '0.9rem' }}
+                          placeholder="red"
+                          title="Enter color name or hex value"
                         />
-                        <span style={{
-                          display: 'inline-block',
-                          width: 18,
-                          height: 18,
-                          borderRadius: '4px',
-                          border: '2px solid #e2e8f0',
-                          background: isValidCssColor(style.color) ? style.color : 'transparent',
-                        }} title={style.color} />
+                        <input
+                          type="color"
+                          value={isValidCssColor(style.color) ? style.color : '#000000'}
+                          onChange={e => handleChange(idx, 'color', e.target.value)}
+                          style={{ 
+                            width: '30px', 
+                            height: '30px', 
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                          title="Click to pick color"
+                        />
                       </div>
                     </td>
                     <td style={{ padding: '0.75rem 0.5rem' }}>

@@ -45,6 +45,8 @@ const App: React.FC = () => {
   const [showBorder, setShowBorder] = useState<boolean>(true);
   const [borderMargin, setBorderMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
+  const [showBackground, setShowBackground] = useState<boolean>(true);
+  const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
 
   useEffect(() => {
     // Ensure selected style is valid
@@ -187,6 +189,10 @@ const App: React.FC = () => {
             setBorderMargin(margin);
             setBorderStyle(style);
           }}
+          onBackgroundChange={(showBackground, backgroundColor) => {
+            setShowBackground(showBackground);
+            setBackgroundColor(backgroundColor);
+          }}
         />
       </div>
 
@@ -222,6 +228,8 @@ const App: React.FC = () => {
           showBorder={showBorder}
           borderMargin={borderMargin}
           borderStyle={borderStyle}
+          showBackground={showBackground}
+          backgroundColor={backgroundColor}
         />
       </div>
     </div>

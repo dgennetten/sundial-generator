@@ -2,18 +2,37 @@
 import React, { useState } from 'react';
 import type { LineStyle } from './LineSettings';
 
+// Utility to convert named color to hex
+function colorToHex(color: string): string {
+  const ctx = document.createElement('canvas').getContext('2d');
+  if (!ctx) return '#fff8dc';
+  ctx.fillStyle = '#fff8dc'; // fallback
+  ctx.fillStyle = color;
+  // If the browser accepts the color, ctx.fillStyle will be a hex string
+  const computed = ctx.fillStyle;
+  // If the color is not valid, fallback to cornsilk
+  if (computed === '' || computed === undefined) return '#fff8dc';
+  // If already hex, return as is
+  if (computed.startsWith('#')) return computed;
+  // Otherwise, fallback
+  return '#fff8dc';
+}
+
 type ExportFormat = 'SVG' | 'PNG' | 'PDF';
 
 interface DesignExportProps {
   onBorderChange: (showBorder: boolean, margin: number, borderStyle: string) => void;
+  onBackgroundChange: (showBackground: boolean, backgroundColor: string) => void;
   lineStyles: LineStyle[];
 }
 
-const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, lineStyles }) => {
+const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroundChange, lineStyles }) => {
   const [format, setFormat] = useState<ExportFormat>('SVG');
   const [showBorder, setShowBorder] = useState<boolean>(true);
   const [margin, setMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
+  const [showBackground, setShowBackground] = useState<boolean>(true);
+  const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
 
   const handleBorderChange = (checked: boolean) => {
     setShowBorder(checked);
@@ -28,6 +47,16 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, lineStyles 
   const handleBorderStyleChange = (newStyle: string) => {
     setBorderStyle(newStyle);
     onBorderChange(showBorder, margin, newStyle);
+  };
+
+  const handleBackgroundChange = (checked: boolean) => {
+    setShowBackground(checked);
+    onBackgroundChange(checked, backgroundColor);
+  };
+
+  const handleBackgroundColorChange = (newColor: string) => {
+    setBackgroundColor(newColor);
+    onBackgroundChange(showBackground, newColor);
   };
 
   const handleExport = () => {
@@ -94,15 +123,55 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, lineStyles 
           {/* Removed Show Location checkbox */}
         </div>
 
-        <div className="form-group">
-          <label className="form-checkbox">
-            <input
-              type="checkbox"
-              checked={showBorder}
-              onChange={(e) => handleBorderChange(e.target.checked)}
-            />
-            Page Border
-          </label>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-checkbox" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input
+                type="checkbox"
+                checked={showBackground}
+                onChange={(e) => handleBackgroundChange(e.target.checked)}
+              />
+              Page Background
+              {/* Inline color controls to the right of the label */}
+              {showBackground && (
+                <>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={backgroundColor}
+                    onChange={(e) => handleBackgroundColorChange(e.target.value)}
+                    style={{ width: '80px', fontSize: '0.9rem', marginLeft: '0.75rem' }}
+                    placeholder="Cornsilk"
+                    title="Enter color name or hex value"
+                  />
+                  <input
+                    type="color"
+                    value={colorToHex(backgroundColor)}
+                    onChange={(e) => handleBackgroundColorChange(e.target.value)}
+                    style={{ 
+                      width: '30px', 
+                      height: '30px', 
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      marginLeft: '0.25rem'
+                    }}
+                    title="Click to pick color"
+                  />
+                </>
+              )}
+            </label>
+          </div>
+          <div className="form-group">
+            <label className="form-checkbox">
+              <input
+                type="checkbox"
+                checked={showBorder}
+                onChange={(e) => handleBorderChange(e.target.checked)}
+              />
+              Page Border
+            </label>
+          </div>
         </div>
 
         {showBorder && (
