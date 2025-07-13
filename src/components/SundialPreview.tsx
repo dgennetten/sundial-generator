@@ -37,6 +37,13 @@ type Props = {
   borderStyle?: string;
   showBackground?: boolean;
   backgroundColor?: string;
+  dialTextBlock?: string;
+  dialTextBlockVisible?: boolean;
+  dialTextBlockFontSize?: number;
+  dialTextBlockFontFamily?: string;
+  latitude?: number;
+  longitude?: number;
+  locationName?: string;
 };
 
 const SundialPreview: React.FC<Props> = ({
@@ -65,6 +72,13 @@ const SundialPreview: React.FC<Props> = ({
   borderStyle = 'default-hairline',
   showBackground = true,
   backgroundColor = 'Cornsilk',
+  dialTextBlock = '',
+  dialTextBlockVisible = false,
+  dialTextBlockFontSize = 5,
+  dialTextBlockFontFamily = 'sans-serif',
+  latitude,
+  longitude,
+  locationName = '',
 }) => {
   let { width, height } = pageSizeMap[pageSize] || pageSizeMap.Letter;
   if (orientation === 'Landscape') {
@@ -607,6 +621,60 @@ const SundialPreview: React.FC<Props> = ({
     />
   ) : null;
 
+  // --- Text Block Logic ---
+  let locationString = locationName || '';
+  if (!locationString && typeof latitude === 'number' && typeof longitude === 'number') {
+    // Fallback if no location name is provided
+    locationString = 'Lat: ' + latitude.toFixed(4) + ', Lon: ' + longitude.toFixed(4);
+  }
+  let coordinatesString = '';
+  if (typeof latitude === 'number' && typeof longitude === 'number') {
+    coordinatesString = `Latitude: ${latitude.toFixed(4)}, Longitude: ${longitude.toFixed(4)}`;
+  }
+  // Function to parse bold text (text between ** markers)
+  const parseBoldText = (text: string): Array<{ text: string; bold: boolean }> => {
+    const parts: Array<{ text: string; bold: boolean }> = [];
+    let currentIndex = 0;
+    
+    while (currentIndex < text.length) {
+      const boldStart = text.indexOf('**', currentIndex);
+      if (boldStart === -1) {
+        // No more bold markers, add remaining text as normal
+        parts.push({ text: text.slice(currentIndex), bold: false });
+        break;
+      }
+      
+      // Add text before bold marker as normal
+      if (boldStart > currentIndex) {
+        parts.push({ text: text.slice(currentIndex, boldStart), bold: false });
+      }
+      
+      const boldEnd = text.indexOf('**', boldStart + 2);
+      if (boldEnd === -1) {
+        // No closing marker, treat as normal text
+        parts.push({ text: text.slice(currentIndex), bold: false });
+        break;
+      }
+      
+      // Add bold text
+      parts.push({ text: text.slice(boldStart + 2, boldEnd), bold: true });
+      currentIndex = boldEnd + 2;
+    }
+    
+    return parts;
+  };
+
+  let textBlockLines: Array<Array<{ text: string; bold: boolean }>> = [];
+  if (dialTextBlock) {
+    const processedText = dialTextBlock
+      .replace(/\{location\}/gi, locationString)
+      .replace(/\{coordinates\}/gi, coordinatesString);
+    
+    textBlockLines = processedText.split('\n').map(line => parseBoldText(line));
+  }
+  // Calculate y position for the text block (bottom inside border, moved up slightly)
+  const textBlockY = height / 2 - borderMarginMm - 10 - (textBlockLines.length - 1) * dialTextBlockFontSize * 1.333;
+
   return (
     <div className="card" style={{ width: '100%', margin: 0 }}>
       <div className="card-header">
@@ -670,12 +738,40 @@ const SundialPreview: React.FC<Props> = ({
             {hourlineElements.flat()}
             {hourLabelElements}
             {declinationLineElements}
-            
           </g>
+          {/* --- Dial Text Block --- */}
+          {dialTextBlockVisible && textBlockLines.length > 0 && (
+            <text
+              x={0}
+              y={textBlockY}
+              fontSize={dialTextBlockFontSize * 1.333}
+              fill="#222"
+              textAnchor="middle"
+              fontFamily={dialTextBlockFontFamily}
+              style={{ userSelect: 'none', pointerEvents: 'none' }}
+            >
+              {textBlockLines.map((line, lineIndex) => (
+                <tspan
+                  key={lineIndex}
+                  x={0}
+                  dy={lineIndex === 0 ? 0 : dialTextBlockFontSize * 1.333}
+                >
+                  {line.map((part, partIndex) => (
+                    <tspan
+                      key={partIndex}
+                      fontWeight={part.bold ? 'bold' : 'normal'}
+                    >
+                      {part.text}
+                    </tspan>
+                  ))}
+                </tspan>
+              ))}
+            </text>
+          )}
         </svg>
       </div>
     </div>
-  );
+
 };
 
 export default SundialPreview;

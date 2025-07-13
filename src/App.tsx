@@ -15,6 +15,8 @@ import type { DeclinationLine } from './components/DeclinationLineOptions';
 import { getSolarPosition, projectShadowToSurface } from './utils/analemmaGenerator';
 
 
+const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\nComputer Generated Sundial by K. Douglas Gennetten`;
+
 const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);
   const [longitude, setLongitude] = useState(-105.0844);
@@ -47,6 +49,11 @@ const App: React.FC = () => {
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
   const [showBackground, setShowBackground] = useState<boolean>(true);
   const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
+  const [dialTextBlock, setDialTextBlock] = useState<string>(DEFAULT_DIAL_TEXTBLOCK);
+  const [dialTextBlockVisible, setDialTextBlockVisible] = useState<boolean>(true);
+  const [dialTextBlockFontSize, setDialTextBlockFontSize] = useState<number>(5);
+  const [dialTextBlockFontFamily, setDialTextBlockFontFamily] = useState<string>(fontFamily);
+  const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
 
   useEffect(() => {
     // Ensure selected style is valid
@@ -132,6 +139,24 @@ const App: React.FC = () => {
             setLatitude(lat);
             setLongitude(lng);
             setTzMeridian(tz);
+            // Update location name when coordinates change
+            // Use the new coordinates directly instead of the state values
+            const locations: { [key: string]: { lat: number; lng: number } } = {
+              'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
+              'Marble, CO USA': { lat: 39.0722, lng: -107.1895 },
+              'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321 },
+              'Spangle, WA USA': { lat: 47.4307, lng: -117.3796 },
+              'Henrico, VA USA': { lat: 37.5243, lng: -77.4932 }
+            };
+            
+            let newLocationName = 'Custom Location';
+            for (const [name, data] of Object.entries(locations)) {
+              if (Math.abs(data.lat - lat) < 0.001 && Math.abs(data.lng - lng) < 0.001) {
+                newLocationName = name;
+                break;
+              }
+            }
+            setLocationName(newLocationName);
           }}
         />
 
@@ -194,6 +219,64 @@ const App: React.FC = () => {
             setBackgroundColor(backgroundColor);
           }}
         />
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title">📝 Dial Text Block</h3>
+          </div>
+          <div className="card-content">
+            <div className="form-group">
+              <label className="form-checkbox">
+                <input
+                  type="checkbox"
+                  checked={dialTextBlockVisible}
+                  onChange={e => setDialTextBlockVisible(e.target.checked)}
+                />
+                Show Text Block at Bottom
+              </label>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Text (supports {"{location}"} and {"{coordinates}"})</label>
+              <textarea
+                className="form-input"
+                rows={3}
+                value={dialTextBlock}
+                onChange={e => setDialTextBlock(e.target.value)}
+                style={{ width: '100%', fontFamily: dialTextBlockFontFamily, fontSize: `${dialTextBlockFontSize}pt` }}
+              />
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Font Size (pt)</label>
+                <input
+                  type="number"
+                  className="form-input"
+                  min={4}
+                  max={24}
+                  value={dialTextBlockFontSize}
+                  onChange={e => setDialTextBlockFontSize(Number(e.target.value))}
+                  style={{ width: '60px' }}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Font Family</label>
+                <select
+                  className="form-select"
+                  value={dialTextBlockFontFamily}
+                  onChange={e => setDialTextBlockFontFamily(e.target.value)}
+                  style={{ width: '140px' }}
+                >
+                  <option value="sans-serif">Sans-serif</option>
+                  <option value="serif">Serif</option>
+                  <option value="monospace">Monospace</option>
+                  <option value="Arial">Arial</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Courier New">Courier New</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Preview Panel - Right Side */}
@@ -230,6 +313,13 @@ const App: React.FC = () => {
           borderStyle={borderStyle}
           showBackground={showBackground}
           backgroundColor={backgroundColor}
+          dialTextBlock={dialTextBlock}
+          dialTextBlockVisible={dialTextBlockVisible}
+          dialTextBlockFontSize={dialTextBlockFontSize}
+          dialTextBlockFontFamily={dialTextBlockFontFamily}
+          latitude={latitude}
+          longitude={longitude}
+          locationName={locationName}
         />
       </div>
     </div>
