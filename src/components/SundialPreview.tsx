@@ -631,46 +631,67 @@ const SundialPreview: React.FC<Props> = ({
   if (typeof latitude === 'number' && typeof longitude === 'number') {
     coordinatesString = `Latitude: ${latitude.toFixed(4)}, Longitude: ${longitude.toFixed(4)}`;
   }
-  // Function to parse bold text (text between ** markers)
-  const parseBoldText = (text: string): Array<{ text: string; bold: boolean }> => {
-    const parts: Array<{ text: string; bold: boolean }> = [];
+  // Function to parse bold and italic text (text between ** markers for bold, * markers for italic)
+  const parseMarkupText = (text: string): Array<{ text: string; bold: boolean; italic: boolean }> => {
+    const parts: Array<{ text: string; bold: boolean; italic: boolean }> = [];
     let currentIndex = 0;
     
     while (currentIndex < text.length) {
       const boldStart = text.indexOf('**', currentIndex);
-      if (boldStart === -1) {
-        // No more bold markers, add remaining text as normal
-        parts.push({ text: text.slice(currentIndex), bold: false });
+      const italicStart = text.indexOf('*', currentIndex);
+      
+      // Find the earliest marker
+      let markerStart = -1;
+      let markerType = '';
+      let markerLength = 0;
+      
+      if (boldStart !== -1 && (italicStart === -1 || boldStart < italicStart)) {
+        markerStart = boldStart;
+        markerType = 'bold';
+        markerLength = 2;
+      } else if (italicStart !== -1) {
+        markerStart = italicStart;
+        markerType = 'italic';
+        markerLength = 1;
+      }
+      
+      if (markerStart === -1) {
+        // No more markers, add remaining text as normal
+        parts.push({ text: text.slice(currentIndex), bold: false, italic: false });
         break;
       }
       
-      // Add text before bold marker as normal
-      if (boldStart > currentIndex) {
-        parts.push({ text: text.slice(currentIndex, boldStart), bold: false });
+      // Add text before marker as normal
+      if (markerStart > currentIndex) {
+        parts.push({ text: text.slice(currentIndex, markerStart), bold: false, italic: false });
       }
       
-      const boldEnd = text.indexOf('**', boldStart + 2);
-      if (boldEnd === -1) {
+      const markerEnd = text.indexOf(markerType === 'bold' ? '**' : '*', markerStart + markerLength);
+      if (markerEnd === -1) {
         // No closing marker, treat as normal text
-        parts.push({ text: text.slice(currentIndex), bold: false });
+        parts.push({ text: text.slice(currentIndex), bold: false, italic: false });
         break;
       }
       
-      // Add bold text
-      parts.push({ text: text.slice(boldStart + 2, boldEnd), bold: true });
-      currentIndex = boldEnd + 2;
+      // Add marked text
+      parts.push({ 
+        text: text.slice(markerStart + markerLength, markerEnd), 
+        bold: markerType === 'bold', 
+        italic: markerType === 'italic' 
+      });
+      currentIndex = markerEnd + markerLength;
     }
     
     return parts;
   };
 
-  let textBlockLines: Array<Array<{ text: string; bold: boolean }>> = [];
+  let textBlockLines: Array<Array<{ text: string; bold: boolean; italic: boolean }>> = [];
   if (dialTextBlock) {
     const processedText = dialTextBlock
       .replace(/\{location\}/gi, locationString)
       .replace(/\{coordinates\}/gi, coordinatesString);
     
-    textBlockLines = processedText.split('\n').map(line => parseBoldText(line));
+    textBlockLines = processedText.split('\n').map(line => parseMarkupText(line));
   }
   // Calculate y position for the text block (bottom inside border, moved up slightly)
   const textBlockY = height / 2 - borderMarginMm - 10 - (textBlockLines.length - 1) * dialTextBlockFontSize * 1.333;
@@ -760,6 +781,7 @@ const SundialPreview: React.FC<Props> = ({
                     <tspan
                       key={partIndex}
                       fontWeight={part.bold ? 'bold' : 'normal'}
+                      fontStyle={part.italic ? 'italic' : 'normal'}
                     >
                       {part.text}
                     </tspan>

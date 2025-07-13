@@ -15,7 +15,7 @@ import type { DeclinationLine } from './components/DeclinationLineOptions';
 import { getSolarPosition, projectShadowToSurface } from './utils/analemmaGenerator';
 
 
-const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\nComputer Generated Sundial by K. Douglas Gennetten`;
+const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n*Computer Generated Sundial by K. Douglas Gennetten*`;
 
 const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);
@@ -235,7 +235,7 @@ const App: React.FC = () => {
               </label>
             </div>
             <div className="form-group">
-              <label className="form-label">Text (supports {"{location}"} and {"{coordinates}"})</label>
+              <label className="form-label">Text (supports {"{location}"}, {"{coordinates}"} and some Markup codes)</label>
               <textarea
                 className="form-input"
                 rows={3}
