@@ -197,6 +197,9 @@ const SundialPreview: React.FC<Props> = ({
     if (Math.abs(lat - 47.4307) < 0.001 && Math.abs(lng - (-117.3796)) < 0.001) {
       return 'Spangle, WA';
     }
+    if (Math.abs(lat - 37.5243) < 0.001 && Math.abs(lng - (-77.4932)) < 0.001) {
+      return 'Henrico, VA';
+    }
     return 'Custom Location';
   }
 

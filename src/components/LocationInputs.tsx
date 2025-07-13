@@ -28,7 +28,8 @@ const locations: { [key: string]: { lat: number; lng: number; tz: string } } = {
   'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844, tz: 'MST' },
   'Marble, CO USA': { lat: 39.0722, lng: -107.1895, tz: 'MST' },
   'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321, tz: 'EST' },
-  'Spangle, WA USA': { lat: 47.4307, lng: -117.3796, tz: 'PST' }
+  'Spangle, WA USA': { lat: 47.4307, lng: -117.3796, tz: 'PST' },
+  'Henrico, VA USA': { lat: 37.5243, lng: -77.4932, tz: 'EST' }
 };
 
 const meridianToTimeZone: { [key: number]: string } = Object.fromEntries(
