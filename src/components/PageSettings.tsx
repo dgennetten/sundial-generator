@@ -18,35 +18,38 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   setOrientation,
 }) => {
   return (
-    <fieldset style={{ marginBottom: '1rem' }}>
-      <legend><strong>Page Settings</strong></legend>
-
-      <label>
-        Page Size:&nbsp;
-        <select
-          value={pageSize}
-          onChange={(e) => setPageSize(e.target.value as PageSize)}
-        >
-          <option value="Letter">Letter</option>
-          <option value="A4">A4</option>
-          <option value="Custom">Custom</option>
-        </select>
-      </label>
-      <br /><br />
-
-
-
-      <label>
-        Orientation:&nbsp;
-        <select
-          value={orientation}
-          onChange={(e) => setOrientation(e.target.value as Orientation)}
-        >
-          <option value="Landscape">Landscape</option>
-          <option value="Portrait">Portrait</option>
-        </select>
-      </label>
-    </fieldset>
+    <div className="card">
+      <div className="card-header">
+        <h3 className="card-title">📄 Page Settings</h3>
+      </div>
+      <div className="card-content">
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Page Size</label>
+            <select
+              className="form-select"
+              value={pageSize}
+              onChange={(e) => setPageSize(e.target.value as PageSize)}
+            >
+              <option value="Letter">Letter</option>
+              <option value="A4">A4</option>
+              <option value="Custom">Custom</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Orientation</label>
+            <select
+              className="form-select"
+              value={orientation}
+              onChange={(e) => setOrientation(e.target.value as Orientation)}
+            >
+              <option value="Landscape">Landscape</option>
+              <option value="Portrait">Portrait</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

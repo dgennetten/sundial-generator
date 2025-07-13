@@ -77,63 +77,66 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
   };
 
   return (
-    <fieldset style={{ marginBottom: '1rem' }}>
-      <legend><strong>Location</strong></legend>
+    <div className="card">
+      <div className="card-header">
+        <h3 className="card-title">📍 Location</h3>
+      </div>
+      <div className="card-content">
+        <div className="form-group">
+          <label className="form-label">Location</label>
+          <select
+            className="form-select"
+            value={getCurrentLocation()}
+            onChange={(e) => handleLocationChange(e.target.value)}
+          >
+            {Object.keys(locations).map(location => (
+              <option key={location} value={location}>{location}</option>
+            ))}
+            <option value="Custom Location">Custom Location</option>
+          </select>
+        </div>
 
-      <label>
-        Location:&nbsp;
-        <select
-          value={getCurrentLocation()}
-          onChange={(e) => handleLocationChange(e.target.value)}
-          style={{ width: 200 }}
-        >
-          {Object.keys(locations).map(location => (
-            <option key={location} value={location}>{location}</option>
-          ))}
-          <option value="Custom Location">Custom Location</option>
-        </select>
-      </label>
-      <br /><br />
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Latitude</label>
+            <input
+              type="number"
+              className="form-input"
+              step={0.0001}
+              value={latitude}
+              onChange={(e) =>
+                onChange({ lat: parseFloat(e.target.value), lng: longitude, tz: tzMeridian })
+              }
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Longitude</label>
+            <input
+              type="number"
+              className="form-input"
+              step={0.0001}
+              value={longitude}
+              onChange={(e) =>
+                onChange({ lat: latitude, lng: parseFloat(e.target.value), tz: tzMeridian })
+              }
+            />
+          </div>
+        </div>
 
-      <label>
-        Latitude:&nbsp;
-        <input
-          type="number"
-          step={0.0001}
-          value={latitude}
-          onChange={(e) =>
-            onChange({ lat: parseFloat(e.target.value), lng: longitude, tz: tzMeridian })
-          }
-        />
-      </label>
-      <br /><br />
-
-      <label>
-        Longitude:&nbsp;
-        <input
-          type="number"
-          step={0.0001}
-          value={longitude}
-          onChange={(e) =>
-            onChange({ lat: latitude, lng: parseFloat(e.target.value), tz: tzMeridian })
-          }
-        />
-      </label>
-      <br /><br />
-
-      <label>
-        Time Zone:&nbsp;
-        <select
-          value={currentTimeZone}
-          onChange={(e) => handleTimeZoneChange(e.target.value)}
-          style={{ width: 120 }}
-        >
-          {Object.keys(timeZoneToMeridian).map(tz => (
-            <option key={tz} value={tz}>{tz}</option>
-          ))}
-        </select>
-      </label>
-    </fieldset>
+        <div className="form-group">
+          <label className="form-label">Time Zone</label>
+          <select
+            className="form-select"
+            value={currentTimeZone}
+            onChange={(e) => handleTimeZoneChange(e.target.value)}
+          >
+            {Object.keys(timeZoneToMeridian).map(tz => (
+              <option key={tz} value={tz}>{tz}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+    </div>
   );
 };
 

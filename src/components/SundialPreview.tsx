@@ -180,7 +180,7 @@ const SundialPreview: React.FC<Props> = ({
   const labelOffsetPx = labelOffset * 3.78;
 
   // Convert fontSize from pt to px for SVG
-  const fontSizePx = fontSize * 1.333;
+    const fontSizePx = fontSize * 1.333;
 
   // Helper function to get location name from coordinates
   function getLocationName(lat: number, lng: number): string {
@@ -202,6 +202,8 @@ const SundialPreview: React.FC<Props> = ({
     }
     return 'Custom Location';
   }
+
+  
 
   // Improved hour label placement
   const hourLabelElements: JSX.Element[] = [];
@@ -627,11 +629,11 @@ const SundialPreview: React.FC<Props> = ({
   ) : null;
 
   return (
-    <fieldset style={{ marginTop: '1rem', width: '100%', height: '100%' }}>
-      <legend>
-        <strong>Sundial Preview</strong> ({orientation})
-      </legend>
-      <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div className="card" style={{ width: '100%', margin: 0 }}>
+      <div className="card-header">
+        <h3 className="card-title">🕐 Sundial Preview ({orientation})</h3>
+      </div>
+      <div style={{ width: '100%', minHeight: '400px', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible' }}>
         <svg
           width="100%"
           height="100%"
@@ -685,51 +687,15 @@ const SundialPreview: React.FC<Props> = ({
               </>
             )}
             
-            {/* Location text within triangle area */}
-            {showLocation && (
-              <g>
-                <text
-                  x={0}
-                  y={-gnomonHeight * 0.7}
-                  fontSize={fontSizePx * 0.8}
-                  fill="black"
-                  textAnchor="middle"
-                  alignmentBaseline="middle"
-                  style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
-                >
-                  {getLocationName(lat, lng)}
-                </text>
-                <text
-                  x={0}
-                  y={-gnomonHeight * 0.5}
-                  fontSize={fontSizePx * 0.6}
-                  fill="black"
-                  textAnchor="middle"
-                  alignmentBaseline="middle"
-                  style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
-                >
-                  Lat: {lat.toFixed(4)}
-                </text>
-                <text
-                  x={0}
-                  y={-gnomonHeight * 0.3}
-                  fontSize={fontSizePx * 0.6}
-                  fill="black"
-                  textAnchor="middle"
-                  alignmentBaseline="middle"
-                  style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
-                >
-                  Long: {lng.toFixed(4)}
-                </text>
-              </g>
-            )}
+
             {hourlineElements.flat()}
             {hourLabelElements}
             {declinationLineElements}
+            
           </g>
         </svg>
       </div>
-    </fieldset>
+    </div>
   );
 };
 

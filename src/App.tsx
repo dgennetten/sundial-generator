@@ -43,7 +43,6 @@ const App: React.FC = () => {
   const [fontFamily, setFontFamily] = useState<string>('sans-serif');
   const [fontSize, setFontSize] = useState<number>(5);
   const [showBorder, setShowBorder] = useState<boolean>(true);
-  const [showLocation, setShowLocation] = useState<boolean>(true);
   const [borderMargin, setBorderMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
 
@@ -118,7 +117,10 @@ const App: React.FC = () => {
     <div className="app-container">
       {/* Controls Panel - Left Side */}
       <div className="controls-panel">
-        <h1>Sundial Generator</h1>
+        <div className="app-header">
+          <h1 className="app-title">Sundial Generator</h1>
+          <p className="app-subtitle">Create beautiful, accurate sundials for any location</p>
+        </div>
 
         <LocationInputs
           latitude={latitude}
@@ -138,6 +140,10 @@ const App: React.FC = () => {
           setOrientation={setOrientation}
         />
 
+        <LineSettings
+          lineStyles={lineStyles}
+          setLineStyles={setLineStyles}
+        />
         <GnomonSettings
           mode={gnomonMode}
           height={gnomonHeight}
@@ -151,10 +157,6 @@ const App: React.FC = () => {
             setGnomonHeight(height);
             setGnomonType(gnomonType);
           }}
-        />
-        <LineSettings
-          lineStyles={lineStyles}
-          setLineStyles={setLineStyles}
         />
         <DeclinationLineOptions
           lineStyles={lineStyles}
@@ -184,9 +186,6 @@ const App: React.FC = () => {
             setShowBorder(showBorder);
             setBorderMargin(margin);
             setBorderStyle(style);
-          }}
-          onLocationChange={(showLocation) => {
-            setShowLocation(showLocation);
           }}
         />
       </div>
@@ -221,7 +220,6 @@ const App: React.FC = () => {
           fontFamily={fontFamily}
           fontSize={fontSize}
           showBorder={showBorder}
-          showLocation={showLocation}
           borderMargin={borderMargin}
           borderStyle={borderStyle}
         />

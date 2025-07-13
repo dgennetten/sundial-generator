@@ -111,89 +111,100 @@ const LineSettings: React.FC<{
   };
 
   return (
-    <fieldset style={{ marginBottom: '1rem' }}>
-      <legend><strong>Line Options</strong></legend>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th style={{ textAlign: 'left' }}>Name</th>
-            <th style={{ textAlign: 'left' }}>Width</th>
-            <th style={{ textAlign: 'left' }}>Color</th>
-            <th style={{ textAlign: 'left' }}>Style</th>
-            <th style={{ textAlign: 'left' }}></th>
-          </tr>
-        </thead>
-        <tbody>
-          {(lineStyles[lineStyles.length - 1]?.id === '' ? lineStyles : [...lineStyles, { ...emptyLine }]).map((style, idx) => {
-            const isBlank = !style.id && !style.name && !style.width && !style.color;
-            const isDefault = style.fixed;
-            const showDelete = !isDefault && !isBlank && style.name;
-            // Determine color sample
-            if (style.color) {
-              if (style.color.startsWith('#') && /^#[0-9a-fA-F]{3,8}$/.test(style.color)) {
-                // colorSample = style.color;
-              } else if (isValidCssColor(style.color)) {
-                // colorSample = style.color;
-              }
-            }
-            return (
-              <tr key={style.id || `blank-${idx}`}>
-                <td>
-                  <input
-                    type="text"
-                    value={style.name}
-                    onChange={e => handleChange(idx, 'name', e.target.value)}
-                    disabled={!!style.fixed}
-                    style={{ width: '100%' }}
-                  />
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    value={style.width}
-                    onChange={e => handleChange(idx, 'width', e.target.value)}
-                    style={{ width: '80px' }}
-                  />
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    value={style.color}
-                    onChange={e => handleChange(idx, 'color', e.target.value)}
-                    style={{ width: '60px', marginLeft: '4px' }}
-                  />
-                  {/* Color swatch for any valid CSS color */}
-                  <span style={{
-                    display: 'inline-block',
-                    width: 18,
-                    height: 18,
-                    marginLeft: 6,
-                    verticalAlign: 'middle',
-                    border: '1px solid #888',
-                    background: isValidCssColor(style.color) ? style.color : 'transparent',
-                  }} title={style.color} />
-                </td>
-                <td>
-                  <select
-                    value={style.style}
-                    onChange={e => handleChange(idx, 'style', e.target.value)}
-                  >
-                    <option value="solid">Solid</option>
-                    <option value="dashed">Dashed</option>
-                    <option value="dotted">Dotted</option>
-                  </select>
-                </td>
-                <td>
-                  {showDelete && (
-                    <button type="button" onClick={() => handleDelete(idx)} title="Delete">X</button>
-                  )}
-                </td>
+    <div className="card">
+      <div className="card-header">
+        <h3 className="card-title">🎨 Line Styles</h3>
+      </div>
+      <div className="card-content">
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
+                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Name</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Width</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Color</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Style</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}></th>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </fieldset>
+            </thead>
+            <tbody>
+              {(lineStyles[lineStyles.length - 1]?.id === '' ? lineStyles : [...lineStyles, { ...emptyLine }]).map((style, idx) => {
+                const isBlank = !style.id && !style.name && !style.width && !style.color;
+                const isDefault = style.fixed;
+                const showDelete = !isDefault && !isBlank && style.name;
+                return (
+                  <tr key={style.id || `blank-${idx}`} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '0.75rem 0.5rem', minWidth: '90px' }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={style.name}
+                        onChange={e => handleChange(idx, 'name', e.target.value)}
+                        disabled={!!style.fixed}
+                        style={{ width: '100%', fontSize: '0.9rem' }}
+                      />
+                    </td>
+                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={style.width}
+                        onChange={e => handleChange(idx, 'width', e.target.value)}
+                        style={{ width: '50px', fontSize: '0.9rem' }}
+                      />
+                    </td>
+                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.125rem' }}>
+                        <input
+                          type="text"
+                          className="form-input"
+                          value={style.color}
+                          onChange={e => handleChange(idx, 'color', e.target.value)}
+                          style={{ width: '45px', fontSize: '0.9rem' }}
+                        />
+                        <span style={{
+                          display: 'inline-block',
+                          width: 18,
+                          height: 18,
+                          borderRadius: '4px',
+                          border: '2px solid #e2e8f0',
+                          background: isValidCssColor(style.color) ? style.color : 'transparent',
+                        }} title={style.color} />
+                      </div>
+                    </td>
+                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                      <select
+                        className="form-select"
+                        value={style.style}
+                        onChange={e => handleChange(idx, 'style', e.target.value)}
+                        style={{ fontSize: '0.9rem', width: '80px' }}
+                      >
+                        <option value="solid">Solid</option>
+                        <option value="dashed">Dashed</option>
+                        <option value="dotted">Dotted</option>
+                      </select>
+                    </td>
+                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                      {showDelete && (
+                        <button 
+                          type="button" 
+                          className="btn btn-secondary"
+                          onClick={() => handleDelete(idx)} 
+                          title="Delete"
+                          style={{ padding: '0.125rem 0.25rem', fontSize: '0.7rem', minWidth: '20px', height: '20px' }}
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 };
 

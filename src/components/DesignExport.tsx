@@ -6,14 +6,12 @@ type ExportFormat = 'SVG' | 'PNG' | 'PDF';
 
 interface DesignExportProps {
   onBorderChange: (showBorder: boolean, margin: number, borderStyle: string) => void;
-  onLocationChange: (showLocation: boolean) => void;
   lineStyles: LineStyle[];
 }
 
-const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onLocationChange, lineStyles }) => {
+const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, lineStyles }) => {
   const [format, setFormat] = useState<ExportFormat>('SVG');
   const [showBorder, setShowBorder] = useState<boolean>(true);
-  const [showLocation, setShowLocation] = useState<boolean>(true);
   const [margin, setMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
 
@@ -87,97 +85,86 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onLocationC
   };
 
   return (
-    <fieldset style={{ marginBottom: '1rem' }}>
-      <legend><strong>Design & Export</strong></legend>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-        <label>
-          <input
-            type="checkbox"
-            checked={showLocation}
-            onChange={(e) => {
-              setShowLocation(e.target.checked);
-              onLocationChange(e.target.checked);
-            }}
-          />
-          &nbsp;Location
-        </label>
+    <div className="card">
+      <div className="card-header">
+        <h3 className="card-title">💾 Design & Export</h3>
       </div>
+      <div className="card-content">
+        <div className="form-group">
+          {/* Removed Show Location checkbox */}
+        </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-        <label>
-          <input
-            type="checkbox"
-            checked={showBorder}
-            onChange={(e) => handleBorderChange(e.target.checked)}
-          />
-          &nbsp;Page Border
-        </label>
-        
-        <label>
-          Style:&nbsp;
-          <select
-            value={borderStyle}
-            onChange={(e) => handleBorderStyleChange(e.target.value)}
-            disabled={!showBorder}
-            style={{ width: 120 }}
-          >
-            {lineStyles.filter(s => s.name && s.name.trim()).map(style => (
-              <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
-            ))}
-          </select>
-        </label>
+        <div className="form-group">
+          <label className="form-checkbox">
+            <input
+              type="checkbox"
+              checked={showBorder}
+              onChange={(e) => handleBorderChange(e.target.checked)}
+            />
+            Page Border
+          </label>
+        </div>
+
+        {showBorder && (
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Border Style</label>
+              <select
+                className="form-select"
+                value={borderStyle}
+                onChange={(e) => handleBorderStyleChange(e.target.value)}
+              >
+                {lineStyles.filter(s => s.name && s.name.trim()).map(style => (
+                  <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Margin (inches)</label>
+              <input
+                type="number"
+                className="form-input"
+                min={0.1}
+                max={2}
+                step={0.1}
+                value={margin}
+                onChange={(e) => handleMarginChange(parseFloat(e.target.value) || 0.5)}
+                style={{ width: '80px' }}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Export Format</label>
+            <select 
+              className="form-select"
+              value={format} 
+              onChange={(e) => setFormat(e.target.value as ExportFormat)}
+            >
+              <option value="SVG">SVG</option>
+              <option value="PNG">PNG</option>
+              <option value="PDF">PDF</option>
+            </select>
+          </div>
+          <div className="form-group" style={{ alignSelf: 'end' }}>
+            <button 
+              className="btn btn-primary"
+              onClick={handleExport}
+            >
+              Export
+            </button>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <p style={{ fontSize: '0.9em', color: '#718096', margin: 0 }}>
+            {format === 'SVG' ? 'SVG export is now functional!' : 'Export functionality coming soon – for now, right-click the preview to save.'}
+          </p>
+        </div>
       </div>
-
-      <label>
-        Margin (inches):&nbsp;
-        <input
-          type="number"
-          min={0.1}
-          max={2}
-          step={0.1}
-          value={margin}
-          onChange={(e) => handleMarginChange(parseFloat(e.target.value) || 0.5)}
-          style={{ width: 60 }}
-          disabled={!showBorder}
-        />
-      </label>
-      <br /><br />
-
-
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <label>
-          Export Format:&nbsp;
-          <select value={format} onChange={(e) => setFormat(e.target.value as ExportFormat)}>
-            <option value="SVG">SVG</option>
-            <option value="PNG">PNG</option>
-            <option value="PDF">PDF</option>
-          </select>
-        </label>
-        
-        <button 
-          onClick={handleExport}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0056b3'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#007bff'}
-        >
-          Export
-        </button>
-      </div>
-
-      <p style={{ fontSize: '0.9em', color: '#666', marginTop: '0.5rem' }}>
-        {format === 'SVG' ? 'SVG export is now functional!' : 'Export functionality coming soon – for now, right-click the preview to save.'}
-      </p>
-    </fieldset>
+    </div>
   );
 };
 

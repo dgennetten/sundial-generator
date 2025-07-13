@@ -40,7 +40,7 @@ function saveDeclinationLines(lines: DeclinationLine[]) {
 }
 
 const emptyLine: DeclinationLine = {
-  active: true,
+  active: false,
   date: '',
   styleId: 'default-hairline',
   id: '',
@@ -55,21 +55,23 @@ const DeclinationLineOptions: React.FC<{
   const handleChange = (idx: number, field: keyof DeclinationLine, value: string | boolean) => {
     const updated = [...declinationLines];
     updated[idx] = { ...updated[idx], [field]: value };
-    // Always set required fields for the blank row
-    if (idx === declinationLines.length - 1 && updated[idx].id === '') {
-      if (!updated[idx].id) updated[idx].id = `user-${Date.now()}`;
-      if (!updated[idx].styleId) updated[idx].styleId = 'default-hairline';
-      // Only set active: true if the user is not editing the 'active' field
-      if (field !== 'active') updated[idx].active = true;
-    }
-    // If editing the blank row, add a new blank row
-    if (idx === declinationLines.length - 1 && declinationLines[idx].id === '') {
-      // If any field is non-empty, create a new user line
-      const isNonEmpty = Object.entries(updated[idx]).some(([k, v]) => k !== 'id' && v && v !== '');
-      if (isNonEmpty) {
+    
+    // Check if this is the blank row (last row with no id)
+    const isBlankRow = idx === declinationLines.length - 1 && updated[idx].id === '';
+    
+    if (isBlankRow) {
+      // If editing the date field and it's not empty, make it active and create a new blank row
+      if (field === 'date' && value && value !== '') {
+        updated[idx].active = true;
+        updated[idx].id = `user-${Date.now()}`;
         updated.push({ ...emptyLine });
       }
+      // If editing the active field, don't allow the blank row to be checked
+      else if (field === 'active') {
+        updated[idx].active = false;
+      }
     }
+    
     setDeclinationLines(updated);
     saveDeclinationLines(updated.filter((l) => l.id));
   };
@@ -82,61 +84,80 @@ const DeclinationLineOptions: React.FC<{
   };
 
   return (
-    <fieldset style={{ marginBottom: '1rem' }}>
-      <legend><strong>Declination Line Options</strong></legend>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th style={{ textAlign: 'left' }}>Date</th>
-            <th style={{ textAlign: 'left' }}>Line Style</th>
-            <th style={{ textAlign: 'left' }}>Active</th>
-            <th style={{ textAlign: 'left' }}></th>
-          </tr>
-        </thead>
-        <tbody>
-          {(declinationLines[declinationLines.length - 1]?.id === '' ? declinationLines : [...declinationLines, { ...emptyLine }]).map((line, idx) => {
-            const isBlank = !line.id && !line.date;
-            const isFixed = line.fixed;
-            const showDelete = !isFixed && !isBlank && line.date;
-            return (
-              <tr key={line.id || `blank-${idx}`}>
-                <td>
-                  <input
-                    type="text"
-                    value={line.date}
-                    onChange={e => handleChange(idx, 'date', e.target.value)}
-                    disabled={!!isFixed}
-                    style={{ width: '140px' }}
-                  />
-                </td>
-                <td>
-                  <select
-                    value={line.styleId}
-                    onChange={e => handleChange(idx, 'styleId', e.target.value)}
-                  >
-                    {lineStyles.filter(s => s.name && s.name.trim()).map(style => (
-                      <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
-                    ))}
-                  </select>
-                </td>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={!!line.active}
-                    onChange={e => handleChange(idx, 'active', e.target.checked)}
-                  />
-                </td>
-                <td>
-                  {showDelete && (
-                    <button type="button" onClick={() => handleDelete(idx)} title="Delete">X</button>
-                  )}
-                </td>
+    <div className="card">
+      <div className="card-header">
+        <h3 className="card-title">📅 Declination Lines</h3>
+      </div>
+      <div className="card-content">
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
+                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Date</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Line Style</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Active</th>
+                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}></th>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </fieldset>
+            </thead>
+            <tbody>
+              {(declinationLines[declinationLines.length - 1]?.id === '' ? declinationLines : [...declinationLines, { ...emptyLine }]).map((line, idx) => {
+                const isBlank = !line.id && !line.date;
+                const isFixed = line.fixed;
+                const showDelete = !isFixed && !isBlank && line.date;
+                return (
+                  <tr key={line.id || `blank-${idx}`} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={line.date}
+                        onChange={e => handleChange(idx, 'date', e.target.value)}
+                        disabled={!!isFixed}
+                        style={{ width: '140px', fontSize: '0.9rem' }}
+                      />
+                    </td>
+                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                      <select
+                        className="form-select"
+                        value={line.styleId}
+                        onChange={e => handleChange(idx, 'styleId', e.target.value)}
+                        style={{ fontSize: '0.9rem' }}
+                      >
+                        {lineStyles.filter(s => s.name && s.name.trim()).map(style => (
+                          <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                      <input
+                        type="checkbox"
+                        className="form-checkbox"
+                        checked={!!line.active}
+                        onChange={e => handleChange(idx, 'active', e.target.checked)}
+                        disabled={isBlank}
+                      />
+                    </td>
+                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                      {showDelete && (
+                        <button 
+                          type="button" 
+                          className="btn btn-secondary"
+                          onClick={() => handleDelete(idx)} 
+                          title="Delete"
+                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 };
 

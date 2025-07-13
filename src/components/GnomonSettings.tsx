@@ -71,72 +71,77 @@ const GnomonSettings: React.FC<Props> = ({
   }, [mode, height, latitude, longitude, tzMeridian, pageHeight, gnomonType]);
 
   return (
-    <fieldset style={{ marginBottom: '1rem' }}>
-      <legend><strong>Gnomon Options</strong></legend>
-
-      <label>
-        Gnomon Type:&nbsp;
-        <select
-          value={gnomonType}
-          onChange={(e) =>
-            onChange({
-              mode,
-              height,
-              gnomonType: e.target.value as GnomonType,
-            })
-          }
-          style={{ width: 150 }}
-        >
-          <option value="crosshair">Crosshair</option>
-          <option value="sized-base-triangle">Sized Base Triangle</option>
-        </select>
-      </label>
-      <br /><br />
-
-      <label>
-        Height Mode:&nbsp;
-        <select
-          value={mode}
-          onChange={(e) =>
-            onChange({
-              mode: e.target.value as Mode,
-              height,
-              gnomonType,
-            })
-          }
-        >
-          <option value="auto">Auto</option>
-          <option value="manual">Manual</option>
-        </select>
-      </label>
-      <br /><br />
-
-      {mode === 'manual' && (
-        <label>
-          Gnomon Height (mm):&nbsp;
-          <input
-            type="number"
-            min={1}
-            max={300}
-            step={1}
-            value={height}
+    <div className="card">
+      <div className="card-header">
+        <h3 className="card-title">📍 Gnomon Settings</h3>
+      </div>
+      <div className="card-content">
+        <div className="form-group">
+          <label className="form-label">Gnomon Type</label>
+          <select
+            className="form-select"
+            value={gnomonType}
             onChange={(e) =>
-                          onChange({
-              mode,
-              height: parseFloat(e.target.value),
-              gnomonType,
-            })
+              onChange({
+                mode,
+                height,
+                gnomonType: e.target.value as GnomonType,
+              })
             }
-          />
-        </label>
-      )}
+          >
+            <option value="crosshair">Crosshair</option>
+            <option value="sized-base-triangle">Sized Base Triangle</option>
+          </select>
+        </div>
 
-      {mode === 'auto' && (
-        <p style={{ fontSize: '0.9em', color: '#555' }}>
-          Auto-calculated height: <strong>{autoHeight} mm</strong> (based on latitude: {latitude}°)
-        </p>
-      )}
-    </fieldset>
+        <div className="form-group">
+          <label className="form-label">Height Mode</label>
+          <select
+            className="form-select"
+            value={mode}
+            onChange={(e) =>
+              onChange({
+                mode: e.target.value as Mode,
+                height,
+                gnomonType,
+              })
+            }
+          >
+            <option value="auto">Auto</option>
+            <option value="manual">Manual</option>
+          </select>
+        </div>
+
+        {mode === 'manual' && (
+          <div className="form-group">
+            <label className="form-label">Gnomon Height (mm)</label>
+            <input
+              type="number"
+              className="form-input"
+              min={1}
+              max={300}
+              step={1}
+              value={height}
+              onChange={(e) =>
+                onChange({
+                  mode,
+                  height: parseFloat(e.target.value),
+                  gnomonType,
+                })
+              }
+            />
+          </div>
+        )}
+
+        {mode === 'auto' && (
+          <div className="form-group">
+            <p style={{ fontSize: '0.9em', color: '#718096', margin: 0 }}>
+              Auto-calculated height: <strong>{autoHeight} mm</strong> (based on latitude: {latitude}°)
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
