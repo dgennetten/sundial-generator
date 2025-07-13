@@ -69,8 +69,8 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
   setHourlineIntervals,
   onUpdate,
 }) => {
-  const [startHour, setStartHour] = useState<number>(6);
-  const [stopHour, setStopHour] = useState<number>(18);
+  const [startHour, setStartHour] = useState<number>(5);
+  const [stopHour, setStopHour] = useState<number>(19);
   const [use24Hour, setUse24Hour] = useState<boolean>(true);
   const [labelWinterSide, setLabelWinterSide] = useState<boolean>(true);
   const [labelSummerSide, setLabelSummerSide] = useState<boolean>(true);
