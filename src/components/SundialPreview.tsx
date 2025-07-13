@@ -640,19 +640,31 @@ const SundialPreview: React.FC<Props> = ({
       const boldStart = text.indexOf('**', currentIndex);
       const italicStart = text.indexOf('*', currentIndex);
       
-      // Find the earliest marker
+      // Find the earliest marker, but prioritize bold markers
       let markerStart = -1;
       let markerType = '';
       let markerLength = 0;
       
-      if (boldStart !== -1 && (italicStart === -1 || boldStart < italicStart)) {
-        markerStart = boldStart;
-        markerType = 'bold';
-        markerLength = 2;
-      } else if (italicStart !== -1) {
-        markerStart = italicStart;
-        markerType = 'italic';
-        markerLength = 1;
+      if (boldStart !== -1) {
+        // Check if this is actually a bold marker (not part of an italic marker)
+        const nextChar = text[boldStart + 2];
+        if (nextChar !== '*') {
+          markerStart = boldStart;
+          markerType = 'bold';
+          markerLength = 2;
+        }
+      }
+      
+      // If no bold marker found, look for italic marker
+      if (markerStart === -1 && italicStart !== -1) {
+        // Check if this is actually an italic marker (not part of a bold marker)
+        const prevChar = text[italicStart - 1];
+        const nextChar = text[italicStart + 1];
+        if (prevChar !== '*' && nextChar !== '*') {
+          markerStart = italicStart;
+          markerType = 'italic';
+          markerLength = 1;
+        }
       }
       
       if (markerStart === -1) {
