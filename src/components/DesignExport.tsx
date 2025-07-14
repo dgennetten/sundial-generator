@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import type { LineStyle } from './LineSettings';
 import { Save } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 // Utility to convert named color to hex
 function colorToHex(color: string): string {
@@ -61,7 +62,61 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
   };
 
   const handleExport = () => {
-    if (format === 'SVG') {
+    if (format === 'PNG') {
+      // Find the preview container - look for the card with "Sundial Preview" in the title
+      const previewCards = document.querySelectorAll('.card');
+      let previewContainer: HTMLElement | null = null;
+      
+      for (const card of previewCards) {
+        const title = card.querySelector('.card-title');
+        if (title && title.textContent && title.textContent.includes('Sundial Preview')) {
+          previewContainer = card as HTMLElement;
+          break;
+        }
+      }
+      
+      if (!previewContainer) {
+        console.error('Could not find preview container');
+        return;
+      }
+
+      // Find the SVG container div within the preview
+      const svgContainer = previewContainer.querySelector('div[style*="display: flex"]') as HTMLElement;
+      if (!svgContainer) {
+        console.error('Could not find SVG container');
+        return;
+      }
+
+      console.log('Found SVG container:', svgContainer);
+
+      // Use html2canvas to capture the SVG container
+      html2canvas(svgContainer, {
+        backgroundColor: showBackground ? backgroundColor : '#ffffff',
+        scale: 2, // 2x scale for higher resolution
+        useCORS: true,
+        allowTaint: true,
+        logging: true, // Enable logging for debugging
+      }).then((canvas) => {
+        console.log('Canvas created:', canvas);
+        
+        // Convert canvas to PNG blob
+        canvas.toBlob((blob) => {
+          if (blob) {
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'sundial.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          }
+        }, 'image/png');
+      }).catch((error) => {
+        console.error('Error creating canvas:', error);
+      });
+    } else if (format === 'SVG') {
       // Get the SVG element from the preview
       const svgElement = document.querySelector('svg') as SVGSVGElement;
       if (svgElement) {
@@ -230,7 +285,7 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
 
         <div className="form-group">
           <p style={{ fontSize: '0.9em', color: '#718096', margin: 0 }}>
-            {format === 'SVG' ? 'SVG export is now functional!' : 'Export functionality coming soon – for now, right-click the preview to save.'}
+            {format === 'SVG' ? 'SVG export is now functional!' : format === 'PNG' ? 'PNG export is now functional!' : 'PDF export functionality coming soon – for now, right-click the preview to save.'}
           </p>
         </div>
       </div>
