@@ -322,7 +322,6 @@ const App: React.FC = () => {
           borderMargin={borderMargin}
           borderStyle={borderStyle}
           gnomonPosition={gnomonPosition}
-          gnomonPositionMode={gnomonPositionMode}
           showBackground={showBackground}
           backgroundColor={backgroundColor}
           dialTextBlock={dialTextBlock}

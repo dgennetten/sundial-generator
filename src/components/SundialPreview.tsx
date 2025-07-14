@@ -37,7 +37,6 @@ type Props = {
   borderMargin?: number; // in inches
   borderStyle?: string;
   gnomonPosition?: number;
-  gnomonPositionMode?: 'auto' | 'manual';
   showBackground?: boolean;
   backgroundColor?: string;
   dialTextBlock?: string;
@@ -74,7 +73,6 @@ const SundialPreview: React.FC<Props> = ({
   borderMargin = 0.25, // in inches
   borderStyle = 'default-hairline',
   gnomonPosition = 0,
-  gnomonPositionMode = 'auto',
   showBackground = true,
   backgroundColor = 'Cornsilk',
   dialTextBlock = '',

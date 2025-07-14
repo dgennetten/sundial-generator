@@ -1,6 +1,6 @@
 import React from 'react';
 import { PenLine } from 'lucide-react';
-import { saveLineStyles, isValidCssColor, emptyLine } from './lineStyleUtils';
+import { saveLineStyles, emptyLine } from './lineStyleUtils';
 
 export type LineStyle = {
   width: string; // e.g. 'hairline', '0.5mm'
@@ -57,9 +57,6 @@ const LineSettings: React.FC<{
             </thead>
             <tbody>
               {(lineStyles[lineStyles.length - 1]?.id === '' ? lineStyles : [...lineStyles, { ...emptyLine }]).map((style, idx) => {
-                const isBlank = !style.id && !style.name && !style.width && !style.color;
-                const isDefault = style.fixed;
-                const showDelete = !isDefault && !isBlank && style.name;
                 return (
                   <tr key={style.id || `blank-${idx}`}>
                     <td style={{ padding: '0.3rem 0.3rem', minWidth: '70px' }}>
@@ -133,4 +130,4 @@ const LineSettings: React.FC<{
   );
 };
 
-export default LineSettings; 
+export default LineSettings;
