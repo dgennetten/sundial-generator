@@ -45,6 +45,9 @@ const App: React.FC = () => {
   const [showBorder, setShowBorder] = useState<boolean>(true);
   const [borderMargin, setBorderMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
+  // Add state for gnomon position
+  const [gnomonPosition, setGnomonPosition] = useState<number>(0);
+  const [gnomonPositionMode, setGnomonPositionMode] = useState<'auto' | 'manual'>('auto');
 
   useEffect(() => {
     // Ensure selected style is valid
@@ -152,10 +155,14 @@ const App: React.FC = () => {
           tzMeridian={tzMeridian}
           pageHeight={pageHeight}
           gnomonType={gnomonType}
-          onChange={({ mode, height, gnomonType }) => {
+          positionMode={gnomonPositionMode}
+          position={gnomonPosition}
+          onChange={({ mode, height, gnomonType, positionMode, position }) => {
             setGnomonMode(mode);
             setGnomonHeight(height);
             setGnomonType(gnomonType);
+            if (positionMode) setGnomonPositionMode(positionMode);
+            if (typeof position === 'number') setGnomonPosition(position);
           }}
         />
         <DeclinationLineOptions
@@ -222,6 +229,8 @@ const App: React.FC = () => {
           showBorder={showBorder}
           borderMargin={borderMargin}
           borderStyle={borderStyle}
+          gnomonPosition={gnomonPosition}
+          gnomonPositionMode={gnomonPositionMode}
         />
       </div>
     </div>

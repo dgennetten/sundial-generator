@@ -35,6 +35,8 @@ type Props = {
   showBorder?: boolean;
   borderMargin?: number; // in inches
   borderStyle?: string;
+  gnomonPosition?: number;
+  gnomonPositionMode?: 'auto' | 'manual';
 };
 
 const SundialPreview: React.FC<Props> = ({
@@ -61,6 +63,8 @@ const SundialPreview: React.FC<Props> = ({
   showBorder = true,
   borderMargin = 0.25, // in inches
   borderStyle = 'default-hairline',
+  gnomonPosition = 0,
+  gnomonPositionMode = 'auto',
 }) => {
   let { width, height } = pageSizeMap[pageSize] || pageSizeMap.Letter;
   if (orientation === 'Landscape') {
@@ -617,7 +621,7 @@ const SundialPreview: React.FC<Props> = ({
           preserveAspectRatio="xMidYMid meet"
         >
           {borderRect}
-          <g transform={`translate(0, ${-noonYCenter})`}>
+          <g transform={`translate(0, ${(gnomonPosition ?? 0) - (height / 2)})`}>
             {/* Gnomon mark at (0,0) */}
             {gnomonType === 'crosshair' ? (
               <>
