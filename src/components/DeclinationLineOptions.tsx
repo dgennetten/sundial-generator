@@ -1,6 +1,6 @@
 import React from 'react';
 import type { LineStyle } from './LineSettings';
-import { Calendar } from 'lucide-react';
+import { Sunrise } from 'lucide-react';
 import { saveDeclinationLines, emptyLine } from './declinationLineUtils';
 
 export type DeclinationLine = {
@@ -51,17 +51,17 @@ const DeclinationLineOptions: React.FC<{
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title"><Calendar color="#2563eb" size={20} style={{marginRight: 6}} /> Declination Lines</h3>
+        <h3 className="card-title"><Sunrise color="#2563eb" size={20} style={{marginRight: 6}} /> Declination Lines</h3>
       </div>
       <div className="card-content">
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
-                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Date</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Line Style</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Active</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}></th>
+                <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Date</th>
+                <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Line Style</th>
+                <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Active</th>
+                <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}></th>
               </tr>
             </thead>
             <tbody>
@@ -70,8 +70,8 @@ const DeclinationLineOptions: React.FC<{
                 const isFixed = line.fixed;
                 const showDelete = !isFixed && !isBlank && line.date;
                 return (
-                  <tr key={line.id || `blank-${idx}`} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                  <tr key={line.id || `blank-${idx}`}>
+                    <td style={{ padding: '0.3rem 0.3rem' }}>
                       <input
                         type="text"
                         className="form-input"
@@ -81,7 +81,7 @@ const DeclinationLineOptions: React.FC<{
                         style={{ width: '99px', fontSize: '0.9rem' }}
                       />
                     </td>
-                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                    <td style={{ padding: '0.3rem 0.3rem' }}>
                       <select
                         className="form-select"
                         value={line.styleId}
@@ -93,25 +93,24 @@ const DeclinationLineOptions: React.FC<{
                         ))}
                       </select>
                     </td>
-                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                    <td style={{ padding: '0.3rem 0.3rem', textAlign: 'center' }}>
                       <input
                         type="checkbox"
                         className="form-checkbox"
                         checked={!!line.active}
                         onChange={e => handleChange(idx, 'active', e.target.checked)}
-                        disabled={isBlank}
                       />
                     </td>
-                    <td style={{ padding: '0.75rem 0.5rem' }}>
+                    <td style={{ padding: '0.3rem 0.3rem', textAlign: 'center' }}>
                       {showDelete && (
                         <button 
                           type="button" 
-                          className="btn btn-secondary"
+                          className="btn btn-xs"
                           onClick={() => handleDelete(idx)} 
                           title="Delete"
-                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+                          style={{ fontSize: '1rem' }}
                         >
-                          ✕
+                          ×
                         </button>
                       )}
                     </td>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { LineStyle } from './LineSettings';
-import { Clock } from 'lucide-react';
+import { Timer } from 'lucide-react';
 
 type DateRange = 'FullYear' | 'SummerToWinter' | 'WinterToSummer';
 
@@ -104,7 +104,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title"><Clock color="#2563eb" size={20} style={{marginRight: 6}} /> Hour Line Settings</h3>
+        <h3 className="card-title"><Timer color="#2563eb" size={20} style={{marginRight: 6}} /> Hour Line Settings</h3>
       </div>
       <div className="card-content">
         <div className="form-row">
@@ -150,18 +150,18 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
-                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Interval</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Line Style</th>
-                <th style={{ textAlign: 'left', padding: '0.75rem 0.5rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Active</th>
+                <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Interval</th>
+                <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Line Style</th>
+                <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Active</th>
               </tr>
             </thead>
             <tbody>
               {hourlineIntervals.map((interval, idx) => (
-                <tr key={interval.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '0.75rem 0.5rem' }}>
+                <tr key={interval.id}>
+                  <td style={{ padding: '0.3rem 0.3rem' }}>
                     <span style={{ fontSize: '0.9rem' }}>{interval.name}</span>
                   </td>
-                  <td style={{ padding: '0.75rem 0.5rem' }}>
+                  <td style={{ padding: '0.3rem 0.3rem' }}>
                     <select
                       className="form-select"
                       value={interval.styleId}
@@ -173,7 +173,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
                       ))}
                     </select>
                   </td>
-                  <td style={{ padding: '0.75rem 0.5rem' }}>
+                  <td style={{ padding: '0.3rem 0.3rem' }}>
                     <input
                       type="checkbox"
                       className="form-checkbox"
