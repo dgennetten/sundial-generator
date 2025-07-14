@@ -1,19 +1,40 @@
 // src/components/DesignExport.tsx
 import React, { useState } from 'react';
 import type { LineStyle } from './LineSettings';
+import { Save } from 'lucide-react';
+import html2canvas from 'html2canvas';
+
+// Utility to convert named color to hex
+function colorToHex(color: string): string {
+  const ctx = document.createElement('canvas').getContext('2d');
+  if (!ctx) return '#fff8dc';
+  ctx.fillStyle = '#fff8dc'; // fallback
+  ctx.fillStyle = color;
+  // If the browser accepts the color, ctx.fillStyle will be a hex string
+  const computed = ctx.fillStyle;
+  // If the color is not valid, fallback to cornsilk
+  if (computed === '' || computed === undefined) return '#fff8dc';
+  // If already hex, return as is
+  if (computed.startsWith('#')) return computed;
+  // Otherwise, fallback
+  return '#fff8dc';
+}
 
 type ExportFormat = 'SVG' | 'PNG' | 'PDF';
 
 interface DesignExportProps {
   onBorderChange: (showBorder: boolean, margin: number, borderStyle: string) => void;
+  onBackgroundChange: (showBackground: boolean, backgroundColor: string) => void;
   lineStyles: LineStyle[];
 }
 
-const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, lineStyles }) => {
+const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroundChange, lineStyles }) => {
   const [format, setFormat] = useState<ExportFormat>('SVG');
   const [showBorder, setShowBorder] = useState<boolean>(true);
   const [margin, setMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
+  const [showBackground, setShowBackground] = useState<boolean>(true);
+  const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
 
   const handleBorderChange = (checked: boolean) => {
     setShowBorder(checked);
@@ -30,8 +51,72 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, lineStyles 
     onBorderChange(showBorder, margin, newStyle);
   };
 
+  const handleBackgroundChange = (checked: boolean) => {
+    setShowBackground(checked);
+    onBackgroundChange(checked, backgroundColor);
+  };
+
+  const handleBackgroundColorChange = (newColor: string) => {
+    setBackgroundColor(newColor);
+    onBackgroundChange(showBackground, newColor);
+  };
+
   const handleExport = () => {
-    if (format === 'SVG') {
+    if (format === 'PNG') {
+      // Find the preview container - look for the card with "Sundial Preview" in the title
+      const previewCards = document.querySelectorAll('.card');
+      let previewContainer: HTMLElement | null = null;
+      
+      for (const card of previewCards) {
+        const title = card.querySelector('.card-title');
+        if (title && title.textContent && title.textContent.includes('Sundial Preview')) {
+          previewContainer = card as HTMLElement;
+          break;
+        }
+      }
+      
+      if (!previewContainer) {
+        console.error('Could not find preview container');
+        return;
+      }
+
+      // Find the SVG container div within the preview
+      const svgContainer = previewContainer.querySelector('div[style*="display: flex"]') as HTMLElement;
+      if (!svgContainer) {
+        console.error('Could not find SVG container');
+        return;
+      }
+
+      console.log('Found SVG container:', svgContainer);
+
+      // Use html2canvas to capture the SVG container
+      html2canvas(svgContainer, {
+        backgroundColor: showBackground ? backgroundColor : '#ffffff',
+        scale: 2, // 2x scale for higher resolution
+        useCORS: true,
+        allowTaint: true,
+        logging: true, // Enable logging for debugging
+      }).then((canvas) => {
+        console.log('Canvas created:', canvas);
+        
+        // Convert canvas to PNG blob
+        canvas.toBlob((blob) => {
+          if (blob) {
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'sundial.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+          }
+        }, 'image/png');
+      }).catch((error) => {
+        console.error('Error creating canvas:', error);
+      });
+    } else if (format === 'SVG') {
       // Get the SVG element from the preview
       const svgElement = document.querySelector('svg') as SVGSVGElement;
       if (svgElement) {
@@ -87,22 +172,62 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, lineStyles 
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title">💾 Design & Export</h3>
+        <h3 className="card-title"><Save color="#2563eb" size={20} style={{marginRight: 6}} /> Design & Export</h3>
       </div>
       <div className="card-content">
         <div className="form-group">
           {/* Removed Show Location checkbox */}
         </div>
 
-        <div className="form-group">
-          <label className="form-checkbox">
-            <input
-              type="checkbox"
-              checked={showBorder}
-              onChange={(e) => handleBorderChange(e.target.checked)}
-            />
-            Page Border
-          </label>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-checkbox" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input
+                type="checkbox"
+                checked={showBackground}
+                onChange={(e) => handleBackgroundChange(e.target.checked)}
+              />
+              Page Background
+              {/* Inline color controls to the right of the label */}
+              {showBackground && (
+                <>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={backgroundColor}
+                    onChange={(e) => handleBackgroundColorChange(e.target.value)}
+                    style={{ width: '80px', fontSize: '0.9rem', marginLeft: '0.75rem' }}
+                    placeholder="Cornsilk"
+                    title="Enter color name or hex value"
+                  />
+                  <input
+                    type="color"
+                    value={colorToHex(backgroundColor)}
+                    onChange={(e) => handleBackgroundColorChange(e.target.value)}
+                    style={{ 
+                      width: '30px', 
+                      height: '30px', 
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      marginLeft: '0.25rem'
+                    }}
+                    title="Click to pick color"
+                  />
+                </>
+              )}
+            </label>
+          </div>
+          <div className="form-group">
+            <label className="form-checkbox">
+              <input
+                type="checkbox"
+                checked={showBorder}
+                onChange={(e) => handleBorderChange(e.target.checked)}
+              />
+              Page Border
+            </label>
+          </div>
         </div>
 
         {showBorder && (
@@ -160,7 +285,7 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, lineStyles 
 
         <div className="form-group">
           <p style={{ fontSize: '0.9em', color: '#718096', margin: 0 }}>
-            {format === 'SVG' ? 'SVG export is now functional!' : 'Export functionality coming soon – for now, right-click the preview to save.'}
+            {format === 'SVG' ? 'SVG export is now functional!' : format === 'PNG' ? 'PNG export is now functional!' : 'PDF export functionality coming soon – for now, right-click the preview to save.'}
           </p>
         </div>
       </div>

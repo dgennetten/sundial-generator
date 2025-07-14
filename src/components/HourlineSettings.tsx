@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { LineStyle } from './LineSettings';
+import { Clock } from 'lucide-react';
 
 type DateRange = 'FullYear' | 'SummerToWinter' | 'WinterToSummer';
 
@@ -69,8 +70,8 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
   setHourlineIntervals,
   onUpdate,
 }) => {
-  const [startHour, setStartHour] = useState<number>(6);
-  const [stopHour, setStopHour] = useState<number>(18);
+  const [startHour, setStartHour] = useState<number>(5);
+  const [stopHour, setStopHour] = useState<number>(19);
   const [use24Hour, setUse24Hour] = useState<boolean>(true);
   const [labelWinterSide, setLabelWinterSide] = useState<boolean>(true);
   const [labelSummerSide, setLabelSummerSide] = useState<boolean>(true);
@@ -103,7 +104,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title">⏰ Hour Line Settings</h3>
+        <h3 className="card-title"><Clock color="#2563eb" size={20} style={{marginRight: 6}} /> Hour Line Settings</h3>
       </div>
       <div className="card-content">
         <div className="form-row">

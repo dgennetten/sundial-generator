@@ -1,5 +1,7 @@
 import React from 'react';
 import type { LineStyle } from './LineSettings';
+import { Calendar } from 'lucide-react';
+import { saveDeclinationLines, emptyLine } from './declinationLineUtils';
 
 export type DeclinationLine = {
   active: boolean;
@@ -7,43 +9,6 @@ export type DeclinationLine = {
   styleId: string; // id or name of the line style
   fixed?: boolean; // true for built-in, non-deletable
   id: string; // unique
-};
-
-const BUILTIN_DECLINATION_LINES: DeclinationLine[] = [
-  { active: true, date: 'Summer Solstice', styleId: 'default-hairline', fixed: true, id: 'summer-solstice' },
-  { active: true, date: 'Equinox', styleId: 'default-hairline', fixed: true, id: 'equinox' },
-  { active: true, date: 'Winter Solstice', styleId: 'default-hairline', fixed: true, id: 'winter-solstice' },
-];
-
-const LOCAL_STORAGE_KEY = 'sundial-declination-lines';
-
-function loadDeclinationLines(): DeclinationLine[] {
-  const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-  if (!raw) return BUILTIN_DECLINATION_LINES;
-  try {
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) {
-      // Always ensure built-ins are present at the top
-      const userLines = parsed.filter((l: DeclinationLine) => !l.fixed);
-      return [...BUILTIN_DECLINATION_LINES, ...userLines];
-    }
-    return BUILTIN_DECLINATION_LINES;
-  } catch {
-    return BUILTIN_DECLINATION_LINES;
-  }
-}
-
-function saveDeclinationLines(lines: DeclinationLine[]) {
-  // Only save user lines
-  const userLines = lines.filter(l => !l.fixed);
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify([...userLines]));
-}
-
-const emptyLine: DeclinationLine = {
-  active: false,
-  date: '',
-  styleId: 'default-hairline',
-  id: '',
 };
 
 const DeclinationLineOptions: React.FC<{
@@ -86,7 +51,7 @@ const DeclinationLineOptions: React.FC<{
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title">📅 Declination Lines</h3>
+        <h3 className="card-title"><Calendar color="#2563eb" size={20} style={{marginRight: 6}} /> Declination Lines</h3>
       </div>
       <div className="card-content">
         <div style={{ overflowX: 'auto' }}>
@@ -113,7 +78,7 @@ const DeclinationLineOptions: React.FC<{
                         value={line.date}
                         onChange={e => handleChange(idx, 'date', e.target.value)}
                         disabled={!!isFixed}
-                        style={{ width: '140px', fontSize: '0.9rem' }}
+                        style={{ width: '99px', fontSize: '0.9rem' }}
                       />
                     </td>
                     <td style={{ padding: '0.75rem 0.5rem' }}>
@@ -161,5 +126,4 @@ const DeclinationLineOptions: React.FC<{
   );
 };
 
-export { loadDeclinationLines, saveDeclinationLines };
 export default DeclinationLineOptions; 
