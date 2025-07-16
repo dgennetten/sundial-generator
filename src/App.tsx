@@ -46,7 +46,7 @@ const App: React.FC = () => {
   const [labelSummerSide, setLabelSummerSide] = useState<boolean>(true);
   const [labelOffset, setLabelOffset] = useState<number>(1.5);
   const [fontFamily, setFontFamily] = useState<string>('sans-serif');
-  const [fontSize, setFontSize] = useState<number>(5);
+  const [fontSize, setFontSize] = useState<number>(20);
   const [showBorder, setShowBorder] = useState<boolean>(true);
   const [borderMargin, setBorderMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
@@ -57,7 +57,7 @@ const App: React.FC = () => {
   const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
   const [dialTextBlock, setDialTextBlock] = useState<string>(DEFAULT_DIAL_TEXTBLOCK);
   const [dialTextBlockVisible, setDialTextBlockVisible] = useState<boolean>(true);
-  const [dialTextBlockFontSize, setDialTextBlockFontSize] = useState<number>(5);
+  const [dialTextBlockFontSize, setDialTextBlockFontSize] = useState<number>(14);
   const [dialTextBlockFontFamily, setDialTextBlockFontFamily] = useState<string>(fontFamily);
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
 
@@ -239,7 +239,7 @@ const App: React.FC = () => {
                 rows={3}
                 value={dialTextBlock}
                 onChange={e => setDialTextBlock(e.target.value)}
-                style={{ width: '100%', fontFamily: dialTextBlockFontFamily, fontSize: `${Math.max(dialTextBlockFontSize, 12)}pt`, maxWidth: '100%', boxSizing: 'border-box' }}
+                style={{ width: '100%', fontFamily: dialTextBlockFontFamily, fontSize: '12pt', maxWidth: '100%', boxSizing: 'border-box' }}
               />
             </div>
             <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end' }}>

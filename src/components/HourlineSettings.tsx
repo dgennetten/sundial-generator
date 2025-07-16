@@ -77,7 +77,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
   const [labelSummerSide, setLabelSummerSide] = useState<boolean>(true);
   const [labelOffset, setLabelOffset] = useState<number>(1.5);
   const [fontFamily, setFontFamily] = useState<string>('sans-serif');
-  const [fontSize, setFontSize] = useState<number>(5);
+  const [fontSize, setFontSize] = useState<number>(20);
 
   // Update preview automatically when any hour-related setting changes
   React.useEffect(() => {

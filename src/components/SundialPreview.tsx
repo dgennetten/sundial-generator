@@ -68,7 +68,7 @@ const SundialPreview: React.FC<Props> = ({
   labelSummerSide = true,
   labelOffset = 6, // now in mm
   fontFamily = 'sans-serif',
-  fontSize = 5, // in pt
+  fontSize = 20, // in pt
   showBorder = true,
   borderMargin = 0.25, // in inches
   borderStyle = 'default-hairline',
@@ -77,7 +77,7 @@ const SundialPreview: React.FC<Props> = ({
   backgroundColor = 'Cornsilk',
   dialTextBlock = '',
   dialTextBlockVisible = false,
-  dialTextBlockFontSize = 5,
+  dialTextBlockFontSize = 14,
   dialTextBlockFontFamily = 'sans-serif',
   latitude,
   longitude,
@@ -348,8 +348,9 @@ const SundialPreview: React.FC<Props> = ({
   // Convert labelOffset from mm to px
   const labelOffsetPx = labelOffset * 3.78;
 
-  // Convert fontSize from pt to px for SVG
-    const fontSizePx = fontSize * 1.333;
+  // Convert fontSize from pt to mm for SVG (1 pt = 25.4/72 mm = 0.3528 mm)
+  const fontSizeMm = fontSize * 0.3528;
+  const dialTextBlockFontSizeMm = dialTextBlockFontSize * 0.3528;
 
   // Improved hour label placement
   const hourLabelElements: JSX.Element[] = [];
@@ -387,7 +388,7 @@ const SundialPreview: React.FC<Props> = ({
                 key={`label-${h}-355`}
                 x={x}
                 y={y}
-                fontSize={fontSizePx}
+                fontSize={fontSizeMm}
                 fill={style.color || 'black'}
                 textAnchor="middle"
                 alignmentBaseline="middle"
@@ -409,7 +410,7 @@ const SundialPreview: React.FC<Props> = ({
                 key={`label-${h}-172`}
                 x={x}
                 y={y}
-                fontSize={fontSizePx}
+                fontSize={fontSizeMm}
                 fill={style.color || 'black'}
                 textAnchor="middle"
                 alignmentBaseline="middle"
@@ -437,7 +438,7 @@ const SundialPreview: React.FC<Props> = ({
                 key={`label-${h}-172`}
                 x={x}
                 y={y}
-                fontSize={fontSizePx}
+                fontSize={fontSizeMm}
                 fill={style.color || 'black'}
                 textAnchor="middle"
                 alignmentBaseline="middle"
@@ -459,7 +460,7 @@ const SundialPreview: React.FC<Props> = ({
                 key={`label-${h}-355`}
                 x={x}
                 y={y}
-                fontSize={fontSizePx}
+                fontSize={fontSizeMm}
                 fill={style.color || 'black'}
                 textAnchor="middle"
                 alignmentBaseline="middle"
@@ -501,7 +502,7 @@ const SundialPreview: React.FC<Props> = ({
                 key={`label-${h}-${solsticeDay}`}
                 x={x}
                 y={y}
-                fontSize={fontSizePx}
+                fontSize={fontSizeMm}
                 fill={style.color || 'black'}
                 textAnchor="middle"
                 alignmentBaseline="middle"
@@ -839,7 +840,7 @@ const SundialPreview: React.FC<Props> = ({
     textBlockLines = processedText.split('\n').map(line => parseMarkupText(line));
   }
   // Calculate y position for the text block (bottom inside border, moved up slightly)
-  const textBlockY = height / 2 - borderMarginMm - 10 - (textBlockLines.length - 1) * dialTextBlockFontSize * 1.333;
+  const textBlockY = height / 2 - borderMarginMm - 10 - (textBlockLines.length - 1) * dialTextBlockFontSizeMm;
 
   return (
     <div className="card" style={{ width: '100%', margin: 0 }}>
@@ -911,7 +912,7 @@ const SundialPreview: React.FC<Props> = ({
             <text
               x={0}
               y={textBlockY}
-              fontSize={dialTextBlockFontSize * 1.333}
+              fontSize={dialTextBlockFontSizeMm}
               fill="#222"
               textAnchor="middle"
               fontFamily={dialTextBlockFontFamily}
@@ -921,7 +922,7 @@ const SundialPreview: React.FC<Props> = ({
                 <tspan
                   key={lineIndex}
                   x={0}
-                  dy={lineIndex === 0 ? 0 : dialTextBlockFontSize * 1.333}
+                  dy={lineIndex === 0 ? 0 : dialTextBlockFontSizeMm}
                 >
                   {line.map((part, partIndex) => (
                     <tspan
