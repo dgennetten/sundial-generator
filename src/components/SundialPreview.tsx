@@ -5,6 +5,7 @@ import type { DeclinationLine } from './DeclinationLineOptions';
 import type { LineStyle } from './LineSettings';
 import type { HourlineInterval } from './HourlineSettings';
 import { Sun } from 'lucide-react';
+import GnomonSVG from './GnomonSVG';
 
 const pageSizeMap = {
   Letter: { width: 8.5 * 25.4, height: 11 * 25.4 },
@@ -18,7 +19,7 @@ type Props = {
   tzMeridian: number;
   scale: number;
   gnomonHeight: number;
-  gnomonType: 'crosshair' | 'sized-base-triangle';
+  gnomonType: 'crosshair' | 'sized-base-triangle' | 'sized-popup-brace';
   startHour: number;
   stopHour: number;
   use24Hour: boolean;
@@ -842,6 +843,8 @@ const SundialPreview: React.FC<Props> = ({
   // Calculate y position for the text block (bottom inside border, moved up slightly)
   const textBlockY = height / 2 - borderMarginMm - 10 - (textBlockLines.length - 1) * dialTextBlockFontSizeMm;
 
+
+
   return (
     <div className="card" style={{ width: '100%', margin: 0 }}>
       <div className="card-header">
@@ -859,48 +862,7 @@ const SundialPreview: React.FC<Props> = ({
           {clippingBoundary}
           <g transform={`translate(0, ${(gnomonPosition ?? 0) - (height / 2)})`}>
             {/* Gnomon mark at (0,0) */}
-            {gnomonType === 'crosshair' ? (
-              <>
-                {/* Crosshair gnomon: a "+" at (0,0), 6px long arms */}
-                <line x1={-3} y1={0} x2={3} y2={0} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
-                <line x1={0} y1={-3} x2={0} y2={3} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
-              </>
-            ) : (
-              <>
-                {/* Sized Base Triangle: right triangle pointing up with dashed left side */}
-                {/* Right side (solid) */}
-                <line
-                  x1={0}
-                  y1={0}
-                  x2={gnomonHeight}
-                  y2={-gnomonHeight}
-                  stroke="red"
-                  strokeWidth={1}
-                  vectorEffect="non-scaling-stroke"
-                />
-                {/* Base side (solid) */}
-                <line
-                  x1={-gnomonHeight}
-                  y1={-gnomonHeight}
-                  x2={gnomonHeight}
-                  y2={-gnomonHeight}
-                  stroke="red"
-                  strokeWidth={1}
-                  vectorEffect="non-scaling-stroke"
-                />
-                {/* Left side (dashed) */}
-                <line
-                  x1={0}
-                  y1={0}
-                  x2={-gnomonHeight}
-                  y2={-gnomonHeight}
-                  stroke="red"
-                  strokeWidth={1}
-                  strokeDasharray="3,3"
-                  vectorEffect="non-scaling-stroke"
-                />
-              </>
-            )}
+            <GnomonSVG gnomonType={gnomonType} gnomonHeight={gnomonHeight} />
             
 
             {hourlineElements.flat()}

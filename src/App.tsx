@@ -26,7 +26,7 @@ const App: React.FC = () => {
   const [tzMeridian, setTzMeridian] = useState(-105);
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
-  const [gnomonType, setGnomonType] = useState<'crosshair' | 'sized-base-triangle'>('crosshair');
+  const [gnomonType, setGnomonType] = useState<'crosshair' | 'sized-base-triangle' | 'sized-popup-brace'>('crosshair');
   const [pageSize, setPageSize] = useState<'A4' | 'Letter' | 'Custom'>('Letter');
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToWinter' | 'WinterToSummer'>('FullYear');
