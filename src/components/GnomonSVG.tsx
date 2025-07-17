@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface GnomonSVGProps {
-  gnomonType: 'crosshair' | 'sized-base-triangle' | 'sized-popup-brace';
+  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace';
   gnomonHeight: number;
 }
 
@@ -16,10 +16,10 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
     );
   }
 
-  if (gnomonType === 'sized-base-triangle') {
+  if (gnomonType === 'popup') {
     return (
       <>
-        {/* Sized Base Triangle: right triangle pointing up with dashed left side */}
+        {/* Popup: right triangle pointing up with dashed left side */}
         {/* Right side (solid) */}
         <line
           x1={0}
@@ -55,10 +55,10 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
     );
   }
 
-  if (gnomonType === 'sized-popup-brace') {
+  if (gnomonType === 'popup-with-brace') {
     return (
       <>
-        {/* Main triangle - same as sized-base-triangle */}
+        {/* Main triangle - same as popup */}
         {/* Right side (solid) */}
         <line
           x1={0}
@@ -90,7 +90,6 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
           strokeDasharray="3,3"
           vectorEffect="non-scaling-stroke"
         />
-        
         {/* Brace design: semicircle over fold line with perpendicular connecting line */}
         {/* Semicircle cutout (dashed outline) */}
         <path
@@ -101,7 +100,6 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
           fill="none"
           vectorEffect="non-scaling-stroke"
         />
-        
         {/* Perpendicular connecting line (dashed) */}
         <line
           x1={-gnomonHeight * 0.3 - gnomonHeight * 0.2}
@@ -123,7 +121,6 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
           strokeDasharray="2,2"
           vectorEffect="non-scaling-stroke"
         />
-        
         {/* Fold line for semicircle tab (dotted) */}
         <line
           x1={-gnomonHeight * 0.3}
@@ -135,7 +132,6 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
           strokeDasharray="3,3"
           vectorEffect="non-scaling-stroke"
         />
-        
         {/* Cut lines for semicircle (solid) */}
         <path
           d={`M ${-gnomonHeight * 0.3 - gnomonHeight * 0.2} ${-gnomonHeight * 0.6} A ${gnomonHeight * 0.2} ${gnomonHeight * 0.2} 0 0 1 ${-gnomonHeight * 0.3 + gnomonHeight * 0.2} ${-gnomonHeight * 0.6}`}
@@ -144,7 +140,6 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
           fill="none"
           vectorEffect="non-scaling-stroke"
         />
-        
         {/* Cut lines for perpendicular connections (solid) */}
         <line
           x1={-gnomonHeight * 0.3 - gnomonHeight * 0.2}

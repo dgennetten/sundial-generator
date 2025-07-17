@@ -19,7 +19,7 @@ type Props = {
   tzMeridian: number;
   scale: number;
   gnomonHeight: number;
-  gnomonType: 'crosshair' | 'sized-base-triangle' | 'sized-popup-brace';
+  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace';
   startHour: number;
   stopHour: number;
   use24Hour: boolean;

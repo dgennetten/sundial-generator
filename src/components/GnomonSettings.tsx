@@ -4,7 +4,7 @@ import { getSolarPosition, projectShadowToSurface } from '../utils/analemmaGener
 import { MoveUpRight } from 'lucide-react';
 
 type Mode = 'auto' | 'manual';
-type GnomonType = 'crosshair' | 'sized-base-triangle' | 'sized-popup-brace';
+type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace';
 type PositionMode = 'auto' | 'manual';
 
 interface Props {
@@ -125,8 +125,8 @@ const GnomonSettings: React.FC<Props> = ({
               style={{ minWidth: 120 }}
             >
               <option value="crosshair">Crosshair</option>
-              <option value="sized-base-triangle">Sized Base Triangle</option>
-              <option value="sized-popup-brace">Sized Popup Gnomon with Brace</option>
+              <option value="popup">Popup</option>
+              <option value="popup-with-brace">Popup with Brace</option>
             </select>
           </div>
           <div className="form-group" style={{ flex: 1 }}>
