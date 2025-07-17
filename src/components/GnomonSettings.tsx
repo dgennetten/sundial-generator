@@ -209,7 +209,7 @@ const GnomonSettings: React.FC<Props> = ({
                 className="form-input"
                 min={0}
                 max={pageHeight}
-                step={0.1}
+                step={1}
                 value={manualPosition}
                 onChange={e => {
                   const val = parseFloat(e.target.value) || 0;
@@ -258,7 +258,7 @@ const GnomonSettings: React.FC<Props> = ({
               className="form-input"
               min={0}
               max={pageHeight}
-              step={0.1}
+              step={1}
               value={manualPosition}
               onChange={e => {
                 const val = parseFloat(e.target.value) || 0;
