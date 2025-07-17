@@ -26,7 +26,7 @@ const App: React.FC = () => {
   const [tzMeridian, setTzMeridian] = useState(-105);
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
-  const [gnomonType, setGnomonType] = useState<'crosshair' | 'sized-base-triangle' | 'sized-popup-brace'>('crosshair');
+  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace'>('crosshair');
   const [pageSize, setPageSize] = useState<'A4' | 'Letter' | 'Custom'>('Letter');
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToWinter' | 'WinterToSummer'>('FullYear');
@@ -119,8 +119,8 @@ const App: React.FC = () => {
     // Calculate required gnomon height to make this distance 40% of page height
     const targetDistance = pageHeight * 0.4;
     const requiredGnomonHeight = targetDistance / shadowDistance;
-    
-    return parseFloat(requiredGnomonHeight.toFixed(2));
+    // Reduce to 66% of previous value, then increase by factor of 55/40
+    return parseFloat((requiredGnomonHeight * 0.66 * (55/40)).toFixed(2));
   };
 
   const effectiveGnomonHeight =

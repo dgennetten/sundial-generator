@@ -1,6 +1,6 @@
 // src/components/GnomonSettings.tsx
 import React, { useEffect, useState } from 'react';
-import { getSolarPosition, projectShadowToSurface } from '../utils/analemmaGenerator';
+import { getSolarPosition, projectShadowToSurface, getAnalemmaPointsProjected } from '../utils/analemmaGenerator';
 import { MoveUpRight } from 'lucide-react';
 
 type Mode = 'auto' | 'manual';
@@ -64,13 +64,29 @@ const GnomonSettings: React.FC<Props> = ({
     // Calculate required gnomon height to make this distance 40% of page height
     const targetDistance = pageH * 0.4;
     const requiredGnomonHeight = targetDistance / shadowDistance;
-    
-    return parseFloat(requiredGnomonHeight.toFixed(2));
+    // Reduce to 66% of previous value, then increase by factor of 55/40
+    return parseFloat((requiredGnomonHeight * 0.66 * (55/40)).toFixed(2));
   };
 
-  // Function to calculate gnomon position from top (stub: use 20% of pageHeight for now)
+  // Function to calculate gnomon position from top so that noon analemma is vertically centered
   const calculateAutoGnomonPosition = (pageH: number): number => {
-    return parseFloat((pageH * 0.2).toFixed(2));
+    // Get noon analemma points for current latitude, longitude, tzMeridian, and autoHeight
+    const noonPoints = getAnalemmaPointsProjected({
+      lat: latitude,
+      lng: longitude,
+      tzMeridian: tzMeridian,
+      hour: 12,
+      gnomonHeight: autoHeight || height,
+      orientation: 'Horizontal',
+    });
+    if (!noonPoints.length) return parseFloat((pageH * 0.2).toFixed(2));
+    const yVals = noonPoints.map(p => p.y);
+    const minY = Math.min(...yVals);
+    const maxY = Math.max(...yVals);
+    const analemmaCenterY = (minY + maxY) / 2;
+    // Position so that analemma center is at pageH/2
+    const gnomonPos = pageH / 2 - analemmaCenterY;
+    return parseFloat(gnomonPos.toFixed(2));
   };
 
   // Restore effect for autoHeight calculation
