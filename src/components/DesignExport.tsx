@@ -179,6 +179,47 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
           {/* Removed Show Location checkbox */}
         </div>
 
+        {/* Border, Border Style, and Margin all on one row (now first) */}
+        <div className="form-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
+          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <label className="form-checkbox" style={{ margin: 0 }}>
+              <input
+                type="checkbox"
+                checked={showBorder}
+                onChange={(e) => handleBorderChange(e.target.checked)}
+              />
+              Page Border
+            </label>
+          </div>
+          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <label htmlFor="border-style" style={{ margin: 0 }}>Border Style:</label>
+            <select
+              id="border-style"
+              className="form-select"
+              value={borderStyle}
+              onChange={(e) => handleBorderStyleChange(e.target.value)}
+            >
+              {lineStyles.filter(s => s.name && s.name.trim()).map(style => (
+                <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <label htmlFor="border-margin" style={{ margin: 0 }}>Margin (in):</label>
+            <input
+              id="border-margin"
+              type="number"
+              className="form-input"
+              min={0.1}
+              max={2}
+              step={0.1}
+              value={margin}
+              onChange={(e) => handleMarginChange(parseFloat(e.target.value) || 0.5)}
+              style={{ width: '80px' }}
+            />
+          </div>
+        </div>
+        {/* Page Background row (now second) */}
         <div className="form-row">
           <div className="form-group">
             <label className="form-checkbox" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -188,7 +229,6 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
                 onChange={(e) => handleBackgroundChange(e.target.checked)}
               />
               Page Background
-              {/* Inline color controls to the right of the label */}
               {showBackground && (
                 <>
                   <input
@@ -204,9 +244,9 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
                     type="color"
                     value={colorToHex(backgroundColor)}
                     onChange={(e) => handleBackgroundColorChange(e.target.value)}
-                    style={{ 
-                      width: '30px', 
-                      height: '30px', 
+                    style={{
+                      width: '30px',
+                      height: '30px',
                       border: '1px solid #e2e8f0',
                       borderRadius: '4px',
                       cursor: 'pointer',
@@ -218,47 +258,7 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
               )}
             </label>
           </div>
-          <div className="form-group">
-            <label className="form-checkbox">
-              <input
-                type="checkbox"
-                checked={showBorder}
-                onChange={(e) => handleBorderChange(e.target.checked)}
-              />
-              Page Border
-            </label>
-          </div>
         </div>
-
-        {showBorder && (
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">Border Style</label>
-              <select
-                className="form-select"
-                value={borderStyle}
-                onChange={(e) => handleBorderStyleChange(e.target.value)}
-              >
-                {lineStyles.filter(s => s.name && s.name.trim()).map(style => (
-                  <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Margin (inches)</label>
-              <input
-                type="number"
-                className="form-input"
-                min={0.1}
-                max={2}
-                step={0.1}
-                value={margin}
-                onChange={(e) => handleMarginChange(parseFloat(e.target.value) || 0.5)}
-                style={{ width: '80px' }}
-              />
-            </div>
-          </div>
-        )}
 
         <div className="form-row">
           <div className="form-group">

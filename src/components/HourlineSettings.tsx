@@ -231,17 +231,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
               step={1}
               value={labelOffset}
               onChange={e => setLabelOffset(parseInt(e.target.value) || 0)}
-              style={{ width: '80px' }}
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Font family</label>
-            <input
-              type="text"
-              className="form-input"
-              value={fontFamily}
-              onChange={e => setFontFamily(e.target.value)}
-              style={{ width: '120px' }}
+              style={{ width: '60px' }} // reduced width
             />
           </div>
           <div className="form-group">
@@ -256,6 +246,25 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
               onChange={e => setFontSize(parseInt(e.target.value) || 10)}
               style={{ width: '80px' }}
             />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Font family</label>
+            <select
+              className="form-select"
+              value={fontFamily}
+              onChange={e => setFontFamily(e.target.value)}
+              style={{ width: '140px' }}
+            >
+              <option value="sans-serif">Sans-serif</option>
+              <option value="serif">Serif</option>
+              <option value="monospace">Monospace</option>
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+              <option value="Times New Roman, Times, serif">Times New Roman</option>
+              <option value="Courier New, Courier, monospace">Courier New</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Verdana, Geneva, sans-serif">Verdana</option>
+              <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+            </select>
           </div>
         </div>
       </div>
