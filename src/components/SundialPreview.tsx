@@ -884,7 +884,7 @@ const SundialPreview: React.FC<Props> = ({
                 <tspan
                   key={lineIndex}
                   x={0}
-                  dy={lineIndex === 0 ? 0 : dialTextBlockFontSizeMm}
+                  dy={lineIndex === 0 ? 0 : dialTextBlockFontSizeMm * 1.2}
                 >
                   {line.map((part, partIndex) => (
                     <tspan
