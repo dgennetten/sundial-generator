@@ -1,7 +1,8 @@
 // src/components/LocationInputs.tsx
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { MapPin } from 'lucide-react';
-import MapPicker from './MapPicker';
+// Remove: import MapPicker from './MapPicker';
+const MapPicker = lazy(() => import('./MapPicker'));
 
 // Time zone to meridian mapping
 const timeZoneToMeridian: { [key: string]: number } = {
@@ -192,20 +193,22 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
         </div>
         {loadingTz && <div style={{ color: '#f59e42', marginTop: 8 }}>Detecting time zone...</div>}
       </div>
-      <MapPicker
-        open={mapOpen}
-        onClose={() => setMapOpen(false)}
-        onSelect={async (lat, lng) => {
-          setLoadingTz(true);
-          const timeZoneId = await fetchTimeZone(lat, lng);
-          setLoadingTz(false);
-          let tzAbbr = timeZoneId && timeZoneIdToAbbr[timeZoneId];
-          let newMeridian = tzAbbr ? timeZoneToMeridian[tzAbbr] : tzMeridian;
-          onChange({ lat, lng, tz: newMeridian });
-        }}
-        initialLat={latitude}
-        initialLng={longitude}
-      />
+      <Suspense fallback={<div style={{textAlign: 'center', padding: 32}}>Loading map…</div>}>
+        <MapPicker
+          open={mapOpen}
+          onClose={() => setMapOpen(false)}
+          onSelect={async (lat, lng) => {
+            setLoadingTz(true);
+            const timeZoneId = await fetchTimeZone(lat, lng);
+            setLoadingTz(false);
+            let tzAbbr = timeZoneId && timeZoneIdToAbbr[timeZoneId];
+            let newMeridian = tzAbbr ? timeZoneToMeridian[tzAbbr] : tzMeridian;
+            onChange({ lat, lng, tz: newMeridian });
+          }}
+          initialLat={latitude}
+          initialLng={longitude}
+        />
+      </Suspense>
     </div>
   );
 };
