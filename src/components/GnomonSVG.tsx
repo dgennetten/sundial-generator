@@ -19,23 +19,23 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
   if (gnomonType === 'popup') {
     return (
       <>
-        {/* Popup: right triangle pointing up with dashed left side */}
+        {/* Popup: right triangle pointing down with dashed left side */}
         {/* Right side (solid) */}
         <line
           x1={0}
           y1={0}
-          x2={gnomonHeight}
-          y2={-gnomonHeight}
+          x2={gnomonHeight / Math.SQRT2}
+          y2={-gnomonHeight / Math.SQRT2}
           stroke="red"
           strokeWidth={1}
           vectorEffect="non-scaling-stroke"
         />
         {/* Base side (solid) */}
         <line
-          x1={-gnomonHeight}
-          y1={-gnomonHeight}
-          x2={gnomonHeight}
-          y2={-gnomonHeight}
+          x1={-gnomonHeight / Math.SQRT2}
+          y1={-gnomonHeight / Math.SQRT2}
+          x2={gnomonHeight / Math.SQRT2}
+          y2={-gnomonHeight / Math.SQRT2}
           stroke="red"
           strokeWidth={1}
           vectorEffect="non-scaling-stroke"
@@ -44,8 +44,8 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
         <line
           x1={0}
           y1={0}
-          x2={-gnomonHeight}
-          y2={-gnomonHeight}
+          x2={-gnomonHeight / Math.SQRT2}
+          y2={-gnomonHeight / Math.SQRT2}
           stroke="red"
           strokeWidth={1}
           strokeDasharray="3,3"
@@ -56,106 +56,102 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
   }
 
   if (gnomonType === 'popup-with-brace') {
+    const leftMidX = -gnomonHeight / (2 * Math.SQRT2);
+    const leftMidY = -gnomonHeight / (2 * Math.SQRT2);
+    const arcRadius = gnomonHeight * 0.2;
+    const len = Math.sqrt(leftMidX * leftMidX + leftMidY * leftMidY);
+    const shiftX = leftMidX + (-leftMidX / len) * arcRadius;
+    const shiftY = leftMidY + (-leftMidY / len) * arcRadius;
+    const theta = -Math.PI / 4;
+    const arcStartX = shiftX - arcRadius;
+    const arcStartY = shiftY;
+    const rotatedStartX = shiftX + (arcStartX - shiftX) * Math.cos(theta);
+    const rotatedStartY = shiftY + (arcStartX - shiftX) * Math.sin(theta);
+    const arcEndX = shiftX + arcRadius;
+    const arcEndY = shiftY;
+    const rotatedEndX = shiftX + (arcEndX - shiftX) * Math.cos(theta);
+    const rotatedEndY = shiftY + (arcEndX - shiftX) * Math.sin(theta);
     return (
       <>
         {/* Main triangle - same as popup */}
-        {/* Right side (solid) */}
+        {/* Right side (3/4 solid, quarter dashed) */}
         <line
-          x1={0}
-          y1={0}
-          x2={gnomonHeight}
-          y2={-gnomonHeight}
+          x1={gnomonHeight / Math.SQRT2 / 4}
+          y1={-gnomonHeight / Math.SQRT2 / 4}
+          x2={gnomonHeight / Math.SQRT2}
+          y2={-gnomonHeight / Math.SQRT2}
           stroke="red"
           strokeWidth={1}
           vectorEffect="non-scaling-stroke"
         />
+         <line
+          x1={-gnomonHeight / Math.SQRT2 / 4}
+          y1={gnomonHeight / Math.SQRT2 / 4}
+          x2={gnomonHeight / Math.SQRT2 / 4}
+          y2={-gnomonHeight / Math.SQRT2 / 4}
+          stroke="red"
+          strokeWidth={1}
+          strokeDasharray="3,3"
+          vectorEffect="non-scaling-stroke"
+        />
+        
         {/* Base side (solid) */}
         <line
-          x1={-gnomonHeight}
-          y1={-gnomonHeight}
-          x2={gnomonHeight}
-          y2={-gnomonHeight}
+          x1={-gnomonHeight / Math.SQRT2}
+          y1={-gnomonHeight / Math.SQRT2}
+          x2={gnomonHeight / Math.SQRT2}
+          y2={-gnomonHeight / Math.SQRT2}
           stroke="red"
           strokeWidth={1}
           vectorEffect="non-scaling-stroke"
         />
-        {/* Left side (dashed) */}
+        {/* Left side (half dashed, quarter solid)  */}
         <line
-          x1={0}
-          y1={0}
-          x2={-gnomonHeight}
-          y2={-gnomonHeight}
+          x1={-gnomonHeight / Math.SQRT2 / 2}
+          y1={-gnomonHeight / Math.SQRT2 / 2}
+          x2={-gnomonHeight / Math.SQRT2}
+          y2={-gnomonHeight / Math.SQRT2}
           stroke="red"
           strokeWidth={1}
           strokeDasharray="3,3"
           vectorEffect="non-scaling-stroke"
         />
-        {/* Brace design: semicircle over fold line with perpendicular connecting line */}
-        {/* Semicircle cutout (dashed outline) */}
+        <line
+          x1={-gnomonHeight / Math.SQRT2 / 4}
+          y1={-gnomonHeight / Math.SQRT2 / 4}
+          x2={-gnomonHeight / Math.SQRT2 / 2}
+          y2={-gnomonHeight / Math.SQRT2 / 2}
+          stroke="red"
+          strokeWidth={1}
+          vectorEffect="non-scaling-stroke"
+        />
+
+        {/* Rotated semicircular arc, center moved toward (0,0) by arc radius */}
         <path
-          d={`M ${-gnomonHeight * 0.3 - gnomonHeight * 0.2} ${-gnomonHeight * 0.6} A ${gnomonHeight * 0.2} ${gnomonHeight * 0.2} 0 0 1 ${-gnomonHeight * 0.3 + gnomonHeight * 0.2} ${-gnomonHeight * 0.6}`}
-          stroke="blue"
-          strokeWidth={1}
-          strokeDasharray="2,2"
-          fill="none"
-          vectorEffect="non-scaling-stroke"
-        />
-        {/* Perpendicular connecting line (dashed) */}
-        <line
-          x1={-gnomonHeight * 0.3 - gnomonHeight * 0.2}
-          y1={-gnomonHeight * 0.6}
-          x2={-gnomonHeight * 0.3 - gnomonHeight * 0.2}
-          y2={-gnomonHeight * 0.6 - gnomonHeight * 0.2}
-          stroke="blue"
-          strokeWidth={1}
-          strokeDasharray="2,2"
-          vectorEffect="non-scaling-stroke"
-        />
-        <line
-          x1={-gnomonHeight * 0.3 + gnomonHeight * 0.2}
-          y1={-gnomonHeight * 0.6}
-          x2={-gnomonHeight * 0.3 + gnomonHeight * 0.2}
-          y2={-gnomonHeight * 0.6 - gnomonHeight * 0.2}
-          stroke="blue"
-          strokeWidth={1}
-          strokeDasharray="2,2"
-          vectorEffect="non-scaling-stroke"
-        />
-        {/* Fold line for semicircle tab (dotted) */}
-        <line
-          x1={-gnomonHeight * 0.3}
-          y1={-gnomonHeight * 0.6}
-          x2={-gnomonHeight * 0.3}
-          y2={-gnomonHeight * 0.6 - gnomonHeight * 0.2}
-          stroke="green"
-          strokeWidth={1}
-          strokeDasharray="3,3"
-          vectorEffect="non-scaling-stroke"
-        />
-        {/* Cut lines for semicircle (solid) */}
-        <path
-          d={`M ${-gnomonHeight * 0.3 - gnomonHeight * 0.2} ${-gnomonHeight * 0.6} A ${gnomonHeight * 0.2} ${gnomonHeight * 0.2} 0 0 1 ${-gnomonHeight * 0.3 + gnomonHeight * 0.2} ${-gnomonHeight * 0.6}`}
-          stroke="black"
+          d={`M ${shiftX - arcRadius} ${shiftY} A ${arcRadius} ${arcRadius} 0 0 1 ${shiftX + arcRadius} ${shiftY}`}
+          stroke="red"
           strokeWidth={1}
           fill="none"
           vectorEffect="non-scaling-stroke"
+          transform={`rotate(-45 ${shiftX} ${shiftY})`}
         />
-        {/* Cut lines for perpendicular connections (solid) */}
+        {/* Solid red line from rotated arc start to (-gnomonHeight/Math.SQRT2/4, gnomonHeight/Math.SQRT2/4) */}
         <line
-          x1={-gnomonHeight * 0.3 - gnomonHeight * 0.2}
-          y1={-gnomonHeight * 0.6}
-          x2={-gnomonHeight * 0.3 - gnomonHeight * 0.2}
-          y2={-gnomonHeight * 0.6 - gnomonHeight * 0.2}
-          stroke="black"
+          x1={rotatedStartX}
+          y1={rotatedStartY}
+          x2={-gnomonHeight / Math.SQRT2 / 4}
+          y2={gnomonHeight / Math.SQRT2 / 4}
+          stroke="red"
           strokeWidth={1}
           vectorEffect="non-scaling-stroke"
         />
+        {/* Solid red line from right (end) of rotated arc to (gnomonHeight/Math.SQRT2/4, -gnomonHeight/Math.SQRT2/4) */}
         <line
-          x1={-gnomonHeight * 0.3 + gnomonHeight * 0.2}
-          y1={-gnomonHeight * 0.6}
-          x2={-gnomonHeight * 0.3 + gnomonHeight * 0.2}
-          y2={-gnomonHeight * 0.6 - gnomonHeight * 0.2}
-          stroke="black"
+          x1={rotatedEndX}
+          y1={rotatedEndY}
+          x2={gnomonHeight / Math.SQRT2 / 4}
+          y2={-gnomonHeight / Math.SQRT2 / 4}
+          stroke="red"
           strokeWidth={1}
           vectorEffect="non-scaling-stroke"
         />
