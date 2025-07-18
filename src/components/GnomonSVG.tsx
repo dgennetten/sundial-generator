@@ -64,11 +64,9 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
     const shiftY = leftMidY + (-leftMidY / len) * arcRadius;
     const theta = -Math.PI / 4;
     const arcStartX = shiftX - arcRadius;
-    const arcStartY = shiftY;
     const rotatedStartX = shiftX + (arcStartX - shiftX) * Math.cos(theta);
     const rotatedStartY = shiftY + (arcStartX - shiftX) * Math.sin(theta);
     const arcEndX = shiftX + arcRadius;
-    const arcEndY = shiftY;
     const rotatedEndX = shiftX + (arcEndX - shiftX) * Math.cos(theta);
     const rotatedEndY = shiftY + (arcEndX - shiftX) * Math.sin(theta);
     return (
