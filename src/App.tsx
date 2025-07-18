@@ -277,7 +277,6 @@ const App: React.FC = () => {
           </div>
         </div>
         <DesignExport 
-          lineStyles={lineStyles}
           onBorderChange={(showBorder, margin, style) => {
             setShowBorder(showBorder);
             setBorderMargin(margin);
@@ -287,6 +286,9 @@ const App: React.FC = () => {
             setShowBackground(showBackground);
             setBackgroundColor(backgroundColor);
           }}
+          lineStyles={lineStyles}
+          pageSize={pageSize}
+          orientation={orientation}
         />
       </div>
 
