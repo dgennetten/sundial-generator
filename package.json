@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-google-maps/api": "^2.20.7",
     "ftp": "^0.3.10",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.525.0",

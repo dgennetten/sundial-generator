@@ -1,6 +1,7 @@
 // src/components/LocationInputs.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { MapPin } from 'lucide-react';
+import MapPicker from './MapPicker';
 
 // Time zone to meridian mapping
 const timeZoneToMeridian: { [key: string]: number } = {
@@ -22,6 +23,31 @@ const timeZoneToMeridian: { [key: string]: number } = {
   'JST': 135,
   'AEST': 150,
   'NZST': 180
+};
+
+// Mapping from Google timeZoneId to app's time zone abbreviation
+const timeZoneIdToAbbr: { [key: string]: string } = {
+  'America/New_York': 'EST',
+  'America/Chicago': 'CST',
+  'America/Denver': 'MST',
+  'America/Phoenix': 'MST', // Arizona doesn't observe DST
+  'America/Los_Angeles': 'PST',
+  'America/Anchorage': 'AKST',
+  'Pacific/Honolulu': 'HST',
+  'America/Halifax': 'AST',
+  'America/St_Johns': 'NST',
+  'Europe/London': 'GMT',
+  'Europe/Belfast': 'BST',
+  'Europe/Paris': 'CET',
+  'Europe/Berlin': 'CET',
+  'Europe/Athens': 'EET',
+  'Europe/Moscow': 'MSK',
+  'Asia/Kolkata': 'IST',
+  'Asia/Tokyo': 'JST',
+  'Australia/Sydney': 'AEST',
+  'Pacific/Auckland': 'NZST',
+  'Etc/UTC': 'UTC',
+  // Add more as needed
 };
 
 // Location data
@@ -78,6 +104,26 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
     onChange({ lat: latitude, lng: longitude, tz: newMeridian });
   };
 
+  const [mapOpen, setMapOpen] = useState(false);
+  const [loadingTz, setLoadingTz] = useState(false);
+
+  // Helper to fetch time zone from Google Time Zone API
+  const fetchTimeZone = async (lat: number, lng: number): Promise<string | null> => {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${timestamp}&key=${apiKey}`;
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.status === 'OK') {
+        return data.timeZoneId;
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
+  };
+
   return (
     <div className="card">
       <div className="card-header">
@@ -98,7 +144,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
           </select>
         </div>
 
-        <div className="form-row">
+        <div className="form-row" style={{ alignItems: 'end' }}>
           <div className="form-group">
             <label className="form-label">Latitude</label>
             <input
@@ -109,6 +155,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
               onChange={(e) =>
                 onChange({ lat: parseFloat(e.target.value), lng: longitude, tz: tzMeridian })
               }
+              style={{ maxWidth: 120 }}
             />
           </div>
           <div className="form-group">
@@ -121,7 +168,13 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
               onChange={(e) =>
                 onChange({ lat: latitude, lng: parseFloat(e.target.value), tz: tzMeridian })
               }
+              style={{ maxWidth: 120 }}
             />
+          </div>
+          <div className="form-group" style={{ marginLeft: 12, marginBottom: 2 }}>
+            <button type="button" className="form-input" style={{ height: 36, cursor: 'pointer' }} onClick={() => setMapOpen(true)}>
+              Pick on Map
+            </button>
           </div>
         </div>
 
@@ -137,7 +190,22 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
             ))}
           </select>
         </div>
+        {loadingTz && <div style={{ color: '#f59e42', marginTop: 8 }}>Detecting time zone...</div>}
       </div>
+      <MapPicker
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        onSelect={async (lat, lng) => {
+          setLoadingTz(true);
+          const timeZoneId = await fetchTimeZone(lat, lng);
+          setLoadingTz(false);
+          let tzAbbr = timeZoneId && timeZoneIdToAbbr[timeZoneId];
+          let newMeridian = tzAbbr ? timeZoneToMeridian[tzAbbr] : tzMeridian;
+          onChange({ lat, lng, tz: newMeridian });
+        }}
+        initialLat={latitude}
+        initialLng={longitude}
+      />
     </div>
   );
 };
