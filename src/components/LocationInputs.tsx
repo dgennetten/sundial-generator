@@ -108,6 +108,9 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
   const [mapOpen, setMapOpen] = useState(false);
   const [loadingTz, setLoadingTz] = useState(false);
 
+  // Responsive: detect mobile
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
+
   // Helper to fetch time zone from Google Time Zone API
   const fetchTimeZone = async (lat: number, lng: number): Promise<string | null> => {
     const timestamp = Math.floor(Date.now() / 1000);
@@ -145,8 +148,18 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
           </select>
         </div>
 
-        <div className="form-row" style={{ alignItems: 'end' }}>
-          <div className="form-group">
+        <div
+          className="form-row"
+          style={
+            isMobile
+              ? { display: 'flex', flexDirection: 'row', alignItems: 'end', width: '100%', gap: 4 }
+              : { alignItems: 'end' }
+          }
+        >
+          <div
+            className="form-group"
+            style={isMobile ? { minWidth: 0, flexShrink: 1 } : undefined}
+          >
             <label className="form-label">Latitude</label>
             <input
               type="number"
@@ -156,10 +169,13 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
               onChange={(e) =>
                 onChange({ lat: parseFloat(e.target.value), lng: longitude, tz: tzMeridian })
               }
-              style={{ maxWidth: 120 }}
+              style={{ maxWidth: isMobile ? 80 : 120 }}
             />
           </div>
-          <div className="form-group">
+          <div
+            className="form-group"
+            style={isMobile ? { minWidth: 0, flexShrink: 1 } : undefined}
+          >
             <label className="form-label">Longitude</label>
             <input
               type="number"
@@ -169,11 +185,19 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
               onChange={(e) =>
                 onChange({ lat: latitude, lng: parseFloat(e.target.value), tz: tzMeridian })
               }
-              style={{ maxWidth: 120 }}
+              style={{ maxWidth: isMobile ? 80 : 120 }}
             />
           </div>
-          <div className="form-group" style={{ marginLeft: 12, marginBottom: 2 }}>
-            <button type="button" className="form-input" style={{ height: 36, cursor: 'pointer' }} onClick={() => setMapOpen(true)}>
+          <div
+            className="form-group"
+            style={isMobile ? { marginLeft: 4, marginBottom: 2, minWidth: 0, flexShrink: 1 } : { marginLeft: 12, marginBottom: 2 }}
+          >
+            <button
+              type="button"
+              className="form-input"
+              style={{ height: 36, cursor: 'pointer', padding: isMobile ? '0 8px' : undefined }}
+              onClick={() => setMapOpen(true)}
+            >
               Pick on Map
             </button>
           </div>
