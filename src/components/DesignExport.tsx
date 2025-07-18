@@ -26,15 +26,24 @@ interface DesignExportProps {
   onBorderChange: (showBorder: boolean, margin: number, borderStyle: string) => void;
   onBackgroundChange: (showBackground: boolean, backgroundColor: string) => void;
   lineStyles: LineStyle[];
+  pageSize: 'A4' | 'Letter' | 'Custom';
+  orientation: 'Landscape' | 'Portrait';
 }
 
-const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroundChange, lineStyles }) => {
+const pageSizeMap = {
+  Letter: { width: 8.5, height: 11 }, // inches
+  A4: { width: 8.27, height: 11.69 }, // inches
+  Custom: { width: 8.5, height: 11 }, // fallback
+};
+
+const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroundChange, lineStyles, pageSize, orientation }) => {
   const [format, setFormat] = useState<ExportFormat>('SVG');
   const [showBorder, setShowBorder] = useState<boolean>(true);
   const [margin, setMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
   const [showBackground, setShowBackground] = useState<boolean>(true);
   const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
+  const [dpi, setDpi] = useState<number>(600);
 
   const handleBorderChange = (checked: boolean) => {
     setShowBorder(checked);
@@ -89,10 +98,21 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
 
       console.log('Found SVG container:', svgContainer);
 
+      // Get intended print width in inches
+      let { width: printWidth, height: printHeight } = pageSizeMap[pageSize] || pageSizeMap.Letter;
+      if (orientation === 'Landscape') {
+        [printWidth, printHeight] = [printHeight, printWidth];
+      }
+      // Get actual DOM width in pixels
+      const domWidth = svgContainer.offsetWidth;
+      // Calculate scale for user-selected DPI
+      const pixelWidth = printWidth * dpi;
+      const scale = pixelWidth / domWidth;
+
       // Use html2canvas to capture the SVG container
       html2canvas(svgContainer, {
         backgroundColor: showBackground ? backgroundColor : '#ffffff',
-        scale: 2, // 2x scale for higher resolution
+        scale,
         useCORS: true,
         allowTaint: true,
         logging: true, // Enable logging for debugging
@@ -273,6 +293,23 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
               <option value="PDF">PDF</option>
             </select>
           </div>
+          {/* DPI input, only show for PNG */}
+          {format === 'PNG' && (
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <label htmlFor="dpi-input" style={{ margin: 0 }}>DPI:</label>
+              <input
+                id="dpi-input"
+                type="number"
+                className="form-input"
+                min={72}
+                max={2400}
+                step={1}
+                value={dpi}
+                onChange={e => setDpi(parseInt(e.target.value) || 600)}
+                style={{ width: '70px' }}
+              />
+            </div>
+          )}
           <div className="form-group" style={{ alignSelf: 'end' }}>
             <button 
               className="btn btn-primary"
