@@ -298,10 +298,13 @@ const SundialPreview: React.FC<Props> = ({
   function clipPathData(points: { x: number; y: number }[]): string | null {
     if (points.length < 2) return null;
 
+    // Account for the transform applied to the sundial content group
+    const transformY = (gnomonPosition ?? 0) - (height / 2);
+    
     const left = -width / 2 + borderMarginMm;
-    const top = -height / 2 + borderMarginMm + noonYCenter;
+    const top = -height / 2 + borderMarginMm - transformY;
     const right = width / 2 - borderMarginMm;
-    const bottom = height / 2 - borderMarginMm + noonYCenter;
+    const bottom = height / 2 - borderMarginMm - transformY;
 
     const clippedSegments: string[] = [];
     let currentSegment: { x: number; y: number }[] = [];
