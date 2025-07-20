@@ -111,13 +111,7 @@ const SundialPreview: React.FC<Props> = ({
     const [start, end] = getDayRange(dateRange);
     noonPoints = noonPoints.filter(p => p.day >= start && p.day <= end);
   }
-  let noonYCenter = 0;
-  if (noonPoints.length > 0) {
-    const yVals = noonPoints.map((p) => scale * p.y);
-    const minY = Math.min(...yVals);
-    const maxY = Math.max(...yVals);
-    noonYCenter = (minY + maxY) / 2;
-  }
+  // Removed noonYCenter as it was unused
 
   // Helper to get day range
   function getDayRange(dateRange: 'FullYear' | 'SummerToWinter' | 'WinterToSummer') {
