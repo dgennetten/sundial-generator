@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Text, Info } from 'lucide-react';
-import PageSettings from './components/PageSettings';
+import PageSettings, { type InclineType } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
 import DesignExport from './components/DesignExport';
@@ -18,7 +18,7 @@ import type { DeclinationLine } from './components/DeclinationLineOptions';
 import { getSolarPosition, projectShadowToSurface } from './utils/analemmaGenerator';
 
 
-const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n*Computer Generated Sundial by K. Douglas Gennetten*`;
+const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n*{incline}*\n*Computer Generated Sundial by K. Douglas Gennetten*`;
 
 const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);
@@ -29,6 +29,8 @@ const App: React.FC = () => {
   const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace'>('crosshair');
   const [pageSize, setPageSize] = useState<'A4' | 'Letter' | 'Custom'>('Letter');
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
+  const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
+  const [tiltAngle, setTiltAngle] = useState<number>(0);
   const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToWinter' | 'WinterToSummer'>('FullYear');
   const [lineStyles, setLineStyles] = useState<LineStyle[]>(() => {
     return loadLineStyles();
@@ -75,6 +77,16 @@ const App: React.FC = () => {
     }
   }, [lineStyles, hourlineIntervals]);
 
+  // Update tilt angle when incline type or latitude changes
+  useEffect(() => {
+    if (inclineType !== 'Manual') {
+      const newAngle = inclineType === 'Horizontal' ? 0 : 
+                      inclineType === 'Equatorial' ? latitude :
+                      inclineType === 'Vertical' ? 90 : 0;
+      setTiltAngle(newAngle);
+    }
+  }, [inclineType, latitude]);
+
   // Debug: log declinationLines before filtering
   React.useEffect(() => {
     // eslint-disable-next-line no-console
@@ -91,6 +103,19 @@ const App: React.FC = () => {
   if (orientation === 'Landscape') {
     [pageWidth, pageHeight] = [pageHeight, pageWidth];
   }
+
+  // Calculate effective latitude based on incline
+  const getEffectiveLatitude = (): number => {
+    const tilt = inclineType === 'Horizontal' ? 0 : 
+                 inclineType === 'Equatorial' ? latitude :
+                 inclineType === 'Vertical' ? 90 : tiltAngle;
+    
+    // For inclined dials, the effective latitude is (original latitude - tilt angle)
+    // This simulates tilting the dial toward the sun
+    return latitude - tilt;
+  };
+
+  const effectiveLatitude = getEffectiveLatitude();
 
   // Function to calculate gnomon height based on winter-to-summer solstice distance
   const calculateAutoGnomonHeight = (lat: number, pageHeight: number): number => {
@@ -125,7 +150,7 @@ const App: React.FC = () => {
 
   const effectiveGnomonHeight =
     gnomonMode === 'auto'
-      ? calculateAutoGnomonHeight(latitude, pageHeight)
+      ? calculateAutoGnomonHeight(effectiveLatitude, pageHeight)
       : gnomonHeight;
 
   return (
@@ -172,6 +197,11 @@ const App: React.FC = () => {
           setPageSize={setPageSize}
           orientation={orientation}
           setOrientation={setOrientation}
+          inclineType={inclineType}
+          setInclineType={setInclineType}
+          tiltAngle={tiltAngle}
+          setTiltAngle={setTiltAngle}
+          latitude={latitude}
         />
 
         <LineSettings
@@ -181,7 +211,7 @@ const App: React.FC = () => {
         <GnomonSettings
           mode={gnomonMode}
           height={gnomonHeight}
-          latitude={latitude}
+          latitude={effectiveLatitude}
           longitude={longitude}
           tzMeridian={tzMeridian}
           pageHeight={pageHeight}
@@ -324,7 +354,7 @@ const App: React.FC = () => {
       {/* Preview Panel - Right Side */}
       <div className="preview-panel">
         <SundialPreview
-          lat={latitude}
+          lat={effectiveLatitude}
           lng={longitude}
           tzMeridian={tzMeridian}
           gnomonHeight={effectiveGnomonHeight}
@@ -363,6 +393,8 @@ const App: React.FC = () => {
           latitude={latitude}
           longitude={longitude}
           locationName={locationName}
+          inclineType={inclineType}
+          tiltAngle={tiltAngle}
         />
       </div>
     </div>

@@ -47,6 +47,8 @@ type Props = {
   latitude?: number;
   longitude?: number;
   locationName?: string;
+  inclineType?: string;
+  tiltAngle?: number;
 };
 
 const SundialPreview: React.FC<Props> = ({
@@ -83,6 +85,8 @@ const SundialPreview: React.FC<Props> = ({
   latitude,
   longitude,
   locationName = '',
+  inclineType = 'Horizontal',
+  tiltAngle = 0,
 }) => {
   let { width, height } = pageSizeMap[pageSize] || pageSizeMap.Letter;
   if (orientation === 'Landscape') {
@@ -831,11 +835,25 @@ const SundialPreview: React.FC<Props> = ({
 
   let textBlockLines: Array<Array<{ text: string; bold: boolean; italic: boolean }>> = [];
   if (dialTextBlock) {
+    // Create incline string - only show if tilt angle is not zero
+    const effectiveTiltAngle = inclineType === 'Horizontal' ? 0 : 
+                              inclineType === 'Equatorial' ? (latitude || 0) :
+                              inclineType === 'Vertical' ? 90 : tiltAngle;
+    const inclineString = effectiveTiltAngle !== 0 ? `Dial incline: ${effectiveTiltAngle.toFixed(1)} degrees` : '';
+    
     const processedText = dialTextBlock
       .replace(/\{location\}/gi, locationString)
-      .replace(/\{coordinates\}/gi, coordinatesString);
+      .replace(/\{coordinates\}/gi, coordinatesString)
+      .replace(/\{incline\}/gi, inclineString);
     
-    textBlockLines = processedText.split('\n').map(line => parseMarkupText(line));
+    // Filter out lines that become empty or contain only markup after replacement
+    textBlockLines = processedText.split('\n')
+      .filter(line => {
+        const trimmed = line.trim();
+        // Remove lines that are empty or contain only markup characters (*, **)
+        return trimmed !== '' && !trimmed.match(/^\*+$/);
+      })
+      .map(line => parseMarkupText(line));
   }
   // Calculate y position for the text block (bottom inside border, moved up slightly)
   const textBlockY = height / 2 - borderMarginMm - 10 - (textBlockLines.length - 1) * dialTextBlockFontSizeMm;
