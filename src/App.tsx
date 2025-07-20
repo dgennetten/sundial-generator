@@ -1,7 +1,7 @@
 // src/App.tsx
 
 import React, { useState, useEffect } from 'react';
-import { Text } from 'lucide-react';
+import { Text, Info } from 'lucide-react';
 import PageSettings from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
@@ -290,6 +290,35 @@ const App: React.FC = () => {
           pageSize={pageSize}
           orientation={orientation}
         />
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title"><Info color="#2563eb" size={20} style={{marginRight: 6}} /> About</h3>
+          </div>
+          <div className="card-content">
+            <div dangerouslySetInnerHTML={{ __html: `
+<p>
+  This App traces its origins back to a gloriously nerdy gem—the 
+  <a href="http://sundial.gennetten.org/docs/1980-12-SundialArticle.pdf">Amateur Scientist column</a>
+  from the December 1980 issue of Scientific American. 
+  Back then, it was coded with love (and 
+  <a href="https://www.hp9845.net/9845/software/basic/">Rocky Mountain Basic</a>
+  ) on an 
+  <a href="https://www.hp9845.net/">HP9845</a> 
+    desktop workstation, which was basically a space shuttle cockpit compared to the future IBM PC toddlers.
+
+  Not content with digital wizardry alone, I whipped up an 
+  <a href="http://sundial.gennetten.org/docs/SolarClockAd.pdf">advertisement</a>
+  and scribbled out hand-drawn 
+  <a href="http://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf">instructional</a>,
+  <a href="http://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf">illustrations</a>,
+  like a caffeinated Da Vinci and even printed an 11x19 sundial using the mighty 
+  (<a href="https://www.hpmuseum.net/display_item.php?hw=79">HP9872 plotter</a>)
+  —a device so majestic, it drew with servo motors and pure ambition. 
+</p>
+
+            ` }} />
+          </div>
+        </div>
       </div>
 
       {/* Preview Panel - Right Side */}
