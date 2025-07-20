@@ -292,7 +292,7 @@ const App: React.FC = () => {
         />
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title"><Info color="#2563eb" size={20} style={{marginRight: 6}} /> About</h3>
+            <h3 className="card-title"><Info color="#2563eb" size={20} style={{marginRight: 6}} /> About—Including tips on how to use</h3>
           </div>
           <div className="card-content">
             <div dangerouslySetInnerHTML={{ __html: `
