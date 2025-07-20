@@ -322,7 +322,7 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
 
         <div className="form-group">
           <p style={{ fontSize: '0.9em', color: '#718096', margin: 0 }}>
-            {format === 'SVG' ? 'SVG export is NOT yet functional!' : format === 'PNG' ? 'PNG export is now functional!' : 'PDF export functionality coming soon – for now, right-click the preview to save.'}
+            {format === 'SVG' ? 'SVG export is NOT yet functional!' : format === 'PNG' ? 'PNG export is now functional!' : 'PDF export functionality coming soon'}
           </p>
         </div>
       </div>
