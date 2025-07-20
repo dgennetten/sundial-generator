@@ -311,7 +311,7 @@ const App: React.FC = () => {
   and scribbled out hand-drawn 
   <a href="http://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf">instructional</a>,
   <a href="http://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf">illustrations</a>,
-  like a caffeinated Da Vinci and even printed an 11x19 sundial using the mighty 
+  like a caffeinated Da Vinci and even plotted an 11x19 sundial using the mighty 
   (<a href="https://www.hpmuseum.net/display_item.php?hw=79">HP9872 plotter</a>)
   —a device so majestic, it drew with servo motors and pure ambition. 
 </p>

@@ -37,7 +37,7 @@ const pageSizeMap = {
 };
 
 const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroundChange, lineStyles, pageSize, orientation }) => {
-  const [format, setFormat] = useState<ExportFormat>('SVG');
+  const [format, setFormat] = useState<ExportFormat>('PNG');
   const [showBorder, setShowBorder] = useState<boolean>(true);
   const [margin, setMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
