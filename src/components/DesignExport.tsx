@@ -21,19 +21,20 @@ function colorToHex(color: string): string {
 }
 
 type ExportFormat = 'SVG' | 'PNG' | 'PDF';
+type PageSize = 'A4' | 'Letter' | '11x17';
 
 interface DesignExportProps {
   onBorderChange: (showBorder: boolean, margin: number, borderStyle: string) => void;
   onBackgroundChange: (showBackground: boolean, backgroundColor: string) => void;
   lineStyles: LineStyle[];
-  pageSize: 'A4' | 'Letter' | 'Custom';
+  pageSize: PageSize;
   orientation: 'Landscape' | 'Portrait';
 }
 
 const pageSizeMap = {
   Letter: { width: 8.5, height: 11 }, // inches
   A4: { width: 8.27, height: 11.69 }, // inches
-  Custom: { width: 8.5, height: 11 }, // fallback
+  '11x17': { width: 11, height: 17 },
 };
 
 const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroundChange, lineStyles, pageSize, orientation }) => {

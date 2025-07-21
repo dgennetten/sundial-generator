@@ -27,7 +27,7 @@ const App: React.FC = () => {
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
   const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace'>('crosshair');
-  const [pageSize, setPageSize] = useState<'A4' | 'Letter' | 'Custom'>('Letter');
+  const [pageSize, setPageSize] = useState<'A4' | 'Letter' | '11x17'>('Letter');
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
   const [tiltAngle, setTiltAngle] = useState<number>(0);
@@ -97,7 +97,7 @@ const App: React.FC = () => {
   const pageSizeMap = {
     Letter: { width: 8.5 * 25.4, height: 11 * 25.4 },
     A4: { width: 210, height: 297 },
-    Custom: { width: 8.5 * 25.4, height: 11 * 25.4 }, // fallback for now
+    '11x17': { width: 11 * 25.4, height: 17 * 25.4 },
   };
   let { width: pageWidth, height: pageHeight } = pageSizeMap[pageSize] || pageSizeMap.Letter;
   if (orientation === 'Landscape') {
@@ -341,7 +341,10 @@ const App: React.FC = () => {
   and scribbled out hand-drawn 
   <a href="http://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf">instructional</a>,
   <a href="http://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf">illustrations</a>,
-  like a caffeinated Da Vinci and even plotted an 11x19 sundial using the mighty 
+  like a caffeinated Da Vinci and even plotted an 
+  11x19 sundial 
+  <a href="http://sundial.gennetten.org/docs/Tabloid-sizeDial.pdf">11x17 inch sundial</a>,
+  using the mighty 
   (<a href="https://www.hpmuseum.net/display_item.php?hw=79">HP9872 plotter</a>)
   —a device so majestic, it drew with servo motors and pure ambition. 
 </p>
