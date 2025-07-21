@@ -10,7 +10,7 @@ import GnomonSVG from './GnomonSVG';
 const pageSizeMap = {
   Letter: { width: 8.5 * 25.4, height: 11 * 25.4 },
   A4: { width: 210, height: 297 },
-  Custom: { width: 8.5 * 25.4, height: 11 * 25.4 }, // fallback for now
+  '11x17': { width: 11 * 25.4, height: 17 * 25.4 },
 };
 
 type Props = {
@@ -24,7 +24,7 @@ type Props = {
   stopHour: number;
   use24Hour: boolean;
   orientation: 'Landscape' | 'Portrait';
-  pageSize: 'A4' | 'Letter' | 'Custom';
+  pageSize: 'A4' | 'Letter' | '11x17';
   dateRange: 'FullYear' | 'SummerToWinter' | 'WinterToSummer';
   hourlineIntervals?: HourlineInterval[];
   declinationLines?: DeclinationLine[];

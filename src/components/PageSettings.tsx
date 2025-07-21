@@ -2,7 +2,7 @@
 import React from 'react';
 import { Layout } from 'lucide-react';
 
-type PageSize = 'A4' | 'Letter' | 'Custom';
+type PageSize = 'A4' | 'Letter' | '11x17';
 type Orientation = 'Landscape' | 'Portrait';
 export type InclineType = 'Horizontal' | 'Equatorial' | 'Vertical' | 'Manual';
 
@@ -66,7 +66,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             >
               <option value="Letter">Letter</option>
               <option value="A4">A4</option>
-              <option value="Custom">Custom</option>
+              <option value="11x17">11x17 inch</option>
             </select>
           </div>
           <div className="form-group">
