@@ -179,7 +179,8 @@ const App: React.FC = () => {
               'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321 },
               'Spangle, WA USA': { lat: 47.4307, lng: -117.3796 },
               'Henrico, VA USA': { lat: 37.5243, lng: -77.4932 },
-              'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747 }
+              'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747 },
+              'Quito, Ecuador': { lat: -0.1807, lng: -78.4678 }
             };
             
             let newLocationName = 'Custom Location';
