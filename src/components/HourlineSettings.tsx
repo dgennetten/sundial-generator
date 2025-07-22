@@ -58,7 +58,8 @@ interface HourlineSettingsProps {
     labelSummerSide: boolean,
     labelOffset: number,
     fontFamily: string,
-    fontSize: number
+    fontSize: number,
+    useDST: boolean
   ) => void;
 }
 
@@ -72,12 +73,13 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
 }) => {
   const [startHour, setStartHour] = useState<number>(5);
   const [stopHour, setStopHour] = useState<number>(19);
-  const [use24Hour, setUse24Hour] = useState<boolean>(true);
+  const [use24Hour, setUse24Hour] = useState<boolean>(false);
   const [labelWinterSide, setLabelWinterSide] = useState<boolean>(true);
   const [labelSummerSide, setLabelSummerSide] = useState<boolean>(true);
   const [labelOffset, setLabelOffset] = useState<number>(1.5);
   const [fontFamily, setFontFamily] = useState<string>('sans-serif');
   const [fontSize, setFontSize] = useState<number>(20);
+  const [useDST, setUseDST] = useState<boolean>(true);
 
   // Update preview automatically when any hour-related setting changes
   React.useEffect(() => {
@@ -90,10 +92,11 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
         labelSummerSide,
         labelOffset,
         fontFamily,
-        fontSize
+        fontSize,
+        useDST
       );
     }
-  }, [startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, onUpdate]);
+  }, [startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, onUpdate]);
   const handleChange = (idx: number, field: keyof HourlineInterval, value: string | boolean) => {
     const updated = [...hourlineIntervals];
     updated[idx] = { ...updated[idx], [field]: value };
@@ -209,15 +212,28 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
           </label>
         </div>
 
-        <div className="form-group">
-          <label className="form-checkbox">
-            <input
-              type="checkbox"
-              checked={labelSummerSide}
-              onChange={e => setLabelSummerSide(e.target.checked)}
-            />
-            Label on summer side
-          </label>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-checkbox">
+              <input
+                type="checkbox"
+                checked={labelSummerSide}
+                onChange={e => setLabelSummerSide(e.target.checked)}
+              />
+              Label on summer side
+            </label>
+          </div>
+          <div className="form-group">
+            <label className="form-checkbox">
+              <input
+                type="checkbox"
+                checked={useDST}
+                disabled={!labelSummerSide}
+                onChange={e => setUseDST(e.target.checked)}
+              />
+              DST
+            </label>
+          </div>
         </div>
 
         <div className="form-row">

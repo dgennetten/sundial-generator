@@ -43,12 +43,13 @@ const App: React.FC = () => {
   });
   const [startHour, setStartHour] = useState<number>(5);
   const [stopHour, setStopHour] = useState<number>(19);
-  const [use24Hour, setUse24Hour] = useState<boolean>(true);
+  const [use24Hour, setUse24Hour] = useState<boolean>(false);
   const [labelWinterSide, setLabelWinterSide] = useState<boolean>(true);
   const [labelSummerSide, setLabelSummerSide] = useState<boolean>(true);
   const [labelOffset, setLabelOffset] = useState<number>(1.5);
   const [fontFamily, setFontFamily] = useState<string>('sans-serif');
   const [fontSize, setFontSize] = useState<number>(20);
+  const [useDST, setUseDST] = useState<boolean>(true);
   const [showBorder, setShowBorder] = useState<boolean>(true);
   const [borderMargin, setBorderMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
@@ -237,7 +238,7 @@ const App: React.FC = () => {
           lineStyles={lineStyles}
           hourlineIntervals={hourlineIntervals}
           setHourlineIntervals={setHourlineIntervals}
-          onUpdate={(start, stop, use24, winter, summer, offset, fontFam, fontSz) => {
+          onUpdate={(start, stop, use24, winter, summer, offset, fontFam, fontSz, dst) => {
             setStartHour(start);
             setStopHour(stop);
             setUse24Hour(use24);
@@ -246,6 +247,7 @@ const App: React.FC = () => {
             setLabelOffset(offset);
             setFontFamily(fontFam);
             setFontSize(fontSz);
+            setUseDST(dst);
           }}
         />
         <div className="card">
@@ -394,6 +396,7 @@ const App: React.FC = () => {
           labelOffset={labelOffset}
           fontFamily={fontFamily}
           fontSize={fontSize}
+          useDST={useDST}
           showBorder={showBorder}
           borderMargin={borderMargin}
           borderStyle={borderStyle}
