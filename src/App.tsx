@@ -1,7 +1,7 @@
 // src/App.tsx
 
 import React, { useState, useEffect } from 'react';
-import { Text, Info } from 'lucide-react';
+import { Text, Info, Instagram } from 'lucide-react';
 import PageSettings, { type InclineType } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
@@ -338,18 +338,29 @@ const App: React.FC = () => {
 
   Not content with digital wizardry alone, I whipped up an 
   <a href="http://sundial.gennetten.org/docs/SolarClockAd.pdf">advertisement</a>
-  and scribbled out hand-drawn 
+  and, like a caffinated Da Vinci, scribbled out hand-drawn 
   <a href="http://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf">instructional</a>,
   <a href="http://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf">illustrations</a>,
-  like a caffeinated Da Vinci and even plotted an 
+   and even plotted an 
   11x19 sundial 
   <a href="http://sundial.gennetten.org/docs/Tabloid-sizeDial.pdf">11x17 inch sundial</a>,
   using the mighty 
   (<a href="https://www.hpmuseum.net/display_item.php?hw=79">HP9872 plotter</a>)
   —a device so majestic, it drew with servo motors and pure ambition. 
 </p>
-
-            ` }} />
+` }} />
+            {/* Instagram icon link */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 0 }}>
+              <a
+                href="https://instagram.com/dgennetten"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Follow @dgennetten on Instagram"
+                style={{ color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+              >
+                <Instagram size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
+              </a>
+            </div>
           </div>
         </div>
       </div>
