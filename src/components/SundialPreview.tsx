@@ -34,6 +34,7 @@ type Props = {
   labelOffset?: number;
   fontFamily?: string;
   fontSize?: number;
+  useDST?: boolean;
   showBorder?: boolean;
   borderMargin?: number; // in inches
   borderStyle?: string;
@@ -72,6 +73,7 @@ const SundialPreview: React.FC<Props> = ({
   labelOffset = 6, // now in mm
   fontFamily = 'sans-serif',
   fontSize = 20, // in pt
+  useDST = true,
   showBorder = true,
   borderMargin = 0.25, // in inches
   borderStyle = 'default-hairline',
@@ -169,11 +171,18 @@ const SundialPreview: React.FC<Props> = ({
   }
 
   // Helper to format hour for display
-  function formatHour(hour: number): string {
+  function formatHour(hour: number, isSummerSolstice: boolean = false): string {
+    let adjustedHour = hour;
+    
+    // Add one hour for DST if it's summer solstice and DST is enabled
+    if (isSummerSolstice && useDST) {
+      adjustedHour = hour + 1;
+    }
+    
     if (use24Hour) {
-      return Math.round(hour).toString();
+      return Math.round(adjustedHour).toString();
     } else {
-      const h = Math.round(hour);
+      const h = Math.round(adjustedHour);
       if (h === 0) return '12';
       if (h > 12) return (h - 12).toString();
       return h.toString();
@@ -510,7 +519,7 @@ const SundialPreview: React.FC<Props> = ({
                 alignmentBaseline="middle"
                 style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
               >
-                {formatHour(h)}
+                {formatHour(h, isSummer)}
               </text>
             );
           });
