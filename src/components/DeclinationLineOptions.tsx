@@ -103,12 +103,21 @@ const DeclinationLineOptions: React.FC<{
                     </td>
                     <td style={{ padding: '0.3rem 0.3rem', textAlign: 'center' }}>
                       {showDelete && (
-                        <button 
-                          type="button" 
+                        <button
                           className="btn btn-xs"
-                          onClick={() => handleDelete(idx)} 
+                          onClick={() => handleDelete(idx)}
                           title="Delete"
-                          style={{ fontSize: '1rem' }}
+                          style={{
+                            fontSize: '0.8rem',
+                            width: 18,
+                            height: 18,
+                            minWidth: 0,
+                            padding: 0,
+                            lineHeight: 1,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
                         >
                           ×
                         </button>
@@ -125,4 +134,4 @@ const DeclinationLineOptions: React.FC<{
   );
 };
 
-export default DeclinationLineOptions; 
+export default DeclinationLineOptions;
