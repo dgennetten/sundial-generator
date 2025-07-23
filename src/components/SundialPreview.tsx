@@ -881,10 +881,12 @@ const SundialPreview: React.FC<Props> = ({
     }
     
     // Circle diameter = 2 * stroke width (in mm), so radius = stroke width (in mm)
-    // Convert to pixels: radius in mm * 3.78 px/mm
-    // Since strokes use vectorEffect="non-scaling-stroke", we should match that behavior
-    // by using the raw pixel value without scaling
-    const circleRadius = strokeWidthMm * 3.78;
+    // The coordinate system is in mm, so we can use the mm value directly
+    // For 0.5mm stroke width: circle diameter = 1mm, radius = 0.5mm
+    // Increased by 50% for better visibility
+    const circleRadius = strokeWidthMm * 1.5;
+    
+
     
 
     
@@ -904,7 +906,6 @@ const SundialPreview: React.FC<Props> = ({
             r={circleRadius}
             fill={style.color || 'black'}
             stroke="none"
-            vectorEffect="non-scaling-stroke"
           />
         ];
       });
@@ -926,7 +927,6 @@ const SundialPreview: React.FC<Props> = ({
         r={circleRadius}
         fill={style.color || 'black'}
         stroke="none"
-        vectorEffect="non-scaling-stroke"
       />
     ];
   }) : [];
