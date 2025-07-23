@@ -50,6 +50,7 @@ type Props = {
   locationName?: string;
   inclineType?: string;
   tiltAngle?: number;
+  declinationNoonmarks?: boolean;
 };
 
 const SundialPreview: React.FC<Props> = ({
@@ -89,6 +90,7 @@ const SundialPreview: React.FC<Props> = ({
   locationName = '',
   inclineType = 'Horizontal',
   tiltAngle = 0,
+  declinationNoonmarks = true,
 }) => {
   let { width, height } = pageSizeMap[pageSize] || pageSizeMap.Letter;
   if (orientation === 'Landscape') {
@@ -685,6 +687,50 @@ const SundialPreview: React.FC<Props> = ({
     return monthBoundaries;
   }
 
+  // Helper function to find the best intersection point of declination line with noon analemma
+  function findDeclinationAnalemmaIntersection(decl: number): { x: number; y: number } | null {
+    // Get the noon analemma points (hour = 12)
+    const noonAnalemmaPoints = getAnalemmaPointsProjected({
+      lat,
+      lng,
+      tzMeridian,
+      hour: 12,
+      gnomonHeight,
+      orientation: 'Horizontal',
+    });
+    
+    // Filter points by date range
+    let filteredPoints = noonAnalemmaPoints;
+    if (dateRange === 'WinterToSummer') {
+      const [seg1, seg2] = splitWinterToSummer(filteredPoints);
+      filteredPoints = [...seg1, ...seg2];
+    } else {
+      const [start, end] = getDayRange(dateRange);
+      filteredPoints = filteredPoints.filter((p: { day: number }) => p.day >= start && p.day <= end);
+    }
+    
+    // Find the point with the closest declination match
+    let bestPoint: { x: number; y: number } | null = null;
+    let smallestDifference = Infinity;
+    
+    for (const point of filteredPoints) {
+      const pointDeclination = getSolarDeclination(point.day);
+      const difference = Math.abs(pointDeclination - decl);
+      
+      if (difference < smallestDifference) {
+        smallestDifference = difference;
+        bestPoint = { x: point.x, y: point.y };
+      }
+    }
+    
+    // Only return the point if it's reasonably close (within 2 degrees)
+    if (bestPoint && smallestDifference < 2.0) {
+      return bestPoint;
+    }
+    
+    return null;
+  }
+
   // Helper function to render a single declination line
   function renderDeclinationLine(decl: number, style: LineStyle | undefined, key: string) {
     const maxRadius = Math.sqrt(width * width + height * height);
@@ -805,6 +851,85 @@ const SundialPreview: React.FC<Props> = ({
     const elements = renderDeclinationLine(decl, style, line.id || line.date || idx.toString());
     return elements || [];
   });
+
+  // Create declination noonmarks if enabled
+  const declinationNoonmarkElements = declinationNoonmarks ? declinationLines.flatMap((line, idx) => {
+    if (!line.active) return [];
+    
+    const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
+    if (!style) return [];
+    
+    // Get the noon hour line style to determine circle diameter
+    // Look for the 'Hour' interval style, or fall back to the default '0.5mm-black' style
+    const noonHourInterval = hourlineIntervals.find(interval => interval.name === 'Hour');
+    let noonHourStyle = null;
+    
+    if (noonHourInterval) {
+      noonHourStyle = lineStyles.find(s => s.id === noonHourInterval.styleId || s.name === noonHourInterval.styleId);
+    }
+    
+    // If no Hour interval or style found, use the default '0.5mm-black' style
+    if (!noonHourStyle) {
+      noonHourStyle = lineStyles.find(s => s.id === '0.5mm-black');
+    }
+    
+    // Extract the raw mm value from the stroke width
+    const strokeWidthStr = noonHourStyle?.width || '0.5mm';
+    let strokeWidthMm = 0.5; // Default
+    if (strokeWidthStr.endsWith('mm')) {
+      strokeWidthMm = parseFloat(strokeWidthStr) || 0.5;
+    }
+    
+    // Circle diameter = 2 * stroke width (in mm), so radius = stroke width (in mm)
+    // Convert to pixels: radius in mm * 3.78 px/mm
+    // Since strokes use vectorEffect="non-scaling-stroke", we should match that behavior
+    // by using the raw pixel value without scaling
+    const circleRadius = strokeWidthMm * 3.78;
+    
+
+    
+    // Handle Month Boundaries as a special case
+    if (line.date === 'Month Boundaries') {
+      const monthBoundaries = getMonthBoundaryDeclinations();
+      return monthBoundaries.flatMap((boundary, boundaryIdx) => {
+        // Find single intersection point with noon analemma for this declination
+        const intersectionPoint = findDeclinationAnalemmaIntersection(boundary.decl);
+        if (!intersectionPoint) return [];
+        
+        return [
+          <circle
+            key={`noonmark-${line.id || line.date || idx}-${boundary.month}-${boundaryIdx}`}
+            cx={scale * intersectionPoint.x}
+            cy={scale * intersectionPoint.y}
+            r={circleRadius}
+            fill={style.color || 'black'}
+            stroke="none"
+            vectorEffect="non-scaling-stroke"
+          />
+        ];
+      });
+    }
+    
+    // Handle regular declination lines
+    const decl = getDeclinationForLine(line);
+    if (decl === null) return [];
+    
+    // Find single intersection point with noon analemma for this declination
+    const intersectionPoint = findDeclinationAnalemmaIntersection(decl);
+    if (!intersectionPoint) return [];
+    
+    return [
+      <circle
+        key={`noonmark-${line.id || line.date || idx}`}
+        cx={scale * intersectionPoint.x}
+        cy={scale * intersectionPoint.y}
+        r={circleRadius}
+        fill={style.color || 'black'}
+        stroke="none"
+        vectorEffect="non-scaling-stroke"
+      />
+    ];
+  }) : [];
 
   // Get border line style
   const borderLineStyle = lineStyles.find(s => s.id === borderStyle || s.name === borderStyle);
@@ -971,6 +1096,7 @@ const SundialPreview: React.FC<Props> = ({
             {hourlineElements.flat()}
             {hourLabelElements}
             {declinationLineElements}
+            {declinationNoonmarkElements}
           </g>
           {/* --- Dial Text Block --- */}
           {dialTextBlockVisible && textBlockLines.length > 0 && (

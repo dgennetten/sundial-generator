@@ -50,6 +50,7 @@ const App: React.FC = () => {
   const [fontFamily, setFontFamily] = useState<string>('sans-serif');
   const [fontSize, setFontSize] = useState<number>(20);
   const [useDST, setUseDST] = useState<boolean>(true);
+  const [declinationNoonmarks, setDeclinationNoonmarks] = useState<boolean>(true);
   const [showBorder, setShowBorder] = useState<boolean>(true);
   const [borderMargin, setBorderMargin] = useState<number>(0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
@@ -239,7 +240,7 @@ const App: React.FC = () => {
           lineStyles={lineStyles}
           hourlineIntervals={hourlineIntervals}
           setHourlineIntervals={setHourlineIntervals}
-          onUpdate={(start, stop, use24, winter, summer, offset, fontFam, fontSz, dst) => {
+          onUpdate={(start, stop, use24, winter, summer, offset, fontFam, fontSz, dst, declNoonmarks) => {
             setStartHour(start);
             setStopHour(stop);
             setUse24Hour(use24);
@@ -249,6 +250,7 @@ const App: React.FC = () => {
             setFontFamily(fontFam);
             setFontSize(fontSz);
             setUseDST(dst);
+            setDeclinationNoonmarks(declNoonmarks);
           }}
         />
         <div className="card">
@@ -412,6 +414,7 @@ const App: React.FC = () => {
           locationName={locationName}
           inclineType={inclineType}
           tiltAngle={tiltAngle}
+          declinationNoonmarks={declinationNoonmarks}
         />
       </div>
     </div>

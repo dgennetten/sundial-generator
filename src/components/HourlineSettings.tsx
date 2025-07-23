@@ -59,7 +59,8 @@ interface HourlineSettingsProps {
     labelOffset: number,
     fontFamily: string,
     fontSize: number,
-    useDST: boolean
+    useDST: boolean,
+    declinationNoonmarks: boolean
   ) => void;
 }
 
@@ -80,6 +81,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
   const [fontFamily, setFontFamily] = useState<string>('sans-serif');
   const [fontSize, setFontSize] = useState<number>(20);
   const [useDST, setUseDST] = useState<boolean>(true);
+  const [declinationNoonmarks, setDeclinationNoonmarks] = useState<boolean>(true);
 
   // Update preview automatically when any hour-related setting changes
   React.useEffect(() => {
@@ -93,10 +95,11 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
         labelOffset,
         fontFamily,
         fontSize,
-        useDST
+        useDST,
+        declinationNoonmarks
       );
     }
-  }, [startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, onUpdate]);
+  }, [startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks, onUpdate]);
   const handleChange = (idx: number, field: keyof HourlineInterval, value: string | boolean) => {
     const updated = [...hourlineIntervals];
     updated[idx] = { ...updated[idx], [field]: value };
@@ -198,6 +201,17 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
               onChange={(e) => setUse24Hour(e.target.checked)}
             />
             24-hour time
+          </label>
+        </div>
+
+        <div className="form-group">
+          <label className="form-checkbox">
+            <input
+              type="checkbox"
+              checked={declinationNoonmarks}
+              onChange={(e) => setDeclinationNoonmarks(e.target.checked)}
+            />
+            Declination Noonmarks
           </label>
         </div>
 
