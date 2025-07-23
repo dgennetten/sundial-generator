@@ -345,7 +345,6 @@ const App: React.FC = () => {
   <a href="http://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf">instructional</a>,
   <a href="http://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf">illustrations</a>,
    and even plotted an 
-  11x19 sundial 
   <a href="http://sundial.gennetten.org/docs/Tabloid-sizeDial.pdf">11x17 inch sundial</a>,
   using the mighty 
   (<a href="https://www.hpmuseum.net/display_item.php?hw=79">HP9872 plotter</a>)
