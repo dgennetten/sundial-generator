@@ -35,9 +35,9 @@ export const DEFAULT_LINE_STYLES: LineStyle[] = [
   {
     width: 'hairline',
     color: 'red',
-    style: 'dotted',
-    name: 'red dotted hairline',
-    id: 'red-dotted-hairline',
+    style: 'dashed',
+    name: 'red dashed hairline',
+    id: 'red-dashed-hairline',
   }
 ];
 

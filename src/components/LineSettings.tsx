@@ -139,7 +139,7 @@ const LineSettings: React.FC<{
                           value={style.color}
                           onChange={e => handleChange(idx, 'color', e.target.value)}
                           style={{
-                            width: '70px',
+                            width: '35px', // was '70px'
                             fontSize: '0.9rem',
                             borderColor: colorValid ? undefined : 'red',
                             background: colorValid ? undefined : '#ffeaea'
