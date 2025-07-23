@@ -32,6 +32,13 @@ export const DEFAULT_LINE_STYLES: LineStyle[] = [
     name: '.5mm black',
     id: '0.5mm-black',
   },
+  {
+    width: 'hairline',
+    color: 'red',
+    style: 'dotted',
+    name: 'red dotted hairline',
+    id: 'red-dotted-hairline',
+  }
 ];
 
 export const LOCAL_STORAGE_KEY = 'sundial-line-styles';
