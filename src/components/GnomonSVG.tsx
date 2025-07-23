@@ -60,8 +60,8 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
     const leftMidY = -gnomonHeight / (2 * Math.SQRT2);
     const arcRadius = gnomonHeight * 0.2;
     const len = Math.sqrt(leftMidX * leftMidX + leftMidY * leftMidY);
-    const shiftX = leftMidX + (-leftMidX / len) * arcRadius;
-    const shiftY = leftMidY + (-leftMidY / len) * arcRadius;
+    const shiftX = (leftMidX + (-leftMidX / len) * arcRadius) *1.5;
+    const shiftY = (leftMidY + (-leftMidY / len) * arcRadius) *1.5;
     const theta = -Math.PI / 4;
     const arcStartX = shiftX - arcRadius;
     const rotatedStartX = shiftX + (arcStartX - shiftX) * Math.cos(theta);
@@ -92,10 +92,10 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
           strokeWidth={1}
           vectorEffect="non-scaling-stroke"
         />
-        {/* Left side (half dashed, eighth solid, eighth dashed)  */}
+        {/* Left side (third dashed, eighth solid, eighth dashed)  */}
         <line
-          x1={-gnomonHeight / Math.SQRT2 / 2}
-          y1={-gnomonHeight / Math.SQRT2 / 2}
+          x1={-gnomonHeight / Math.SQRT2 * 2/3}
+          y1={-gnomonHeight / Math.SQRT2 * 2/3}
           x2={-gnomonHeight / Math.SQRT2}
           y2={-gnomonHeight / Math.SQRT2}
           stroke="red"
@@ -104,17 +104,17 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
           vectorEffect="non-scaling-stroke"
         />
         <line
-          x1={-gnomonHeight / Math.SQRT2 / 2.5}
-          y1={-gnomonHeight / Math.SQRT2 / 2.5}
-          x2={-gnomonHeight / Math.SQRT2 / 2}
-          y2={-gnomonHeight / Math.SQRT2 / 2}
+          x1={-gnomonHeight / Math.SQRT2 * 9/16}
+          y1={-gnomonHeight / Math.SQRT2 * 9/16}
+          x2={-gnomonHeight / Math.SQRT2 * 2/3}
+          y2={-gnomonHeight / Math.SQRT2 * 2/3}
           stroke="red"
           strokeWidth={1}
           vectorEffect="non-scaling-stroke"
         />
         <line
-          x1={-gnomonHeight / Math.SQRT2 / 8}
-          y1={-gnomonHeight / Math.SQRT2 / 8}
+          x1={-gnomonHeight / Math.SQRT2 / 4}
+          y1={-gnomonHeight / Math.SQRT2 / 4}
           x2={0}
           y2={0}
           stroke="red"
@@ -137,7 +137,7 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
         <line
           x1={rotatedStartX}
           y1={rotatedStartY}
-          x2={-gnomonHeight / Math.SQRT2 / 4}
+          x2={-gnomonHeight / Math.SQRT2 / 2}
           y2={0}
           stroke="red"
           strokeWidth={1}
@@ -147,17 +147,17 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
         <line
           x1={rotatedEndX}
           y1={rotatedEndY}
-          x2={-gnomonHeight / Math.SQRT2 / 8}
-          y2={-gnomonHeight / Math.SQRT2 / 8}
+          x2={-gnomonHeight / Math.SQRT2 / 4}
+          y2={-gnomonHeight / Math.SQRT2 / 4}
           stroke="red"
           strokeWidth={1}
           vectorEffect="non-scaling-stroke"
         />
         <line
-          x1={-gnomonHeight / Math.SQRT2 / 4}
+          x1={-gnomonHeight / Math.SQRT2 / 2}
           y1={0}
-          x2={-gnomonHeight / Math.SQRT2 / 8}
-          y2={-gnomonHeight / Math.SQRT2 / 8}
+          x2={-gnomonHeight / Math.SQRT2 / 4}
+          y2={-gnomonHeight / Math.SQRT2 / 4}
           stroke="red"
           strokeWidth={1}
           strokeDasharray="3,3"
