@@ -429,7 +429,7 @@ const SundialPreview: React.FC<Props> = ({
                 alignmentBaseline="middle"
                 style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
               >
-                {formatHour(h)}
+                {formatHour(h, true)}
               </text>
             );
           }
@@ -457,7 +457,7 @@ const SundialPreview: React.FC<Props> = ({
                 alignmentBaseline="middle"
                 style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
               >
-                {formatHour(h)}
+                {formatHour(h, true)}
               </text>
             );
           }
