@@ -603,6 +603,13 @@ const SundialPreview: React.FC<Props> = ({
     if (line.date === 'Equinox') return 0;
     if (line.date === 'Summer Solstice') return 23.44;
     if (line.date === 'Winter Solstice') return -23.44;
+    if (line.date === 'Today') {
+      // Calculate today's declination
+      const today = new Date();
+      const startOfYear = new Date(today.getFullYear(), 0, 1);
+      const dayOfYear = Math.floor((today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      return getSolarDeclination(dayOfYear);
+    }
     if (line.date === 'Month Boundaries') {
       // This is handled separately in getMonthBoundaryDeclinations
       return null;
