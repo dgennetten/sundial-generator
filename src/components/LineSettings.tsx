@@ -1,6 +1,6 @@
 import React from 'react';
 import { PenLine } from 'lucide-react';
-import { saveLineStyles, emptyLine } from './lineStyleUtils';
+import { saveLineStyles, emptyLine, isValidCssColor } from './lineStyleUtils';
 
 export type LineStyle = {
   width: string; // e.g. 'hairline', '0.5mm'
@@ -18,7 +18,17 @@ const LineSettings: React.FC<{
   // Handle editing
   const handleChange = (idx: number, field: keyof LineStyle, value: string) => {
     const updated = [...lineStyles];
-    updated[idx] = { ...updated[idx], [field]: value };
+    // For color, validate and normalize HTML color names and hex
+    if (field === 'color') {
+      if (isValidCssColor(value)) {
+        updated[idx] = { ...updated[idx], [field]: value };
+      } else {
+        updated[idx] = { ...updated[idx], [field]: value };
+        // Optionally, you could set an error state here
+      }
+    } else {
+      updated[idx] = { ...updated[idx], [field]: value };
+    }
     // If editing the blank row, add a new blank row
     if (idx === lineStyles.length - 1 && lineStyles[idx].id === '') {
       // Only add if at least name is filled
@@ -41,7 +51,9 @@ const LineSettings: React.FC<{
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title"><PenLine color="#2563eb" size={20} style={{marginRight: 6}} /> Line Styles</h3>
+        <h3 className="card-title">
+          <PenLine color="#2563eb" size={20} style={{ marginRight: 6 }} /> Line Styles
+        </h3>
       </div>
       <div className="card-content">
         <div style={{ overflowX: 'auto' }}>
@@ -57,6 +69,8 @@ const LineSettings: React.FC<{
             </thead>
             <tbody>
               {(lineStyles[lineStyles.length - 1]?.id === '' ? lineStyles : [...lineStyles, { ...emptyLine }]).map((style, idx) => {
+                // For color validation feedback
+                const colorValid = isValidCssColor(style.color) || style.color === '';
                 return (
                   <tr key={style.id || `blank-${idx}`}>
                     <td style={{ padding: '0.3rem 0.3rem', minWidth: '70px' }}>
@@ -79,21 +93,65 @@ const LineSettings: React.FC<{
                       />
                     </td>
                     <td style={{ padding: '0.3rem 0.3rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.125rem' }}>
-                        <input
-                          type="color"
-                          value={style.color}
-                          onChange={e => handleChange(idx, 'color', e.target.value)}
-                          style={{ width: 24, height: 24, border: 'none', background: 'none', padding: 0 }}
-                        />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        {/* Swatch with overlayed color input */}
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            width: 24,
+                            height: 24,
+                            borderRadius: 4,
+                            border: '1px solid #ccc',
+                            background: colorValid ? style.color : '#fff',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            verticalAlign: 'middle'
+                          }}
+                          title={style.color}
+                        >
+                          <input
+                            type="color"
+                            value={
+                              /^#([0-9a-f]{3}){1,2}$/i.test(style.color.trim())
+                                ? style.color
+                                : '#000000'
+                            }
+                            onChange={e => handleChange(idx, 'color', e.target.value)}
+                            style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              width: '100%',
+                              height: '100%',
+                              opacity: 0,
+                              cursor: 'pointer',
+                              border: 'none',
+                              padding: 0,
+                              margin: 0,
+                            }}
+                            tabIndex={-1}
+                            aria-label="Pick color"
+                          />
+                        </span>
                         <input
                           type="text"
                           className="form-input"
                           value={style.color}
                           onChange={e => handleChange(idx, 'color', e.target.value)}
-                          style={{ width: '70px', fontSize: '0.9rem' }}
+                          style={{
+                            width: '70px',
+                            fontSize: '0.9rem',
+                            borderColor: colorValid ? undefined : 'red',
+                            background: colorValid ? undefined : '#ffeaea'
+                          }}
+                          placeholder="e.g. #ff0000 or cornsilk"
                         />
                       </div>
+                      {!colorValid && (
+                        <div style={{ color: 'red', fontSize: '0.75rem' }}>
+                          Invalid color
+                        </div>
+                      )}
                     </td>
                     <td style={{ padding: '0.3rem 0.3rem' }}>
                       <select
@@ -113,7 +171,17 @@ const LineSettings: React.FC<{
                           className="btn btn-xs"
                           onClick={() => handleDelete(idx)}
                           title="Delete"
-                          style={{ fontSize: '0.8rem', width: 18, height: 18, minWidth: 0, padding: 0, lineHeight: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                          style={{
+                            fontSize: '0.8rem',
+                            width: 18,
+                            height: 18,
+                            minWidth: 0,
+                            padding: 0,
+                            lineHeight: 1,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
                         >
                           ×
                         </button>
