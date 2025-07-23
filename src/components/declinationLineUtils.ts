@@ -5,7 +5,7 @@ export const BUILTIN_DECLINATION_LINES: DeclinationLine[] = [
   { active: true, date: 'Equinox', styleId: 'default-hairline', fixed: true, id: 'equinox' },
   { active: true, date: 'Winter Solstice', styleId: 'default-hairline', fixed: true, id: 'winter-solstice' },
   { active: true, date: 'Month Boundaries', styleId: 'dashed-hairline', fixed: true, id: 'month-boundaries' },
-  { active: true, date: 'March 12', styleId: 'red-dashed-hairline', fixed: false, id: 'march-12' },
+  { active: true, date: 'Today', styleId: 'red-dashed-hairline', fixed: false, id: 'today' },
 ];
 
 export const LOCAL_STORAGE_KEY = 'sundial-declination-lines';
