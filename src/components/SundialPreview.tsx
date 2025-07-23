@@ -883,8 +883,8 @@ const SundialPreview: React.FC<Props> = ({
     // Circle diameter = 2 * stroke width (in mm), so radius = stroke width (in mm)
     // The coordinate system is in mm, so we can use the mm value directly
     // For 0.5mm stroke width: circle diameter = 1mm, radius = 0.5mm
-    // Increased by 50% for better visibility
-    const circleRadius = strokeWidthMm * 1.5;
+    // Increased by 125% for better visibility (was 50%, now another 50% larger)
+    const circleRadius = strokeWidthMm * 2.25;
     
 
     
