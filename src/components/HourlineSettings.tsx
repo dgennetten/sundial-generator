@@ -208,7 +208,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
               checked={labelWinterSide}
               onChange={e => setLabelWinterSide(e.target.checked)}
             />
-            Label on winter side
+            Winter label 
           </label>
         </div>
 
@@ -220,7 +220,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
                 checked={labelSummerSide}
                 onChange={e => setLabelSummerSide(e.target.checked)}
               />
-              Label on summer side
+             Summer label
             </label>
           </div>
           <div className="form-group">

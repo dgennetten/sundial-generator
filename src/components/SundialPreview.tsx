@@ -601,6 +601,10 @@ const SundialPreview: React.FC<Props> = ({
     if (line.date === 'Equinox') return 0;
     if (line.date === 'Summer Solstice') return 23.44;
     if (line.date === 'Winter Solstice') return -23.44;
+    if (line.date === 'Month Boundaries') {
+      // This is handled separately in getMonthBoundaryDeclinations
+      return null;
+    }
     // Try to parse user date as month/day
     let date = new Date(line.date + ' 2000'); // year doesn't matter for declination
     if (isNaN(date.getTime())) {
@@ -631,16 +635,60 @@ const SundialPreview: React.FC<Props> = ({
     return null;
   }
 
-  // Draw declination lines
-  if (declinationLines.length > 0) {
-    // eslint-disable-next-line no-console
-    console.log('Declination lines to render:', declinationLines.map(l => ({date: l.date, active: l.active, styleId: l.styleId, id: l.id, decl: getDeclinationForLine(l)})));
+  // Helper to get month boundary declinations within the date range
+  // This function generates declination lines for the first day of each month
+  // that falls within the selected date range (FullYear, SummerToWinter, or WinterToSummer)
+  function getMonthBoundaryDeclinations(): { day: number; decl: number; month: string }[] {
+    const [start, end] = getDayRange(dateRange);
+    const monthBoundaries: { day: number; decl: number; month: string }[] = [];
+    
+    // Month start days (approximate, for a non-leap year)
+    const monthStarts = [
+      { month: 'January', day: 1 },
+      { month: 'February', day: 32 },
+      { month: 'March', day: 60 },
+      { month: 'April', day: 91 },
+      { month: 'May', day: 121 },
+      { month: 'June', day: 152 },
+      { month: 'July', day: 182 },
+      { month: 'August', day: 213 },
+      { month: 'September', day: 244 },
+      { month: 'October', day: 274 },
+      { month: 'November', day: 305 },
+      { month: 'December', day: 335 }
+    ];
+
+    if (dateRange === 'WinterToSummer') {
+      // Handle wrap-around case: days 355-365 and 1-172
+      for (const monthStart of monthStarts) {
+        if ((monthStart.day >= 355 && monthStart.day <= 365) || (monthStart.day >= 1 && monthStart.day <= 172)) {
+          monthBoundaries.push({
+            day: monthStart.day,
+            decl: getSolarDeclination(monthStart.day),
+            month: monthStart.month
+          });
+        }
+      }
+    } else {
+      // Normal range case
+      for (const monthStart of monthStarts) {
+        if (monthStart.day >= start && monthStart.day <= end) {
+          monthBoundaries.push({
+            day: monthStart.day,
+            decl: getSolarDeclination(monthStart.day),
+            month: monthStart.month
+          });
+        }
+      }
+    }
+
+    return monthBoundaries;
   }
-  const maxRadius = Math.sqrt(width * width + height * height);
-  const declinationLineElements = declinationLines.map((line, idx) => {
-    const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
-    const decl = getDeclinationForLine(line);
-    if (decl === null) return null;
+
+  // Helper function to render a single declination line
+  function renderDeclinationLine(decl: number, style: LineStyle | undefined, key: string) {
+    const maxRadius = Math.sqrt(width * width + height * height);
+    
     if (decl === 0) {
       // Equinox: draw a straight line for all hours, but clip to maxRadius
       const points = [];
@@ -666,7 +714,7 @@ const SundialPreview: React.FC<Props> = ({
       if (!pathData) return null;
       return (
         <path
-          key={line.id || line.date || idx}
+          key={key}
           d={pathData}
           stroke={style?.color || 'black'}
           fill="none"
@@ -676,6 +724,7 @@ const SundialPreview: React.FC<Props> = ({
         />
       );
     }
+    
     // For each hour, compute the shadow tip for this declination
     const segments: { x: number; y: number }[][] = [];
     let currentSegment: { x: number; y: number }[] = [];
@@ -715,7 +764,7 @@ const SundialPreview: React.FC<Props> = ({
       if (!pathData) return null;
       return (
         <path
-          key={segIdx}
+          key={`${key}-${segIdx}`}
           d={pathData}
           stroke={style?.color || 'black'}
           fill="none"
@@ -725,6 +774,36 @@ const SundialPreview: React.FC<Props> = ({
         />
       );
     });
+  }
+
+  // Draw declination lines
+  if (declinationLines.length > 0) {
+    // eslint-disable-next-line no-console
+    console.log('Declination lines to render:', declinationLines.map(l => ({date: l.date, active: l.active, styleId: l.styleId, id: l.id, decl: getDeclinationForLine(l)})));
+  }
+  
+  const declinationLineElements = declinationLines.flatMap((line, idx) => {
+    if (!line.active) return [];
+    
+    const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
+    
+    // Handle Month Boundaries as a special case
+    if (line.date === 'Month Boundaries') {
+      const monthBoundaries = getMonthBoundaryDeclinations();
+      // eslint-disable-next-line no-console
+      console.log(`Month Boundaries for ${dateRange}:`, monthBoundaries.map(b => `${b.month} (day ${b.day}, decl ${b.decl.toFixed(2)}°)`));
+      return monthBoundaries.flatMap((boundary, boundaryIdx) => {
+        const elements = renderDeclinationLine(boundary.decl, style, `${line.id || line.date || idx}-${boundary.month}-${boundaryIdx}`);
+        return elements || [];
+      });
+    }
+    
+    // Handle regular declination lines
+    const decl = getDeclinationForLine(line);
+    if (decl === null) return [];
+    
+    const elements = renderDeclinationLine(decl, style, line.id || line.date || idx.toString());
+    return elements || [];
   });
 
   // Get border line style
