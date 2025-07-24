@@ -104,7 +104,7 @@ const SundialPreview: React.FC<Props> = ({
   // Calculate normalized viewBox for consistent preview scaling
   // Use a minimum viewBox size to prevent tiny pages from appearing too zoomed in
   const minViewBoxSize = 200; // mm
-  const aspectRatio = width / height;
+
   
   // Scale up small pages while maintaining aspect ratio
   let viewBoxWidth = width;
@@ -1096,8 +1096,7 @@ const SundialPreview: React.FC<Props> = ({
       .map(line => parseMarkupText(line));
   }
   // Calculate y position for the text block in the space below winter solstice and above bottom border
-  // Find the winter solstice position (maximum y-value of noon analemma - southernmost point)
-  const winterSolsticeY = Math.max(...noonPoints.map(p => p.y));
+
   const bottomBorderY = height / 2 - borderMarginMm;
   
   // Position text much closer to bottom border, well below the hour lines
