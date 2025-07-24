@@ -16,6 +16,7 @@ import DeclinationLineOptions from './components/DeclinationLineOptions';
 import { loadDeclinationLines } from './components/declinationLineUtils';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
 import { getSolarPosition, projectShadowToSurface } from './utils/analemmaGenerator';
+import BuildDate from './components/BuildDate';
 
 
 const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n*{incline}*\n*Computer Generated Sundial by K. Douglas Gennetten*`;
@@ -353,8 +354,9 @@ const App: React.FC = () => {
   —a device so majestic, it drew with servo motors and pure ambition. 
 </p>
 ` }} />
-            {/* Instagram icon link */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 0 }}>
+            {/* Bottom row with build date and Instagram icon */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+              <BuildDate />
               <a
                 href="https://instagram.com/dgennetten"
                 target="_blank"
