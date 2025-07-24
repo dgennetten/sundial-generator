@@ -16,9 +16,25 @@ export function loadDeclinationLines(): DeclinationLine[] {
   try {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
-      // Always ensure built-ins are present at the top
+      // Start with built-ins
+      const result = [...BUILTIN_DECLINATION_LINES];
+      
+      // Get user lines (non-fixed lines from localStorage)
       const userLines = parsed.filter((l: DeclinationLine) => !l.fixed);
-      return [...BUILTIN_DECLINATION_LINES, ...userLines];
+      
+      // For each user line, check if it's an override of a built-in
+      userLines.forEach(userLine => {
+        const builtinIndex = result.findIndex(builtin => builtin.id === userLine.id);
+        if (builtinIndex !== -1) {
+          // Replace the built-in with the user's version
+          result[builtinIndex] = userLine;
+        } else {
+          // Add as a new user line
+          result.push(userLine);
+        }
+      });
+      
+      return result;
     }
     return BUILTIN_DECLINATION_LINES;
   } catch {
