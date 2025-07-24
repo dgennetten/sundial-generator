@@ -1108,7 +1108,7 @@ const SundialPreview: React.FC<Props> = ({
   return (
     <div className="card" style={{ width: '100%', margin: 0 }}>
       <div className="card-header">
-        <h3 className="card-title"><Sun color="#2563eb" size={20} style={{marginRight: 6}} /> Sundial Preview ({orientation})</h3>
+        <h3 className="card-title"><Sun color="#2563eb" size={20} style={{marginRight: 6}} /> Sundial Preview ({orientation}, {pageSize})</h3>
       </div>
       <div style={{ width: '100%', minHeight: '400px', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible' }}>
         <svg
