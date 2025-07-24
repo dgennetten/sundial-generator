@@ -28,7 +28,7 @@ const App: React.FC = () => {
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
   const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace'>('crosshair');
-  const [pageSize, setPageSize] = useState<'A4' | 'Letter' | '11x17'>('Letter');
+  const [pageSize, setPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard'>('Letter');
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
   const [tiltAngle, setTiltAngle] = useState<number>(0);
@@ -47,13 +47,13 @@ const App: React.FC = () => {
   const [use24Hour, setUse24Hour] = useState<boolean>(false);
   const [labelWinterSide, setLabelWinterSide] = useState<boolean>(true);
   const [labelSummerSide, setLabelSummerSide] = useState<boolean>(true);
-  const [labelOffset, setLabelOffset] = useState<number>(1.5);
+  const [labelOffset, setLabelOffset] = useState<number>(pageSize === '10x15cm Postcard' ? 1 : 1.5);
   const [fontFamily, setFontFamily] = useState<string>('sans-serif');
-  const [fontSize, setFontSize] = useState<number>(20);
+  const [fontSize, setFontSize] = useState<number>(pageSize === '10x15cm Postcard' ? 12 : 20);
   const [useDST, setUseDST] = useState<boolean>(true);
   const [declinationNoonmarks, setDeclinationNoonmarks] = useState<boolean>(true);
   const [showBorder, setShowBorder] = useState<boolean>(true);
-  const [borderMargin, setBorderMargin] = useState<number>(0.25); // in inches
+  const [borderMargin, setBorderMargin] = useState<number>(pageSize === '10x15cm Postcard' ? 0.1 : 0.25); // in inches
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
   // Add state for gnomon position
   const [gnomonPosition, setGnomonPosition] = useState<number>(0);
@@ -62,7 +62,7 @@ const App: React.FC = () => {
   const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
   const [dialTextBlock, setDialTextBlock] = useState<string>(DEFAULT_DIAL_TEXTBLOCK);
   const [dialTextBlockVisible, setDialTextBlockVisible] = useState<boolean>(true);
-  const [dialTextBlockFontSize, setDialTextBlockFontSize] = useState<number>(14);
+  const [dialTextBlockFontSize, setDialTextBlockFontSize] = useState<number>(pageSize === '10x15cm Postcard' ? 8 : 14);
   const [dialTextBlockFontFamily, setDialTextBlockFontFamily] = useState<string>(fontFamily);
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
 
@@ -96,11 +96,27 @@ const App: React.FC = () => {
     console.log('App declinationLines state:', declinationLines);
   }, [declinationLines]);
 
+  // Update font sizes and offset when page size changes
+  React.useEffect(() => {
+    if (pageSize === '10x15cm Postcard') {
+      setFontSize(12);
+      setLabelOffset(1);
+      setDialTextBlockFontSize(8);
+      setBorderMargin(0.1);
+    } else {
+      setFontSize(20);
+      setLabelOffset(1.5);
+      setDialTextBlockFontSize(14);
+      setBorderMargin(0.25);
+    }
+  }, [pageSize]);
+
   // Page size map (mm)
   const pageSizeMap = {
     Letter: { width: 8.5 * 25.4, height: 11 * 25.4 },
     A4: { width: 210, height: 297 },
     '11x17': { width: 11 * 25.4, height: 17 * 25.4 },
+    '10x15cm Postcard': { width: 100, height: 150 },
   };
   let { width: pageWidth, height: pageHeight } = pageSizeMap[pageSize] || pageSizeMap.Letter;
   if (orientation === 'Landscape') {
@@ -241,6 +257,16 @@ const App: React.FC = () => {
           lineStyles={lineStyles}
           hourlineIntervals={hourlineIntervals}
           setHourlineIntervals={setHourlineIntervals}
+          startHour={startHour}
+          stopHour={stopHour}
+          use24Hour={use24Hour}
+          labelWinterSide={labelWinterSide}
+          labelSummerSide={labelSummerSide}
+          labelOffset={labelOffset}
+          fontFamily={fontFamily}
+          fontSize={fontSize}
+          useDST={useDST}
+          declinationNoonmarks={declinationNoonmarks}
           onUpdate={(start, stop, use24, winter, summer, offset, fontFam, fontSz, dst, declNoonmarks) => {
             setStartHour(start);
             setStopHour(stop);
