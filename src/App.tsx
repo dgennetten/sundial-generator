@@ -353,6 +353,10 @@ const App: React.FC = () => {
   (<a href="https://www.hpmuseum.net/display_item.php?hw=79">HP9872 plotter</a>)
   —a device so majestic, it drew with servo motors and pure ambition. 
 </p>
+<p>The sundial generator now uses the professional-grade 
+<a href="https://academic.oup.com/mnras/article/238/4/1529/1037665">Hughes, Yallop & Hohenkerk</a>
+algorithm with ±3.5 seconds accuracy. 
+</p>
 ` }} />
             {/* Bottom row with build date and Instagram icon */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
