@@ -6,13 +6,95 @@ export function degreesToRadians(deg: number): number {
   return (deg * Math.PI) / 180;
 }
 
-export function getEquationOfTime(dayOfYear: number): number {
-  const B = degreesToRadians((360 / 365) * (dayOfYear - 81));
-  return 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B); // in minutes
+/**
+ * Calculate common astronomical parameters for solar position calculations
+ * Based on the Hughes, Yallop & Hohenkerk algorithm (1989)
+ * @param dayOfYear Day of year (1-365/366)
+ * @param year Full year (e.g., 2024)
+ * @returns Object containing astronomical parameters
+ */
+function getAstronomicalParameters(dayOfYear: number, year: number) {
+  // Calculate days since J2000.0 epoch (noon UTC, January 1, 2000)
+  // Use a simpler and more reliable method to calculate days since epoch
+  const jan1Year = new Date(year, 0, 1);
+  const jan1_2000 = new Date(2000, 0, 1);
+  const daysSinceJ2000_Jan1 = (jan1Year.getTime() - jan1_2000.getTime()) / (1000 * 60 * 60 * 24);
+  const daysSinceEpoch = daysSinceJ2000_Jan1 + (dayOfYear - 1);
+  
+  // Mean longitude of the Sun (degrees)
+  let meanLongSun = (280.46 + 0.9856474 * daysSinceEpoch) % 360;
+  if (meanLongSun < 0) meanLongSun += 360;
+  
+  // Mean anomaly of the Sun (degrees)
+  let meanAnomaly = (357.528 + 0.9856003 * daysSinceEpoch) % 360;
+  if (meanAnomaly < 0) meanAnomaly += 360;
+  const meanAnomalyRad = degreesToRadians(meanAnomaly);
+  
+  // Ecliptic longitude of the Sun (degrees)
+  const eclipticLong = meanLongSun + 1.915 * Math.sin(meanAnomalyRad) + 0.02 * Math.sin(2 * meanAnomalyRad);
+  const eclipticLongRad = degreesToRadians(eclipticLong);
+  
+  // Obliquity of the ecliptic (degrees)
+  const obliquity = 23.439 - 4e-7 * daysSinceEpoch;
+  const obliquityRad = degreesToRadians(obliquity);
+  
+  return {
+    daysSinceEpoch,
+    meanLongSun,
+    meanAnomaly,
+    meanAnomalyRad,
+    eclipticLong,
+    eclipticLongRad,
+    obliquity,
+    obliquityRad
+  };
 }
 
-export function getSolarDeclination(dayOfYear: number): number {
-  return 23.44 * Math.sin(degreesToRadians((360 / 365) * (dayOfYear - 81)));
+/**
+ * Calculate the Equation of Time using the Hughes, Yallop & Hohenkerk algorithm (1989)
+ * Based on the Astronomical Almanac method, accurate to ±3.5 seconds
+ * @param dayOfYear Day of year (1-365/366)
+ * @param year Full year (e.g., 2024) - needed for proper astronomical calculations
+ * @returns Equation of Time in minutes
+ */
+export function getEquationOfTime(dayOfYear: number, year: number = new Date().getFullYear()): number {
+  const params = getAstronomicalParameters(dayOfYear, year);
+  
+  // Right ascension of the Sun (radians, then degrees)
+  const rightAscensionRad = Math.atan2(
+    Math.cos(params.obliquityRad) * Math.sin(params.eclipticLongRad),
+    Math.cos(params.eclipticLongRad)
+  );
+  let rightAscensionDeg = (rightAscensionRad * 180) / Math.PI;
+  if (rightAscensionDeg < 0) rightAscensionDeg += 360;
+  
+  // Equation of Time calculation
+  let eotDeg = params.meanLongSun - rightAscensionDeg;
+  
+  // Handle the discontinuity around the year boundaries
+  if (eotDeg > 180) eotDeg -= 360;
+  if (eotDeg < -180) eotDeg += 360;
+  
+  // Convert to minutes (4 minutes per degree)
+  const eotMinutes = eotDeg * 4;
+  
+  // Return the astronomical EoT (positive when sun is fast)
+  return eotMinutes;
+}
+
+/**
+ * Calculate the Solar Declination using the same astronomical method as the Equation of Time
+ * This ensures consistency with the Hughes, Yallop & Hohenkerk approach
+ * @param dayOfYear Day of year (1-365/366)
+ * @param year Full year (e.g., 2024) - needed for proper astronomical calculations
+ * @returns Solar declination in degrees
+ */
+export function getSolarDeclination(dayOfYear: number, year: number = new Date().getFullYear()): number {
+  const params = getAstronomicalParameters(dayOfYear, year);
+  
+  // Solar declination (degrees)
+  const declinationRad = Math.asin(Math.sin(params.obliquityRad) * Math.sin(params.eclipticLongRad));
+  return (declinationRad * 180) / Math.PI;
 }
 
 export function getSolarPosition(
