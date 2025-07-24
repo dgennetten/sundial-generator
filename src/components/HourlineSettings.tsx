@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { LineStyle } from './LineSettings';
 import { Timer } from 'lucide-react';
 
