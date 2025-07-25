@@ -11,6 +11,7 @@ const pageSizeMap = {
   Letter: { width: 8.5 * 25.4, height: 11 * 25.4 },
   A4: { width: 210, height: 297 },
   '11x17': { width: 11 * 25.4, height: 17 * 25.4 },
+  '10x15cm Postcard': { width: 100, height: 150 },
 };
 
 type Props = {
@@ -24,7 +25,7 @@ type Props = {
   stopHour: number;
   use24Hour: boolean;
   orientation: 'Landscape' | 'Portrait';
-  pageSize: 'A4' | 'Letter' | '11x17';
+  pageSize: 'A4' | 'Letter' | '11x17' | '10x15cm Postcard';
   dateRange: 'FullYear' | 'SummerToWinter' | 'WinterToSummer';
   hourlineIntervals?: HourlineInterval[];
   declinationLines?: DeclinationLine[];
@@ -99,6 +100,22 @@ const SundialPreview: React.FC<Props> = ({
 
   // Convert border margin from inches to mm (moved up to avoid initialization error)
   const borderMarginMm = borderMargin * 25.4;
+  
+  // Calculate normalized viewBox for consistent preview scaling
+  // Use a minimum viewBox size to prevent tiny pages from appearing too zoomed in
+  const minViewBoxSize = 200; // mm
+
+  
+  // Scale up small pages while maintaining aspect ratio
+  let viewBoxWidth = width;
+  let viewBoxHeight = height;
+  let viewBoxScaleFactor = 1;
+  
+  if (Math.min(width, height) < minViewBoxSize) {
+    viewBoxScaleFactor = minViewBoxSize / Math.min(width, height);
+    viewBoxWidth = width * viewBoxScaleFactor;
+    viewBoxHeight = height * viewBoxScaleFactor;
+  }
 
   // Calculate noon analemma vertical center (moved up to avoid initialization error)
   const noonHour = 12;
@@ -887,11 +904,9 @@ const SundialPreview: React.FC<Props> = ({
       strokeWidthMm = parseFloat(strokeWidthStr) || 0.5;
     }
     
-    // Circle diameter = 2 * stroke width (in mm), so radius = stroke width (in mm)
-    // The coordinate system is in mm, so we can use the mm value directly
-    // For 0.5mm stroke width: circle diameter = 1mm, radius = 0.5mm
-    // Increased by 125% for better visibility (was 50%, now another 50% larger)
-    const circleRadius = strokeWidthMm * 2.25;
+    // Circle diameter should be 2x the width of the hour line stroke width
+    // So radius = stroke width (in mm, same coordinate system as the circle position)
+    const circleRadius = strokeWidthMm;
     
 
     
@@ -946,12 +961,17 @@ const SundialPreview: React.FC<Props> = ({
 
 
   // Create border rectangle if border is enabled
+  // Scale border coordinates to match viewBox scaling
+  const scaledWidth = width * viewBoxScaleFactor;
+  const scaledHeight = height * viewBoxScaleFactor;
+  const scaledBorderMargin = borderMarginMm * viewBoxScaleFactor;
+  
   const borderRect = showBorder ? (
     <rect
-      x={-width / 2 + borderMarginMm}
-      y={-height / 2 + borderMarginMm}
-      width={width - 2 * borderMarginMm}
-      height={height - 2 * borderMarginMm}
+      x={-scaledWidth / 2 + scaledBorderMargin}
+      y={-scaledHeight / 2 + scaledBorderMargin}
+      width={scaledWidth - 2 * scaledBorderMargin}
+      height={scaledHeight - 2 * scaledBorderMargin}
       stroke={borderLineStyle?.color || 'black'}
       fill="none"
       strokeWidth={getStrokeWidth(borderLineStyle?.width)}
@@ -964,10 +984,10 @@ const SundialPreview: React.FC<Props> = ({
   // Show clipping boundary when border is not visible (for debugging)
   const clippingBoundary = !showBorder ? (
     <rect
-      x={-width / 2 + borderMarginMm}
-      y={-height / 2 + borderMarginMm}
-      width={width - 2 * borderMarginMm}
-      height={height - 2 * borderMarginMm}
+      x={-scaledWidth / 2 + scaledBorderMargin}
+      y={-scaledHeight / 2 + scaledBorderMargin}
+      width={scaledWidth - 2 * scaledBorderMargin}
+      height={scaledHeight - 2 * scaledBorderMargin}
       stroke="#ccc"
       fill="none"
       strokeWidth={1}
@@ -1075,27 +1095,32 @@ const SundialPreview: React.FC<Props> = ({
       })
       .map(line => parseMarkupText(line));
   }
-  // Calculate y position for the text block (bottom inside border, moved up slightly)
-  const textBlockY = height / 2 - borderMarginMm - 10 - (textBlockLines.length - 1) * dialTextBlockFontSizeMm;
+  // Calculate y position for the text block in the space below winter solstice and above bottom border
+
+  const bottomBorderY = height / 2 - borderMarginMm;
+  
+  // Position text much closer to bottom border, well below the hour lines
+  const paddingFromBottomBorder = 15; // mm - move further down from bottom border
+  const textBlockY = bottomBorderY + paddingFromBottomBorder;
 
 
 
   return (
     <div className="card" style={{ width: '100%', margin: 0 }}>
       <div className="card-header">
-        <h3 className="card-title"><Sun color="#2563eb" size={20} style={{marginRight: 6}} /> Sundial Preview ({orientation})</h3>
+        <h3 className="card-title"><Sun color="#2563eb" size={20} style={{marginRight: 6}} /> Sundial Preview ({orientation}, {pageSize})</h3>
       </div>
       <div style={{ width: '100%', minHeight: '400px', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible' }}>
         <svg
           width="100%"
           height="100%"
-          viewBox={`-${width / 2} -${height / 2} ${width} ${height}`}
+          viewBox={`-${viewBoxWidth / 2} -${viewBoxHeight / 2} ${viewBoxWidth} ${viewBoxHeight}`}
           style={{ display: 'block', border: '1px solid #ccc', background: showBackground ? backgroundColor : '#fff', width: '100%', height: '100%', objectFit: 'contain' }}
           preserveAspectRatio="xMidYMid meet"
         >
           {borderRect}
           {clippingBoundary}
-          <g transform={`translate(0, ${(gnomonPosition ?? 0) - (height / 2)})`}>
+          <g transform={`scale(${viewBoxScaleFactor}) translate(0, ${(gnomonPosition ?? 0) - (height / 2)})`}>
             {/* Gnomon mark at (0,0) */}
             <GnomonSVG gnomonType={gnomonType} gnomonHeight={gnomonHeight} />
             
@@ -1104,9 +1129,8 @@ const SundialPreview: React.FC<Props> = ({
             {hourLabelElements}
             {declinationLineElements}
             {declinationNoonmarkElements}
-          </g>
-          {/* --- Dial Text Block --- */}
-          {dialTextBlockVisible && textBlockLines.length > 0 && (
+            {/* --- Dial Text Block --- */}
+            {dialTextBlockVisible && textBlockLines.length > 0 && (
             <text
               x={0}
               y={textBlockY}
@@ -1135,6 +1159,7 @@ const SundialPreview: React.FC<Props> = ({
               ))}
             </text>
           )}
+          </g>
         </svg>
       </div>
     </div>
