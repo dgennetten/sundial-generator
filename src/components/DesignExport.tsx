@@ -21,7 +21,7 @@ function colorToHex(color: string): string {
 }
 
 type ExportFormat = 'SVG' | 'PNG' | 'PDF';
-type PageSize = 'A4' | 'Letter' | '11x17';
+type PageSize = 'A4' | 'Letter' | '11x17' | '10x15cm Postcard';
 
 interface DesignExportProps {
   onBorderChange: (showBorder: boolean, margin: number, borderStyle: string) => void;
@@ -35,6 +35,7 @@ const pageSizeMap = {
   Letter: { width: 8.5, height: 11 }, // inches
   A4: { width: 8.27, height: 11.69 }, // inches
   '11x17': { width: 11, height: 17 },
+  '10x15cm Postcard': { width: 3.94, height: 5.91 }, // inches (100mm = 3.94", 150mm = 5.91")
 };
 
 const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroundChange, lineStyles, pageSize, orientation }) => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { LineStyle } from './LineSettings';
 import { Timer } from 'lucide-react';
 
@@ -50,6 +50,17 @@ interface HourlineSettingsProps {
   lineStyles: LineStyle[];
   hourlineIntervals: HourlineInterval[];
   setHourlineIntervals: (intervals: HourlineInterval[]) => void;
+  // Current values from parent
+  startHour: number;
+  stopHour: number;
+  use24Hour: boolean;
+  labelWinterSide: boolean;
+  labelSummerSide: boolean;
+  labelOffset: number;
+  fontFamily: string;
+  fontSize: number;
+  useDST: boolean;
+  declinationNoonmarks: boolean;
   onUpdate: (
     start: number,
     stop: number,
@@ -70,36 +81,20 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
   lineStyles,
   hourlineIntervals,
   setHourlineIntervals,
+  startHour,
+  stopHour,
+  use24Hour,
+  labelWinterSide,
+  labelSummerSide,
+  labelOffset,
+  fontFamily,
+  fontSize,
+  useDST,
+  declinationNoonmarks,
   onUpdate,
 }) => {
-  const [startHour, setStartHour] = useState<number>(5);
-  const [stopHour, setStopHour] = useState<number>(19);
-  const [use24Hour, setUse24Hour] = useState<boolean>(false);
-  const [labelWinterSide, setLabelWinterSide] = useState<boolean>(true);
-  const [labelSummerSide, setLabelSummerSide] = useState<boolean>(true);
-  const [labelOffset, setLabelOffset] = useState<number>(1.5);
-  const [fontFamily, setFontFamily] = useState<string>('sans-serif');
-  const [fontSize, setFontSize] = useState<number>(20);
-  const [useDST, setUseDST] = useState<boolean>(true);
-  const [declinationNoonmarks, setDeclinationNoonmarks] = useState<boolean>(true);
 
-  // Update preview automatically when any hour-related setting changes
-  React.useEffect(() => {
-    if (startHour < stopHour) {
-      onUpdate(
-        startHour,
-        stopHour,
-        use24Hour,
-        labelWinterSide,
-        labelSummerSide,
-        labelOffset,
-        fontFamily,
-        fontSize,
-        useDST,
-        declinationNoonmarks
-      );
-    }
-  }, [startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks, onUpdate]);
+
   const handleChange = (idx: number, field: keyof HourlineInterval, value: string | boolean) => {
     const updated = [...hourlineIntervals];
     updated[idx] = { ...updated[idx], [field]: value };
@@ -135,7 +130,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
                 min={0}
                 max={23}
                 value={startHour}
-                onChange={(e) => setStartHour(parseInt(e.target.value))}
+                onChange={(e) => onUpdate(parseInt(e.target.value), stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
                 style={{ width: '60px' }}
               />
               <span>to</span>
@@ -145,7 +140,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
                 min={startHour + 1}
                 max={24}
                 value={stopHour}
-                onChange={(e) => setStopHour(parseInt(e.target.value))}
+                onChange={(e) => onUpdate(startHour, parseInt(e.target.value), use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
                 style={{ width: '60px' }}
               />
             </div>
@@ -198,7 +193,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
             <input
               type="checkbox"
               checked={use24Hour}
-              onChange={(e) => setUse24Hour(e.target.checked)}
+              onChange={(e) => onUpdate(startHour, stopHour, e.target.checked, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
             />
             24-hour time
           </label>
@@ -209,7 +204,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
             <input
               type="checkbox"
               checked={declinationNoonmarks}
-              onChange={(e) => setDeclinationNoonmarks(e.target.checked)}
+              onChange={(e) => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, e.target.checked)}
             />
             Declination Noonmarks
           </label>
@@ -220,7 +215,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
             <input
               type="checkbox"
               checked={labelWinterSide}
-              onChange={e => setLabelWinterSide(e.target.checked)}
+              onChange={e => onUpdate(startHour, stopHour, use24Hour, e.target.checked, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
             />
             Winter label 
           </label>
@@ -232,7 +227,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
               <input
                 type="checkbox"
                 checked={labelSummerSide}
-                onChange={e => setLabelSummerSide(e.target.checked)}
+                onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, e.target.checked, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
               />
              Summer label
             </label>
@@ -243,7 +238,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
                 type="checkbox"
                 checked={useDST}
                 disabled={!labelSummerSide}
-                onChange={e => setUseDST(e.target.checked)}
+                onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, e.target.checked, declinationNoonmarks)}
               />
               DST
             </label>
@@ -260,7 +255,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
               max={100}
               step={1}
               value={labelOffset}
-              onChange={e => setLabelOffset(parseInt(e.target.value) || 0)}
+              onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, parseInt(e.target.value) || 0, fontFamily, fontSize, useDST, declinationNoonmarks)}
               style={{ width: '60px' }} // reduced width
             />
           </div>
@@ -273,7 +268,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
               max={48}
               step={1}
               value={fontSize}
-              onChange={e => setFontSize(parseInt(e.target.value) || 10)}
+              onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, parseInt(e.target.value) || 10, useDST, declinationNoonmarks)}
               style={{ width: '80px' }}
             />
           </div>
@@ -282,7 +277,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
             <select
               className="form-select"
               value={fontFamily}
-              onChange={e => setFontFamily(e.target.value)}
+              onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, e.target.value, fontSize, useDST, declinationNoonmarks)}
               style={{ width: '140px' }}
             >
               <option value="sans-serif">Sans-serif</option>
