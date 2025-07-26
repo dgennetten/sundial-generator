@@ -7,7 +7,15 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "fetch-logs": "node scripts/fetchLogs.js",
+    "fetch-logs-7d": "node scripts/fetchLogs.js 7",
+    "fetch-logs-30d": "node scripts/fetchLogs.js 30",
+    "update-visitors": "node scripts/updateVisitorData.js",
+    "update-visitors-7d": "node scripts/updateVisitorData.js 7",
+    "update-and-build": "node scripts/updateVisitorData.js 30 --build",
+    "update-and-deploy": "node scripts/updateVisitorData.js 30 --build --deploy",
+    "test-connection": "node scripts/testConnection.js"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",
@@ -15,7 +23,8 @@
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "ssh2": "^1.16.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",
