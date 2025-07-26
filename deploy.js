@@ -2,17 +2,28 @@ import ftp from 'ftp';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function deployToDreamHost() {
   const ftpConfig = {
-    host: 'gennetten.org', // Updated FTP host
-    user: 'dgennetten',
-    password: 'td!stayAct1ve',
+    host: process.env.FTP_HOST || 'gennetten.org',
+    user: process.env.FTP_USERNAME || 'dgennetten',
+    password: process.env.FTP_PASSWORD,
     secure: false, // Set to true if FTPS is required
   };
+
+  // Validate required environment variables
+  if (!ftpConfig.password) {
+    console.error('❌ Error: FTP_PASSWORD environment variable is required');
+    console.log('💡 Please check your .env file and ensure FTP_PASSWORD is set');
+    return;
+  }
 
   const localDistPath = path.join(__dirname, 'dist');
   const remoteBasePath = '/sundial.gennetten.org';

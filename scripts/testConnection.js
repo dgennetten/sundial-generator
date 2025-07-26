@@ -1,14 +1,25 @@
 // Simple script to test SFTP connection to Dreamhost
 import { Client } from 'ssh2';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const SFTP_CONFIG = {
-  host: 'gennetten.org',
-  username: 'dgennetten@gennetten.org',
-  password: 'td!stayAct1ve',
-  port: 22
+  host: process.env.SFTP_HOST || 'gennetten.org',
+  username: process.env.SFTP_USERNAME || 'dgennetten',
+  password: process.env.SFTP_PASSWORD,
+  port: parseInt(process.env.SFTP_PORT) || 22
 };
 
-const LOG_PATH = '/home/_domain_logs/dgennetten/sundial.gennetten.org/https.54243421/';
+const LOG_PATH = process.env.SFTP_LOG_PATH || '/home/_domain_logs/dgennetten/sundial.gennetten.org/https.54243421/';
+
+// Validate required environment variables
+if (!SFTP_CONFIG.password) {
+  console.error('❌ Error: SFTP_PASSWORD environment variable is required');
+  console.log('💡 Please check your .env file and ensure SFTP_PASSWORD is set');
+  process.exit(1);
+}
 
 function testConnection() {
   return new Promise((resolve, reject) => {
