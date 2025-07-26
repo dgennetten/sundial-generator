@@ -57,7 +57,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
       </div>
       <div className="card-content">
         <div className="form-row">
-          <div className="form-group">
+          <div className="form-group" style={{ marginRight: 6 }}>
             <label className="form-label">Page Size</label>
             <select
               className="form-select"
@@ -67,10 +67,10 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               <option value="Letter">Letter</option>
               <option value="A4">A4</option>
               <option value="11x17">11x17 inch</option>
-              <option value="10x15cm Postcard">10x15cm Postcard</option>
+              <option value="10x15cm Postcard">4x6 Post.</option>
             </select>
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ marginRight: 8 }}>
             <label className="form-label">Orientation</label>
             <select
               className="form-select"
