@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Globe, Users, MapPin } from 'lucide-react';
 
 interface VisitorLocation {
@@ -20,6 +20,7 @@ interface VisitorData {
   totalVisitors: number;
   totalVisits: number;
   processedDate: string;
+  daysSince?: number;
 }
 
 // Move getSampleData function before the component
@@ -73,11 +74,37 @@ const getSampleData = (): VisitorData => {
 };
 
 const VisitorMap: React.FC = () => {
-  // Use sample data directly
-  const visitorData = getSampleData();
-  
-  // Add state for selected country
+  const [visitorData, setVisitorData] = useState<VisitorData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+
+  // Load visitor data from JSON file
+  useEffect(() => {
+    const loadVisitorData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/visitor-data.json');
+        
+        if (!response.ok) {
+          throw new Error(`Failed to load visitor data: ${response.status}`);
+        }
+        
+        const data: VisitorData = await response.json();
+        setVisitorData(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error loading visitor data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load visitor data');
+        // Fallback to sample data if real data fails to load
+        setVisitorData(getSampleData());
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadVisitorData();
+  }, []);
   
   // Helper functions
   const totalVisitors = visitorData?.totalVisitors || 0;
@@ -137,12 +164,60 @@ const VisitorMap: React.FC = () => {
     );
   };
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">
+            <Globe color="#2563eb" size={20} style={{marginRight: 6}} />
+            Visitor Map
+          </h3>
+        </div>
+        <div className="card-content">
+          <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+            Loading visitor data...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state (but still render with fallback data)
+  if (error) {
+    console.warn('Visitor Map Error:', error);
+  }
+
+  // Don't render if no data
+  if (!visitorData) {
+    return (
+      <div className="card">
+        <div className="card-header">
+          <h3 className="card-title">
+            <Globe color="#2563eb" size={20} style={{marginRight: 6}} />
+            Visitor Map
+          </h3>
+        </div>
+        <div className="card-content">
+          <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+            No visitor data available
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="card">
       <div className="card-header">
         <h3 className="card-title">
           <Globe color="#2563eb" size={20} style={{marginRight: 6}} />
           Visitor Map
+          {error && (
+            <span style={{ fontSize: '0.75rem', color: '#dc2626', marginLeft: '8px' }}>
+              (Using fallback data)
+            </span>
+          )}
         </h3>
       </div>
       <div className="card-content">

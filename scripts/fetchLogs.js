@@ -3,19 +3,30 @@ import { Client } from 'ssh2';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// SFTP configuration for Dreamhost
+// SFTP configuration for Dreamhost - loaded from environment variables
 const SFTP_CONFIG = {
-  host: 'gennetten.org', // Your domain
-  username: 'dgennetten@gennetten.org',
-  password: 'td!stayAct1ve', // Note: Consider using SSH keys for better security
-  port: 22
+  host: process.env.SFTP_HOST || 'gennetten.org',
+  username: process.env.SFTP_USERNAME || 'dgennetten',
+  password: process.env.SFTP_PASSWORD,
+  port: parseInt(process.env.SFTP_PORT) || 22
 };
 
-const LOG_PATH = '/home/_domain_logs/dgennetten/sundial.gennetten.org/https.54243421/';
+const LOG_PATH = process.env.SFTP_LOG_PATH || '/home/_domain_logs/dgennetten/sundial.gennetten.org/https.54243421/';
+
+// Validate required environment variables
+if (!SFTP_CONFIG.password) {
+  console.error('❌ Error: SFTP_PASSWORD environment variable is required');
+  console.log('💡 Please check your .env file and ensure SFTP_PASSWORD is set');
+  process.exit(1);
+}
 const LOCAL_LOG_DIR = path.join(__dirname, '..', 'logs');
 const OUTPUT_FILE = path.join(__dirname, '..', 'public', 'visitor-data.json');
 
@@ -275,7 +286,7 @@ async function main() {
 }
 
 // Run main function if this script is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === `file:///${__filename.replace(/\\/g, '/')}`) {
   main();
 }
 
