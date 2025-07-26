@@ -17,6 +17,7 @@ import { loadDeclinationLines } from './components/declinationLineUtils';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
 import { getSolarPosition, projectShadowToSurface } from './utils/analemmaGenerator';
 import BuildDate from './components/BuildDate';
+import VisitorMap from './components/VisitorMap';
 
 
 const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n*{incline}*\n*Computer Generated Sundial by K. Douglas Gennetten*`;
@@ -352,6 +353,7 @@ const App: React.FC = () => {
           pageSize={pageSize}
           orientation={orientation}
         />
+        <VisitorMap />
         <div className="card">
           <div className="card-header">
             <h3 className="card-title"><Info color="#2563eb" size={20} style={{marginRight: 6}} /> About—Including tips on how to use</h3>

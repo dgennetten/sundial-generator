@@ -1,0 +1,86 @@
+{
+  "visitors": [
+    {
+      "ip": "192.168.1.1",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Fort Collins",
+      "lat": 40.5853,
+      "lon": -105.0844,
+      "timezone": "America/Denver",
+      "firstVisit": "15/Jan/2024:10:30:00 -0700",
+      "lastVisit": "20/Jan/2024:14:22:00 -0700",
+      "visitCount": 15
+    },
+    {
+      "ip": "203.0.113.1",
+      "country": "Germany",
+      "countryCode": "DE",
+      "region": "Bavaria",
+      "city": "Munich",
+      "lat": 48.1351,
+      "lon": 11.5820,
+      "timezone": "Europe/Berlin",
+      "firstVisit": "18/Jan/2024:09:15:00 +0100",
+      "lastVisit": "18/Jan/2024:09:15:00 +0100",
+      "visitCount": 3
+    },
+    {
+      "ip": "198.51.100.1",
+      "country": "Japan",
+      "countryCode": "JP",
+      "region": "Tokyo",
+      "city": "Tokyo",
+      "lat": 35.6762,
+      "lon": 139.6503,
+      "timezone": "Asia/Tokyo",
+      "firstVisit": "19/Jan/2024:22:45:00 +0900",
+      "lastVisit": "19/Jan/2024:22:45:00 +0900",
+      "visitCount": 1
+    },
+    {
+      "ip": "198.51.100.2",
+      "country": "United Kingdom",
+      "countryCode": "GB",
+      "region": "England",
+      "city": "London",
+      "lat": 51.5074,
+      "lon": -0.1278,
+      "timezone": "Europe/London",
+      "firstVisit": "17/Jan/2024:16:30:00 +0000",
+      "lastVisit": "21/Jan/2024:11:15:00 +0000",
+      "visitCount": 7
+    },
+    {
+      "ip": "198.51.100.3",
+      "country": "Canada",
+      "countryCode": "CA",
+      "region": "Ontario",
+      "city": "Toronto",
+      "lat": 43.6532,
+      "lon": -79.3832,
+      "timezone": "America/Toronto",
+      "firstVisit": "16/Jan/2024:13:20:00 -0500",
+      "lastVisit": "16/Jan/2024:13:20:00 -0500",
+      "visitCount": 2
+    },
+    {
+      "ip": "198.51.100.4",
+      "country": "France",
+      "countryCode": "FR",
+      "region": "Île-de-France",
+      "city": "Paris",
+      "lat": 48.8566,
+      "lon": 2.3522,
+      "timezone": "Europe/Paris",
+      "firstVisit": "20/Jan/2024:08:45:00 +0100",
+      "lastVisit": "20/Jan/2024:08:45:00 +0100",
+      "visitCount": 4
+    }
+  ],
+  "totalVisitors": 6,
+  "totalVisits": 32,
+  "processedDate": "2024-01-21T15:00:00.000Z",
+  "daysSince": 30
+}
