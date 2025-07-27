@@ -23,8 +23,8 @@
       "lon": -104.9078,
       "timezone": "America/Denver",
       "firstVisit": "26/Jul/2025:08:11:34 -0700",
-      "lastVisit": "26/Jul/2025:14:01:21 -0700",
-      "visitCount": 10
+      "lastVisit": "26/Jul/2025:17:53:57 -0700",
+      "visitCount": 19
     },
     {
       "ip": "64.238.204.123",
@@ -103,10 +103,36 @@
       "firstVisit": "26/Jul/2025:10:45:06 -0700",
       "lastVisit": "26/Jul/2025:10:45:06 -0700",
       "visitCount": 1
+    },
+    {
+      "ip": "43.166.247.82",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Virginia",
+      "city": "Ashburn",
+      "lat": 39.0469,
+      "lon": -77.4903,
+      "timezone": "America/New_York",
+      "firstVisit": "26/Jul/2025:15:16:36 -0700",
+      "lastVisit": "26/Jul/2025:15:16:36 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "69.171.230.15",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Oregon",
+      "city": "Prineville",
+      "lat": 44.3041,
+      "lon": -120.8364,
+      "timezone": "America/Los_Angeles",
+      "firstVisit": "26/Jul/2025:16:34:23 -0700",
+      "lastVisit": "26/Jul/2025:16:34:23 -0700",
+      "visitCount": 1
     }
   ],
-  "totalVisitors": 8,
-  "totalVisits": 20,
-  "processedDate": "2025-07-26T21:02:07.958Z",
+  "totalVisitors": 10,
+  "totalVisits": 31,
+  "processedDate": "2025-07-27T00:55:41.931Z",
   "daysSince": 30
 }
