@@ -110,28 +110,6 @@ const VisitorMap: React.FC = () => {
   const totalVisitors = visitorData?.totalVisitors || 0;
   const totalVisits = visitorData?.totalVisits || 0;
 
-  // Get aggregated country statistics
-  const getCountryStats = () => {
-    if (!visitorData) return [];
-    
-    const countryMap = new Map<string, { count: number; visits: number; flag: string }>();
-    
-    visitorData.visitors.forEach(visitor => {
-      const existing = countryMap.get(visitor.country) || { count: 0, visits: 0, flag: visitor.countryCode };
-      countryMap.set(visitor.country, {
-        count: existing.count + 1,
-        visits: existing.visits + visitor.visitCount,
-        flag: visitor.countryCode
-      });
-    });
-    
-    return Array.from(countryMap.entries())
-      .map(([country, stats]) => ({ country, ...stats }))
-      .sort((a, b) => b.visits - a.visits);
-  };
-
-  const countryStats = getCountryStats();
-
   // Format date helper
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -143,23 +121,68 @@ const VisitorMap: React.FC = () => {
     });
   };
 
-  // Get country flag component - always show fallback for now to debug
+  // Get country flag with Windows-friendly approach
   const getCountryFlag = (countryCode: string) => {
-    // For debugging, let's always show the styled fallback
-    // This will help us see if the issue is with emoji support or component rendering
+    if (!countryCode || countryCode.length !== 2) {
+      return (
+        <span style={{
+          backgroundColor: '#6b7280',
+          color: 'white',
+          padding: '3px 6px',
+          borderRadius: '4px',
+          fontSize: '0.7rem',
+          fontWeight: 'bold',
+          minWidth: '24px',
+          textAlign: 'center',
+          display: 'inline-block'
+        }}>
+          ??
+        </span>
+      );
+    }
+    
+    const upperCode = countryCode.toUpperCase();
+    
+    // Windows often has issues with flag emojis, so let's use a more reliable approach
+    // Create attractive country code badges with country-specific colors
+    const countryColors: { [key: string]: { bg: string; text: string } } = {
+      'US': { bg: '#1e40af', text: 'white' },    // Blue
+      'DE': { bg: '#dc2626', text: 'white' },    // Red  
+      'NL': { bg: '#ea580c', text: 'white' },    // Orange
+      'GB': { bg: '#7c2d12', text: 'white' },    // Brown
+      'FR': { bg: '#1e3a8a', text: 'white' },    // Navy
+      'JP': { bg: '#dc2626', text: 'white' },    // Red
+      'CA': { bg: '#dc2626', text: 'white' },    // Red
+      'AU': { bg: '#059669', text: 'white' },    // Green
+      'IT': { bg: '#059669', text: 'white' },    // Green
+      'ES': { bg: '#dc2626', text: 'white' },    // Red
+      'BR': { bg: '#059669', text: 'white' },    // Green
+      'IN': { bg: '#ea580c', text: 'white' },    // Orange
+      'CN': { bg: '#dc2626', text: 'white' },    // Red
+      'RU': { bg: '#1e40af', text: 'white' },    // Blue
+      'KR': { bg: '#1e40af', text: 'white' },    // Blue
+    };
+    
+    const colors = countryColors[upperCode] || { bg: '#6b7280', text: 'white' };
+    
     return (
-      <span style={{
-        backgroundColor: '#2563eb',
-        color: 'white',
-        padding: '3px 6px',
-        borderRadius: '4px',
-        fontSize: '0.7rem',
-        fontWeight: 'bold',
-        display: 'inline-block',
-        minWidth: '24px',
-        textAlign: 'center'
-      }}>
-        {countryCode}
+      <span 
+        style={{
+          backgroundColor: colors.bg,
+          color: colors.text,
+          padding: '3px 6px',
+          borderRadius: '4px',
+          fontSize: '0.7rem',
+          fontWeight: 'bold',
+          minWidth: '24px',
+          textAlign: 'center',
+          display: 'inline-block',
+          border: '1px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+        }}
+        title={`${upperCode} flag`}
+      >
+        {upperCode}
       </span>
     );
   };
@@ -434,43 +457,6 @@ const VisitorMap: React.FC = () => {
                 }}>
                   {visitor.visitCount}
                 </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Country Statistics */}
-        <div>
-          <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151', marginBottom: '0.5rem' }}>
-            Top Countries
-          </h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            {countryStats.slice(0, 5).map(({ country, count, visits, flag }) => (
-              <div
-                key={country}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '0.5rem',
-                  backgroundColor: selectedCountry === country ? '#eff6ff' : '#f8fafc',
-                  borderRadius: '6px',
-                  fontSize: '0.875rem',
-                  border: selectedCountry === country ? '1px solid #2563eb' : '1px solid transparent',
-                  cursor: 'pointer'
-                }}
-                onClick={() => setSelectedCountry(selectedCountry === country ? null : country)}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ fontSize: '1rem' }}>
-                    {getCountryFlag(flag)}
-                  </span>
-                  <span style={{ fontWeight: '500' }}>{country}</span>
-                </div>
-                <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#64748b' }}>
-                  <span>{count} visitor{count !== 1 ? 's' : ''}</span>
-                  <span>{visits} visit{visits !== 1 ? 's' : ''}</span>
-                </div>
               </div>
             ))}
           </div>

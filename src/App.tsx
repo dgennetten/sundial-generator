@@ -364,7 +364,7 @@ const App: React.FC = () => {
   This App traces its origins back to a gloriously nerdy gem—the 
   <a href="http://sundial.gennetten.org/docs/1980-12-SundialArticle.pdf">Amateur Scientist column</a>
   from the December 1980 issue of Scientific American. 
-  Back then, it was coded with love (and 
+  Back then, my first sundial app was coded with love (and 
   <a href="https://www.hp9845.net/9845/software/basic/">Rocky Mountain Basic</a>
   ) on an 
   <a href="https://www.hp9845.net/">HP9845</a> 
