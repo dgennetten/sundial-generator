@@ -347,3 +347,13 @@
 .reset-link:hover {
   color: #718096;
 }
+
+/* Spin animation for refresh button */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

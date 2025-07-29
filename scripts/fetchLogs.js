@@ -35,31 +35,76 @@ if (!fs.existsSync(LOCAL_LOG_DIR)) {
   fs.mkdirSync(LOCAL_LOG_DIR, { recursive: true });
 }
 
-// Simple IP geolocation using a free service
-async function getLocationFromIP(ip) {
+// Simple IP geolocation using a free service with retry logic
+async function getLocationFromIP(ip, retries = 3) {
   try {
     // Skip local/private IPs
     if (ip.startsWith('127.') || ip.startsWith('192.168.') || ip.startsWith('10.') || ip === '::1') {
       return null;
     }
 
-    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,region,regionName,city,lat,lon,timezone,query`);
-    const data = await response.json();
-    
-    if (data.status === 'success') {
-      return {
-        ip: data.query,
-        country: data.country,
-        countryCode: data.countryCode,
-        region: data.regionName,
-        city: data.city,
-        lat: data.lat,
-        lon: data.lon,
-        timezone: data.timezone
-      };
+    // Skip other private IP ranges
+    if (ip.startsWith('172.')) {
+      const secondOctet = parseInt(ip.split('.')[1]);
+      if (secondOctet >= 16 && secondOctet <= 31) {
+        return null;
+      }
+    }
+
+    // Skip other common private/reserved ranges
+    if (ip.startsWith('169.254.') || ip.startsWith('224.') || ip.startsWith('240.')) {
+      return null;
+    }
+
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,region,regionName,city,lat,lon,timezone,query`);
+        
+        if (!response.ok) {
+          if (attempt === retries) {
+            console.error(`HTTP error for IP ${ip}: ${response.status} (final attempt)`);
+            return null;
+          }
+          console.log(`HTTP error for IP ${ip}: ${response.status} (attempt ${attempt}/${retries})`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+          continue;
+        }
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+          return {
+            ip: data.query,
+            country: data.country,
+            countryCode: data.countryCode,
+            region: data.regionName,
+            city: data.city,
+            lat: data.lat,
+            lon: data.lon,
+            timezone: data.timezone
+          };
+        } else {
+          if (data.status === 'fail' && data.message === 'private range') {
+            return null; // Don't retry for private IPs
+          }
+          if (attempt === retries) {
+            console.log(`Geolocation failed for IP ${ip}: ${data.message || 'Unknown error'} (final attempt)`);
+          } else {
+            console.log(`Geolocation failed for IP ${ip}: ${data.message || 'Unknown error'} (attempt ${attempt}/${retries})`);
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          }
+        }
+      } catch (fetchError) {
+        if (attempt === retries) {
+          console.error(`Network error for IP ${ip}: ${fetchError.message} (final attempt)`);
+        } else {
+          console.log(`Network error for IP ${ip}: ${fetchError.message} (attempt ${attempt}/${retries})`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+      }
     }
   } catch (error) {
-    console.error(`Error getting location for IP ${ip}:`, error);
+    console.error(`Unexpected error getting location for IP ${ip}:`, error.message);
   }
   return null;
 }
@@ -155,9 +200,10 @@ function downloadLogFiles() {
 }
 
 // Process log file and extract visitor data
-async function processLogFile(logFilePath, daysSince = 30) {
+async function processLogFile(logFilePath, daysSince = 90) {
   const visitors = new Map(); // Use IP as key to avoid duplicates
   const visitCounts = new Map(); // Track visit counts per location
+  const failedIPs = new Set(); // Track IPs that failed geolocation
   
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - daysSince);
@@ -167,8 +213,14 @@ async function processLogFile(logFilePath, daysSince = 30) {
     const lines = logContent.split('\n');
     
     console.log(`Processing ${lines.length} log lines from the last ${daysSince} days...`);
+    console.log(`Start date filter: ${startDate.toISOString()}`);
     
     let processedCount = 0;
+    let skippedOldEntries = 0;
+    let skippedStaticFiles = 0;
+    let skippedDuplicateIPs = 0;
+    let failedGeolocations = 0;
+    let totalLogEntries = 0;
     
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -177,14 +229,20 @@ async function processLogFile(logFilePath, daysSince = 30) {
       const logEntry = parseLogLine(line);
       if (!logEntry) continue;
       
+      totalLogEntries++;
+      
       // Parse timestamp and filter by date
       const timestampStr = logEntry.timestamp.replace(/\[|\]/g, '');
       const logDate = new Date(timestampStr.replace(/(\d{2})\/(\w{3})\/(\d{4}):(\d{2}):(\d{2}):(\d{2}) (.+)/, '$2 $1, $3 $4:$5:$6 $7'));
       
-      if (logDate < startDate) continue;
+      if (logDate < startDate) {
+        skippedOldEntries++;
+        continue;
+      }
       
       // Skip non-HTML requests (images, CSS, JS, etc.)
       if (logEntry.path.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/i)) {
+        skippedStaticFiles++;
         continue;
       }
       
@@ -194,10 +252,12 @@ async function processLogFile(logFilePath, daysSince = 30) {
         visitor.lastVisit = logEntry.timestamp;
         const locationKey = `${visitor.lat},${visitor.lon}`;
         visitCounts.set(locationKey, (visitCounts.get(locationKey) || 0) + 1);
+        skippedDuplicateIPs++;
         continue;
       }
       
       // Get geolocation for new IP
+      console.log(`Looking up geolocation for new IP: ${logEntry.ip}`);
       const location = await getLocationFromIP(logEntry.ip);
       if (location) {
         visitors.set(logEntry.ip, {
@@ -210,14 +270,35 @@ async function processLogFile(logFilePath, daysSince = 30) {
         visitCounts.set(locationKey, (visitCounts.get(locationKey) || 0) + 1);
         
         processedCount++;
-        console.log(`Processed visitor ${processedCount}: ${location.city}, ${location.country}`);
+        console.log(`✅ Processed visitor ${processedCount}: ${location.city}, ${location.country} (${logEntry.ip})`);
+      } else {
+        failedGeolocations++;
+        failedIPs.add(logEntry.ip);
+        console.log(`❌ Failed to get location for IP: ${logEntry.ip}`);
       }
       
       // Add delay to respect rate limits (ip-api.com allows 45 requests per minute)
-      if (processedCount % 10 === 0) {
-        console.log(`Processed ${processedCount} unique visitors, pausing...`);
-        await new Promise(resolve => setTimeout(resolve, 2000));
+      // Reduce delay frequency to process more visitors faster
+      if (processedCount % 15 === 0 && processedCount > 0) {
+        console.log(`Processed ${processedCount} unique visitors, pausing for rate limit...`);
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Reduced from 2000ms
       }
+    }
+    
+    // Log processing statistics
+    console.log('\n📊 Processing Statistics:');
+    console.log(`Total log entries parsed: ${totalLogEntries}`);
+    console.log(`Skipped (too old): ${skippedOldEntries}`);
+    console.log(`Skipped (static files): ${skippedStaticFiles}`);
+    console.log(`Skipped (duplicate IPs): ${skippedDuplicateIPs}`);
+    console.log(`Failed geolocations: ${failedGeolocations}`);
+    console.log(`Successfully processed unique visitors: ${processedCount}`);
+    
+    // Save failed IPs for debugging
+    if (failedIPs.size > 0) {
+      const failedIPsFile = path.join(__dirname, '..', 'logs', 'failed-ips.txt');
+      fs.writeFileSync(failedIPsFile, Array.from(failedIPs).join('\n'));
+      console.log(`Failed IPs saved to: ${failedIPsFile}`);
     }
     
     // Convert to array and add visit counts
@@ -245,7 +326,7 @@ async function processLogFile(logFilePath, daysSince = 30) {
 
 // Main function
 async function main() {
-  const daysSince = parseInt(process.argv[2]) || 30;
+  const daysSince = parseInt(process.argv[2]) || 90;
   
   try {
     console.log('Starting log processing...');
