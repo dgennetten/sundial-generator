@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 
 const OUTPUT_FILE = path.join(__dirname, '..', 'public', 'visitor-data.json');
 
-async function updateVisitorData(daysSince = 30) {
+async function updateVisitorData(daysSince = 90) {
   try {
     console.log('🌍 Starting visitor data update...');
     console.log(`📅 Fetching data from the last ${daysSince} days`);
@@ -54,7 +54,7 @@ async function updateVisitorData(daysSince = 30) {
 
 // Main function
 async function main() {
-  const daysSince = parseInt(process.argv[2]) || 30;
+  const daysSince = parseInt(process.argv[2]) || 90;
   const shouldBuild = process.argv.includes('--build');
   const shouldDeploy = process.argv.includes('--deploy');
   
@@ -67,7 +67,13 @@ async function main() {
       console.log('\n🔨 Building project...');
       const { execSync } = await import('child_process');
       execSync('npm run build', { stdio: 'inherit' });
-      console.log('✅ Build complete!');
+      
+      // Ensure visitor data is copied to dist folder after build
+      console.log('📋 Copying visitor data to dist folder...');
+      const fs = await import('fs');
+      const distVisitorDataPath = path.join(__dirname, '..', 'dist', 'visitor-data.json');
+      fs.copyFileSync(OUTPUT_FILE, distVisitorDataPath);
+      console.log('✅ Build complete and visitor data copied!');
     }
     
     // Optionally deploy (if you have a deploy script)

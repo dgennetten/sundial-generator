@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Users, MapPin } from 'lucide-react';
+import { Globe, Users, MapPin, RefreshCw } from 'lucide-react';
 
 interface VisitorLocation {
   ip: string;
@@ -80,35 +80,52 @@ const VisitorMap: React.FC = () => {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
 
   // Load visitor data from JSON file
-  useEffect(() => {
-    const loadVisitorData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/visitor-data.json');
-        
-        if (!response.ok) {
-          throw new Error(`Failed to load visitor data: ${response.status}`);
+  const loadVisitorData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/visitor-data.json?t=${Date.now()}`, {
+        cache: 'no-cache',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         }
-        
-        const data: VisitorData = await response.json();
-        setVisitorData(data);
-        setError(null);
-      } catch (err) {
-        console.error('Error loading visitor data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load visitor data');
-        // Fallback to sample data if real data fails to load
-        setVisitorData(getSampleData());
-      } finally {
-        setLoading(false);
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to load visitor data: ${response.status}`);
       }
-    };
+      
+      const data: VisitorData = await response.json();
+      console.log('VisitorMap: Successfully loaded visitor data - Visitors:', data.totalVisitors, 'Visits:', data.totalVisits);
+      setVisitorData(data);
+      setError(null);
+    } catch (err) {
+      console.error('VisitorMap: Error loading visitor data:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load visitor data');
+      // Fallback to sample data if real data fails to load
+      const sampleData = getSampleData();
+      console.log('VisitorMap: Using fallback sample data');
+      setVisitorData(sampleData);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadVisitorData();
   }, []);
   
   // Helper functions
   const totalVisitors = visitorData?.totalVisitors || 0;
   const totalVisits = visitorData?.totalVisits || 0;
+  
+  // Debug logging
+  React.useEffect(() => {
+    if (visitorData) {
+      console.log('VisitorMap: Rendering - Visitors:', totalVisitors, 'Visits:', totalVisits);
+    }
+  }, [visitorData, totalVisitors, totalVisits]);
 
   // Format date helper
   const formatDate = (dateString: string) => {
@@ -232,7 +249,7 @@ const VisitorMap: React.FC = () => {
 
   return (
     <div className="card">
-      <div className="card-header">
+      <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 className="card-title">
           <Globe color="#2563eb" size={20} style={{marginRight: 6}} />
           Visitor Map
@@ -242,6 +259,26 @@ const VisitorMap: React.FC = () => {
             </span>
           )}
         </h3>
+        <button 
+          onClick={loadVisitorData}
+          disabled={loading}
+          style={{
+            background: 'none',
+            border: '1px solid #e2e8f0',
+            borderRadius: '6px',
+            padding: '6px 12px',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            fontSize: '0.875rem',
+            color: '#64748b'
+          }}
+          title="Refresh visitor data"
+        >
+          <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+          Refresh
+        </button>
       </div>
       <div className="card-content">
         <div style={{ 
@@ -252,7 +289,7 @@ const VisitorMap: React.FC = () => {
         }}>
           <div style={{ textAlign: 'center', padding: '0.75rem', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#2563eb' }}>
-              {totalVisitors}
+              {loading ? '...' : totalVisitors}
             </div>
             <div style={{ fontSize: '0.875rem', color: '#64748b' }}>
               <Users size={14} style={{ display: 'inline', marginRight: '4px' }} />
@@ -261,13 +298,24 @@ const VisitorMap: React.FC = () => {
           </div>
           <div style={{ textAlign: 'center', padding: '0.75rem', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#059669' }}>
-              {totalVisits}
+              {loading ? '...' : totalVisits}
             </div>
             <div style={{ fontSize: '0.875rem', color: '#64748b' }}>
               <MapPin size={14} style={{ display: 'inline', marginRight: '4px' }} />
               Total Visits
             </div>
           </div>
+        </div>
+        
+        {/* Data source indicator */}
+        <div style={{ 
+          fontSize: '0.75rem', 
+          color: error ? '#dc2626' : '#059669', 
+          textAlign: 'center', 
+          marginBottom: '1rem',
+          fontStyle: 'italic'
+        }}>
+          {error ? '⚠️ Using sample data (real data failed to load)' : '✅ Live data from server logs'}
         </div>
         
         {/* World Map Visualization */}
@@ -495,7 +543,7 @@ const VisitorMap: React.FC = () => {
           paddingTop: '0.5rem',
           borderTop: '1px solid #e2e8f0'
         }}>
-          Last updated: {visitorData ? formatDate(visitorData.processedDate) : 'Never'}
+          Last 90 days, updated: {visitorData ? formatDate(visitorData.processedDate) : 'Never'}
         </div>
       </div>
     </div>
