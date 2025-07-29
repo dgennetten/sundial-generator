@@ -348,6 +348,19 @@
   color: #718096;
 }
 
+.feedback-link {
+  color: #a0aec0;
+  font-size: 0.75rem;
+  font-style: italic;
+  text-decoration: underline;
+  font-family: inherit;
+  transition: color 0.2s ease;
+}
+
+.feedback-link:hover {
+  color: #718096;
+}
+
 /* Spin animation for refresh button */
 @keyframes spin {
   from {

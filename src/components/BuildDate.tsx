@@ -21,13 +21,19 @@ const BuildDate: React.FC = () => {
 
   return (
     <div className="build-date-card">
-      Build Date: {__BUILD_DATE__} | <button 
+      {__VERSION__} | <button 
         onClick={handleReset}
         className="reset-link"
         title="Reset all settings to defaults"
       >
         reset
-      </button>
+      </button> | <a 
+        href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
+        className="feedback-link"
+        title="Send feedback about the sundial generator"
+      >
+        feedback
+      </a>
     </div>
   );
 };
