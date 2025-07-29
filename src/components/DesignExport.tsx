@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import type { LineStyle } from './LineSettings';
 import { Save } from 'lucide-react';
-import html2canvas from 'html2canvas';
+import { exportSundial, type ExportFormat, type PageSize } from '../utils/exportUtils';
 
 // Utility to convert named color to hex
 function colorToHex(color: string): string {
@@ -20,8 +20,7 @@ function colorToHex(color: string): string {
   return '#fff8dc';
 }
 
-type ExportFormat = 'SVG' | 'PNG' | 'PDF';
-type PageSize = 'A4' | 'Letter' | '11x17' | '10x15cm Postcard';
+
 
 interface DesignExportProps {
   onBorderChange: (showBorder: boolean, margin: number, borderStyle: string) => void;
@@ -31,12 +30,7 @@ interface DesignExportProps {
   orientation: 'Landscape' | 'Portrait';
 }
 
-const pageSizeMap = {
-  Letter: { width: 8.5, height: 11 }, // inches
-  A4: { width: 8.27, height: 11.69 }, // inches
-  '11x17': { width: 11, height: 17 },
-  '10x15cm Postcard': { width: 3.94, height: 5.91 }, // inches (100mm = 3.94", 150mm = 5.91")
-};
+
 
 const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroundChange, lineStyles, pageSize, orientation }) => {
   const [format, setFormat] = useState<ExportFormat>('PNG');
@@ -72,122 +66,19 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
     onBackgroundChange(showBackground, newColor);
   };
 
-  const handleExport = () => {
-    if (format === 'PNG') {
-      // Find the preview container - look for the card with "Sundial Preview" in the title
-      const previewCards = document.querySelectorAll('.card');
-      let previewContainer: HTMLElement | null = null;
-      
-      for (const card of previewCards) {
-        const title = card.querySelector('.card-title');
-        if (title && title.textContent && title.textContent.includes('Sundial Preview')) {
-          previewContainer = card as HTMLElement;
-          break;
-        }
-      }
-      
-      if (!previewContainer) {
-        console.error('Could not find preview container');
-        return;
-      }
-
-      // Find the SVG container div within the preview
-      const svgContainer = previewContainer.querySelector('div[style*="display: flex"]') as HTMLElement;
-      if (!svgContainer) {
-        console.error('Could not find SVG container');
-        return;
-      }
-
-      console.log('Found SVG container:', svgContainer);
-
-      // Get intended print width in inches
-      let { width: printWidth, height: printHeight } = pageSizeMap[pageSize] || pageSizeMap.Letter;
-      if (orientation === 'Landscape') {
-        [printWidth, printHeight] = [printHeight, printWidth];
-      }
-      // Get actual DOM width in pixels
-      const domWidth = svgContainer.offsetWidth;
-      // Calculate scale for user-selected DPI
-      const pixelWidth = printWidth * dpi;
-      const scale = pixelWidth / domWidth;
-
-      // Use html2canvas to capture the SVG container
-      html2canvas(svgContainer, {
-        backgroundColor: showBackground ? backgroundColor : '#ffffff',
-        scale,
-        useCORS: true,
-        allowTaint: true,
-        logging: true, // Enable logging for debugging
-      }).then((canvas) => {
-        console.log('Canvas created:', canvas);
-        
-        // Convert canvas to PNG blob
-        canvas.toBlob((blob) => {
-          if (blob) {
-            // Create download link
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'sundial.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-          }
-        }, 'image/png');
-      }).catch((error) => {
-        console.error('Error creating canvas:', error);
+  const handleExport = async () => {
+    try {
+      await exportSundial({
+        format,
+        pageSize,
+        orientation,
+        dpi: format === 'PNG' ? dpi : undefined,
+        showBackground,
+        backgroundColor,
       });
-    } else if (format === 'SVG') {
-      // Get the SVG element from the preview
-      const svgElement = document.querySelector('svg') as SVGSVGElement;
-      if (svgElement) {
-        // Create a clone to avoid modifying the original
-        const svgClone = svgElement.cloneNode(true) as SVGSVGElement;
-        
-        // Set viewBox and dimensions for proper export
-        const bbox = svgElement.getBBox();
-        svgClone.setAttribute('viewBox', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
-        svgClone.setAttribute('width', bbox.width.toString());
-        svgClone.setAttribute('height', bbox.height.toString());
-        
-        // Fix stroke-width and dasharray units for proper export
-        const paths = svgClone.querySelectorAll('path');
-        paths.forEach(path => {
-          const strokeWidth = path.getAttribute('stroke-width');
-          if (strokeWidth && !strokeWidth.includes('px') && !strokeWidth.includes('pt') && !strokeWidth.includes('mm')) {
-            // Add 'px' unit to stroke-width
-            path.setAttribute('stroke-width', strokeWidth + 'px');
-          }
-          
-          const dasharray = path.getAttribute('stroke-dasharray');
-          if (dasharray) {
-            // Add 'px' units to dasharray values
-            const fixedDasharray = dasharray.split(',').map(val => {
-              const num = parseFloat(val);
-              if (!isNaN(num) && !val.includes('px') && !val.includes('pt') && !val.includes('mm')) {
-                return num + 'px';
-              }
-              return val;
-            }).join(',');
-            path.setAttribute('stroke-dasharray', fixedDasharray);
-          }
-        });
-        
-        // Convert to string
-        const svgString = new XMLSerializer().serializeToString(svgClone);
-        const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
-        
-        // Create download link
-        const url = URL.createObjectURL(svgBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'sundial.svg';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }
+    } catch (error) {
+      console.error('Export failed:', error);
+      // You could add user-facing error handling here, like showing a toast notification
     }
   };
 
@@ -324,7 +215,7 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
 
         <div className="form-group">
           <p style={{ fontSize: '0.9em', color: '#718096', margin: 0 }}>
-            {format === 'SVG' ? 'SVG export is NOT yet functional!' : format === 'PNG' ? 'PNG export is now functional!' : 'PDF export functionality coming soon'}
+            {format === 'SVG' ? 'SVG export is now functional!' : format === 'PNG' ? 'PNG export is functional!' : 'PDF export functionality coming soon'}
           </p>
         </div>
       </div>
