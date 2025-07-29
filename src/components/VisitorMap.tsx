@@ -307,16 +307,6 @@ const VisitorMap: React.FC = () => {
           </div>
         </div>
         
-        {/* Data source indicator */}
-        <div style={{ 
-          fontSize: '0.75rem', 
-          color: error ? '#dc2626' : '#059669', 
-          textAlign: 'center', 
-          marginBottom: '1rem',
-          fontStyle: 'italic'
-        }}>
-          {error ? '⚠️ Using sample data (real data failed to load)' : '✅ Live data from server logs'}
-        </div>
         
         {/* World Map Visualization */}
         <div style={{ 
