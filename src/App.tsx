@@ -20,7 +20,7 @@ import BuildDate from './components/BuildDate';
 import VisitorMap from './components/VisitorMap';
 
 
-const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n*{incline}*\n*Computer Generated Sundial by K. Douglas Gennetten*`;
+const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n*{incline}*`;
 
 const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);
@@ -66,6 +66,13 @@ const App: React.FC = () => {
   const [dialTextBlockFontSize, setDialTextBlockFontSize] = useState<number>(pageSize === '10x15cm Postcard' ? 8 : 14);
   const [dialTextBlockFontFamily, setDialTextBlockFontFamily] = useState<string>(fontFamily);
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
+  
+  // Calculate default dial facing based on hemisphere
+  const getDefaultDialFacing = (lat: number): 'North' | 'South' => {
+    return lat >= 0 ? 'North' : 'South';
+  };
+  
+  const [dialFacing, setDialFacing] = useState<'North' | 'South'>(getDefaultDialFacing(latitude));
 
   useEffect(() => {
     // Ensure selected style is valid
@@ -223,6 +230,8 @@ const App: React.FC = () => {
           tiltAngle={tiltAngle}
           setTiltAngle={setTiltAngle}
           latitude={latitude}
+          dialFacing={dialFacing}
+          setDialFacing={setDialFacing}
         />
 
         <LineSettings
@@ -443,12 +452,13 @@ algorithm with ±3.5 seconds accuracy.
           dialTextBlockVisible={dialTextBlockVisible}
           dialTextBlockFontSize={dialTextBlockFontSize}
           dialTextBlockFontFamily={dialTextBlockFontFamily}
-          latitude={latitude}
-          longitude={longitude}
-          locationName={locationName}
-          inclineType={inclineType}
-          tiltAngle={tiltAngle}
-          declinationNoonmarks={declinationNoonmarks}
+                     latitude={latitude}
+           longitude={longitude}
+           locationName={locationName}
+           inclineType={inclineType}
+           tiltAngle={tiltAngle}
+           declinationNoonmarks={declinationNoonmarks}
+           dialFacing={dialFacing}
         />
       </div>
     </div>
