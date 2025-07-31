@@ -246,7 +246,7 @@ const VisitorMap: React.FC = () => {
              <div className="card-header">
          <h3 className="card-title">
            <Globe color="#2563eb" size={20} style={{marginRight: 6}} />
-           Visitor Map
+           Visitor Map  —  Please send feedback!
            {error && (
              <span style={{ fontSize: '0.75rem', color: '#dc2626', marginLeft: '8px' }}>
                (Using fallback data)
@@ -259,7 +259,7 @@ const VisitorMap: React.FC = () => {
           display: 'grid', 
           gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', 
           gap: '1rem', 
-          marginBottom: '1.5rem' 
+          marginBottom: '0.5rem' 
         }}>
           <div style={{ textAlign: 'center', padding: '0.75rem', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#2563eb' }}>
@@ -287,7 +287,7 @@ const VisitorMap: React.FC = () => {
           backgroundColor: '#f1f5f9', 
           borderRadius: '8px', 
           padding: '0.75rem', 
-          marginBottom: '1rem'
+          marginBottom: '0.5rem'
         }}>
           
           {/* Leaflet Map Component */}
@@ -347,7 +347,7 @@ const VisitorMap: React.FC = () => {
         {/* Selected Country Details */}
         {selectedCountry && (
           <div style={{ 
-            marginTop: '0.75rem', 
+            marginTop: '0.0rem', 
             padding: '0.6rem', 
             backgroundColor: '#eff6ff', 
             borderRadius: '6px',
@@ -377,7 +377,7 @@ const VisitorMap: React.FC = () => {
           paddingTop: '0.5rem',
           borderTop: '1px solid #e2e8f0'
         }}>
-          Last 7 days (GDPR compliant), updated: {visitorData ? formatDate(visitorData.processedDate) : 'Never'}
+          Last 7 days (GDPR compliant), updated: {visitorData ? formatDate(visitorData.processedDate) : 'Never'} MDT
         </div>
       </div>
     </div>
