@@ -21,7 +21,8 @@
     "verify-credentials": "node scripts/verifyCredentials.js",
     "update-credentials": "node scripts/updateCredentials.js",
     "debug-logs": "node scripts/debugLogProcessing.js",
-    "debug-logs-90d": "node scripts/debugLogProcessing.js 90"
+    "debug-logs-90d": "node scripts/debugLogProcessing.js 90",
+    "cron-update": "node scripts/cronUpdate.js"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",
