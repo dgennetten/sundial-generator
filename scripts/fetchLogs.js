@@ -200,10 +200,29 @@ function downloadLogFiles() {
 }
 
 // Process log file and extract visitor data
-async function processLogFile(logFilePath, daysSince = 90) {
+async function processLogFile(logFilePath, daysSince = 7) {
   const visitors = new Map(); // Use IP as key to avoid duplicates
   const visitCounts = new Map(); // Track visit counts per location
   const failedIPs = new Set(); // Track IPs that failed geolocation
+  
+  // Load existing visitor data to merge with new data
+  let existingData = null;
+  try {
+    if (fs.existsSync(OUTPUT_FILE)) {
+      const existingContent = fs.readFileSync(OUTPUT_FILE, 'utf8');
+      existingData = JSON.parse(existingContent);
+      console.log(`📚 Found existing visitor data with ${existingData.totalVisitors} visitors`);
+      
+      // Load existing visitors into our maps
+      existingData.visitors.forEach(visitor => {
+        visitors.set(visitor.ip, visitor);
+        const locationKey = `${visitor.lat},${visitor.lon}`;
+        visitCounts.set(locationKey, visitor.visitCount);
+      });
+    }
+  } catch (error) {
+    console.log('⚠️  Could not load existing visitor data, starting fresh:', error.message);
+  }
   
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - daysSince);
@@ -246,12 +265,13 @@ async function processLogFile(logFilePath, daysSince = 90) {
         continue;
       }
       
-      // Skip if we already processed this IP
+      // If we already have this IP, update visit count and last visit
       if (visitors.has(logEntry.ip)) {
         const visitor = visitors.get(logEntry.ip);
         visitor.lastVisit = logEntry.timestamp;
+        visitor.visitCount = (visitor.visitCount || 1) + 1;
         const locationKey = `${visitor.lat},${visitor.lon}`;
-        visitCounts.set(locationKey, (visitCounts.get(locationKey) || 0) + 1);
+        visitCounts.set(locationKey, visitor.visitCount);
         skippedDuplicateIPs++;
         continue;
       }
@@ -260,17 +280,19 @@ async function processLogFile(logFilePath, daysSince = 90) {
       console.log(`Looking up geolocation for new IP: ${logEntry.ip}`);
       const location = await getLocationFromIP(logEntry.ip);
       if (location) {
-        visitors.set(logEntry.ip, {
+        const newVisitor = {
           ...location,
           firstVisit: logEntry.timestamp,
-          lastVisit: logEntry.timestamp
-        });
+          lastVisit: logEntry.timestamp,
+          visitCount: 1
+        };
+        visitors.set(logEntry.ip, newVisitor);
         
         const locationKey = `${location.lat},${location.lon}`;
-        visitCounts.set(locationKey, (visitCounts.get(locationKey) || 0) + 1);
+        visitCounts.set(locationKey, 1);
         
         processedCount++;
-        console.log(`✅ Processed visitor ${processedCount}: ${location.city}, ${location.country} (${logEntry.ip})`);
+        console.log(`✅ Processed new visitor ${processedCount}: ${location.city}, ${location.country} (${logEntry.ip})`);
       } else {
         failedGeolocations++;
         failedIPs.add(logEntry.ip);
@@ -301,19 +323,13 @@ async function processLogFile(logFilePath, daysSince = 90) {
       console.log(`Failed IPs saved to: ${failedIPsFile}`);
     }
     
-    // Convert to array and add visit counts
-    const visitorData = Array.from(visitors.values()).map(visitor => {
-      const locationKey = `${visitor.lat},${visitor.lon}`;
-      return {
-        ...visitor,
-        visitCount: visitCounts.get(locationKey) || 1
-      };
-    });
+    // Convert to array (visit counts are already stored in visitor objects)
+    const visitorData = Array.from(visitors.values());
     
     return {
       visitors: visitorData,
       totalVisitors: visitorData.length,
-      totalVisits: Array.from(visitCounts.values()).reduce((sum, count) => sum + count, 0),
+      totalVisits: visitorData.reduce((sum, visitor) => sum + (visitor.visitCount || 1), 0),
       processedDate: new Date().toISOString(),
       daysSince: daysSince
     };
@@ -326,7 +342,7 @@ async function processLogFile(logFilePath, daysSince = 90) {
 
 // Main function
 async function main() {
-  const daysSince = parseInt(process.argv[2]) || 90;
+  const daysSince = parseInt(process.argv[2]) || 7;
   
   try {
     console.log('Starting log processing...');
