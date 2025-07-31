@@ -139,7 +139,7 @@ const VisitorMap: React.FC = () => {
     });
   };
 
-  // Get country flag with Windows-friendly approach
+  // Get country flag image
   const getCountryFlag = (countryCode: string) => {
     if (!countryCode || countryCode.length !== 2) {
       return (
@@ -161,48 +161,41 @@ const VisitorMap: React.FC = () => {
     
     const upperCode = countryCode.toUpperCase();
     
-    // Windows often has issues with flag emojis, so let's use a more reliable approach
-    // Create attractive country code badges with country-specific colors
-    const countryColors: { [key: string]: { bg: string; text: string } } = {
-      'US': { bg: '#1e40af', text: 'white' },    // Blue
-      'DE': { bg: '#dc2626', text: 'white' },    // Red  
-      'NL': { bg: '#ea580c', text: 'white' },    // Orange
-      'GB': { bg: '#7c2d12', text: 'white' },    // Brown
-      'FR': { bg: '#1e3a8a', text: 'white' },    // Navy
-      'JP': { bg: '#dc2626', text: 'white' },    // Red
-      'CA': { bg: '#dc2626', text: 'white' },    // Red
-      'AU': { bg: '#059669', text: 'white' },    // Green
-      'IT': { bg: '#059669', text: 'white' },    // Green
-      'ES': { bg: '#dc2626', text: 'white' },    // Red
-      'BR': { bg: '#059669', text: 'white' },    // Green
-      'IN': { bg: '#ea580c', text: 'white' },    // Orange
-      'CN': { bg: '#dc2626', text: 'white' },    // Red
-      'RU': { bg: '#1e40af', text: 'white' },    // Blue
-      'KR': { bg: '#1e40af', text: 'white' },    // Blue
-    };
-    
-    const colors = countryColors[upperCode] || { bg: '#6b7280', text: 'white' };
-    
-    return (
-      <span 
-        style={{
-          backgroundColor: colors.bg,
-          color: colors.text,
-          padding: '3px 6px',
-          borderRadius: '4px',
-          fontSize: '0.7rem',
-          fontWeight: 'bold',
-          minWidth: '24px',
-          textAlign: 'center',
-          display: 'inline-block',
-          border: '1px solid rgba(255,255,255,0.2)',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
-        }}
-        title={`${upperCode} flag`}
-      >
-        {upperCode}
-      </span>
-    );
+              return (
+       <img 
+         src={`https://flagicons.lipis.dev/flags/4x3/${upperCode.toLowerCase()}.svg`}
+         alt={`${upperCode} flag`}
+         style={{
+           width: '16px',
+           height: '12px',
+           display: 'inline-block',
+           borderRadius: '1px',
+           boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+           border: '1px solid rgba(0,0,0,0.1)',
+           imageRendering: 'crisp-edges'
+         }}
+         title={`${upperCode} flag`}
+         onError={(e) => {
+           // Fallback to country code if image fails to load
+           const target = e.target as HTMLImageElement;
+           target.style.display = 'none';
+           const fallback = document.createElement('span');
+           fallback.textContent = upperCode;
+           fallback.style.cssText = `
+             background-color: #6b7280;
+             color: white;
+             padding: 3px 6px;
+             border-radius: 4px;
+             font-size: 0.7rem;
+             font-weight: bold;
+             min-width: 24px;
+             text-align: center;
+             display: inline-block;
+           `;
+           target.parentNode?.insertBefore(fallback, target);
+         }}
+       />
+     );
   };
 
   // Show loading state
