@@ -12,6 +12,8 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
         {/* Crosshair gnomon: a "+" at (0,0), 6px long arms */}
         <line x1={-3} y1={0} x2={3} y2={0} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
         <line x1={0} y1={-3} x2={0} y2={3} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+        <line x1={3} y1={-3} x2={0} y2={3} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+        <line x1={-3} y1={-3} x2={0} y2={3} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
       </>
     );
   }
