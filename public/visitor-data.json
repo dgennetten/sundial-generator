@@ -23,8 +23,8 @@
       "lon": -117.883,
       "timezone": "America/Los_Angeles",
       "firstVisit": "30/Jul/2025:04:24:57 -0700",
-      "lastVisit": "30/Jul/2025:04:24:57 -0700",
-      "visitCount": 2
+      "lastVisit": "31/Jul/2025:02:52:22 -0700",
+      "visitCount": 8
     },
     {
       "ip": "172.59.227.198",
@@ -36,12 +36,12 @@
       "lon": -104.9078,
       "timezone": "America/Denver",
       "firstVisit": "30/Jul/2025:06:17:07 -0700",
-      "lastVisit": "30/Jul/2025:06:17:33 -0700",
-      "visitCount": 3
+      "lastVisit": "31/Jul/2025:07:28:50 -0700",
+      "visitCount": 23
     }
   ],
   "totalVisitors": 3,
-  "totalVisits": 7,
-  "processedDate": "2025-07-30T13:23:20.831Z",
-  "daysSince": 90
+  "totalVisits": 33,
+  "processedDate": "2025-07-31T14:31:06.217Z",
+  "daysSince": 180
 }

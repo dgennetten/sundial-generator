@@ -200,7 +200,7 @@ function downloadLogFiles() {
 }
 
 // Process log file and extract visitor data
-async function processLogFile(logFilePath, daysSince = 90) {
+async function processLogFile(logFilePath, daysSince = 180) {
   const visitors = new Map(); // Use IP as key to avoid duplicates
   const visitCounts = new Map(); // Track visit counts per location
   const failedIPs = new Set(); // Track IPs that failed geolocation

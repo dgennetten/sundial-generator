@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 
 const OUTPUT_FILE = path.join(__dirname, '..', 'public', 'visitor-data.json');
 
-async function updateVisitorData(daysSince = 90) {
+async function updateVisitorData(daysSince = 180) {
   try {
     console.log('🌍 Starting visitor data update...');
     console.log(`📅 Fetching data from the last ${daysSince} days`);
@@ -54,7 +54,7 @@ async function updateVisitorData(daysSince = 90) {
 
 // Main function
 async function main() {
-  const daysSince = parseInt(process.argv[2]) || 90;
+  const daysSince = parseInt(process.argv[2]) || 180;
   const shouldBuild = process.argv.includes('--build');
   const shouldDeploy = process.argv.includes('--deploy');
   
