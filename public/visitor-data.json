@@ -24,7 +24,7 @@
       "timezone": "America/Los_Angeles",
       "firstVisit": "30/Jul/2025:04:24:57 -0700",
       "lastVisit": "31/Jul/2025:02:52:22 -0700",
-      "visitCount": 13
+      "visitCount": 15
     },
     {
       "ip": "172.59.227.198",
@@ -36,8 +36,8 @@
       "lon": -104.9078,
       "timezone": "America/Denver",
       "firstVisit": "30/Jul/2025:06:17:07 -0700",
-      "lastVisit": "31/Jul/2025:11:23:09 -0700",
-      "visitCount": 106
+      "lastVisit": "31/Jul/2025:12:46:55 -0700",
+      "visitCount": 172
     },
     {
       "ip": "164.90.138.114",
@@ -50,7 +50,7 @@
       "timezone": "America/New_York",
       "firstVisit": "31/Jul/2025:09:05:45 -0700",
       "lastVisit": "31/Jul/2025:09:05:45 -0700",
-      "visitCount": 3
+      "visitCount": 5
     },
     {
       "ip": "49.51.73.183",
@@ -63,7 +63,7 @@
       "timezone": "America/Los_Angeles",
       "firstVisit": "31/Jul/2025:09:21:41 -0700",
       "lastVisit": "31/Jul/2025:09:21:41 -0700",
-      "visitCount": 3
+      "visitCount": 5
     },
     {
       "ip": "51.222.253.10",
@@ -76,11 +76,11 @@
       "timezone": "America/Toronto",
       "firstVisit": "31/Jul/2025:10:19:26 -0700",
       "lastVisit": "31/Jul/2025:10:19:26 -0700",
-      "visitCount": 3
+      "visitCount": 5
     }
   ],
   "totalVisitors": 6,
-  "totalVisits": 130,
-  "processedDate": "2025-07-31T19:29:54.650Z",
+  "totalVisits": 204,
+  "processedDate": "2025-07-31T21:59:10.020Z",
   "daysSince": 7
 }
