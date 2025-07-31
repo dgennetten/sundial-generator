@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Users, MapPin, RefreshCw } from 'lucide-react';
+import { Globe, Users, MapPin } from 'lucide-react';
 import VisitorMapLeaflet from './VisitorMapLeaflet';
 
 interface VisitorLocation {
@@ -250,37 +250,17 @@ const VisitorMap: React.FC = () => {
 
   return (
     <div className="card">
-      <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 className="card-title">
-          <Globe color="#2563eb" size={20} style={{marginRight: 6}} />
-          Visitor Map
-          {error && (
-            <span style={{ fontSize: '0.75rem', color: '#dc2626', marginLeft: '8px' }}>
-              (Using fallback data)
-            </span>
-          )}
-        </h3>
-        <button 
-          onClick={loadVisitorData}
-          disabled={loading}
-          style={{
-            background: 'none',
-            border: '1px solid #e2e8f0',
-            borderRadius: '6px',
-            padding: '6px 12px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            fontSize: '0.875rem',
-            color: '#64748b'
-          }}
-          title="Refresh visitor data"
-        >
-          <RefreshCw size={14} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-          Refresh
-        </button>
-      </div>
+             <div className="card-header">
+         <h3 className="card-title">
+           <Globe color="#2563eb" size={20} style={{marginRight: 6}} />
+           Visitor Map
+           {error && (
+             <span style={{ fontSize: '0.75rem', color: '#dc2626', marginLeft: '8px' }}>
+               (Using fallback data)
+             </span>
+           )}
+         </h3>
+       </div>
       <div className="card-content">
         <div style={{ 
           display: 'grid', 
