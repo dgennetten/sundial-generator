@@ -200,7 +200,7 @@ function downloadLogFiles() {
 }
 
 // Process log file and extract visitor data
-async function processLogFile(logFilePath, daysSince = 180) {
+async function processLogFile(logFilePath, daysSince = 7) {
   const visitors = new Map(); // Use IP as key to avoid duplicates
   const visitCounts = new Map(); // Track visit counts per location
   const failedIPs = new Set(); // Track IPs that failed geolocation
@@ -342,7 +342,7 @@ async function processLogFile(logFilePath, daysSince = 180) {
 
 // Main function
 async function main() {
-  const daysSince = parseInt(process.argv[2]) || 90;
+  const daysSince = parseInt(process.argv[2]) || 7;
   
   try {
     console.log('Starting log processing...');

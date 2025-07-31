@@ -24,7 +24,7 @@
       "timezone": "America/Los_Angeles",
       "firstVisit": "30/Jul/2025:04:24:57 -0700",
       "lastVisit": "31/Jul/2025:02:52:22 -0700",
-      "visitCount": 8
+      "visitCount": 10
     },
     {
       "ip": "172.59.227.198",
@@ -37,11 +37,11 @@
       "timezone": "America/Denver",
       "firstVisit": "30/Jul/2025:06:17:07 -0700",
       "lastVisit": "31/Jul/2025:07:28:50 -0700",
-      "visitCount": 23
+      "visitCount": 31
     }
   ],
   "totalVisitors": 3,
-  "totalVisits": 33,
-  "processedDate": "2025-07-31T14:31:06.217Z",
-  "daysSince": 180
+  "totalVisits": 43,
+  "processedDate": "2025-07-31T14:39:39.685Z",
+  "daysSince": 7
 }

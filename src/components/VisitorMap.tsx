@@ -404,7 +404,7 @@ const VisitorMap: React.FC = () => {
           paddingTop: '0.5rem',
           borderTop: '1px solid #e2e8f0'
         }}>
-          Last 6 months, updated: {visitorData ? formatDate(visitorData.processedDate) : 'Never'}
+          Last 7 days (GDPR compliant), updated: {visitorData ? formatDate(visitorData.processedDate) : 'Never'}
         </div>
       </div>
     </div>
