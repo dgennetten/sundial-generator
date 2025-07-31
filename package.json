@@ -1,7 +1,7 @@
 {
   "name": "sundial-generator",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.1.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,8 +13,10 @@
     "fetch-logs-30d": "node scripts/fetchLogs.js 30",
     "update-visitors": "node scripts/updateVisitorData.js",
     "update-visitors-7d": "node scripts/updateVisitorData.js 7",
-    "update-and-build": "node scripts/updateVisitorData.js 90 --build",
-    "update-and-deploy": "node scripts/updateVisitorData.js 90 --build --deploy",
+    "update-visitors-30d": "node scripts/updateVisitorData.js 30",
+    "update-visitors-6m": "node scripts/updateVisitorData.js 180",
+    "update-and-build": "node scripts/updateVisitorData.js 7 --build",
+    "update-and-deploy": "node scripts/updateVisitorData.js 7 --build --deploy",
     "test-connection": "node scripts/testConnection.js",
     "verify-credentials": "node scripts/verifyCredentials.js",
     "update-credentials": "node scripts/updateCredentials.js",
@@ -23,12 +25,15 @@
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",
+    "@types/leaflet": "^1.9.20",
     "dotenv": "^17.2.1",
     "ftp": "^0.3.10",
     "html2canvas": "^1.4.1",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-leaflet": "^5.0.0",
     "ssh2": "^1.16.0"
   },
   "devDependencies": {
@@ -43,6 +48,6 @@
     "globals": "^16.3.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
-    "vite": "^7.0.4"
+    "vite": "^7.0.6"
   }
 }

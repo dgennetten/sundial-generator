@@ -1,6 +1,19 @@
 {
   "visitors": [
     {
+      "ip": "205.210.31.142",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "California",
+      "city": "Santa Clara",
+      "lat": 37.3835,
+      "lon": -121.983,
+      "timezone": "America/Los_Angeles",
+      "firstVisit": "30/Jul/2025:03:50:32 -0700",
+      "lastVisit": "30/Jul/2025:03:50:32 -0700",
+      "visitCount": 2
+    },
+    {
       "ip": "66.33.200.4",
       "country": "United States",
       "countryCode": "US",
@@ -9,48 +22,9 @@
       "lat": 33.8997,
       "lon": -117.883,
       "timezone": "America/Los_Angeles",
-      "firstVisit": "29/Jul/2025:01:38:54 -0700",
-      "lastVisit": "29/Jul/2025:01:38:54 -0700",
-      "visitCount": 1
-    },
-    {
-      "ip": "207.200.8.180",
-      "country": "United States",
-      "countryCode": "US",
-      "region": "Texas",
-      "city": "Austin",
-      "lat": 30.2672,
-      "lon": -97.7431,
-      "timezone": "America/Chicago",
-      "firstVisit": "29/Jul/2025:02:48:00 -0700",
-      "lastVisit": "29/Jul/2025:02:48:00 -0700",
-      "visitCount": 1
-    },
-    {
-      "ip": "27.125.244.211",
-      "country": "Malaysia",
-      "countryCode": "MY",
-      "region": "Kuala Lumpur",
-      "city": "Kuala Lumpur",
-      "lat": 3.1398,
-      "lon": 101.6853,
-      "timezone": "Asia/Kuala_Lumpur",
-      "firstVisit": "29/Jul/2025:05:24:22 -0700",
-      "lastVisit": "29/Jul/2025:05:24:24 -0700",
-      "visitCount": 2
-    },
-    {
-      "ip": "54.36.148.90",
-      "country": "France",
-      "countryCode": "FR",
-      "region": "Hauts-de-France",
-      "city": "Roubaix",
-      "lat": 50.6917,
-      "lon": 3.20157,
-      "timezone": "Europe/Paris",
-      "firstVisit": "29/Jul/2025:08:18:48 -0700",
-      "lastVisit": "29/Jul/2025:08:18:48 -0700",
-      "visitCount": 1
+      "firstVisit": "30/Jul/2025:04:24:57 -0700",
+      "lastVisit": "31/Jul/2025:02:52:22 -0700",
+      "visitCount": 10
     },
     {
       "ip": "172.59.227.198",
@@ -61,13 +35,13 @@
       "lat": 39.7301,
       "lon": -104.9078,
       "timezone": "America/Denver",
-      "firstVisit": "29/Jul/2025:08:37:47 -0700",
-      "lastVisit": "29/Jul/2025:08:51:38 -0700",
-      "visitCount": 9
+      "firstVisit": "30/Jul/2025:06:17:07 -0700",
+      "lastVisit": "31/Jul/2025:07:28:50 -0700",
+      "visitCount": 31
     }
   ],
-  "totalVisitors": 5,
-  "totalVisits": 14,
-  "processedDate": "2025-07-29T15:55:58.972Z",
-  "daysSince": 90
+  "totalVisitors": 3,
+  "totalVisits": 43,
+  "processedDate": "2025-07-31T14:39:39.685Z",
+  "daysSince": 7
 }

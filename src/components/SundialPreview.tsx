@@ -52,6 +52,7 @@ type Props = {
   inclineType?: string;
   tiltAngle?: number;
   declinationNoonmarks?: boolean;
+  dialFacing?: 'North' | 'South';
 };
 
 const SundialPreview: React.FC<Props> = ({
@@ -92,6 +93,7 @@ const SundialPreview: React.FC<Props> = ({
   inclineType = 'Horizontal',
   tiltAngle = 0,
   declinationNoonmarks = true,
+  dialFacing = 'South',
 }) => {
   let { width, height } = pageSizeMap[pageSize] || pageSizeMap.Letter;
   if (orientation === 'Landscape') {
@@ -1096,13 +1098,16 @@ const SundialPreview: React.FC<Props> = ({
       .map(line => parseMarkupText(line));
   }
   // Calculate y position for the text block in the space below winter solstice and above bottom border
-
   const bottomBorderY = height / 2 - borderMarginMm;
   
   // Position text much closer to bottom border, well below the hour lines
   const paddingFromBottomBorder = 15; // mm - move further down from bottom border
   const textBlockY = bottomBorderY + paddingFromBottomBorder;
 
+  // Calculate center of text block for rotation
+  const lineCount = textBlockLines.length;
+  const lineHeight = dialTextBlockFontSizeMm * 1.2;
+  const centerY = textBlockY + ((lineCount - 1) * lineHeight) / 2;
 
 
   return (
@@ -1120,45 +1125,59 @@ const SundialPreview: React.FC<Props> = ({
         >
           {borderRect}
           {clippingBoundary}
-          <g transform={`scale(${viewBoxScaleFactor}) translate(0, ${(gnomonPosition ?? 0) - (height / 2)})`}>
-            {/* Gnomon mark at (0,0) */}
-            <GnomonSVG gnomonType={gnomonType} gnomonHeight={gnomonHeight} />
-            
-
-            {hourlineElements.flat()}
-            {hourLabelElements}
-            {declinationLineElements}
-            {declinationNoonmarkElements}
-            {/* --- Dial Text Block --- */}
-            {dialTextBlockVisible && textBlockLines.length > 0 && (
-            <text
-              x={0}
-              y={textBlockY}
-              fontSize={dialTextBlockFontSizeMm}
-              fill="#222"
-              textAnchor="middle"
-              fontFamily={dialTextBlockFontFamily}
-              style={{ userSelect: 'none', pointerEvents: 'none' }}
-            >
-              {textBlockLines.map((line, lineIndex) => (
-                <tspan
-                  key={lineIndex}
+          {/* Main content group - rotate entire page when North facing */}
+          <g transform={`scale(${viewBoxScaleFactor}) ${dialFacing === 'North' ? 'rotate(180)' : ''}`}>
+            {/* Content positioned relative to gnomon */}
+            <g transform={`translate(0, ${(gnomonPosition ?? 0) - (height / 2)})`}>
+              {/* Gnomon mark at (0,0) */}
+              <GnomonSVG gnomonType={gnomonType} gnomonHeight={gnomonHeight} />
+              
+              {hourlineElements.flat()}
+              {declinationLineElements}
+              {declinationNoonmarkElements}
+              
+              {/* Hour labels - counter-rotate text to keep readable */}
+              {hourLabelElements.map((label, index) => {
+                // Extract x and y from the label props
+                const { x, y } = label.props;
+                return React.cloneElement(label, {
+                  key: `label-${index}`,
+                  transform: dialFacing === 'North' ? `rotate(180 ${x} ${y})` : undefined
+                });
+              })}
+              
+              {/* --- Dial Text Block --- */}
+              {dialTextBlockVisible && textBlockLines.length > 0 && (
+                <text
                   x={0}
-                  dy={lineIndex === 0 ? 0 : dialTextBlockFontSizeMm * 1.2}
+                  y={textBlockY}
+                  fontSize={dialTextBlockFontSizeMm}
+                  fill="#222"
+                  textAnchor="middle"
+                  fontFamily={dialTextBlockFontFamily}
+                  style={{ userSelect: 'none', pointerEvents: 'none' }}
+                  transform={dialFacing === 'North' ? `rotate(180 0 ${centerY})` : undefined}
                 >
-                  {line.map((part, partIndex) => (
+                  {textBlockLines.map((line, lineIndex) => (
                     <tspan
-                      key={partIndex}
-                      fontWeight={part.bold ? 'bold' : 'normal'}
-                      fontStyle={part.italic ? 'italic' : 'normal'}
+                      key={lineIndex}
+                      x={0}
+                      dy={lineIndex === 0 ? 0 : dialTextBlockFontSizeMm * 1.2}
                     >
-                      {part.text}
+                      {line.map((part, partIndex) => (
+                        <tspan
+                          key={partIndex}
+                          fontWeight={part.bold ? 'bold' : 'normal'}
+                          fontStyle={part.italic ? 'italic' : 'normal'}
+                        >
+                          {part.text}
+                        </tspan>
+                      ))}
                     </tspan>
                   ))}
-                </tspan>
-              ))}
-            </text>
-          )}
+                </text>
+              )}
+            </g>
           </g>
         </svg>
       </div>

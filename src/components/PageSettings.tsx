@@ -5,6 +5,7 @@ import { Layout } from 'lucide-react';
 type PageSize = 'A4' | 'Letter' | '11x17' | '10x15cm Postcard';
 type Orientation = 'Landscape' | 'Portrait';
 export type InclineType = 'Horizontal' | 'Equatorial' | 'Vertical' | 'Manual';
+type DialFacing = 'North' | 'South';
 
 interface PageSettingsProps {
   pageSize: PageSize;
@@ -16,6 +17,8 @@ interface PageSettingsProps {
   tiltAngle: number;
   setTiltAngle: (angle: number) => void;
   latitude: number;
+  dialFacing: DialFacing;
+  setDialFacing: (facing: DialFacing) => void;
 }
 
 const PageSettings: React.FC<PageSettingsProps> = ({
@@ -28,6 +31,8 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   tiltAngle,
   setTiltAngle,
   latitude,
+  dialFacing,
+  setDialFacing,
 }) => {
   // Calculate effective tilt angle
   const getEffectiveTiltAngle = () => {
@@ -50,6 +55,11 @@ const PageSettings: React.FC<PageSettingsProps> = ({
       setTiltAngle(newAngle);
     }
   };
+
+  const handleDialFacingToggle = () => {
+    setDialFacing(dialFacing === 'North' ? 'South' : 'North');
+  };
+
   return (
     <div className="card">
       <div className="card-header">
@@ -111,6 +121,43 @@ const PageSettings: React.FC<PageSettingsProps> = ({
                 color: inclineType !== 'Manual' ? '#a0aec0' : undefined
               }}
             />
+          </div>
+        </div>
+        <div className="form-row" style={{ marginTop: '12px' }}>
+          <div className="form-group">
+            <label className="form-label">Dial Facing</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '14px', color: dialFacing === 'North' ? '#2563eb' : '#6b7280' }}>North</span>
+              <button
+                type="button"
+                onClick={handleDialFacingToggle}
+                style={{
+                  width: '44px',
+                  height: '24px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  backgroundColor: dialFacing === 'South' ? '#2563eb' : '#d1d5db',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  transition: 'background-color 0.2s'
+                }}
+              >
+                <div
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    backgroundColor: 'white',
+                    position: 'absolute',
+                    top: '3px',
+                    left: dialFacing === 'South' ? '23px' : '3px',
+                    transition: 'left 0.2s',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                  }}
+                />
+              </button>
+              <span style={{ fontSize: '14px', color: dialFacing === 'South' ? '#2563eb' : '#6b7280' }}>South</span>
+            </div>
           </div>
         </div>
       </div>
