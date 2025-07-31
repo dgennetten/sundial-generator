@@ -1,5 +1,4 @@
 import React from 'react';
-import { degreesToRadians, projectShadowToSurface } from '../utils/analemmaGenerator';
 
 interface GnomonSVGProps {
   gnomonType: 'crosshair' | 'popup' | 'popup-with-brace';
