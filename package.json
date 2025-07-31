@@ -1,7 +1,7 @@
 {
   "name": "sundial-generator",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,8 +15,8 @@
     "update-visitors-7d": "node scripts/updateVisitorData.js 7",
     "update-visitors-30d": "node scripts/updateVisitorData.js 30",
     "update-visitors-6m": "node scripts/updateVisitorData.js 180",
-    "update-and-build": "node scripts/updateVisitorData.js 180 --build",
-    "update-and-deploy": "node scripts/updateVisitorData.js 180 --build --deploy",
+    "update-and-build": "node scripts/updateVisitorData.js 7 --build",
+    "update-and-deploy": "node scripts/updateVisitorData.js 7 --build --deploy",
     "test-connection": "node scripts/testConnection.js",
     "verify-credentials": "node scripts/verifyCredentials.js",
     "update-credentials": "node scripts/updateCredentials.js",
