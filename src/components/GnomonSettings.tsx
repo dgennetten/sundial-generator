@@ -286,7 +286,7 @@ const GnomonSettings: React.FC<Props> = ({
         {positionMode === 'auto' && (
           <div className="form-group">
             <p style={{ fontSize: '0.9em', color: '#718096', margin: 0 }}>
-              Auto-calculated Position: <strong>{autoPosition} mm</strong> from top
+              Auto-calculated Position: <strong>{autoPosition} mm</strong> from edge 
             </p>
           </div>
         )}
