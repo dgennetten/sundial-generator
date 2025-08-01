@@ -23,8 +23,8 @@
       "lon": -117.883,
       "timezone": "America/Los_Angeles",
       "firstVisit": "30/Jul/2025:04:24:57 -0700",
-      "lastVisit": "30/Jul/2025:04:24:57 -0700",
-      "visitCount": 2
+      "lastVisit": "31/Jul/2025:02:52:22 -0700",
+      "visitCount": 15
     },
     {
       "ip": "172.59.227.198",
@@ -36,12 +36,51 @@
       "lon": -104.9078,
       "timezone": "America/Denver",
       "firstVisit": "30/Jul/2025:06:17:07 -0700",
-      "lastVisit": "30/Jul/2025:06:17:33 -0700",
-      "visitCount": 3
+      "lastVisit": "31/Jul/2025:12:46:55 -0700",
+      "visitCount": 172
+    },
+    {
+      "ip": "164.90.138.114",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "New Jersey",
+      "city": "Clifton",
+      "lat": 40.8364,
+      "lon": -74.1403,
+      "timezone": "America/New_York",
+      "firstVisit": "31/Jul/2025:09:05:45 -0700",
+      "lastVisit": "31/Jul/2025:09:05:45 -0700",
+      "visitCount": 5
+    },
+    {
+      "ip": "49.51.73.183",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "California",
+      "city": "Santa Clara",
+      "lat": 37.353,
+      "lon": -121.9544,
+      "timezone": "America/Los_Angeles",
+      "firstVisit": "31/Jul/2025:09:21:41 -0700",
+      "lastVisit": "31/Jul/2025:09:21:41 -0700",
+      "visitCount": 5
+    },
+    {
+      "ip": "51.222.253.10",
+      "country": "Canada",
+      "countryCode": "CA",
+      "region": "Quebec",
+      "city": "Beauharnois",
+      "lat": 45.3147,
+      "lon": -73.8785,
+      "timezone": "America/Toronto",
+      "firstVisit": "31/Jul/2025:10:19:26 -0700",
+      "lastVisit": "31/Jul/2025:10:19:26 -0700",
+      "visitCount": 5
     }
   ],
-  "totalVisitors": 3,
-  "totalVisits": 7,
-  "processedDate": "2025-07-30T13:23:20.831Z",
-  "daysSince": 90
+  "totalVisitors": 6,
+  "totalVisits": 204,
+  "processedDate": "2025-07-31T21:59:10.020Z",
+  "daysSince": 7
 }
