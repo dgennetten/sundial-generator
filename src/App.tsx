@@ -383,12 +383,11 @@ const App: React.FC = () => {
   <a href="http://sundial.gennetten.org/docs/SolarClockAd.pdf">advertisement</a>
   and, like a caffinated Da Vinci, scribbled out hand-drawn 
   <a href="http://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf">instructional</a>,
-  <a href="http://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf">illustrations</a>,
-   and even plotted an 
+  <a href="http://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf">illustrations</a>.
+   Here's an example 
   <a href="http://sundial.gennetten.org/docs/Tabloid-sizeDial.pdf">11x17 inch sundial</a>,
-  using the mighty 
-  (<a href="https://www.hpmuseum.net/display_item.php?hw=79">HP9872 plotter</a>)
-  —a device so majestic, it drew with servo motors and pure ambition. 
+ plotted using an 
+  <a href="https://www.hpmuseum.net/display_item.php?hw=79">HP9872 plotter</a>.
 </p>
 <p>The sundial generator now uses the professional-grade 
 <a href="https://academic.oup.com/mnras/article/238/4/1529/1037665">Hughes, Yallop & Hohenkerk</a>

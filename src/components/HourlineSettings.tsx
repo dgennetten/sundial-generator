@@ -240,7 +240,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
                 disabled={!labelSummerSide}
                 onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, e.target.checked, declinationNoonmarks)}
               />
-              DST
+              Daylight/Summer Time
             </label>
           </div>
         </div>
