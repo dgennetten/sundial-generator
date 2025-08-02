@@ -23,8 +23,8 @@
       "lon": -117.883,
       "timezone": "America/Los_Angeles",
       "firstVisit": "30/Jul/2025:04:24:57 -0700",
-      "lastVisit": "01/Aug/2025:02:55:12 -0700",
-      "visitCount": 18
+      "lastVisit": "02/Aug/2025:01:43:22 -0700",
+      "visitCount": 21
     },
     {
       "ip": "172.59.227.198",
@@ -36,8 +36,8 @@
       "lon": -104.9078,
       "timezone": "America/Denver",
       "firstVisit": "30/Jul/2025:06:17:07 -0700",
-      "lastVisit": "01/Aug/2025:16:32:28 -0700",
-      "visitCount": 184
+      "lastVisit": "02/Aug/2025:05:06:57 -0700",
+      "visitCount": 190
     },
     {
       "ip": "164.90.138.114",
@@ -103,10 +103,36 @@
       "firstVisit": "01/Aug/2025:07:15:48 -0700",
       "lastVisit": "01/Aug/2025:07:15:51 -0700",
       "visitCount": 6
+    },
+    {
+      "ip": "4.227.36.18",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Arizona",
+      "city": "Phoenix",
+      "lat": 33.448376,
+      "lon": -112.074036,
+      "timezone": "America/Phoenix",
+      "firstVisit": "02/Aug/2025:03:21:20 -0700",
+      "lastVisit": "02/Aug/2025:03:21:20 -0700",
+      "visitCount": 3
+    },
+    {
+      "ip": "4.227.36.14",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Arizona",
+      "city": "Phoenix",
+      "lat": 33.448376,
+      "lon": -112.074036,
+      "timezone": "America/Phoenix",
+      "firstVisit": "02/Aug/2025:03:21:22 -0700",
+      "lastVisit": "02/Aug/2025:03:21:22 -0700",
+      "visitCount": 3
     }
   ],
-  "totalVisitors": 8,
-  "totalVisits": 228,
-  "processedDate": "2025-08-01T23:38:48.983Z",
+  "totalVisitors": 10,
+  "totalVisits": 243,
+  "processedDate": "2025-08-02T12:10:02.990Z",
   "daysSince": 7
 }
