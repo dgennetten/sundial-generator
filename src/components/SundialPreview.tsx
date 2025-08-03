@@ -735,6 +735,9 @@ const SundialPreview: React.FC<Props> = ({
       filteredPoints = filteredPoints.filter((p: { day: number }) => p.day >= start && p.day <= end);
     }
     
+    // eslint-disable-next-line no-console
+    console.log(`Finding intersection for declination ${decl.toFixed(2)}°, filtered points: ${filteredPoints.length}`);
+    
     // Find the point with the closest declination match
     let bestPoint: { x: number; y: number } | null = null;
     let smallestDifference = Infinity;
@@ -749,11 +752,16 @@ const SundialPreview: React.FC<Props> = ({
       }
     }
     
-    // Only return the point if it's reasonably close (within 2 degrees)
-    if (bestPoint && smallestDifference < 2.0) {
+    // eslint-disable-next-line no-console
+    console.log(`Best match for declination ${decl.toFixed(2)}°: difference = ${smallestDifference.toFixed(2)}°`);
+    
+    // Only return the point if it's reasonably close (within 5 degrees)
+    if (bestPoint && smallestDifference < 5.0) {
       return bestPoint;
     }
     
+    // eslint-disable-next-line no-console
+    console.log(`No suitable intersection found for declination ${decl.toFixed(2)}° (tolerance: 5.0°)`);
     return null;
   }
 
@@ -879,11 +887,21 @@ const SundialPreview: React.FC<Props> = ({
   });
 
   // Create declination noonmarks if enabled
+  // eslint-disable-next-line no-console
+  console.log(`Declination noonmarks enabled: ${declinationNoonmarks}, scale: ${scale}, viewBoxScaleFactor: ${viewBoxScaleFactor}`);
+  
   const declinationNoonmarkElements = declinationNoonmarks ? declinationLines.flatMap((line, idx) => {
+    // eslint-disable-next-line no-console
+    console.log(`Processing declination line ${idx}: ${line.date}, active: ${line.active}`);
+    
     if (!line.active) return [];
     
     const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
-    if (!style) return [];
+    if (!style) {
+      // eslint-disable-next-line no-console
+      console.log(`No style found for line ${line.date}, styleId: ${line.styleId}`);
+      return [];
+    }
     
     // Get the noon hour line style to determine circle diameter
     // Look for the 'Hour' interval style, or fall back to the default '0.5mm-black' style
@@ -908,7 +926,12 @@ const SundialPreview: React.FC<Props> = ({
     
     // Circle diameter should be 2x the width of the hour line stroke width
     // So radius = stroke width (in mm, same coordinate system as the circle position)
-    const circleRadius = strokeWidthMm;
+    // Make it a bit larger for visibility
+    const circleRadius = strokeWidthMm * 2;
+    
+    // Debug logging for declination noonmarks
+    // eslint-disable-next-line no-console
+    console.log(`Declination noonmark processing: ${line.date}, active: ${line.active}, style: ${style?.color}`);
     
 
     
@@ -917,10 +940,20 @@ const SundialPreview: React.FC<Props> = ({
     // Handle Month Boundaries as a special case
     if (line.date === 'Month Boundaries') {
       const monthBoundaries = getMonthBoundaryDeclinations();
+      // eslint-disable-next-line no-console
+      console.log(`Month boundaries for noonmarks:`, monthBoundaries.map(b => `${b.month} (decl ${b.decl.toFixed(2)}°)`));
       return monthBoundaries.flatMap((boundary, boundaryIdx) => {
         // Find single intersection point with noon analemma for this declination
         const intersectionPoint = findDeclinationAnalemmaIntersection(boundary.decl);
-        if (!intersectionPoint) return [];
+        if (!intersectionPoint) {
+          // eslint-disable-next-line no-console
+          console.log(`No intersection found for month boundary ${boundary.month} (decl ${boundary.decl.toFixed(2)}°)`);
+          return [];
+        }
+        
+        // eslint-disable-next-line no-console
+        console.log(`Found intersection for ${boundary.month}: (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
+        console.log(`Rendering circle for ${boundary.month} at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
         
         return [
           <circle
@@ -930,6 +963,7 @@ const SundialPreview: React.FC<Props> = ({
             r={circleRadius}
             fill={style.color || 'black'}
             stroke="none"
+            vectorEffect="non-scaling-stroke"
           />
         ];
       });
@@ -937,11 +971,23 @@ const SundialPreview: React.FC<Props> = ({
     
     // Handle regular declination lines
     const decl = getDeclinationForLine(line);
-    if (decl === null) return [];
+    if (decl === null) {
+      // eslint-disable-next-line no-console
+      console.log(`No declination found for line: ${line.date}`);
+      return [];
+    }
     
     // Find single intersection point with noon analemma for this declination
     const intersectionPoint = findDeclinationAnalemmaIntersection(decl);
-    if (!intersectionPoint) return [];
+    if (!intersectionPoint) {
+      // eslint-disable-next-line no-console
+      console.log(`No intersection found for declination ${decl.toFixed(2)}° (line: ${line.date})`);
+      return [];
+    }
+    
+    // eslint-disable-next-line no-console
+    console.log(`Found intersection for ${line.date} (decl ${decl.toFixed(2)}°): (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
+    console.log(`Rendering circle at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
     
     return [
       <circle
@@ -951,6 +997,7 @@ const SundialPreview: React.FC<Props> = ({
         r={circleRadius}
         fill={style.color || 'black'}
         stroke="none"
+        vectorEffect="non-scaling-stroke"
       />
     ];
   }) : [];
