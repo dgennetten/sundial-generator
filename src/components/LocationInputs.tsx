@@ -43,6 +43,7 @@ const timeZoneIdToAbbr: { [key: string]: string } = {
   'Europe/Berlin': 'CET',
   'Europe/Athens': 'EET',
   'Europe/Moscow': 'MSK',
+  'Europe/Luxembourg': 'CET',
   'Asia/Kolkata': 'IST',
   'Asia/Tokyo': 'JST',
   'Australia/Sydney': 'AEST',
@@ -59,7 +60,10 @@ const locations: { [key: string]: { lat: number; lng: number; tz: string } } = {
   'Spangle, WA USA': { lat: 47.4307, lng: -117.3796, tz: 'PST' },
   'Henrico, VA USA': { lat: 37.5243, lng: -77.4932, tz: 'EST' },
   'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747, tz: 'MST' },
-  'Quito, Ecuador': { lat: -0.1807, lng: -78.4678, tz: 'EST' }
+  'Quito, Ecuador': { lat: -0.1807, lng: -78.4678, tz: 'EST' },
+  'Falkenstein, Saxony, Germany': { lat: 50.4777, lng: 12.3649, tz: 'CET' },
+  'Luxembourg City, Luxembourg': { lat: 49.6116, lng: 6.1319, tz: 'CET' },
+  'St Petersburg, Russia': { lat: 59.8761, lng: 30.4339, tz: 'MSK' }
 };
 
 const meridianToTimeZone: { [key: number]: string } = Object.fromEntries(
@@ -135,18 +139,45 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
         <h3 className="card-title"><MapPin color="#2563eb" size={20} style={{marginRight: 6}} /> Location</h3>
       </div>
       <div className="card-content">
-        <div className="form-group">
-          <label className="form-label">Location</label>
-          <select
-            className="form-select"
-            value={getCurrentLocation()}
-            onChange={(e) => handleLocationChange(e.target.value)}
+        <div
+          className="form-row"
+          style={
+            isMobile
+              ? { display: 'flex', flexDirection: 'row', alignItems: 'end', width: '100%', gap: 4 }
+              : { alignItems: 'end' }
+          }
+        >
+          <div
+            className="form-group"
+            style={isMobile ? { minWidth: 0, flexShrink: 1, flex: '2' } : { flex: '2' }}
           >
-            {Object.keys(locations).map(location => (
-              <option key={location} value={location}>{location}</option>
-            ))}
-            <option value="Custom Location">Custom Location</option>
-          </select>
+            <label className="form-label">Location</label>
+            <select
+              className="form-select"
+              value={getCurrentLocation()}
+              onChange={(e) => handleLocationChange(e.target.value)}
+            >
+              {Object.keys(locations).map(location => (
+                <option key={location} value={location}>{location}</option>
+              ))}
+              <option value="Custom Location">Custom Location</option>
+            </select>
+          </div>
+          <div
+            className="form-group"
+            style={isMobile ? { minWidth: 0, flexShrink: 1, flex: '1' } : { flex: '1' }}
+          >
+            <label className="form-label">Time Zone</label>
+            <select
+              className="form-select"
+              value={currentTimeZone}
+              onChange={(e) => handleTimeZoneChange(e.target.value)}
+            >
+              {Object.keys(timeZoneToMeridian).map(tz => (
+                <option key={tz} value={tz}>{tz}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div
@@ -202,19 +233,6 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
               Pick on Map
             </button>
           </div>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Time Zone</label>
-          <select
-            className="form-select"
-            value={currentTimeZone}
-            onChange={(e) => handleTimeZoneChange(e.target.value)}
-          >
-            {Object.keys(timeZoneToMeridian).map(tz => (
-              <option key={tz} value={tz}>{tz}</option>
-            ))}
-          </select>
         </div>
         {loadingTz && <div style={{ color: '#f59e42', marginTop: 8 }}>Detecting time zone...</div>}
       </div>

@@ -187,7 +187,10 @@ const PageSettings: React.FC<PageSettingsProps> = ({
            <div className="form-group">
              <label className="form-label">Dial Facing</label>
              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-               <span style={{ fontSize: '14px', color: dialFacingLockInfo.requiredDirection === 'North' ? '#2563eb' : '#6b7280' }}>North</span>
+               <span style={{ 
+                 fontSize: '14px', 
+                 color: dialFacingLockInfo.showNotice ? '#9ca3af' : (dialFacingLockInfo.requiredDirection === 'North' ? '#2563eb' : '#6b7280') 
+               }}>North</span>
                <button
                  type="button"
                  onClick={handleDialFacingToggle}
@@ -197,7 +200,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
                    height: '24px',
                    borderRadius: '12px',
                    border: 'none',
-                   backgroundColor: dialFacingLockInfo.requiredDirection === 'South' ? '#2563eb' : '#d1d5db',
+                   backgroundColor: dialFacingLockInfo.showNotice ? '#e5e7eb' : (dialFacingLockInfo.requiredDirection === 'South' ? '#2563eb' : '#d1d5db'),
                    cursor: dialFacingLockInfo.isLocked ? 'not-allowed' : 'pointer',
                    position: 'relative',
                    transition: 'background-color 0.2s',
@@ -218,7 +221,10 @@ const PageSettings: React.FC<PageSettingsProps> = ({
                    }}
                  />
                </button>
-               <span style={{ fontSize: '14px', color: dialFacingLockInfo.requiredDirection === 'South' ? '#2563eb' : '#6b7280' }}>South</span>
+               <span style={{ 
+                 fontSize: '14px', 
+                 color: dialFacingLockInfo.showNotice ? '#9ca3af' : (dialFacingLockInfo.requiredDirection === 'South' ? '#2563eb' : '#6b7280') 
+               }}>South</span>
                {dialFacingLockInfo.showNotice && (
                  <span style={{ fontSize: '12px', color: '#dc2626', marginLeft: '8px' }}>
                    Dial must face toward solar path.

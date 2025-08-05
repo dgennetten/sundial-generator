@@ -51,6 +51,7 @@ type Props = {
   tiltAngle?: number;
   declinationNoonmarks?: boolean;
   dialFacing?: 'North' | 'South';
+  originalLatitude?: number;
 };
 
 const SundialPreview: React.FC<Props> = ({
@@ -90,6 +91,7 @@ const SundialPreview: React.FC<Props> = ({
   tiltAngle = 0,
   declinationNoonmarks = true,
   dialFacing = 'South',
+  originalLatitude,
 }) => {
   let { width, height } = pageSizeMap[pageSize] || pageSizeMap.Letter;
   if (orientation === 'Landscape') {
@@ -711,36 +713,10 @@ const SundialPreview: React.FC<Props> = ({
 
   // Helper function to find the best intersection point of declination line with noon analemma
   function findDeclinationAnalemmaIntersection(decl: number): { x: number; y: number } | null {
-    // Helper function for tropical incline calculation
-    const getTropicalIncline = (lat: number): number => {
-      const isInTropics = Math.abs(lat) <= 23.4367; // Tropic of Cancer/Capricorn
-      if (isInTropics) {
-        return 0; // No tropical option if already in tropics
-      }
-      
-      // Calculate distance to nearest tropic
-      const tropicOfCancer = 23.4367;
-      const tropicOfCapricorn = -23.4367;
-      
-      if (lat > 0) {
-        // Northern hemisphere - distance to Tropic of Cancer
-        return Math.abs(lat - tropicOfCancer);
-      } else {
-        // Southern hemisphere - distance to Tropic of Capricorn
-        return Math.abs(lat - tropicOfCapricorn);
-      }
-    };
-    
     // Get the noon analemma points (hour = 12)
-    // For inclined dials, we use the effective latitude (original latitude - tilt angle)
-    // and treat them as horizontal dials
-    const effectiveLat = inclineType === 'Horizontal' ? lat : 
-                        inclineType === 'Equatorial' ? lat - lat :
-                        inclineType === 'Vertical' ? lat - 90 :
-                        inclineType === 'Tropical' ? lat - getTropicalIncline(lat) : lat - tiltAngle;
-    
+    // Use the same parameters as the declination lines (original lat, Horizontal orientation)
     const noonAnalemmaPoints = getAnalemmaPointsProjected({
-      lat: effectiveLat,
+      lat,
       lng,
       tzMeridian,
       hour: 12,
@@ -1148,15 +1124,7 @@ const SundialPreview: React.FC<Props> = ({
   let textBlockLines: Array<Array<{ text: string; bold: boolean; italic: boolean }>> = [];
   if (dialTextBlock) {
     // Helper functions for tropical calculations
-    const isInTropics = (lat: number): boolean => {
-      return Math.abs(lat) <= 23.4367; // Tropic of Cancer/Capricorn
-    };
-
     const getTropicalIncline = (lat: number): number => {
-      if (isInTropics(lat)) {
-        return 0; // No tropical option if already in tropics
-      }
-      
       // Calculate distance to nearest tropic
       const tropicOfCancer = 23.4367;
       const tropicOfCapricorn = -23.4367;
@@ -1170,12 +1138,12 @@ const SundialPreview: React.FC<Props> = ({
       }
     };
 
-    // Create incline string - only show if tilt angle is not zero
-    const effectiveTiltAngle = inclineType === 'Horizontal' ? 0 : 
-                              inclineType === 'Equatorial' ? (lat || 0) :
-                              inclineType === 'Vertical' ? 90 :
-                              inclineType === 'Tropical' ? getTropicalIncline(lat || 0) : tiltAngle;
-    const inclineString = effectiveTiltAngle !== 0 ? `Dial incline: ${effectiveTiltAngle.toFixed(1)} degrees` : '';
+      // Create incline string - show for all incline types except Horizontal
+  const effectiveTiltAngle = inclineType === 'Horizontal' ? 0 :
+                            inclineType === 'Equatorial' ? (originalLatitude || lat || 0) :
+                            inclineType === 'Vertical' ? 90 :
+                            inclineType === 'Tropical' ? getTropicalIncline(originalLatitude || lat || 0) : tiltAngle;
+  const inclineString = inclineType !== 'Horizontal' ? `Dial incline: ${effectiveTiltAngle.toFixed(1)} degrees` : '';
     
     const processedText = dialTextBlock
       .replace(/\{location\}/gi, locationString)
