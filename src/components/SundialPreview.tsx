@@ -715,9 +715,36 @@ const SundialPreview: React.FC<Props> = ({
 
   // Helper function to find the best intersection point of declination line with noon analemma
   function findDeclinationAnalemmaIntersection(decl: number): { x: number; y: number } | null {
+    // Helper function for tropical incline calculation
+    const getTropicalIncline = (lat: number): number => {
+      const isInTropics = Math.abs(lat) <= 23.4367; // Tropic of Cancer/Capricorn
+      if (isInTropics) {
+        return 0; // No tropical option if already in tropics
+      }
+      
+      // Calculate distance to nearest tropic
+      const tropicOfCancer = 23.4367;
+      const tropicOfCapricorn = -23.4367;
+      
+      if (lat > 0) {
+        // Northern hemisphere - distance to Tropic of Cancer
+        return Math.abs(lat - tropicOfCancer);
+      } else {
+        // Southern hemisphere - distance to Tropic of Capricorn
+        return Math.abs(lat - tropicOfCapricorn);
+      }
+    };
+    
     // Get the noon analemma points (hour = 12)
+    // For inclined dials, we use the effective latitude (original latitude - tilt angle)
+    // and treat them as horizontal dials
+    const effectiveLat = inclineType === 'Horizontal' ? lat : 
+                        inclineType === 'Equatorial' ? lat - lat :
+                        inclineType === 'Vertical' ? lat - 90 :
+                        inclineType === 'Tropical' ? lat - getTropicalIncline(lat) : lat - tiltAngle;
+    
     const noonAnalemmaPoints = getAnalemmaPointsProjected({
-      lat,
+      lat: effectiveLat,
       lng,
       tzMeridian,
       hour: 12,
@@ -1048,13 +1075,13 @@ const SundialPreview: React.FC<Props> = ({
 
   // --- Text Block Logic ---
   let locationString = locationName || '';
-  if (!locationString && typeof latitude === 'number' && typeof longitude === 'number') {
+  if (!locationString && typeof lat === 'number' && typeof lng === 'number') {
     // Fallback if no location name is provided
-    locationString = 'Lat: ' + latitude.toFixed(4) + ', Lon: ' + longitude.toFixed(4);
+    locationString = 'Lat: ' + lat.toFixed(4) + ', Lon: ' + lng.toFixed(4);
   }
   let coordinatesString = '';
-  if (typeof latitude === 'number' && typeof longitude === 'number') {
-    coordinatesString = `Latitude: ${latitude.toFixed(4)}, Longitude: ${longitude.toFixed(4)}`;
+  if (typeof lat === 'number' && typeof lng === 'number') {
+    coordinatesString = `Latitude: ${lat.toFixed(4)}, Longitude: ${lng.toFixed(4)}`;
   }
   // Function to parse bold and italic text (text between ** markers for bold, * markers for italic)
   const parseMarkupText = (text: string): Array<{ text: string; bold: boolean; italic: boolean }> => {
@@ -1149,15 +1176,17 @@ const SundialPreview: React.FC<Props> = ({
 
     // Create incline string - only show if tilt angle is not zero
     const effectiveTiltAngle = inclineType === 'Horizontal' ? 0 : 
-                              inclineType === 'Equatorial' ? (latitude || 0) :
+                              inclineType === 'Equatorial' ? (lat || 0) :
                               inclineType === 'Vertical' ? 90 :
-                              inclineType === 'Tropical' ? getTropicalIncline(latitude || 0) : tiltAngle;
+                              inclineType === 'Tropical' ? getTropicalIncline(lat || 0) : tiltAngle;
     const inclineString = effectiveTiltAngle !== 0 ? `Dial incline: ${effectiveTiltAngle.toFixed(1)} degrees` : '';
     
     const processedText = dialTextBlock
       .replace(/\{location\}/gi, locationString)
       .replace(/\{coordinates\}/gi, coordinatesString)
       .replace(/\{incline\}/gi, inclineString);
+    
+
     
     // Filter out lines that become empty or contain only markup after replacement
     textBlockLines = processedText.split('\n')
@@ -1167,18 +1196,92 @@ const SundialPreview: React.FC<Props> = ({
         return trimmed !== '' && !trimmed.match(/^\*+$/);
       })
       .map(line => parseMarkupText(line));
+    
+
+
   }
-  // Calculate y position for the text block in the space below winter solstice and above bottom border
-  const bottomBorderY = height / 2 - borderMarginMm;
+  // Calculate y position for the text block based on dial facing and incline
+  const calculateTextBlockPosition = (): { y: number; side: 'top' | 'bottom' } => {
+    // Get solstice noon positions
+    const winterSolsticeNoon = findDeclinationAnalemmaIntersection(-23.44);
+    const summerSolsticeNoon = findDeclinationAnalemmaIntersection(23.44);
+    
+
+    
+    // Determine which side the gnomon is on
+    let gnomonSide: 'top' | 'bottom' = 'bottom';
+    
+    if (dialFacing === 'South') {
+      // For south-facing dials, gnomon is typically on top (north side)
+      gnomonSide = 'top';
+    } else if (dialFacing === 'North') {
+      // For north-facing dials, gnomon is typically on bottom (south side)
+      gnomonSide = 'bottom';
+    }
+    
+    // For equatorial dials (gnomon in center), place text at bottom
+    if (inclineType === 'Equatorial') {
+      gnomonSide = 'bottom';
+    }
+    
+    // Place text on opposite side of gnomon
+    const textSide = gnomonSide === 'top' ? 'bottom' : 'top';
+    
+    // Calculate border positions in viewBox coordinates
+    const topBorderY = -height / 2 + borderMarginMm;
+    const bottomBorderY = height / 2 - borderMarginMm;
+    
+    // Center text between border and solstice line
+    let textY: number;
+    if (textSide === 'bottom') {
+      // For bottom text, center between bottom border and winter solstice
+      const winterY = winterSolsticeNoon ? winterSolsticeNoon.y * viewBoxScaleFactor : bottomBorderY + 20;
+      // Ensure we have enough space for the text
+      const availableSpace = winterY - bottomBorderY;
+      if (availableSpace > 30) { // Minimum space needed for text
+        textY = bottomBorderY + (availableSpace / 2);
+      } else {
+        // If not enough space, place text just above bottom border
+        textY = bottomBorderY + 15;
+      }
+    } else {
+      // For top text, center between top border and summer solstice
+      const summerY = summerSolsticeNoon ? summerSolsticeNoon.y * viewBoxScaleFactor : topBorderY - 20;
+      // Ensure we have enough space for the text
+      const availableSpace = topBorderY - summerY;
+      if (availableSpace > 30) { // Minimum space needed for text
+        textY = topBorderY - (availableSpace / 2);
+      } else {
+        // If not enough space, place text just below top border
+        textY = topBorderY - 15;
+      }
+    }
+    
+    // Add some padding to avoid touching the lines
+    const padding = 10; // mm
+    if (textSide === 'bottom') {
+      textY += padding;
+    } else {
+      textY -= padding;
+    }
+    
+
+    
+
+    
+    return { y: textY, side: textSide };
+  };
   
-  // Position text much closer to bottom border, well below the hour lines
-  const paddingFromBottomBorder = 15; // mm - move further down from bottom border
-  const textBlockY = bottomBorderY + paddingFromBottomBorder;
+  const { y: textBlockY } = calculateTextBlockPosition();
 
   // Calculate center of text block for rotation
   const lineCount = textBlockLines.length;
   const lineHeight = dialTextBlockFontSizeMm * 1.2;
   const centerY = textBlockY + ((lineCount - 1) * lineHeight) / 2;
+
+  // For north-facing dials, we need to adjust the text position since the entire group is rotated
+  const adjustedTextBlockY = dialFacing === 'North' ? -textBlockY : textBlockY;
+  const adjustedCenterY = dialFacing === 'North' ? -centerY : centerY;
 
 
   return (
@@ -1218,35 +1321,38 @@ const SundialPreview: React.FC<Props> = ({
               })}
               
               {/* --- Dial Text Block --- */}
+
               {dialTextBlockVisible && textBlockLines.length > 0 && (
-                <text
-                  x={0}
-                  y={textBlockY}
-                  fontSize={dialTextBlockFontSizeMm}
-                  fill="#222"
-                  textAnchor="middle"
-                  fontFamily={dialTextBlockFontFamily}
-                  style={{ userSelect: 'none', pointerEvents: 'none' }}
-                  transform={dialFacing === 'North' ? `rotate(180 0 ${centerY})` : undefined}
-                >
-                  {textBlockLines.map((line, lineIndex) => (
-                    <tspan
-                      key={lineIndex}
-                      x={0}
-                      dy={lineIndex === 0 ? 0 : dialTextBlockFontSizeMm * 1.2}
-                    >
-                      {line.map((part, partIndex) => (
-                        <tspan
-                          key={partIndex}
-                          fontWeight={part.bold ? 'bold' : 'normal'}
-                          fontStyle={part.italic ? 'italic' : 'normal'}
-                        >
-                          {part.text}
-                        </tspan>
-                      ))}
-                    </tspan>
-                  ))}
-                </text>
+                <>
+                  <text
+                    x={0}
+                    y={adjustedTextBlockY / viewBoxScaleFactor}
+                    fontSize={dialTextBlockFontSizeMm}
+                    fill="#222"
+                    textAnchor="middle"
+                    fontFamily={dialTextBlockFontFamily}
+                    style={{ userSelect: 'none', pointerEvents: 'none' }}
+                    transform={dialFacing === 'North' ? `rotate(180 0 ${adjustedCenterY / viewBoxScaleFactor})` : undefined}
+                  >
+                    {textBlockLines.map((line, lineIndex) => (
+                      <tspan
+                        key={lineIndex}
+                        x={0}
+                        dy={lineIndex === 0 ? 0 : dialTextBlockFontSizeMm * 1.2}
+                      >
+                        {line.map((part, partIndex) => (
+                          <tspan
+                            key={partIndex}
+                            fontWeight={part.bold ? 'bold' : 'normal'}
+                            fontStyle={part.italic ? 'italic' : 'normal'}
+                          >
+                            {part.text}
+                          </tspan>
+                        ))}
+                      </tspan>
+                    ))}
+                  </text>
+                </>
               )}
             </g>
           </g>
