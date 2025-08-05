@@ -405,7 +405,7 @@ const App: React.FC = () => {
                <strong>New feature:</strong> Properly supported Inclined Dials. Would love your <a 
                  href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
                  style={{ color: '#7c2d12', textDecoration: 'underline' }}
-               >feedback</a>.
+               >feedback</a>. (several known bugs)
              </div>
             <div dangerouslySetInnerHTML={{ __html: `
 <p>
@@ -490,8 +490,6 @@ algorithm with ±3.5 seconds accuracy.
           dialTextBlockVisible={dialTextBlockVisible}
           dialTextBlockFontSize={dialTextBlockFontSize}
           dialTextBlockFontFamily={dialTextBlockFontFamily}
-                     latitude={latitude}
-           longitude={longitude}
            locationName={locationName}
            inclineType={inclineType}
            tiltAngle={tiltAngle}
