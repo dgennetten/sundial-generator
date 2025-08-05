@@ -1124,10 +1124,34 @@ const SundialPreview: React.FC<Props> = ({
 
   let textBlockLines: Array<Array<{ text: string; bold: boolean; italic: boolean }>> = [];
   if (dialTextBlock) {
+    // Helper functions for tropical calculations
+    const isInTropics = (lat: number): boolean => {
+      return Math.abs(lat) <= 23.4367; // Tropic of Cancer/Capricorn
+    };
+
+    const getTropicalIncline = (lat: number): number => {
+      if (isInTropics(lat)) {
+        return 0; // No tropical option if already in tropics
+      }
+      
+      // Calculate distance to nearest tropic
+      const tropicOfCancer = 23.4367;
+      const tropicOfCapricorn = -23.4367;
+      
+      if (lat > 0) {
+        // Northern hemisphere - distance to Tropic of Cancer
+        return Math.abs(lat - tropicOfCancer);
+      } else {
+        // Southern hemisphere - distance to Tropic of Capricorn
+        return Math.abs(lat - tropicOfCapricorn);
+      }
+    };
+
     // Create incline string - only show if tilt angle is not zero
     const effectiveTiltAngle = inclineType === 'Horizontal' ? 0 : 
                               inclineType === 'Equatorial' ? (latitude || 0) :
-                              inclineType === 'Vertical' ? 90 : tiltAngle;
+                              inclineType === 'Vertical' ? 90 :
+                              inclineType === 'Tropical' ? getTropicalIncline(latitude || 0) : tiltAngle;
     const inclineString = effectiveTiltAngle !== 0 ? `Dial incline: ${effectiveTiltAngle.toFixed(1)} degrees` : '';
     
     const processedText = dialTextBlock
