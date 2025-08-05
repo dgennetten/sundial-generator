@@ -43,7 +43,7 @@ const App: React.FC = () => {
   const [declinationLines, setDeclinationLines] = useState<DeclinationLine[]>(() => {
     return loadDeclinationLines();
   });
-  const [startHour, setStartHour] = useState<number>(5);
+  const [startHour, setStartHour] = useState<number>(4);
   const [stopHour, setStopHour] = useState<number>(19);
   const [use24Hour, setUse24Hour] = useState<boolean>(false);
   const [labelWinterSide, setLabelWinterSide] = useState<boolean>(true);
@@ -89,15 +89,7 @@ const App: React.FC = () => {
   }, [lineStyles, hourlineIntervals]);
 
   // Helper functions for tropical calculations
-  const isInTropics = (lat: number): boolean => {
-    return Math.abs(lat) <= 23.4367; // Tropic of Cancer/Capricorn
-  };
-
   const getTropicalIncline = (lat: number): number => {
-    if (isInTropics(lat)) {
-      return 0; // No tropical option if already in tropics
-    }
-    
     // Calculate distance to nearest tropic
     const tropicOfCancer = 23.4367;
     const tropicOfCapricorn = -23.4367;
@@ -231,7 +223,10 @@ const App: React.FC = () => {
               'Spangle, WA USA': { lat: 47.4307, lng: -117.3796 },
               'Henrico, VA USA': { lat: 37.5243, lng: -77.4932 },
               'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747 },
-              'Quito, Ecuador': { lat: -0.1807, lng: -78.4678 }
+              'Quito, Ecuador': { lat: -0.1807, lng: -78.4678 },
+              'Falkenstein, Saxony, Germany': { lat: 50.4777, lng: 12.3649 },
+              'Luxembourg City, Luxembourg': { lat: 49.6116, lng: 6.1319 },
+              'St Petersburg, Russia': { lat: 59.8761, lng: 30.4339 }
             };
             
             let newLocationName = 'Custom Location';
@@ -405,7 +400,7 @@ const App: React.FC = () => {
                <strong>New feature:</strong> Properly supported Inclined Dials. Would love your <a 
                  href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
                  style={{ color: '#7c2d12', textDecoration: 'underline' }}
-               >feedback</a>. (several known bugs)
+               >feedback</a>. (I added a couple of you to my Location dropdown. Features request? Localiztion?)
              </div>
             <div dangerouslySetInnerHTML={{ __html: `
 <p>
@@ -495,6 +490,7 @@ algorithm with ±3.5 seconds accuracy.
            tiltAngle={tiltAngle}
            declinationNoonmarks={declinationNoonmarks}
            dialFacing={dialFacing}
+           originalLatitude={latitude}
         />
       </div>
     </div>
