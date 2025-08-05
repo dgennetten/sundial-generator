@@ -88,12 +88,36 @@ const App: React.FC = () => {
     }
   }, [lineStyles, hourlineIntervals]);
 
+  // Helper functions for tropical calculations
+  const isInTropics = (lat: number): boolean => {
+    return Math.abs(lat) <= 23.4367; // Tropic of Cancer/Capricorn
+  };
+
+  const getTropicalIncline = (lat: number): number => {
+    if (isInTropics(lat)) {
+      return 0; // No tropical option if already in tropics
+    }
+    
+    // Calculate distance to nearest tropic
+    const tropicOfCancer = 23.4367;
+    const tropicOfCapricorn = -23.4367;
+    
+    if (lat > 0) {
+      // Northern hemisphere - distance to Tropic of Cancer
+      return Math.abs(lat - tropicOfCancer);
+    } else {
+      // Southern hemisphere - distance to Tropic of Capricorn
+      return Math.abs(lat - tropicOfCapricorn);
+    }
+  };
+
   // Update tilt angle when incline type or latitude changes
   useEffect(() => {
     if (inclineType !== 'Manual') {
       const newAngle = inclineType === 'Horizontal' ? 0 : 
                       inclineType === 'Equatorial' ? latitude :
-                      inclineType === 'Vertical' ? 90 : 0;
+                      inclineType === 'Vertical' ? 90 :
+                      inclineType === 'Tropical' ? getTropicalIncline(latitude) : 0;
       setTiltAngle(newAngle);
     }
   }, [inclineType, latitude]);
@@ -135,7 +159,8 @@ const App: React.FC = () => {
   const getEffectiveLatitude = (): number => {
     const tilt = inclineType === 'Horizontal' ? 0 : 
                  inclineType === 'Equatorial' ? latitude :
-                 inclineType === 'Vertical' ? 90 : tiltAngle;
+                 inclineType === 'Vertical' ? 90 :
+                 inclineType === 'Tropical' ? getTropicalIncline(latitude) : tiltAngle;
     
     // For inclined dials, the effective latitude is (original latitude - tilt angle)
     // This simulates tilting the dial toward the sun
@@ -368,6 +393,20 @@ const App: React.FC = () => {
             <h3 className="card-title"><Info color="#2563eb" size={20} style={{marginRight: 6}} /> About—Including tips on how to use</h3>
           </div>
           <div className="card-content">
+                         <div style={{ 
+               backgroundColor: '#fefce8', 
+               color: '#7c2d12', 
+               padding: '8px 12px', 
+               borderRadius: '6px', 
+               marginBottom: '16px',
+               fontSize: '14px',
+               fontWeight: '500'
+             }}>
+               <strong>New feature:</strong> Properly supported Inclined Dials. Would love your <a 
+                 href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
+                 style={{ color: '#7c2d12', textDecoration: 'underline' }}
+               >feedback</a>.
+             </div>
             <div dangerouslySetInnerHTML={{ __html: `
 <p>
   This App traces its origins back to a gloriously nerdy gem—the 
