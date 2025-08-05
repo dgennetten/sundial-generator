@@ -23,8 +23,8 @@
       "lon": -117.883,
       "timezone": "America/Los_Angeles",
       "firstVisit": "30/Jul/2025:04:24:57 -0700",
-      "lastVisit": "02/Aug/2025:01:43:22 -0700",
-      "visitCount": 21
+      "lastVisit": "04/Aug/2025:04:30:20 -0700",
+      "visitCount": 25
     },
     {
       "ip": "172.59.227.198",
@@ -36,8 +36,8 @@
       "lon": -104.9078,
       "timezone": "America/Denver",
       "firstVisit": "30/Jul/2025:06:17:07 -0700",
-      "lastVisit": "02/Aug/2025:05:06:57 -0700",
-      "visitCount": 190
+      "lastVisit": "04/Aug/2025:16:47:45 -0700",
+      "visitCount": 210
     },
     {
       "ip": "164.90.138.114",
@@ -129,10 +129,75 @@
       "firstVisit": "02/Aug/2025:03:21:22 -0700",
       "lastVisit": "02/Aug/2025:03:21:22 -0700",
       "visitCount": 3
+    },
+    {
+      "ip": "54.36.148.177",
+      "country": "France",
+      "countryCode": "FR",
+      "region": "Hauts-de-France",
+      "city": "Roubaix",
+      "lat": 50.6917,
+      "lon": 3.20157,
+      "timezone": "Europe/Paris",
+      "firstVisit": "04/Aug/2025:01:46:28 -0700",
+      "lastVisit": "04/Aug/2025:01:46:28 -0700",
+      "visitCount": 4
+    },
+    {
+      "ip": "66.249.68.33",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Michigan",
+      "city": "Almont",
+      "lat": 42.9263,
+      "lon": -83.0407,
+      "timezone": "America/Detroit",
+      "firstVisit": "04/Aug/2025:06:38:06 -0700",
+      "lastVisit": "04/Aug/2025:06:38:06 -0700",
+      "visitCount": 4
+    },
+    {
+      "ip": "162.154.32.24",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Indiana",
+      "city": "Jeffersonville",
+      "lat": 38.3078,
+      "lon": -85.7359,
+      "timezone": "America/Kentucky/Louisville",
+      "firstVisit": "04/Aug/2025:09:44:15 -0700",
+      "lastVisit": "04/Aug/2025:09:44:16 -0700",
+      "visitCount": 8
+    },
+    {
+      "ip": "4.227.36.63",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Arizona",
+      "city": "Phoenix",
+      "lat": 33.448376,
+      "lon": -112.074036,
+      "timezone": "America/Phoenix",
+      "firstVisit": "04/Aug/2025:15:26:34 -0700",
+      "lastVisit": "04/Aug/2025:15:26:34 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "144.76.33.42",
+      "country": "Germany",
+      "countryCode": "DE",
+      "region": "Saxony",
+      "city": "Falkenstein",
+      "lat": 50.4777,
+      "lon": 12.3649,
+      "timezone": "Europe/Berlin",
+      "firstVisit": "04/Aug/2025:15:27:37 -0700",
+      "lastVisit": "04/Aug/2025:15:27:37 -0700",
+      "visitCount": 4
     }
   ],
-  "totalVisitors": 10,
-  "totalVisits": 243,
-  "processedDate": "2025-08-02T12:10:02.990Z",
+  "totalVisitors": 15,
+  "totalVisits": 289,
+  "processedDate": "2025-08-04T23:49:42.371Z",
   "daysSince": 7
 }

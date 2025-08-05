@@ -114,7 +114,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               disabled={inclineType !== 'Manual'}
               min={0}
               max={90}
-              step={0.1}
+              step={1.0}
               style={{ 
                 width: '40px',
                 backgroundColor: inclineType !== 'Manual' ? '#f7fafc' : undefined,
