@@ -5,7 +5,7 @@
 
 # Set the working directory to your DreamHost domain directory
 # This should be where your dist folder contents are deployed
-PROJECT_DIR="/home/YOUR_USERNAME/YOUR_DOMAIN"
+PROJECT_DIR="/home/dgennetten/sundial.gennetten.com"
 cd "$PROJECT_DIR"
 
 # Set up environment variables for DreamHost
