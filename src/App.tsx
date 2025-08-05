@@ -254,10 +254,6 @@ const App: React.FC = () => {
           setDialFacing={setDialFacing}
         />
 
-        <LineSettings
-          lineStyles={lineStyles}
-          setLineStyles={setLineStyles}
-        />
         <GnomonSettings
           mode={gnomonMode}
           height={gnomonHeight}
@@ -275,6 +271,10 @@ const App: React.FC = () => {
             if (positionMode) setGnomonPositionMode(positionMode);
             if (typeof position === 'number') setGnomonPosition(position);
           }}
+        />
+        <LineSettings
+          lineStyles={lineStyles}
+          setLineStyles={setLineStyles}
         />
         <DeclinationLineOptions
           lineStyles={lineStyles}
