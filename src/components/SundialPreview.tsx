@@ -46,8 +46,6 @@ type Props = {
   dialTextBlockVisible?: boolean;
   dialTextBlockFontSize?: number;
   dialTextBlockFontFamily?: string;
-  latitude?: number;
-  longitude?: number;
   locationName?: string;
   inclineType?: string;
   tiltAngle?: number;
@@ -87,8 +85,6 @@ const SundialPreview: React.FC<Props> = ({
   dialTextBlockVisible = false,
   dialTextBlockFontSize = 14,
   dialTextBlockFontFamily = 'sans-serif',
-  latitude,
-  longitude,
   locationName = '',
   inclineType = 'Horizontal',
   tiltAngle = 0,

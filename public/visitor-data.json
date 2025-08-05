@@ -23,8 +23,8 @@
       "lon": -117.883,
       "timezone": "America/Los_Angeles",
       "firstVisit": "30/Jul/2025:04:24:57 -0700",
-      "lastVisit": "04/Aug/2025:04:30:20 -0700",
-      "visitCount": 25
+      "lastVisit": "05/Aug/2025:01:54:32 -0700",
+      "visitCount": 26
     },
     {
       "ip": "172.59.227.198",
@@ -36,8 +36,8 @@
       "lon": -104.9078,
       "timezone": "America/Denver",
       "firstVisit": "30/Jul/2025:06:17:07 -0700",
-      "lastVisit": "04/Aug/2025:16:47:45 -0700",
-      "visitCount": 210
+      "lastVisit": "05/Aug/2025:14:23:29 -0700",
+      "visitCount": 218
     },
     {
       "ip": "164.90.138.114",
@@ -194,10 +194,114 @@
       "firstVisit": "04/Aug/2025:15:27:37 -0700",
       "lastVisit": "04/Aug/2025:15:27:37 -0700",
       "visitCount": 4
+    },
+    {
+      "ip": "51.222.253.12",
+      "country": "Canada",
+      "countryCode": "CA",
+      "region": "Quebec",
+      "city": "Beauharnois",
+      "lat": 45.3147,
+      "lon": -73.8785,
+      "timezone": "America/Toronto",
+      "firstVisit": "05/Aug/2025:01:30:01 -0700",
+      "lastVisit": "05/Aug/2025:01:30:01 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "5.101.64.6",
+      "country": "Russia",
+      "countryCode": "RU",
+      "region": "St.-Petersburg",
+      "city": "St Petersburg",
+      "lat": 59.8761,
+      "lon": 30.4339,
+      "timezone": "Europe/Moscow",
+      "firstVisit": "05/Aug/2025:02:47:31 -0700",
+      "lastVisit": "05/Aug/2025:02:47:32 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "198.49.6.231",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Milliken",
+      "lat": 40.332,
+      "lon": -104.8538,
+      "timezone": "America/Denver",
+      "firstVisit": "05/Aug/2025:07:30:05 -0700",
+      "lastVisit": "05/Aug/2025:07:30:06 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "167.99.51.70",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "New Jersey",
+      "city": "Clifton",
+      "lat": 40.8364,
+      "lon": -74.1403,
+      "timezone": "America/New_York",
+      "firstVisit": "05/Aug/2025:07:50:05 -0700",
+      "lastVisit": "05/Aug/2025:07:50:05 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "164.104.7.1",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Fort Collins",
+      "lat": 40.5815,
+      "lon": -105.1042,
+      "timezone": "America/Denver",
+      "firstVisit": "05/Aug/2025:09:03:23 -0700",
+      "lastVisit": "05/Aug/2025:09:03:24 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "43.159.149.56",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "California",
+      "city": "Santa Clara",
+      "lat": 37.3541,
+      "lon": -121.9552,
+      "timezone": "America/Los_Angeles",
+      "firstVisit": "05/Aug/2025:09:34:30 -0700",
+      "lastVisit": "05/Aug/2025:09:34:30 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "51.222.253.8",
+      "country": "Canada",
+      "countryCode": "CA",
+      "region": "Quebec",
+      "city": "Beauharnois",
+      "lat": 45.3147,
+      "lon": -73.8785,
+      "timezone": "America/Toronto",
+      "firstVisit": "05/Aug/2025:09:51:05 -0700",
+      "lastVisit": "05/Aug/2025:09:51:05 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "4.227.36.12",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Arizona",
+      "city": "Phoenix",
+      "lat": 33.448376,
+      "lon": -112.074036,
+      "timezone": "America/Phoenix",
+      "firstVisit": "05/Aug/2025:10:51:56 -0700",
+      "lastVisit": "05/Aug/2025:10:51:56 -0700",
+      "visitCount": 1
     }
   ],
-  "totalVisitors": 15,
-  "totalVisits": 289,
-  "processedDate": "2025-08-04T23:49:42.371Z",
+  "totalVisitors": 23,
+  "totalVisits": 309,
+  "processedDate": "2025-08-05T21:51:32.836Z",
   "daysSince": 7
 }
