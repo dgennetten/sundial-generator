@@ -35,7 +35,7 @@ interface DesignExportProps {
 const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroundChange, lineStyles, pageSize, orientation }) => {
   const [format, setFormat] = useState<ExportFormat>('PNG');
   const [showBorder, setShowBorder] = useState<boolean>(true);
-  const [margin, setMargin] = useState<number>(0.25); // in inches
+  const [margin, setMargin] = useState<number>(6); // in mm
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
   const [showBackground, setShowBackground] = useState<boolean>(true);
   const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
@@ -92,10 +92,10 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
           {/* Removed Show Location checkbox */}
         </div>
 
-        {/* Border, Border Style, and Margin all on one row (now first) */}
-        <div className="form-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
-          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label className="form-checkbox" style={{ margin: 0 }}>
+        {/* Page Border checkbox on its own row */}
+        <div className="form-row" style={{ marginTop: '0.5rem' }}>
+          <div className="form-group">
+            <label className="form-checkbox">
               <input
                 type="checkbox"
                 checked={showBorder}
@@ -104,8 +104,12 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
               Page Border
             </label>
           </div>
+        </div>
+        
+        {/* Border Style and Margin on the same line */}
+        <div className="form-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <label htmlFor="border-style" style={{ margin: 0 }}>Border Style:</label>
+            <label className="form-label" htmlFor="border-style" style={{ margin: 0 }}>Border Style</label>
             <select
               id="border-style"
               className="form-select"
@@ -118,17 +122,17 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
             </select>
           </div>
           <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <label htmlFor="border-margin" style={{ margin: 0 }}>Margin (in):</label>
+            <label className="form-label" htmlFor="border-margin" style={{ margin: 0 }}>Margin (mm)</label>
             <input
               id="border-margin"
               type="number"
               className="form-input"
-              min={0.1}
-              max={2}
-              step={0.1}
+              min={1}
+              max={50}
+              step={1}
               value={margin}
-              onChange={(e) => handleMarginChange(parseFloat(e.target.value) || 0.5)}
-              style={{ width: '80px' }}
+              onChange={(e) => handleMarginChange(parseFloat(e.target.value) || 6)}
+              style={{ width: '60px' }}
             />
           </div>
         </div>
