@@ -322,7 +322,7 @@ const App: React.FC = () => {
                   checked={dialTextBlockVisible}
                   onChange={e => setDialTextBlockVisible(e.target.checked)}
                 />
-                Show Text Block at Bottom
+                Show Text Block
               </label>
             </div>
             <div className="form-group">
