@@ -54,7 +54,7 @@ const App: React.FC = () => {
   const [useDST, setUseDST] = useState<boolean>(true);
   const [declinationNoonmarks, setDeclinationNoonmarks] = useState<boolean>(true);
   const [showBorder, setShowBorder] = useState<boolean>(true);
-  const [borderMargin, setBorderMargin] = useState<number>(pageSize === '10x15cm Postcard' ? 0.1 : 0.25); // in inches
+  const [borderMargin, setBorderMargin] = useState<number>(pageSize === '10x15cm Postcard' ? 0.1 : 0.236); // in inches (6mm default)
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
   // Add state for gnomon position
   const [gnomonPosition, setGnomonPosition] = useState<number>(0);
@@ -131,7 +131,7 @@ const App: React.FC = () => {
       setFontSize(20);
       setLabelOffset(1.5);
       setDialTextBlockFontSize(14);
-      setBorderMargin(0.25);
+      setBorderMargin(0.236); // 6mm in inches
     }
   }, [pageSize]);
 
@@ -371,7 +371,7 @@ const App: React.FC = () => {
         <DesignExport 
           onBorderChange={(showBorder, margin, style) => {
             setShowBorder(showBorder);
-            setBorderMargin(margin);
+            setBorderMargin(margin / 25.4); // Convert mm to inches
             setBorderStyle(style);
           }}
           onBackgroundChange={(showBackground, backgroundColor) => {
