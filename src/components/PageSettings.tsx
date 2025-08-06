@@ -227,7 +227,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
                }}>South</span>
                {dialFacingLockInfo.showNotice && (
                  <span style={{ fontSize: '12px', color: '#dc2626', marginLeft: '8px' }}>
-                   Dial must face toward solar path.
+                   Inclinded dials must face toward solar path.
                  </span>
                )}
              </div>
