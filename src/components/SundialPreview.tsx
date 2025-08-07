@@ -1124,25 +1124,24 @@ const SundialPreview: React.FC<Props> = ({
   let textBlockLines: Array<Array<{ text: string; bold: boolean; italic: boolean }>> = [];
   if (dialTextBlock) {
     // Helper functions for tropical calculations
-    const getTropicalIncline = (lat: number): number => {
-      // Calculate distance to nearest tropic
-      const tropicOfCancer = 23.4367;
-      const tropicOfCapricorn = -23.4367;
-      
-      if (lat > 0) {
-        // Northern hemisphere - distance to Tropic of Cancer
-        return Math.abs(lat - tropicOfCancer);
-      } else {
-        // Southern hemisphere - distance to Tropic of Capricorn
-        return Math.abs(lat - tropicOfCapricorn);
-      }
+    const getCancerIncline = (lat: number): number => {
+      // Calculate tilt toward Tropic of Cancer (23.4367°)
+      // This creates a dial oriented toward the summer solstice
+      return Math.abs(lat - 23.4367);
+    };
+
+    const getCapricornIncline = (lat: number): number => {
+      // Calculate tilt toward Tropic of Capricorn (-23.4367°)
+      // This creates a dial oriented toward the winter solstice
+      return Math.abs(lat - (-23.4367));
     };
 
       // Create incline string - show for all incline types except Horizontal
   const effectiveTiltAngle = inclineType === 'Horizontal' ? 0 :
+                            inclineType === 'Cancer' ? getCancerIncline(originalLatitude || lat || 0) :
                             inclineType === 'Equatorial' ? (originalLatitude || lat || 0) :
-                            inclineType === 'Vertical' ? 90 :
-                            inclineType === 'Tropical' ? getTropicalIncline(originalLatitude || lat || 0) : tiltAngle;
+                            inclineType === 'Capricorn' ? getCapricornIncline(originalLatitude || lat || 0) :
+                            inclineType === 'Vertical' ? 90 : tiltAngle;
   const inclineString = inclineType !== 'Horizontal' ? `Dial incline: ${effectiveTiltAngle.toFixed(1)} degrees` : '';
     
     const processedText = dialTextBlock
