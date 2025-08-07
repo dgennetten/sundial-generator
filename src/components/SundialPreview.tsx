@@ -140,17 +140,28 @@ const SundialPreview: React.FC<Props> = ({
 
   // Helper to get day range
   function getDayRange(dateRange: 'FullYear' | 'SummerToWinter' | 'WinterToSummer') {
-    // Approximate: Summer solstice ~ day 172, Winter solstice ~ day 355 (northern hemisphere)
+    // Determine solstice days based on hemisphere
+    // For Northern Hemisphere: Summer solstice ~ day 172, Winter solstice ~ day 355
+    // For Southern Hemisphere: Summer solstice ~ day 355, Winter solstice ~ day 172
+    const isNorthernHemisphere = lat >= 0;
+    const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
+    const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
+    
     if (dateRange === 'FullYear') return [1, 365];
-    if (dateRange === 'SummerToWinter') return [172, 355];
-    if (dateRange === 'WinterToSummer') return [355, 365, 1, 172]; // wrap around
+    if (dateRange === 'SummerToWinter') return [summerSolsticeDay, winterSolsticeDay];
+    if (dateRange === 'WinterToSummer') return [winterSolsticeDay, 365, 1, summerSolsticeDay]; // wrap around
     return [1, 365];
   }
 
   // Helper to split points for WinterToSummer
   function splitWinterToSummer(points: { day: number; x: number; y: number }[]): [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]] {
-    const seg1 = points.filter((p: { day: number; x: number; y: number }) => p.day >= 355);
-    const seg2 = points.filter((p: { day: number; x: number; y: number }) => p.day <= 172);
+    // Determine solstice days based on hemisphere
+    const isNorthernHemisphere = lat >= 0;
+    const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
+    const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
+    
+    const seg1 = points.filter((p: { day: number; x: number; y: number }) => p.day >= winterSolsticeDay);
+    const seg2 = points.filter((p: { day: number; x: number; y: number }) => p.day <= summerSolsticeDay);
     return [seg1, seg2];
   }
 
@@ -407,15 +418,23 @@ const SundialPreview: React.FC<Props> = ({
           // Sort segments by day
           const sortedSeg1 = [...seg1].sort((a, b) => a.day - b.day);
           const sortedSeg2 = [...seg2].sort((a, b) => a.day - b.day);
-          // If labelWinterSide, place at start of first segment (day 355)
+          // Determine solstice days based on hemisphere
+          const isNorthernHemisphere = lat >= 0;
+          const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
+          const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
+          
+          // If labelWinterSide, place at start of first segment (winter solstice)
           if (labelWinterSide && sortedSeg1.length > 0) {
             const pt = sortedSeg1[0];
             const { nx, ny } = getNormalAtPoint(sortedSeg1, 0);
-            const x = scale * pt.x + nx * labelOffsetPx;
-            const y = scale * pt.y + ny * labelOffsetPx;
+            // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
+            const isInvertedGeometry = lat < 0;
+            const offset = isInvertedGeometry ? -labelOffsetPx : labelOffsetPx;
+            const x = scale * pt.x + nx * offset;
+            const y = scale * pt.y + ny * offset;
             hourLabelElements.push(
               <text
-                key={`label-${h}-355`}
+                key={`label-${h}-${winterSolsticeDay}`}
                 x={x}
                 y={y}
                 fontSize={fontSizeMm}
@@ -428,16 +447,19 @@ const SundialPreview: React.FC<Props> = ({
               </text>
             );
           }
-          // If labelSummerSide, place at end of last segment (day 172)
+          // If labelSummerSide, place at end of last segment (summer solstice)
           if (labelSummerSide && sortedSeg2.length > 0) {
             const lastIdx = sortedSeg2.length - 1;
             const pt = sortedSeg2[lastIdx];
             const { nx, ny } = getNormalAtPoint(sortedSeg2, lastIdx);
-            const x = scale * pt.x - nx * labelOffsetPx;
-            const y = scale * pt.y - ny * labelOffsetPx;
+            // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
+            const isInvertedGeometry = lat < 0;
+            const offset = isInvertedGeometry ? labelOffsetPx : -labelOffsetPx;
+            const x = scale * pt.x + nx * offset;
+            const y = scale * pt.y + ny * offset;
             hourLabelElements.push(
               <text
-                key={`label-${h}-172`}
+                key={`label-${h}-${summerSolsticeDay}`}
                 x={x}
                 y={y}
                 fontSize={fontSizeMm}
@@ -451,21 +473,30 @@ const SundialPreview: React.FC<Props> = ({
             );
           }
         } else if (dateRange === 'SummerToWinter') {
-          // Only one segment: days 172 to 355
+          // Only one segment: summer to winter solstice
           const [start, end] = getDayRange(dateRange);
           points = points.filter((p: { day: number }) => p.day >= start && p.day <= end);
           if (points.length === 0) continue;
           // Sort points by day
           const sortedPoints = [...points].sort((a, b) => a.day - b.day);
-          // If labelSummerSide, place at start (day 172)
+          
+          // Determine solstice days based on hemisphere
+          const isNorthernHemisphere = lat >= 0;
+          const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
+          const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
+          
+          // If labelSummerSide, place at start (summer solstice)
           if (labelSummerSide) {
             const pt = sortedPoints[0];
             const { nx, ny } = getNormalAtPoint(sortedPoints, 0);
-            const x = scale * pt.x - nx * labelOffsetPx;
-            const y = scale * pt.y - ny * labelOffsetPx;
+            // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
+            const isInvertedGeometry = lat < 0;
+            const offset = isInvertedGeometry ? labelOffsetPx : -labelOffsetPx;
+            const x = scale * pt.x + nx * offset;
+            const y = scale * pt.y + ny * offset;
             hourLabelElements.push(
               <text
-                key={`label-${h}-172`}
+                key={`label-${h}-${summerSolsticeDay}`}
                 x={x}
                 y={y}
                 fontSize={fontSizeMm}
@@ -478,16 +509,19 @@ const SundialPreview: React.FC<Props> = ({
               </text>
             );
           }
-          // If labelWinterSide, place at end (day 355)
+          // If labelWinterSide, place at end (winter solstice)
           if (labelWinterSide) {
             const lastIdx = sortedPoints.length - 1;
             const pt = sortedPoints[lastIdx];
             const { nx, ny } = getNormalAtPoint(sortedPoints, lastIdx);
-            const x = scale * pt.x + nx * labelOffsetPx;
-            const y = scale * pt.y + ny * labelOffsetPx;
+            // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
+            const isInvertedGeometry = lat < 0;
+            const offset = isInvertedGeometry ? -labelOffsetPx : labelOffsetPx;
+            const x = scale * pt.x + nx * offset;
+            const y = scale * pt.y + ny * offset;
             hourLabelElements.push(
               <text
-                key={`label-${h}-355`}
+                key={`label-${h}-${winterSolsticeDay}`}
                 x={x}
                 y={y}
                 fontSize={fontSizeMm}
@@ -504,10 +538,16 @@ const SundialPreview: React.FC<Props> = ({
           const [start, end] = getDayRange(dateRange);
           points = points.filter((p: { day: number }) => p.day >= start && p.day <= end);
           if (points.length === 0) continue;
+          
+          // Determine solstice days based on hemisphere
+          const isNorthernHemisphere = lat >= 0;
+          const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
+          const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
+          
           // Find solstice points
           const solsticeDays = [];
-          if (labelSummerSide) solsticeDays.push(172); // Summer solstice
-          if (labelWinterSide) solsticeDays.push(355); // Winter solstice
+          if (labelSummerSide) solsticeDays.push(summerSolsticeDay); // Summer solstice
+          if (labelWinterSide) solsticeDays.push(winterSolsticeDay); // Winter solstice
           solsticeDays.forEach((solsticeDay) => {
             let idx = points.findIndex(p => p.day === solsticeDay);
             if (idx === -1) {
@@ -522,9 +562,21 @@ const SundialPreview: React.FC<Props> = ({
             const pt = points[idx];
             const { nx, ny } = getNormalAtPoint(points, idx);
             // Offset outward by labelOffsetPx (mm to px)
-            // Summer labels go above (negative offset), Winter labels go below (positive offset)
-            const isSummer = solsticeDay === 172;
-            const offset = isSummer ? -labelOffsetPx : labelOffsetPx;
+            // The direction depends on both the solstice type and the effective latitude
+            const isSummer = solsticeDay === summerSolsticeDay;
+            
+            // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
+            // We need to reverse the offset direction to keep labels outside the curves
+            const isInvertedGeometry = lat < 0;
+            let offset;
+            if (isInvertedGeometry) {
+              // For inverted geometry: Summer labels go below (positive offset), Winter labels go above (negative offset)
+              offset = isSummer ? labelOffsetPx : -labelOffsetPx;
+            } else {
+              // For normal geometry: Summer labels go above (negative offset), Winter labels go below (positive offset)
+              offset = isSummer ? -labelOffsetPx : labelOffsetPx;
+            }
+            
             const x = scale * pt.x + nx * offset;
             const y = scale * pt.y + ny * offset;
             hourLabelElements.push(
