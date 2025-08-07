@@ -78,6 +78,7 @@ const DeclinationLineOptions: React.FC<{
                         value={line.date}
                         onChange={e => handleChange(idx, 'date', e.target.value)}
                         disabled={!!isFixed}
+                        placeholder="Month Day"
                         style={{ width: '99px', fontSize: '0.9rem' }}
                       />
                     </td>

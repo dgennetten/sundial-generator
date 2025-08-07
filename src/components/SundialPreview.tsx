@@ -672,16 +672,15 @@ const SundialPreview: React.FC<Props> = ({
     if (line.date === 'Equinox') return 0;
     if (line.date === 'Summer Solstice') return 23.44;
     if (line.date === 'Winter Solstice') return -23.44;
+    if (line.date === 'Month Boundaries') {
+      // This is handled separately in getMonthBoundaryDeclinations
+      return null;
+    }
     if (line.date === 'Today') {
-      // Calculate today's declination
       const today = new Date();
       const startOfYear = new Date(today.getFullYear(), 0, 1);
       const dayOfYear = Math.floor((today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
       return getSolarDeclination(dayOfYear);
-    }
-    if (line.date === 'Month Boundaries') {
-      // This is handled separately in getMonthBoundaryDeclinations
-      return null;
     }
     // Try to parse user date as month/day
     let date = new Date(line.date + ' 2000'); // year doesn't matter for declination
@@ -1108,8 +1107,8 @@ const SundialPreview: React.FC<Props> = ({
     coordinatesString = `Latitude: ${lat.toFixed(4)}, Longitude: ${lng.toFixed(4)}`;
   }
   // Function to parse bold and italic text (text between ** markers for bold, * markers for italic)
-  const parseMarkupText = (text: string): Array<{ text: string; bold: boolean; italic: boolean }> => {
-    const parts: Array<{ text: string; bold: boolean; italic: boolean }> = [];
+  const parseMarkupText = (text: string): Array<{ text: string; bold: boolean; italic: boolean; color?: string }> => {
+    const parts: Array<{ text: string; bold: boolean; italic: boolean; color?: string }> = [];
     let currentIndex = 0;
     
     while (currentIndex < text.length) {
@@ -1173,7 +1172,7 @@ const SundialPreview: React.FC<Props> = ({
     return parts;
   };
 
-  let textBlockLines: Array<Array<{ text: string; bold: boolean; italic: boolean }>> = [];
+  let textBlockLines: Array<Array<{ text: string; bold: boolean; italic: boolean; color?: string }>> = [];
   if (dialTextBlock) {
     // Helper functions for tropical calculations
     const getCancerIncline = (lat: number): number => {
@@ -1196,13 +1195,132 @@ const SundialPreview: React.FC<Props> = ({
                             inclineType === 'Vertical' ? 90 : tiltAngle;
   const inclineString = inclineType !== 'Horizontal' ? `incline: ${effectiveTiltAngle.toFixed(1)}°` : '';
     
-    const processedText = dialTextBlock
+    // Check if "Today" declination line is active
+    const todayLineActive = declinationLines.some(line => line.active && line.date === 'Today');
+    
+    // Get today's date in "Month Day" format
+    const getTodayDateString = (): string => {
+      const today = new Date();
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                     'July', 'August', 'September', 'October', 'November', 'December'];
+      return `${months[today.getMonth()]} ${today.getDate()}`;
+    };
+    
+    console.log('Debug - dialTextBlock:', dialTextBlock);
+    console.log('Debug - todayLineActive:', todayLineActive);
+    console.log('Debug - declinationLines:', declinationLines);
+    
+    // Process text with placeholders, but handle {today} specially
+    let processedText = dialTextBlock
       .replace(/\{location\}/gi, locationString)
       .replace(/\{coordinates\}/gi, coordinatesString)
-      .replace(/\{gnomon\}/gi, `gnomon: ${gnomonHeight} mm`)
+      .replace(/\{gnomon\}/gi, `gnomon height: ${gnomonHeight} mm`)
       .replace(/\{incline\}/gi, inclineString);
     
-
+    // Handle {today} placeholder specially - replace with red-colored text
+    if (todayLineActive) {
+      const todayDate = getTodayDateString();
+      // Replace {today} with the date, preserving any surrounding asterisks
+      processedText = processedText.replace(/\*?\{today\}\*?/gi, (match) => {
+        // If the match includes asterisks, preserve them
+        if (match.startsWith('*') && match.endsWith('*')) {
+          return `*${todayDate}*`; // Preserve italic formatting
+        } else if (match.startsWith('*')) {
+          return `*${todayDate}`; // Preserve leading asterisk
+        } else if (match.endsWith('*')) {
+          return `${todayDate}*`; // Preserve trailing asterisk
+        } else {
+          return `*${todayDate}*`; // Add asterisks for italic
+        }
+      });
+    } else {
+      // Remove {today} and any surrounding asterisks
+      processedText = processedText.replace(/\*?\{today\}\*?/gi, '');
+    }
+    
+    console.log('Debug - processedText:', processedText);
+    
+    // Custom parsing function that handles color for {today} text
+    const parseTextWithColor = (text: string): Array<{ text: string; bold: boolean; italic: boolean; color?: string }> => {
+      console.log('parseTextWithColor input:', text);
+      const parts: Array<{ text: string; bold: boolean; italic: boolean; color?: string }> = [];
+      let currentIndex = 0;
+      
+      while (currentIndex < text.length) {
+        const boldStart = text.indexOf('**', currentIndex);
+        const italicStart = text.indexOf('*', currentIndex);
+        
+        // Find the earliest marker, but prioritize bold markers
+        let markerStart = -1;
+        let markerType = '';
+        let markerLength = 0;
+        
+        if (boldStart !== -1) {
+          // Check if this is actually a bold marker (not part of an italic marker)
+          const nextChar = text[boldStart + 2];
+          if (nextChar !== '*') {
+            markerStart = boldStart;
+            markerType = 'bold';
+            markerLength = 2;
+          }
+        }
+        
+        // If no bold marker found, look for italic marker
+        if (markerStart === -1 && italicStart !== -1) {
+          // Check if this is actually an italic marker (not part of a bold marker)
+          const prevChar = text[italicStart - 1];
+          const nextChar = text[italicStart + 1];
+          console.log('Italic detection - prevChar:', prevChar, 'nextChar:', nextChar);
+          if (prevChar !== '*' && nextChar !== '*') {
+            markerStart = italicStart;
+            markerType = 'italic';
+            markerLength = 1;
+            console.log('Found italic marker at position:', markerStart);
+          }
+        }
+        
+        if (markerStart === -1) {
+          // No more markers, add remaining text as normal
+          parts.push({ text: text.slice(currentIndex), bold: false, italic: false });
+          break;
+        }
+        
+        // Add text before marker as normal
+        if (markerStart > currentIndex) {
+          parts.push({ text: text.slice(currentIndex, markerStart), bold: false, italic: false });
+        }
+        
+        const markerEnd = text.indexOf(markerType === 'bold' ? '**' : '*', markerStart + markerLength);
+        if (markerEnd === -1) {
+          // No closing marker, treat as normal text
+          parts.push({ text: text.slice(currentIndex), bold: false, italic: false });
+          break;
+        }
+        
+        const markedText = text.slice(markerStart + markerLength, markerEnd);
+        console.log('Extracted marked text:', markedText, 'markerType:', markerType);
+        
+        // Check if this is the today date text (italic with red color)
+        // The {today} placeholder gets replaced with *${todayDate}*, so we need to check if this text
+        // was generated from the {today} placeholder by checking if it matches today's date
+        const isTodayText = todayLineActive && markedText === getTodayDateString();
+        console.log('isTodayText:', isTodayText, 'todayLineActive:', todayLineActive, 'markedText:', markedText, 'getTodayDateString():', getTodayDateString());
+        
+        // Add marked text
+        const part = { 
+          text: markedText, 
+          bold: markerType === 'bold', 
+          italic: markerType === 'italic',
+          color: isTodayText ? 'red' : undefined
+        };
+        console.log('Created part:', part);
+        parts.push(part);
+        currentIndex = markerEnd + markerLength;
+      }
+      
+      console.log('parseTextWithColor output:', parts);
+      return parts;
+    };
     
     // Filter out lines that become empty or contain only markup after replacement
     textBlockLines = processedText.split('\n')
@@ -1211,7 +1329,7 @@ const SundialPreview: React.FC<Props> = ({
         // Remove lines that are empty or contain only markup characters (*, **)
         return trimmed !== '' && !trimmed.match(/^\*+$/);
       })
-      .map(line => parseMarkupText(line));
+      .map(line => parseTextWithColor(line));
     
 
 
@@ -1296,7 +1414,7 @@ const SundialPreview: React.FC<Props> = ({
   const centerY = textBlockY + ((lineCount - 1) * lineHeight) / 2;
 
   // For north-facing dials, we need to adjust the text position since the entire group is rotated
-  const adjustedTextBlockY = dialFacing === 'North' ? -textBlockY : textBlockY;
+  const adjustedTextBlockY = dialFacing === 'North' ? -centerY : centerY;
   const adjustedCenterY = dialFacing === 'North' ? -centerY : centerY;
 
 
@@ -1359,17 +1477,21 @@ const SundialPreview: React.FC<Props> = ({
                       <tspan
                         key={lineIndex}
                         x={0}
-                        dy={lineIndex === 0 ? 0 : dialTextBlockFontSizeMm * 1.2}
+                        dy={lineIndex === 0 ? -((lineCount - 1) * lineHeight) / 2 : dialTextBlockFontSizeMm * 1.2}
                       >
-                        {line.map((part, partIndex) => (
-                          <tspan
-                            key={partIndex}
-                            fontWeight={part.bold ? 'bold' : 'normal'}
-                            fontStyle={part.italic ? 'italic' : 'normal'}
-                          >
-                            {part.text}
-                          </tspan>
-                        ))}
+                        {line.map((part, partIndex) => {
+                          console.log('Rendering part:', part, 'fontStyle:', part.italic ? 'italic' : 'normal', 'fill:', part.color || '#222');
+                          return (
+                            <tspan
+                              key={partIndex}
+                              fontWeight={part.bold ? 'bold' : 'normal'}
+                              fontStyle={part.italic ? 'italic' : 'normal'}
+                              fill={part.color || '#222'}
+                            >
+                              {part.text}
+                            </tspan>
+                          );
+                        })}
                       </tspan>
                     ))}
                   </text>

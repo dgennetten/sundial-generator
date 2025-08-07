@@ -20,7 +20,7 @@ import BuildDate from './components/BuildDate';
 import VisitorMap from './components/VisitorMap';
 
 
-const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n*{gnomon}*\n*{incline}*`;
+const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n*{gnomon}*\n*{incline}*\n*{today}*`;
 
 const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);
@@ -327,10 +327,10 @@ const App: React.FC = () => {
               </label>
             </div>
             <div className="form-group">
-              <label className="form-label">Text (supports {"{location}"}, {"{coordinates}"}, {"{gnomon}"} and some Markup codes)</label>
+              <label className="form-label">Text (supports {"{location}"}, {"{coordinates}"}, {"{gnomon}"}, {"{today}"} and some Markup codes)</label>
               <textarea
                 className="form-input"
-                rows={3}
+                rows={5}
                 value={dialTextBlock}
                 onChange={e => setDialTextBlock(e.target.value)}
                 style={{ width: '100%', fontFamily: dialTextBlockFontFamily, fontSize: '12pt', maxWidth: '100%', boxSizing: 'border-box' }}
@@ -386,7 +386,7 @@ const App: React.FC = () => {
         <VisitorMap />
         <div className="card">
           <div className="card-header">
-            <h3 className="card-title"><Info color="#2563eb" size={20} style={{marginRight: 6}} /> About—Including tips on how to use</h3>
+            <h3 className="card-title"><Info color="#2563eb" size={20} style={{marginRight: 6}} /> About</h3>
           </div>
           <div className="card-content">
                          <div style={{ 
@@ -400,6 +400,7 @@ const App: React.FC = () => {
              }}>
              <p><strong>New Feature:</strong> Added Cancer and Capricorn options for Inclined Dials.</p>
              <p><strong>New Feature:</strong> Gnomon height optionally printed on dial.</p>
+             <p><strong>New Feature:</strong> Today's date, when plotted, optionally printed on dial.</p>
               <p><strong>New Feature:</strong> Added Gnomon type option. North Pt. on/off.</p>
                <p><strong>New feature:</strong> Properly supported Inclined Dials. </p>
                <p><strong>Known Bug:</strong> Text block placement is inconsistent and sometimes missing for certain locations/inclines. </p>
