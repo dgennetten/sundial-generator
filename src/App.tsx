@@ -402,6 +402,7 @@ const App: React.FC = () => {
              <p><strong>New Feature:</strong> Gnomon height optionally printed on dial.</p>
               <p><strong>New Feature:</strong> Added Gnomon type option. North Pt. on/off.</p>
                <p><strong>New feature:</strong> Properly supported Inclined Dials. </p>
+               <p><strong>Known Bug:</strong> Text block placement is inconsistent and sometimes missing for certain locations/inclines. </p>
              </div>
             <div dangerouslySetInnerHTML={{ __html: `
 <p>
