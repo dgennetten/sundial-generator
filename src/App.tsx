@@ -28,7 +28,7 @@ const App: React.FC = () => {
   const [tzMeridian, setTzMeridian] = useState(-105);
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
-  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace'>('crosshair');
+  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north'>('crosshair');
   const [pageSize, setPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard'>('Letter');
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
@@ -397,6 +397,7 @@ const App: React.FC = () => {
                fontSize: '14px',
                fontWeight: '500'
              }}>
+              <p><strong>New Feature:</strong> Added Gnomon type option. North Pt. on/off.</p>
                <strong>New feature:</strong> Properly supported Inclined Dials. Would love your <a 
                  href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
                  style={{ color: '#7c2d12', textDecoration: 'underline' }}

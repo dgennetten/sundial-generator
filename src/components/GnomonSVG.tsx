@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface GnomonSVGProps {
-  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace';
+  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north';
   gnomonHeight: number;
   lat?: number;
   scale?: number;
@@ -9,6 +9,16 @@ interface GnomonSVGProps {
 
 const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
   if (gnomonType === 'crosshair') {
+    return (
+      <>
+        {/* Crosshair gnomon: a "+" at (0,0), 6px long arms */}
+        <line x1={-3} y1={0} x2={3} y2={0} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+        <line x1={0} y1={-3} x2={0} y2={3} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+      </>
+    );
+  }
+
+  if (gnomonType === 'crosshair-with-north') {
     return (
       <>
         {/* Crosshair gnomon: a "+" at (0,0), 6px long arms */}
