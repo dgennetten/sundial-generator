@@ -4,20 +4,14 @@ interface GnomonSVGProps {
   gnomonType: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north';
   gnomonHeight: number;
   lat?: number;
-  scale?: number;
   inclineType?: string;
-  originalLatitude?: number;
-  tiltAngle?: number;
 }
 
 const GnomonSVG: React.FC<GnomonSVGProps> = ({ 
   gnomonType, 
   gnomonHeight, 
   lat = 0, 
-  scale = 1,
-  inclineType = 'Horizontal',
-  originalLatitude,
-  tiltAngle = 0
+  inclineType = 'Horizontal'
 }) => {
   // Simple logic: determine if gnomon is above or below equinox line
   const getPopupOrientation = (): 'up' | 'down' => {
