@@ -1273,8 +1273,6 @@ const SundialPreview: React.FC<Props> = ({
                 gnomonHeight={gnomonHeight} 
                 lat={lat}
                 inclineType={inclineType}
-                originalLatitude={originalLatitude}
-                tiltAngle={tiltAngle}
               />
               
               {hourlineElements.flat()}
