@@ -1106,71 +1106,7 @@ const SundialPreview: React.FC<Props> = ({
   if (typeof lat === 'number' && typeof lng === 'number') {
     coordinatesString = `Latitude: ${lat.toFixed(4)}, Longitude: ${lng.toFixed(4)}`;
   }
-  // Function to parse bold and italic text (text between ** markers for bold, * markers for italic)
-  const parseMarkupText = (text: string): Array<{ text: string; bold: boolean; italic: boolean; color?: string }> => {
-    const parts: Array<{ text: string; bold: boolean; italic: boolean; color?: string }> = [];
-    let currentIndex = 0;
-    
-    while (currentIndex < text.length) {
-      const boldStart = text.indexOf('**', currentIndex);
-      const italicStart = text.indexOf('*', currentIndex);
-      
-      // Find the earliest marker, but prioritize bold markers
-      let markerStart = -1;
-      let markerType = '';
-      let markerLength = 0;
-      
-      if (boldStart !== -1) {
-        // Check if this is actually a bold marker (not part of an italic marker)
-        const nextChar = text[boldStart + 2];
-        if (nextChar !== '*') {
-          markerStart = boldStart;
-          markerType = 'bold';
-          markerLength = 2;
-        }
-      }
-      
-      // If no bold marker found, look for italic marker
-      if (markerStart === -1 && italicStart !== -1) {
-        // Check if this is actually an italic marker (not part of a bold marker)
-        const prevChar = text[italicStart - 1];
-        const nextChar = text[italicStart + 1];
-        if (prevChar !== '*' && nextChar !== '*') {
-          markerStart = italicStart;
-          markerType = 'italic';
-          markerLength = 1;
-        }
-      }
-      
-      if (markerStart === -1) {
-        // No more markers, add remaining text as normal
-        parts.push({ text: text.slice(currentIndex), bold: false, italic: false });
-        break;
-      }
-      
-      // Add text before marker as normal
-      if (markerStart > currentIndex) {
-        parts.push({ text: text.slice(currentIndex, markerStart), bold: false, italic: false });
-      }
-      
-      const markerEnd = text.indexOf(markerType === 'bold' ? '**' : '*', markerStart + markerLength);
-      if (markerEnd === -1) {
-        // No closing marker, treat as normal text
-        parts.push({ text: text.slice(currentIndex), bold: false, italic: false });
-        break;
-      }
-      
-      // Add marked text
-      parts.push({ 
-        text: text.slice(markerStart + markerLength, markerEnd), 
-        bold: markerType === 'bold', 
-        italic: markerType === 'italic' 
-      });
-      currentIndex = markerEnd + markerLength;
-    }
-    
-    return parts;
-  };
+
 
   let textBlockLines: Array<Array<{ text: string; bold: boolean; italic: boolean; color?: string }>> = [];
   if (dialTextBlock) {

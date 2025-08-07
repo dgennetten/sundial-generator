@@ -98,7 +98,6 @@ const timeZoneIdToAbbrWithDST: { [key: string]: { standard: string; daylight: st
   'America/North_Dakota/Beulah': { standard: 'CST', daylight: 'CDT' },
   'America/North_Dakota/Center': { standard: 'CST', daylight: 'CDT' },
   'America/North_Dakota/New_Salem': { standard: 'CST', daylight: 'CDT' },
-  'America/Phoenix': { standard: 'MST', daylight: 'MST' }, // Arizona doesn't observe DST
   'America/Indiana/Indianapolis': { standard: 'EST', daylight: 'EDT' },
   'America/Indiana/Knox': { standard: 'CST', daylight: 'CDT' },
   'America/Indiana/Marengo': { standard: 'EST', daylight: 'EDT' },
@@ -167,14 +166,14 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
     
     const locationData = locations[locationName];
     if (locationData) {
-      // Fetch timezone data for the selected location to get DST information
-      setLoadingTz(true);
-      const timeZoneData = await fetchTimeZone(locationData.lat, locationData.lng);
-      setLoadingTz(false);
-      
-              if (timeZoneData.timeZoneId) {
-          const isDST = timeZoneData.dstOffset !== null && timeZoneData.rawOffset !== null && 
-                       isCurrentlyInDST(timeZoneData.dstOffset, timeZoneData.rawOffset);
+              // Fetch timezone data for the selected location to get DST information
+        setLoadingTz(true);
+        const timeZoneData = await fetchTimeZone(locationData.lat, locationData.lng);
+        setLoadingTz(false);
+        
+                if (timeZoneData.timeZoneId) {
+          const isDST = timeZoneData.dstOffset !== null && 
+                       isCurrentlyInDST(timeZoneData.dstOffset);
           const tzAbbr = getTimezoneAbbr(timeZoneData.timeZoneId, isDST);
           const newMeridian = timeZoneToMeridian[tzAbbr] || timeZoneToMeridian[locationData.tz] || -105;
           
@@ -240,7 +239,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
   };
 
   // Helper to determine if location is currently in DST
-  const isCurrentlyInDST = (dstOffset: number, rawOffset: number): boolean => {
+  const isCurrentlyInDST = (dstOffset: number): boolean => {
     // If dstOffset > 0, the location is currently in DST
     return dstOffset > 0;
   };
@@ -368,8 +367,8 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
             setLoadingTz(false);
             
                     if (timeZoneData.timeZoneId) {
-          const isDST = timeZoneData.dstOffset !== null && timeZoneData.rawOffset !== null && 
-                       isCurrentlyInDST(timeZoneData.dstOffset, timeZoneData.rawOffset);
+          const isDST = timeZoneData.dstOffset !== null && 
+                       isCurrentlyInDST(timeZoneData.dstOffset);
           const tzAbbr = getTimezoneAbbr(timeZoneData.timeZoneId, isDST);
           const newMeridian = timeZoneToMeridian[tzAbbr] || tzMeridian;
           
