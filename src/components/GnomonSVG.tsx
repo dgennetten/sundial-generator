@@ -5,9 +5,41 @@ interface GnomonSVGProps {
   gnomonHeight: number;
   lat?: number;
   scale?: number;
+  inclineType?: string;
+  originalLatitude?: number;
+  tiltAngle?: number;
 }
 
-const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
+const GnomonSVG: React.FC<GnomonSVGProps> = ({ 
+  gnomonType, 
+  gnomonHeight, 
+  lat = 0, 
+  scale = 1,
+  inclineType = 'Horizontal',
+  originalLatitude,
+  tiltAngle = 0
+}) => {
+  // Simple logic: determine if gnomon is above or below equinox line
+  const getPopupOrientation = (): 'up' | 'down' => {
+    // The 'lat' prop passed to GnomonSVG is already the effectiveLatitude from App.tsx
+    // This represents the latitude of the dial's plane.
+    const dialPlaneLatitude = lat; // Use the effectiveLatitude directly
+
+    // Special case for Equatorial: The effective latitude is 0, so it's at the equinox.
+    // The user's rule implies "at equinox" should point DOWN.
+    if (inclineType === 'Equatorial') {
+      return 'down';
+    }
+
+    // For all other cases, use the dialPlaneLatitude (effectiveLatitude)
+    // to determine if the gnomon is above or below the equinox.
+    // Gnomon above equinox (dialPlaneLatitude >= 0) -> point DOWN
+    // Gnomon below equinox (dialPlaneLatitude < 0) -> point UP
+    return dialPlaneLatitude >= 0 ? 'down' : 'up';
+  };
+
+  const popupOrientation = getPopupOrientation();
+
   if (gnomonType === 'crosshair') {
     return (
       <>
@@ -32,8 +64,11 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
   }
 
   if (gnomonType === 'popup') {
+    // For popup orientation, we need to flip the triangle if pointing up
+    const flipTransform = popupOrientation === 'up' ? 'scale(1, -1)' : '';
+    
     return (
-      <>
+      <g transform={flipTransform}>
         {/* Popup: right triangle pointing down with dashed left side */}
         {/* Right side (solid) */}
         <line
@@ -66,7 +101,7 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
           strokeDasharray="3,3"
           vectorEffect="non-scaling-stroke"
         />
-      </>
+      </g>
     );
   }
 
@@ -84,8 +119,12 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
     const arcEndX = shiftX + arcRadius;
     const rotatedEndX = shiftX + (arcEndX - shiftX) * Math.cos(theta);
     const rotatedEndY = shiftY + (arcEndX - shiftX) * Math.sin(theta);
+    
+    // For popup orientation, we need to flip the triangle if pointing up
+    const flipTransform = popupOrientation === 'up' ? 'scale(1, -1)' : '';
+    
     return (
-      <>
+      <g transform={flipTransform}>
         {/* Main triangle - same as popup */}
         {/* Right side (solid) */}
         <line
@@ -178,12 +217,9 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({ gnomonType, gnomonHeight }) => {
           strokeDasharray="3,3"
           vectorEffect="non-scaling-stroke"
         />
-        
- 
-      </>
+      </g>
     );
   }
-
   return null;
 };
 
