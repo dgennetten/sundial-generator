@@ -1148,6 +1148,7 @@ const SundialPreview: React.FC<Props> = ({
     const processedText = dialTextBlock
       .replace(/\{location\}/gi, locationString)
       .replace(/\{coordinates\}/gi, coordinatesString)
+      .replace(/\{gnomon\}/gi, `gnomon: ${gnomonHeight} mm`)
       .replace(/\{incline\}/gi, inclineString);
     
 

@@ -20,7 +20,7 @@ import BuildDate from './components/BuildDate';
 import VisitorMap from './components/VisitorMap';
 
 
-const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n*{incline}*`;
+const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n*{gnomon}*\n*{incline}*`;
 
 const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);
@@ -174,7 +174,7 @@ const App: React.FC = () => {
     
     if (winterPos.altitude <= 0 || summerPos.altitude <= 0) {
       // Fallback to original calculation if sun is below horizon
-      return parseFloat((Math.tan((lat * Math.PI) / 180) * 100 * 3.7 / 8).toFixed(2));
+      return Math.round(Math.tan((lat * Math.PI) / 180) * 100 * 3.7 / 8);
     }
     
     // Project shadows to surface (using a temporary gnomon height of 1)
@@ -189,7 +189,7 @@ const App: React.FC = () => {
     const targetDistance = pageHeight * 0.4;
     const requiredGnomonHeight = targetDistance / shadowDistance;
     // Reduce to 66% of previous value, then increase by factor of 55/40
-    return parseFloat((requiredGnomonHeight * 0.66 * (55/40)).toFixed(2));
+    return Math.round(requiredGnomonHeight * 0.66 * (55/40));
   };
 
   const effectiveGnomonHeight =
@@ -327,7 +327,7 @@ const App: React.FC = () => {
               </label>
             </div>
             <div className="form-group">
-              <label className="form-label">Text (supports {"{location}"}, {"{coordinates}"} and some Markup codes)</label>
+              <label className="form-label">Text (supports {"{location}"}, {"{coordinates}"}, {"{gnomon}"} and some Markup codes)</label>
               <textarea
                 className="form-input"
                 rows={3}
