@@ -63,6 +63,7 @@ const locations: { [key: string]: { lat: number; lng: number; tz: string } } = {
   'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747, tz: 'MST' },
   'Quito, Ecuador': { lat: -0.1807, lng: -78.4678, tz: 'EST' },
   'Recife, Brazil': { lat: -8.0476, lng: -34.8770, tz: 'BRT' },
+  'Sydney, Australia': { lat: -33.8688, lng: 151.2093, tz: 'AEST' },
   'Falkenstein, Saxony, Germany': { lat: 50.4777, lng: 12.3649, tz: 'CET' },
   'Luxembourg City, Luxembourg': { lat: 49.6116, lng: 6.1319, tz: 'CET' },
   'St Petersburg, Russia': { lat: 59.8761, lng: 30.4339, tz: 'MSK' }

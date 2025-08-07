@@ -4,7 +4,7 @@ import { Layout } from 'lucide-react';
 
 type PageSize = 'A4' | 'Letter' | '11x17' | '10x15cm Postcard';
 type Orientation = 'Landscape' | 'Portrait';
-export type InclineType = 'Horizontal' | 'Equatorial' | 'Vertical' | 'Manual' | 'Tropical';
+export type InclineType = 'Horizontal' | 'Cancer' | 'Equatorial' | 'Capricorn' | 'Vertical' | 'Manual';
 type DialFacing = 'North' | 'South';
 
 interface PageSettingsProps {
@@ -39,31 +39,27 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     return Math.abs(lat) <= 23.4367; // Tropic of Cancer/Capricorn
   };
 
-  const getTropicalIncline = (lat: number): number => {
-    if (isInTropics(lat)) {
-      return 0; // No tropical option if already in tropics
-    }
-    
-    // Calculate distance to nearest tropic
-    const tropicOfCancer = 23.4367;
-    const tropicOfCapricorn = -23.4367;
-    
-    if (lat > 0) {
-      // Northern hemisphere - distance to Tropic of Cancer
-      return Math.abs(lat - tropicOfCancer);
-    } else {
-      // Southern hemisphere - distance to Tropic of Capricorn
-      return Math.abs(lat - tropicOfCapricorn);
-    }
+  const getCancerIncline = (lat: number): number => {
+    // Calculate tilt toward Tropic of Cancer (23.4367°)
+    // This creates a dial oriented toward the summer solstice
+    return Math.abs(lat - 23.4367);
   };
+
+  const getCapricornIncline = (lat: number): number => {
+    // Calculate tilt toward Tropic of Capricorn (-23.4367°)
+    // This creates a dial oriented toward the winter solstice
+    return Math.abs(lat - (-23.4367));
+  };
+
   // Calculate effective tilt angle
   const getEffectiveTiltAngle = () => {
     switch (inclineType) {
       case 'Horizontal': return 0;
+      case 'Cancer': return getCancerIncline(latitude);
       case 'Equatorial': return latitude;
+      case 'Capricorn': return getCapricornIncline(latitude);
       case 'Vertical': return 90;
       case 'Manual': return tiltAngle;
-      case 'Tropical': return getTropicalIncline(latitude);
       default: return 0;
     }
   };
@@ -73,9 +69,10 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     // Update tilt angle when changing from Manual to another type
     if (newType !== 'Manual') {
       const newAngle = newType === 'Horizontal' ? 0 : 
+                      newType === 'Cancer' ? getCancerIncline(latitude) :
                       newType === 'Equatorial' ? latitude :
-                      newType === 'Vertical' ? 90 :
-                      newType === 'Tropical' ? getTropicalIncline(latitude) : tiltAngle;
+                      newType === 'Capricorn' ? getCapricornIncline(latitude) :
+                      newType === 'Vertical' ? 90 : tiltAngle;
       setTiltAngle(newAngle);
     }
   };
@@ -158,8 +155,9 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               onChange={(e) => handleInclineTypeChange(e.target.value as InclineType)}
             >
               <option value="Horizontal">Horizontal</option>
-              {!isInTropics(latitude) && <option value="Tropical">Tropical</option>}
+              <option value="Cancer">Cancer</option>
               <option value="Equatorial">Equatorial</option>
+              <option value="Capricorn">Capricorn</option>
               <option value="Vertical">Vertical</option>
               <option value="Manual">Manual</option>
             </select>

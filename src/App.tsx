@@ -89,27 +89,26 @@ const App: React.FC = () => {
   }, [lineStyles, hourlineIntervals]);
 
   // Helper functions for tropical calculations
-  const getTropicalIncline = (lat: number): number => {
-    // Calculate distance to nearest tropic
-    const tropicOfCancer = 23.4367;
-    const tropicOfCapricorn = -23.4367;
-    
-    if (lat > 0) {
-      // Northern hemisphere - distance to Tropic of Cancer
-      return Math.abs(lat - tropicOfCancer);
-    } else {
-      // Southern hemisphere - distance to Tropic of Capricorn
-      return Math.abs(lat - tropicOfCapricorn);
-    }
+  const getCancerIncline = (lat: number): number => {
+    // Calculate tilt toward Tropic of Cancer (23.4367°)
+    // This creates a dial oriented toward the summer solstice
+    return Math.abs(lat - 23.4367);
+  };
+
+  const getCapricornIncline = (lat: number): number => {
+    // Calculate tilt toward Tropic of Capricorn (-23.4367°)
+    // This creates a dial oriented toward the winter solstice
+    return Math.abs(lat - (-23.4367));
   };
 
   // Update tilt angle when incline type or latitude changes
   useEffect(() => {
     if (inclineType !== 'Manual') {
       const newAngle = inclineType === 'Horizontal' ? 0 : 
+                      inclineType === 'Cancer' ? getCancerIncline(latitude) :
                       inclineType === 'Equatorial' ? latitude :
-                      inclineType === 'Vertical' ? 90 :
-                      inclineType === 'Tropical' ? getTropicalIncline(latitude) : 0;
+                      inclineType === 'Capricorn' ? getCapricornIncline(latitude) :
+                      inclineType === 'Vertical' ? 90 : 0;
       setTiltAngle(newAngle);
     }
   }, [inclineType, latitude]);
@@ -150,9 +149,10 @@ const App: React.FC = () => {
   // Calculate effective latitude based on incline
   const getEffectiveLatitude = (): number => {
     const tilt = inclineType === 'Horizontal' ? 0 : 
+                 inclineType === 'Cancer' ? getCancerIncline(latitude) :
                  inclineType === 'Equatorial' ? latitude :
-                 inclineType === 'Vertical' ? 90 :
-                 inclineType === 'Tropical' ? getTropicalIncline(latitude) : tiltAngle;
+                 inclineType === 'Capricorn' ? getCapricornIncline(latitude) :
+                 inclineType === 'Vertical' ? 90 : tiltAngle;
     
     // For inclined dials, the effective latitude is (original latitude - tilt angle)
     // This simulates tilting the dial toward the sun
@@ -398,7 +398,8 @@ const App: React.FC = () => {
                fontSize: '14px',
                fontWeight: '500'
              }}>
-              <p><strong>New Feature:</strong> Gnomon height optionally printed on dial.</p>
+             <p><strong>New Feature:</strong> Added Cancer and Capricorn options for Inclined Dials.</p>
+             <p><strong>New Feature:</strong> Gnomon height optionally printed on dial.</p>
               <p><strong>New Feature:</strong> Added Gnomon type option. North Pt. on/off.</p>
                <p><strong>New feature:</strong> Properly supported Inclined Dials. </p>
              </div>
