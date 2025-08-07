@@ -105,7 +105,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title"><Timer color="#2563eb" size={20} style={{marginRight: 6}} /> Hour Line Settings</h3>
+        <h3 className="card-title"><Timer color="#2563eb" size={20} style={{marginRight: 6}} /> Hour Lines</h3>
       </div>
       <div className="card-content">
         <div className="form-row">

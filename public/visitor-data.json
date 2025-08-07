@@ -23,8 +23,8 @@
       "lon": -117.883,
       "timezone": "America/Los_Angeles",
       "firstVisit": "30/Jul/2025:04:24:57 -0700",
-      "lastVisit": "05/Aug/2025:01:54:32 -0700",
-      "visitCount": 26
+      "lastVisit": "07/Aug/2025:06:15:55 -0700",
+      "visitCount": 27
     },
     {
       "ip": "172.59.227.198",
@@ -36,8 +36,8 @@
       "lon": -104.9078,
       "timezone": "America/Denver",
       "firstVisit": "30/Jul/2025:06:17:07 -0700",
-      "lastVisit": "05/Aug/2025:14:23:29 -0700",
-      "visitCount": 218
+      "lastVisit": "07/Aug/2025:08:54:49 -0700",
+      "visitCount": 226
     },
     {
       "ip": "164.90.138.114",
@@ -75,8 +75,8 @@
       "lon": -73.8785,
       "timezone": "America/Toronto",
       "firstVisit": "31/Jul/2025:10:19:26 -0700",
-      "lastVisit": "31/Jul/2025:10:19:26 -0700",
-      "visitCount": 5
+      "lastVisit": "07/Aug/2025:02:50:26 -0700",
+      "visitCount": 6
     },
     {
       "ip": "54.36.148.100",
@@ -311,10 +311,36 @@
       "firstVisit": "05/Aug/2025:11:00:00 -0700",
       "lastVisit": "05/Aug/2025:11:00:00 -0700",
       "visitCount": 1
+    },
+    {
+      "ip": "40.77.167.85",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Virginia",
+      "city": "Boydton",
+      "lat": 36.677696,
+      "lon": -78.37471,
+      "timezone": "America/New_York",
+      "firstVisit": "07/Aug/2025:06:30:50 -0700",
+      "lastVisit": "07/Aug/2025:06:30:50 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "157.55.39.200",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Washington",
+      "city": "Quincy",
+      "lat": 47.233,
+      "lon": -119.852,
+      "timezone": "America/Los_Angeles",
+      "firstVisit": "07/Aug/2025:06:30:59 -0700",
+      "lastVisit": "07/Aug/2025:06:30:59 -0700",
+      "visitCount": 1
     }
   ],
-  "totalVisitors": 24,
-  "totalVisits": 310,
-  "processedDate": "2025-08-05T21:51:32.836Z",
+  "totalVisitors": 26,
+  "totalVisits": 322,
+  "processedDate": "2025-08-07T15:55:54.233Z",
   "daysSince": 7
 }
