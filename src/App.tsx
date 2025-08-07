@@ -398,8 +398,9 @@ const App: React.FC = () => {
                fontSize: '14px',
                fontWeight: '500'
              }}>
+              <p><strong>New Feature:</strong> Gnomon height optionally printed on dial.</p>
               <p><strong>New Feature:</strong> Added Gnomon type option. North Pt. on/off.</p>
-               <strong>New feature:</strong> Properly supported Inclined Dials. (I added a couple of you to my Location dropdown. Features request? Localiztion?)
+               <p><strong>New feature:</strong> Properly supported Inclined Dials. </p>
              </div>
             <div dangerouslySetInnerHTML={{ __html: `
 <p>
