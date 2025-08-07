@@ -1,7 +1,7 @@
 // src/App.tsx
 
 import React, { useState, useEffect } from 'react';
-import { Text, Info, Instagram } from 'lucide-react';
+import { Text, Info, Instagram, Mail, Coffee } from 'lucide-react';
 import PageSettings, { type InclineType } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
@@ -398,10 +398,7 @@ const App: React.FC = () => {
                fontWeight: '500'
              }}>
               <p><strong>New Feature:</strong> Added Gnomon type option. North Pt. on/off.</p>
-               <strong>New feature:</strong> Properly supported Inclined Dials. Would love your <a 
-                 href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
-                 style={{ color: '#7c2d12', textDecoration: 'underline' }}
-               >feedback</a>. (I added a couple of you to my Location dropdown. Features request? Localiztion?)
+               <strong>New feature:</strong> Properly supported Inclined Dials. (I added a couple of you to my Location dropdown. Features request? Localiztion?)
              </div>
             <div dangerouslySetInnerHTML={{ __html: `
 <p>
@@ -429,18 +426,36 @@ const App: React.FC = () => {
 algorithm with ±3.5 seconds accuracy. 
 </p>
 ` }} />
-            {/* Bottom row with build date and Instagram icon */}
+            {/* Bottom row with build date and social icons */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
               <BuildDate />
-              <a
-                href="https://instagram.com/dgennetten"
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Follow @dgennetten on Instagram"
-                style={{ color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-              >
-                <Instagram size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
-              </a>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <a
+                  href="https://buymeacoffee.com/dgennetten"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Buy me a Coffee!"
+                  style={{ color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                >
+                  <Coffee size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
+                </a>
+                <a
+                  href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
+                  title="eMail the Author"
+                  style={{ color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                >
+                  <Mail size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
+                </a>
+                <a
+                  href="https://instagram.com/dgennetten"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Follow @dgennetten on Instagram"
+                  style={{ color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                >
+                  <Instagram size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
+                </a>
+              </div>
             </div>
           </div>
         </div>
