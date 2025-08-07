@@ -40,31 +40,7 @@ const timeZoneToMeridian: { [key: string]: number } = {
   'NZDT': 180 // New Zealand Daylight Time
 };
 
-// Mapping from Google timeZoneId to app's time zone abbreviation (standard time)
-const timeZoneIdToAbbr: { [key: string]: string } = {
-  'America/New_York': 'EST',
-  'America/Chicago': 'CST',
-  'America/Denver': 'MST',
-  'America/Phoenix': 'MST', // Arizona doesn't observe DST
-  'America/Los_Angeles': 'PST',
-  'America/Anchorage': 'AKST',
-  'Pacific/Honolulu': 'HST',
-  'America/Halifax': 'AST',
-  'America/St_Johns': 'NST',
-  'Europe/London': 'GMT',
-  'Europe/Belfast': 'BST',
-  'Europe/Paris': 'CET',
-  'Europe/Berlin': 'CET',
-  'Europe/Athens': 'EET',
-  'Europe/Moscow': 'MSK',
-  'Europe/Luxembourg': 'CET',
-  'Asia/Kolkata': 'IST',
-  'Asia/Tokyo': 'JST',
-  'Australia/Sydney': 'AEST',
-  'Pacific/Auckland': 'NZST',
-  'Etc/UTC': 'UTC',
-  // Add more as needed
-};
+
 
 // DST-aware mapping from Google timeZoneId to time zone abbreviation
 const timeZoneIdToAbbrWithDST: { [key: string]: { standard: string; daylight: string } } = {
@@ -89,6 +65,21 @@ const timeZoneIdToAbbrWithDST: { [key: string]: { standard: string; daylight: st
   'Australia/Sydney': { standard: 'AEST', daylight: 'AEDT' },
   'Pacific/Auckland': { standard: 'NZST', daylight: 'NZDT' },
   'Etc/UTC': { standard: 'UTC', daylight: 'UTC' },
+  'America/Sao_Paulo': { standard: 'BRT', daylight: 'BRST' }, // Brazil timezone
+  'America/Recife': { standard: 'BRT', daylight: 'BRST' }, // Brazil timezone
+  'America/Fortaleza': { standard: 'BRT', daylight: 'BRST' }, // Brazil timezone
+  'America/Maceio': { standard: 'BRT', daylight: 'BRST' }, // Brazil timezone
+  'America/Aracaju': { standard: 'BRT', daylight: 'BRST' }, // Brazil timezone
+  'America/Salvador': { standard: 'BRT', daylight: 'BRST' }, // Brazil timezone
+  // Additional Arizona timezones
+  'America/Regina': { standard: 'CST', daylight: 'CST' }, // Saskatchewan doesn't observe DST
+  'America/Swift_Current': { standard: 'CST', daylight: 'CST' }, // Saskatchewan doesn't observe DST
+  'America/Edmonton': { standard: 'MST', daylight: 'MDT' },
+  'America/Calgary': { standard: 'MST', daylight: 'MDT' },
+  'America/Vancouver': { standard: 'PST', daylight: 'PDT' },
+  'America/Winnipeg': { standard: 'CST', daylight: 'CDT' },
+  'America/Toronto': { standard: 'EST', daylight: 'EDT' },
+  'America/Montreal': { standard: 'EST', daylight: 'EDT' },
   'America/Boise': { standard: 'MST', daylight: 'MDT' },
   'America/Detroit': { standard: 'EST', daylight: 'EDT' },
   'America/Indianapolis': { standard: 'EST', daylight: 'EDT' },
@@ -166,36 +157,38 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
     
     const locationData = locations[locationName];
     if (locationData) {
-              // Fetch timezone data for the selected location to get DST information
-        setLoadingTz(true);
-        const timeZoneData = await fetchTimeZone(locationData.lat, locationData.lng);
-        setLoadingTz(false);
+      // Fetch timezone data for the selected location to get DST information
+      setLoadingTz(true);
+      const timeZoneData = await fetchTimeZone(locationData.lat, locationData.lng);
+      setLoadingTz(false);
+      
+      if (timeZoneData.timeZoneId) {
+        const isDST = timeZoneData.dstOffset !== null && 
+                     isCurrentlyInDST(timeZoneData.dstOffset);
+        const tzAbbr = getTimezoneAbbr(timeZoneData.timeZoneId, isDST);
         
-                if (timeZoneData.timeZoneId) {
-          const isDST = timeZoneData.dstOffset !== null && 
-                       isCurrentlyInDST(timeZoneData.dstOffset);
-          const tzAbbr = getTimezoneAbbr(timeZoneData.timeZoneId, isDST);
-          const newMeridian = timeZoneToMeridian[tzAbbr] || timeZoneToMeridian[locationData.tz] || -105;
-          
-          // Update the timezone display to show the DST-aware abbreviation
-          setCurrentTimezoneDisplay(tzAbbr);
-          
-          onChange({ 
-            lat: locationData.lat, 
-            lng: locationData.lng, 
-            tz: newMeridian,
-            useDST: isDST
-          });
-        } else {
-          // Fallback to predefined timezone if API call fails
-          const newMeridian = timeZoneToMeridian[locationData.tz] || -105;
-          setCurrentTimezoneDisplay(locationData.tz);
-          onChange({ 
-            lat: locationData.lat, 
-            lng: locationData.lng, 
-            tz: newMeridian 
-          });
-        }
+        // Use the timezone abbreviation from Google API, fallback to predefined if not in our mapping
+        const newMeridian = timeZoneToMeridian[tzAbbr || locationData.tz] || -105;
+        
+        // Update the timezone display to show the DST-aware abbreviation
+        setCurrentTimezoneDisplay(tzAbbr || locationData.tz);
+        
+        onChange({ 
+          lat: locationData.lat, 
+          lng: locationData.lng, 
+          tz: newMeridian,
+          useDST: isDST
+        });
+      } else {
+        // Fallback to predefined timezone if API call fails
+        const newMeridian = timeZoneToMeridian[locationData.tz] || -105;
+        setCurrentTimezoneDisplay(locationData.tz);
+        onChange({ 
+          lat: locationData.lat, 
+          lng: locationData.lng, 
+          tz: newMeridian 
+        });
+      }
     }
   };
 
@@ -245,13 +238,15 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
   };
 
   // Helper to get the appropriate timezone abbreviation based on DST status
-  const getTimezoneAbbr = (timeZoneId: string, isDST: boolean): string => {
+  const getTimezoneAbbr = (timeZoneId: string, isDST: boolean): string | null => {
     const dstMapping = timeZoneIdToAbbrWithDST[timeZoneId];
     if (dstMapping) {
       return isDST ? dstMapping.daylight : dstMapping.standard;
     }
-    // Fallback to standard mapping
-    return timeZoneIdToAbbr[timeZoneId] || 'MST';
+    
+    // If we don't have a mapping for this timeZoneId, return null
+    // This will cause the caller to fall back to the predefined timezone
+    return null;
   };
 
   return (
@@ -370,10 +365,10 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
           const isDST = timeZoneData.dstOffset !== null && 
                        isCurrentlyInDST(timeZoneData.dstOffset);
           const tzAbbr = getTimezoneAbbr(timeZoneData.timeZoneId, isDST);
-          const newMeridian = timeZoneToMeridian[tzAbbr] || tzMeridian;
+          const newMeridian = timeZoneToMeridian[tzAbbr || 'MST'] || tzMeridian;
           
           // Update the timezone display to show the DST-aware abbreviation
-          setCurrentTimezoneDisplay(tzAbbr);
+          setCurrentTimezoneDisplay(tzAbbr || 'MST');
           
           onChange({ 
             lat, 
