@@ -210,10 +210,14 @@ const App: React.FC = () => {
           latitude={latitude}
           longitude={longitude}
           tzMeridian={tzMeridian}
-          onChange={({ lat, lng, tz }) => {
+          onChange={({ lat, lng, tz, useDST }) => {
             setLatitude(lat);
             setLongitude(lng);
             setTzMeridian(tz);
+            // Automatically set DST checkbox based on Google Time Zone API response
+            if (useDST !== undefined) {
+              setUseDST(useDST);
+            }
             // Update location name when coordinates change
             // Use the new coordinates directly instead of the state values
             const locations: { [key: string]: { lat: number; lng: number } } = {
