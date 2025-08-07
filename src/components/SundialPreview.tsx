@@ -1142,7 +1142,7 @@ const SundialPreview: React.FC<Props> = ({
                             inclineType === 'Equatorial' ? (originalLatitude || lat || 0) :
                             inclineType === 'Capricorn' ? getCapricornIncline(originalLatitude || lat || 0) :
                             inclineType === 'Vertical' ? 90 : tiltAngle;
-  const inclineString = inclineType !== 'Horizontal' ? `Dial incline: ${effectiveTiltAngle.toFixed(1)} degrees` : '';
+  const inclineString = inclineType !== 'Horizontal' ? `incline: ${effectiveTiltAngle.toFixed(1)}°` : '';
     
     const processedText = dialTextBlock
       .replace(/\{location\}/gi, locationString)
@@ -1268,7 +1268,14 @@ const SundialPreview: React.FC<Props> = ({
             {/* Content positioned relative to gnomon */}
             <g transform={`translate(0, ${(gnomonPosition ?? 0) - (height / 2)})`}>
               {/* Gnomon mark at (0,0) */}
-              <GnomonSVG gnomonType={gnomonType} gnomonHeight={gnomonHeight} />
+              <GnomonSVG 
+                gnomonType={gnomonType} 
+                gnomonHeight={gnomonHeight} 
+                lat={lat}
+                inclineType={inclineType}
+                originalLatitude={originalLatitude}
+                tiltAngle={tiltAngle}
+              />
               
               {hourlineElements.flat()}
               {declinationLineElements}
