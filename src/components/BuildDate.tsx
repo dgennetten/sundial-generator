@@ -27,13 +27,7 @@ const BuildDate: React.FC = () => {
         title="Reset all settings to defaults"
       >
         reset
-      </button> | <a 
-        href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
-        className="feedback-link"
-        title="Send feedback about the sundial generator"
-      >
-        feedback
-      </a>
+      </button> | © 2025, K. Douglas Gennetten
     </div>
   );
 };
