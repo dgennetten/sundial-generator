@@ -1,6 +1,6 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, Marker, StandaloneSearchBox } from '@react-google-maps/api';
 
 const containerStyle = {
   width: '100%',
@@ -24,9 +24,11 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
   const [selected, setSelected] = useState<{ lat: number; lng: number } | null>(
     initialLat && initialLng ? { lat: initialLat, lng: initialLng } : null
   );
+  const searchBoxRef = useRef<google.maps.places.SearchBox | null>(null);
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
+    libraries: ['places'],
   });
 
   const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {
@@ -35,6 +37,24 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
         lat: e.latLng.lat(),
         lng: e.latLng.lng(),
       });
+    }
+  }, []);
+
+  const onSearchBoxLoad = useCallback((ref: google.maps.places.SearchBox) => {
+    searchBoxRef.current = ref;
+  }, []);
+
+  const onPlacesChanged = useCallback(() => {
+    if (searchBoxRef.current) {
+      const places = searchBoxRef.current.getPlaces();
+      if (places && places.length > 0) {
+        const place = places[0];
+        if (place.geometry && place.geometry.location) {
+          const lat = place.geometry.location.lat();
+          const lng = place.geometry.location.lng();
+          setSelected({ lat, lng });
+        }
+      }
     }
   }, []);
 
@@ -68,13 +88,38 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
           background: '#fff',
           borderRadius: 8,
           padding: 24,
-          minWidth: 350,
+          minWidth: 400,
+          maxWidth: '90vw',
+          maxHeight: '90vh',
           boxShadow: '0 2px 16px rgba(0,0,0,0.2)',
           position: 'relative',
         }}
         onClick={e => e.stopPropagation()}
       >
         <h2 style={{ marginTop: 0 }}>Pick a Location</h2>
+        
+        {/* Search Box */}
+        {isLoaded && (
+          <div style={{ marginBottom: 16 }}>
+            <StandaloneSearchBox
+              onLoad={onSearchBoxLoad}
+              onPlacesChanged={onPlacesChanged}
+            >
+              <input
+                type="text"
+                placeholder="Search for a location..."
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                }}
+              />
+            </StandaloneSearchBox>
+          </div>
+        )}
+        
         {loadError && <div>Error loading map</div>}
         {!isLoaded && <div>Loading map...</div>}
         {isLoaded && (

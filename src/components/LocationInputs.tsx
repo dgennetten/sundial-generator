@@ -24,6 +24,7 @@ const timeZoneToMeridian: { [key: string]: number } = {
   'NDT': -52.5, // Newfoundland Daylight Time
   'BRT': -45,
   'BRST': -45, // Brazil Summer Time
+  'PET': -75, // Peru Time
   'GMT': 0,
   'BST': 0, // British Summer Time
   'CET': 15,
@@ -71,6 +72,8 @@ const timeZoneIdToAbbrWithDST: { [key: string]: { standard: string; daylight: st
   'America/Maceio': { standard: 'BRT', daylight: 'BRST' }, // Brazil timezone
   'America/Aracaju': { standard: 'BRT', daylight: 'BRST' }, // Brazil timezone
   'America/Salvador': { standard: 'BRT', daylight: 'BRST' }, // Brazil timezone
+  // Peru timezone
+  'America/Lima': { standard: 'PET', daylight: 'PET' }, // Peru doesn't observe DST
   // Additional Arizona timezones
   'America/Regina': { standard: 'CST', daylight: 'CST' }, // Saskatchewan doesn't observe DST
   'America/Swift_Current': { standard: 'CST', daylight: 'CST' }, // Saskatchewan doesn't observe DST
@@ -163,9 +166,9 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
       setLoadingTz(false);
       
       if (timeZoneData.timeZoneId) {
-        const isDST = timeZoneData.dstOffset !== null && 
-                     isCurrentlyInDST(timeZoneData.dstOffset);
-        const tzAbbr = getTimezoneAbbr(timeZoneData.timeZoneId, isDST);
+                  const isDST = timeZoneData.dstOffset !== null && 
+                       isCurrentlyInDST(timeZoneData.dstOffset);
+          const tzAbbr = getTimezoneAbbr(timeZoneData.timeZoneId, isDST, timeZoneData.rawOffset || 0);
         
         // Use the timezone abbreviation from Google API, fallback to predefined if not in our mapping
         const newMeridian = timeZoneToMeridian[tzAbbr || locationData.tz] || -105;
@@ -238,15 +241,39 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
   };
 
   // Helper to get the appropriate timezone abbreviation based on DST status
-  const getTimezoneAbbr = (timeZoneId: string, isDST: boolean): string | null => {
+  const getTimezoneAbbr = (timeZoneId: string, isDST: boolean, rawOffset: number): string => {
     const dstMapping = timeZoneIdToAbbrWithDST[timeZoneId];
     if (dstMapping) {
       return isDST ? dstMapping.daylight : dstMapping.standard;
     }
     
-    // If we don't have a mapping for this timeZoneId, return null
-    // This will cause the caller to fall back to the predefined timezone
-    return null;
+    // If we don't have a mapping, calculate timezone from raw offset
+    // rawOffset is in seconds, convert to hours
+    const offsetHours = rawOffset / 3600;
+    
+    // Generate timezone abbreviation based on offset for unmapped timezones
+    if (offsetHours === 0) return 'UTC';
+    if (offsetHours === -5) return isDST ? 'EDT' : 'EST';
+    if (offsetHours === -6) return isDST ? 'CDT' : 'CST';
+    if (offsetHours === -7) return isDST ? 'MDT' : 'MST';
+    if (offsetHours === -8) return isDST ? 'PDT' : 'PST';
+    if (offsetHours === -9) return isDST ? 'AKDT' : 'AKST';
+    if (offsetHours === -10) return 'HST';
+    if (offsetHours === -4) return isDST ? 'ADT' : 'AST';
+    if (offsetHours === -3.5) return isDST ? 'NDT' : 'NST';
+    if (offsetHours === -3) return isDST ? 'BRST' : 'BRT';
+    if (offsetHours === 1) return isDST ? 'BST' : 'GMT';
+    if (offsetHours === 2) return isDST ? 'CEST' : 'CET';
+    if (offsetHours === 3) return isDST ? 'EEST' : 'EET';
+    if (offsetHours === 4) return isDST ? 'MSD' : 'MSK';
+    if (offsetHours === 5.5) return 'IST';
+    if (offsetHours === 9) return 'JST';
+    if (offsetHours === 10) return isDST ? 'AEDT' : 'AEST';
+    if (offsetHours === 12) return isDST ? 'NZDT' : 'NZST';
+    
+    // For other offsets, create a generic abbreviation
+    const sign = offsetHours >= 0 ? '+' : '';
+    return `UTC${sign}${Math.round(offsetHours)}`;
   };
 
   return (
@@ -364,7 +391,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                     if (timeZoneData.timeZoneId) {
           const isDST = timeZoneData.dstOffset !== null && 
                        isCurrentlyInDST(timeZoneData.dstOffset);
-          const tzAbbr = getTimezoneAbbr(timeZoneData.timeZoneId, isDST);
+          const tzAbbr = getTimezoneAbbr(timeZoneData.timeZoneId, isDST, timeZoneData.rawOffset || 0);
           const newMeridian = timeZoneToMeridian[tzAbbr || 'MST'] || tzMeridian;
           
           // Update the timezone display to show the DST-aware abbreviation
