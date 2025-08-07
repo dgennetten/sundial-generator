@@ -1,7 +1,7 @@
 // src/App.tsx
 
 import React, { useState, useEffect } from 'react';
-import { Text, Info, Instagram, Mail, Coffee } from 'lucide-react';
+import { Text, Info, Instagram, Mail, Coffee, Github } from 'lucide-react';
 import PageSettings, { type InclineType } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
@@ -447,6 +447,15 @@ algorithm with ±3.5 seconds accuracy.
                   style={{ color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
                 >
                   <Coffee size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
+                </a>
+                <a
+                  href="https://github.com/dgennetten/sundial-generator"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="View Source Code on GitHub"
+                  style={{ color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                >
+                  <Github size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
                 </a>
                 <a
                   href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
