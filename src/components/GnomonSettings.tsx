@@ -50,7 +50,7 @@ const GnomonSettings: React.FC<Props> = ({
     
     if (winterPos.altitude <= 0 || summerPos.altitude <= 0) {
       // Fallback to original calculation if sun is below horizon
-      return parseFloat((Math.tan((lat * Math.PI) / 180) * 100 * 3.7 / 8).toFixed(2));
+      return Math.round(Math.tan((lat * Math.PI) / 180) * 100 * 3.7 / 8);
     }
     
     // Project shadows to surface (using a temporary gnomon height of 1)
@@ -65,7 +65,7 @@ const GnomonSettings: React.FC<Props> = ({
     const targetDistance = pageH * 0.4;
     const requiredGnomonHeight = targetDistance / shadowDistance;
     // Reduce to 66% of previous value, then increase by factor of 55/40
-    return parseFloat((requiredGnomonHeight * 0.66 * (55/40)).toFixed(2));
+    return Math.round(requiredGnomonHeight * 0.66 * (55/40));
   };
 
   // Function to calculate gnomon position from top so that noon analemma is vertically centered
@@ -79,14 +79,14 @@ const GnomonSettings: React.FC<Props> = ({
       gnomonHeight: autoHeight || height,
       orientation: 'Horizontal',
     });
-    if (!noonPoints.length) return parseFloat((pageH * 0.2).toFixed(2));
+    if (!noonPoints.length) return Math.round(pageH * 0.2);
     const yVals = noonPoints.map(p => p.y);
     const minY = Math.min(...yVals);
     const maxY = Math.max(...yVals);
     const analemmaCenterY = (minY + maxY) / 2;
     // Position so that analemma center is at pageH/2
     const gnomonPos = pageH / 2 - analemmaCenterY;
-    return parseFloat(gnomonPos.toFixed(2));
+    return Math.round(gnomonPos);
   };
 
   // Restore effect for autoHeight calculation
