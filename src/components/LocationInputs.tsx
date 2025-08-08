@@ -89,8 +89,6 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
       setLoadingTz(false);
       
       if (timeZoneData.timeZoneId) {
-        const isDST = timeZoneData.dstOffset !== null && 
-                     isCurrentlyInDST(timeZoneData.dstOffset);
         const tzName = timeZoneData.timeZoneName || 'Time Zone';
         console.log('Setting timezone name:', tzName, 'from API response:', timeZoneData); // Debug log
         setTimezoneName(tzName);
@@ -171,13 +169,13 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
           className="form-row"
           style={
             isMobile
-              ? { display: 'flex', flexDirection: 'row', alignItems: 'end', width: '100%', gap: 4 }
-              : { alignItems: 'end' }
+              ? { display: 'flex', flexDirection: 'column', width: '100%', gap: 8 }
+              : { display: 'flex', flexDirection: 'row', alignItems: 'end', gap: 12 }
           }
         >
           <div
             className="form-group"
-            style={isMobile ? { minWidth: 0, flexShrink: 1, flex: '1.5' } : { flex: '1.5' }}
+            style={isMobile ? { width: '100%' } : { flex: '1.5' }}
           >
             <label className="form-label">Location</label>
             <select
@@ -193,7 +191,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
           </div>
           <div
             className="form-group"
-            style={isMobile ? { minWidth: 0, flexShrink: 1, flex: '1.5' } : { flex: '1.5' }}
+            style={isMobile ? { width: '100%' } : { flex: '1.5' }}
           >
             <label className="form-label">Time Zone</label>
             <input
@@ -208,15 +206,16 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
 
         <div
           className="form-row"
-          style={
-            isMobile
-              ? { display: 'flex', flexDirection: 'row', alignItems: 'end', width: '100%', gap: 4 }
-              : { alignItems: 'end' }
-          }
+          style={{
+            display: 'flex',
+            alignItems: 'end',
+            gap: isMobile ? '0.5rem' : '1rem',
+            flexDirection: 'row' // Keep as row for mobile since they can fit
+          }}
         >
           <div
             className="form-group"
-            style={isMobile ? { minWidth: 0, flexShrink: 1 } : undefined}
+            style={{ flex: isMobile ? '0 0 auto' : '1' }}
           >
             <label className="form-label">Latitude</label>
             <input
@@ -250,12 +249,12 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                    });
                  }
               }}
-              style={{ maxWidth: isMobile ? 80 : 120 }}
+              style={{ width: isMobile ? '70px' : '120px' }}
             />
           </div>
           <div
             className="form-group"
-            style={isMobile ? { minWidth: 0, flexShrink: 1 } : undefined}
+            style={{ flex: isMobile ? '0 0 auto' : '1' }}
           >
             <label className="form-label">Longitude</label>
             <input
@@ -289,20 +288,25 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                    });
                  }
               }}
-              style={{ maxWidth: isMobile ? 80 : 120 }}
+              style={{ width: isMobile ? '70px' : '120px' }}
             />
           </div>
           <div
             className="form-group"
-            style={isMobile ? { marginLeft: 4, marginBottom: 2, minWidth: 0, flexShrink: 1 } : { marginLeft: 12, marginBottom: 2 }}
+            style={{ flex: isMobile ? '0 0 auto' : 'auto' }}
           >
             <button
               type="button"
               className="form-input"
-              style={{ height: 36, cursor: 'pointer', padding: isMobile ? '0 8px' : undefined }}
+              style={{ 
+                height: 36, 
+                cursor: 'pointer', 
+                padding: isMobile ? '0 8px' : '0 12px',
+                width: isMobile ? 'auto' : 'auto'
+              }}
               onClick={() => setMapOpen(true)}
             >
-              Pick on Map
+              Use Map
             </button>
           </div>
         </div>

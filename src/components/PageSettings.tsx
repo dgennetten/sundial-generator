@@ -34,6 +34,9 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   dialFacing,
   setDialFacing,
 }) => {
+
+  // Responsive: detect mobile
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
   // Helper functions for tropical calculations
   const isInTropics = (lat: number): boolean => {
     return Math.abs(lat) <= 23.4367; // Tropic of Cancer/Capricorn
@@ -122,13 +125,22 @@ const PageSettings: React.FC<PageSettingsProps> = ({
         <h3 className="card-title"><StickyNote color="#2563eb" size={20} style={{marginRight: 6}} /> Page Settings</h3>
       </div>
       <div className="card-content">
-        <div className="form-row">
-          <div className="form-group" style={{ marginRight: 6 }}>
+        <div 
+          className="form-row" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'end', 
+            gap: isMobile ? '0.5rem' : '1rem',
+            flexDirection: isMobile ? 'row' : 'row' // Keep as row for mobile since they can fit
+          }}
+        >
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
             <label className="form-label">Page Size</label>
             <select
               className="form-select"
               value={pageSize}
               onChange={(e) => setPageSize(e.target.value as PageSize)}
+              style={{ minWidth: isMobile ? '80px' : 'auto' }}
             >
               <option value="Letter">Letter</option>
               <option value="A4">A4</option>
@@ -136,23 +148,25 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               <option value="10x15cm Postcard">4x6 Post.</option>
             </select>
           </div>
-          <div className="form-group" style={{ marginRight: 8 }}>
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
             <label className="form-label">Orientation</label>
             <select
               className="form-select"
               value={orientation}
               onChange={(e) => setOrientation(e.target.value as Orientation)}
+              style={{ minWidth: isMobile ? '80px' : 'auto' }}
             >
               <option value="Landscape">Landscape</option>
               <option value="Portrait">Portrait</option>
             </select>
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
             <label className="form-label">Incline</label>
             <select
               className="form-select"
               value={inclineType}
               onChange={(e) => handleInclineTypeChange(e.target.value as InclineType)}
+              style={{ minWidth: isMobile ? '80px' : 'auto' }}
             >
               <option value="Horizontal">Horizontal</option>
               <option value="Cancer">Cancer</option>
@@ -162,7 +176,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               <option value="Manual">Manual</option>
             </select>
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
             <label className="form-label">Degrees</label>
             <input
               type="number"
@@ -174,17 +188,25 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               max={90}
               step={1.0}
               style={{ 
-                width: '40px',
+                width: isMobile ? '50px' : '40px',
                 backgroundColor: inclineType !== 'Manual' ? '#f7fafc' : undefined,
                 color: inclineType !== 'Manual' ? '#a0aec0' : undefined
               }}
             />
           </div>
         </div>
-                 <div className="form-row" style={{ marginTop: '12px' }}>
-           <div className="form-group">
-             <label className="form-label">Dial Facing</label>
-             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 <div 
+                   className="form-row" 
+                   style={{ 
+                     marginTop: '12px',
+                     display: 'flex',
+                     alignItems: 'center',
+                     gap: isMobile ? '0.5rem' : '1rem'
+                   }}
+                 >
+                   <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
+                     <label className="form-label">Dial Facing</label>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '8px' }}>
                <span style={{ 
                  fontSize: '14px', 
                  color: dialFacingLockInfo.showNotice ? '#9ca3af' : (dialFacingLockInfo.requiredDirection === 'North' ? '#2563eb' : '#6b7280') 
@@ -223,11 +245,11 @@ const PageSettings: React.FC<PageSettingsProps> = ({
                  fontSize: '14px', 
                  color: dialFacingLockInfo.showNotice ? '#9ca3af' : (dialFacingLockInfo.requiredDirection === 'South' ? '#2563eb' : '#6b7280') 
                }}>South</span>
-               {dialFacingLockInfo.showNotice && (
-                 <span style={{ fontSize: '12px', color: '#dc2626', marginLeft: '8px' }}>
-                   Inclinded dials must face toward solar path.
-                 </span>
-               )}
+                               {dialFacingLockInfo.showNotice && (
+                  <span style={{ fontSize: '12px', color: '#dc2626', marginLeft: '8px' }}>
+                    Inclined dials must face toward solar path.
+                  </span>
+                )}
              </div>
            </div>
          </div>

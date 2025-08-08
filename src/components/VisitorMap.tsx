@@ -241,6 +241,35 @@ const VisitorMap: React.FC = () => {
     );
   }
 
+  // Group visitors by country and aggregate data
+  const countryData = visitorData.visitors.reduce((acc, visitor) => {
+    const country = visitor.country;
+    if (!acc[country]) {
+      acc[country] = {
+        country: visitor.country,
+        countryCode: visitor.countryCode,
+        totalVisits: 0,
+        cities: new Set<string>(),
+        regions: new Set<string>(),
+        visitors: []
+      };
+    }
+    acc[country].totalVisits += visitor.visitCount;
+    acc[country].cities.add(visitor.city);
+    acc[country].regions.add(visitor.region);
+    acc[country].visitors.push(visitor);
+    return acc;
+  }, {} as Record<string, {
+    country: string;
+    countryCode: string;
+    totalVisits: number;
+    cities: Set<string>;
+    regions: Set<string>;
+    visitors: VisitorLocation[];
+  }>);
+
+  const countryList = Object.values(countryData);
+
   return (
     <div className="card">
              <div className="card-header">
@@ -287,7 +316,8 @@ const VisitorMap: React.FC = () => {
           backgroundColor: '#f1f5f9', 
           borderRadius: '8px', 
           padding: '0.75rem', 
-          marginBottom: '0.5rem'
+          marginBottom: '0.5rem',
+          position: 'relative'
         }}>
           
           {/* Leaflet Map Component */}
@@ -300,7 +330,7 @@ const VisitorMap: React.FC = () => {
             />
           </div>
           
-          {/* Simple list of visitor locations */}
+          {/* Simple list of visitor locations - one per country */}
           <div style={{ 
             display: 'flex', 
             flexWrap: 'wrap', 
@@ -308,7 +338,7 @@ const VisitorMap: React.FC = () => {
             justifyContent: 'center',
             alignItems: 'center'
           }}>
-            {visitorData?.visitors.map((visitor, index) => (
+            {countryList.map((country, index) => (
               <div
                 key={index}
                 style={{
@@ -316,19 +346,19 @@ const VisitorMap: React.FC = () => {
                   alignItems: 'center',
                   gap: '0.25rem',
                   padding: '0.25rem 0.5rem',
-                  backgroundColor: selectedCountry === visitor.country ? '#eff6ff' : '#ffffff',
+                  backgroundColor: selectedCountry === country.country ? '#eff6ff' : '#ffffff',
                   borderRadius: '12px',
                   fontSize: '0.75rem',
-                  border: selectedCountry === visitor.country ? '1px solid #2563eb' : '1px solid #e2e8f0',
+                  border: selectedCountry === country.country ? '1px solid #2563eb' : '1px solid #e2e8f0',
                   cursor: 'pointer'
                 }}
-                title={`${visitor.city}, ${visitor.region}, ${visitor.country} - ${visitor.visitCount} visits`}
-                onClick={() => setSelectedCountry(selectedCountry === visitor.country ? null : visitor.country)}
+                title={`${country.country} - ${country.totalVisits} total visits from ${country.cities.size} cities`}
+                onClick={() => setSelectedCountry(selectedCountry === country.country ? null : country.country)}
               >
                 <span style={{ fontSize: '0.875rem' }}>
-                  {getCountryFlag(visitor.countryCode)}
+                  {getCountryFlag(country.countryCode)}
                 </span>
-                <span>{visitor.city}</span>
+                <span>{country.country}</span>
                 <span style={{ 
                   backgroundColor: '#2563eb', 
                   color: 'white', 
@@ -337,10 +367,22 @@ const VisitorMap: React.FC = () => {
                   fontSize: '0.625rem',
                   fontWeight: 'bold'
                 }}>
-                  {visitor.visitCount}
+                  {country.totalVisits}
                 </span>
               </div>
             ))}
+          </div>
+          
+          {/* Instruction text in lower left corner */}
+          <div style={{
+            position: 'absolute',
+            bottom: '0.5rem',
+            left: '0.5rem',
+            fontSize: '0.625rem',
+            color: '#94a3b8',
+            fontStyle: 'italic'
+          }}>
+            click flags for details.
           </div>
         </div>
 
@@ -357,13 +399,11 @@ const VisitorMap: React.FC = () => {
               Selected: {selectedCountry}
             </h5>
             <div style={{ fontSize: '0.75rem', color: '#374151' }}>
-              {visitorData?.visitors
-                .filter(v => v.country === selectedCountry)
-                .map((visitor, index) => (
-                  <div key={index} style={{ marginBottom: '0.2rem' }}>
-                    📍 {visitor.city}, {visitor.region} - {visitor.visitCount} visits
-                  </div>
-                ))}
+              {countryData[selectedCountry]?.visitors.map((visitor, index) => (
+                <div key={index} style={{ marginBottom: '0.2rem' }}>
+                  📍 {visitor.city}, {visitor.region} - {visitor.visitCount} visits
+                </div>
+              ))}
             </div>
           </div>
         )}

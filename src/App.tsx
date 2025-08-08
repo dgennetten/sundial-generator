@@ -210,7 +210,7 @@ const App: React.FC = () => {
           latitude={latitude}
           longitude={longitude}
           tzMeridian={tzMeridian}
-          onChange={({ lat, lng, tz, useDST, timezoneName }) => {
+          onChange={({ lat, lng, tz, useDST }) => {
             setLatitude(lat);
             setLongitude(lng);
             setTzMeridian(tz);
@@ -402,6 +402,7 @@ const App: React.FC = () => {
                fontSize: '14px',
                fontWeight: '500'
              }}>
+             <p><strong>New Feature:</strong> Mobile-friendly design.</p>
              <p><strong>New Feature:</strong> Map now has searchbox.</p>
              <p><strong>New Feature:</strong> Added Cancer and Capricorn options for Inclined Dials.</p>
              <p><strong>New Feature:</strong> Gnomon height optionally printed on dial.</p>

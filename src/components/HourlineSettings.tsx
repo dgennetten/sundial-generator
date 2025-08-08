@@ -94,6 +94,9 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
   onUpdate,
 }) => {
 
+  // Responsive: detect mobile
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
+
 
   const handleChange = (idx: number, field: keyof HourlineInterval, value: string | boolean) => {
     const updated = [...hourlineIntervals];
@@ -108,20 +111,29 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
         <h3 className="card-title"><Timer color="#2563eb" size={20} style={{marginRight: 6}} /> Hour Lines</h3>
       </div>
       <div className="card-content">
-        <div className="form-row">
-          <div className="form-group">
+        <div 
+          className="form-row" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'end', 
+            gap: isMobile ? '0.5rem' : '1rem',
+            flexDirection: isMobile ? 'row' : 'row' // Keep as row for mobile since they can fit
+          }}
+        >
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
             <label className="form-label">Date Range</label>
             <select
               className="form-select"
               value={dateRange}
               onChange={e => setDateRange(e.target.value as DateRange)}
+              style={{ minWidth: isMobile ? '100px' : 'auto' }}
             >
               <option value="FullYear">Full Year</option>
               <option value="SummerToWinter">Summer to Winter</option>
               <option value="WinterToSummer">Winter to Summer</option>
             </select>
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
             <label className="form-label">Hour Range</label>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               <input
@@ -131,7 +143,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
                 max={23}
                 value={startHour}
                 onChange={(e) => onUpdate(parseInt(e.target.value), stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
-                style={{ width: '60px' }}
+                style={{ width: isMobile ? '40px' : '60px' }}
               />
               <span>to</span>
               <input
@@ -141,9 +153,19 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
                 max={24}
                 value={stopHour}
                 onChange={(e) => onUpdate(startHour, parseInt(e.target.value), use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
-                style={{ width: '60px' }}
+                style={{ width: isMobile ? '40px' : '60px' }}
               />
             </div>
+          </div>
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
+            <label className="form-checkbox" style={{ margin: 0 }}>
+              <input
+                type="checkbox"
+                checked={use24Hour}
+                onChange={(e) => onUpdate(startHour, stopHour, e.target.checked, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
+              />
+              24-hour time
+            </label>
           </div>
         </div>
 
@@ -188,16 +210,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
           </table>
         </div>
 
-        <div className="form-group">
-          <label className="form-checkbox">
-            <input
-              type="checkbox"
-              checked={use24Hour}
-              onChange={(e) => onUpdate(startHour, stopHour, e.target.checked, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
-            />
-            24-hour time
-          </label>
-        </div>
+
 
         <div className="form-group">
           <label className="form-checkbox">
@@ -221,8 +234,16 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
           </label>
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
+        <div 
+          className="form-row" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: isMobile ? '0.5rem' : '1rem',
+            flexDirection: isMobile ? 'column' : 'row'
+          }}
+        >
+          <div className="form-group" style={{ width: isMobile ? '100%' : 'auto' }}>
             <label className="form-checkbox">
               <input
                 type="checkbox"
@@ -232,7 +253,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
              Summer label
             </label>
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ width: isMobile ? '100%' : 'auto' }}>
             <label className="form-checkbox">
               <input
                 type="checkbox"
@@ -247,8 +268,16 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
           </div>
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
+        <div 
+          className="form-row" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'end', 
+            gap: isMobile ? '0.5rem' : '1rem',
+            flexDirection: isMobile ? 'row' : 'row' // Keep as row for mobile since they can fit
+          }}
+        >
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '0 0 auto' }}>
             <label className="form-label">Label offset (mm)</label>
             <input
               type="number"
@@ -258,10 +287,10 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
               step={1}
               value={labelOffset}
               onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, parseInt(e.target.value) || 0, fontFamily, fontSize, useDST, declinationNoonmarks)}
-              style={{ width: '60px' }} // reduced width
+              style={{ width: isMobile ? '50px' : '60px' }}
             />
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '0 0 auto' }}>
             <label className="form-label">Font size (pt)</label>
             <input
               type="number"
@@ -271,16 +300,16 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
               step={1}
               value={fontSize}
               onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, parseInt(e.target.value) || 10, useDST, declinationNoonmarks)}
-              style={{ width: '80px' }}
+              style={{ width: isMobile ? '60px' : '80px' }}
             />
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ flex: isMobile ? '1 1 auto' : '0 0 auto' }}>
             <label className="form-label">Font family</label>
             <select
               className="form-select"
               value={fontFamily}
               onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, e.target.value, fontSize, useDST, declinationNoonmarks)}
-              style={{ width: '140px' }}
+              style={{ width: isMobile ? '100%' : '140px' }}
             >
               <option value="sans-serif">Sans-serif</option>
               <option value="serif">Serif</option>

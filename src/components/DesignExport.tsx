@@ -41,6 +41,9 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
   const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
   const [dpi, setDpi] = useState<number>(600);
 
+  // Responsive: detect mobile
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
+
   const handleBorderChange = (checked: boolean) => {
     setShowBorder(checked);
     onBorderChange(checked, margin, borderStyle);
@@ -106,23 +109,48 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
           </div>
         </div>
         
-        {/* Border Style and Margin on the same line */}
-        <div className="form-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <label className="form-label" htmlFor="border-style" style={{ margin: 0 }}>Border Style</label>
+        {/* Border Style and Margin - responsive layout */}
+        <div 
+          className="form-row" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: isMobile ? '0.5rem' : '1rem',
+            flexDirection: isMobile ? 'column' : 'row'
+          }}
+        >
+          <div 
+            className="form-group" 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.25rem',
+              width: isMobile ? '100%' : 'auto'
+            }}
+          >
+            <label className="form-label" htmlFor="border-style" style={{ margin: 0, minWidth: isMobile ? '80px' : 'auto' }}>Border Style</label>
             <select
               id="border-style"
               className="form-select"
               value={borderStyle}
               onChange={(e) => handleBorderStyleChange(e.target.value)}
+              style={{ flex: 1 }}
             >
               {lineStyles.filter(s => s.name && s.name.trim()).map(style => (
                 <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
               ))}
             </select>
           </div>
-          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <label className="form-label" htmlFor="border-margin" style={{ margin: 0 }}>Margin (mm)</label>
+          <div 
+            className="form-group" 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.25rem',
+              width: isMobile ? '100%' : 'auto'
+            }}
+          >
+            <label className="form-label" htmlFor="border-margin" style={{ margin: 0, minWidth: isMobile ? '80px' : 'auto' }}>Margin (mm)</label>
             <input
               id="border-margin"
               type="number"
@@ -132,28 +160,45 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
               step={1}
               value={margin}
               onChange={(e) => handleMarginChange(parseFloat(e.target.value) || 6)}
-              style={{ width: '60px' }}
+              style={{ width: isMobile ? '100%' : '60px' }}
             />
           </div>
         </div>
-        {/* Page Background row (now second) */}
+        {/* Page Background row - responsive layout */}
         <div className="form-row">
           <div className="form-group">
-            <label className="form-checkbox" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <input
-                type="checkbox"
-                checked={showBackground}
-                onChange={(e) => handleBackgroundChange(e.target.checked)}
-              />
-              Page Background
+            <label className="form-checkbox" style={{ 
+              display: 'flex', 
+              gap: '0.5rem',
+              flexDirection: isMobile ? 'column' : 'row',
+              alignItems: isMobile ? 'flex-start' : 'center'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <input
+                  type="checkbox"
+                  checked={showBackground}
+                  onChange={(e) => handleBackgroundChange(e.target.checked)}
+                />
+                <span>Page Background</span>
+              </div>
               {showBackground && (
-                <>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  marginTop: isMobile ? '0.5rem' : '0',
+                  width: isMobile ? '100%' : 'auto'
+                }}>
                   <input
                     type="text"
                     className="form-input"
                     value={backgroundColor}
                     onChange={(e) => handleBackgroundColorChange(e.target.value)}
-                    style={{ width: '80px', fontSize: '0.9rem', marginLeft: '0.75rem' }}
+                    style={{ 
+                      width: isMobile ? '100%' : '80px', 
+                      fontSize: '0.9rem',
+                      flex: isMobile ? 1 : 'auto'
+                    }}
                     placeholder="Cornsilk"
                     title="Enter color name or hex value"
                   />
@@ -167,23 +212,32 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
                       border: '1px solid #e2e8f0',
                       borderRadius: '4px',
                       cursor: 'pointer',
-                      marginLeft: '0.25rem'
+                      flexShrink: 0
                     }}
                     title="Click to pick color"
                   />
-                </>
+                </div>
               )}
             </label>
           </div>
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
+        <div 
+          className="form-row" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: isMobile ? '0.5rem' : '1rem',
+            flexDirection: isMobile ? 'column' : 'row'
+          }}
+        >
+          <div className="form-group" style={{ width: isMobile ? '100%' : 'auto' }}>
             <label className="form-label">Export Format</label>
             <select 
               className="form-select"
               value={format} 
               onChange={(e) => setFormat(e.target.value as ExportFormat)}
+              style={{ width: isMobile ? '100%' : 'auto' }}
             >
               <option value="SVG">SVG</option>
               <option value="PNG">PNG</option>
@@ -192,8 +246,16 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
           </div>
           {/* DPI input, only show for PNG */}
           {format === 'PNG' && (
-            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              <label htmlFor="dpi-input" style={{ margin: 0 }}>DPI:</label>
+            <div 
+              className="form-group" 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.25rem',
+                width: isMobile ? '100%' : 'auto'
+              }}
+            >
+              <label htmlFor="dpi-input" style={{ margin: 0, minWidth: isMobile ? '40px' : 'auto' }}>DPI:</label>
               <input
                 id="dpi-input"
                 type="number"
@@ -203,14 +265,15 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
                 step={1}
                 value={dpi}
                 onChange={e => setDpi(parseInt(e.target.value) || 600)}
-                style={{ width: '70px' }}
+                style={{ width: isMobile ? '100%' : '70px' }}
               />
             </div>
           )}
-          <div className="form-group" style={{ alignSelf: 'end' }}>
+          <div className="form-group" style={{ alignSelf: 'end', width: isMobile ? '100%' : 'auto' }}>
             <button 
               className="btn btn-primary"
               onClick={handleExport}
+              style={{ width: isMobile ? '100%' : 'auto' }}
             >
               Export
             </button>
