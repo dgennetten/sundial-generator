@@ -24,13 +24,14 @@ interface Props {
   latitude: number;
   longitude: number;
   tzMeridian: number;
-  onChange: (values: { lat: number; lng: number; tz: number; useDST?: boolean; timezoneName?: string }) => void;
+  onChange: (values: { lat: number; lng: number; tz: number; useDST?: boolean; timezoneName?: string; locationName?: string }) => void;
 }
 
 const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onChange }) => {
   const [timezoneName, setTimezoneName] = useState<string>('Mountain Time Zone');
   const [mapOpen, setMapOpen] = useState(false);
   const [loadingTz, setLoadingTz] = useState(false);
+  const [foundLocationName, setFoundLocationName] = useState<string | null>(null);
 
   // Responsive: detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
@@ -63,21 +64,23 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
          
          setTimezoneName(tzName);
          
-         onChange({ 
-           lat: locationData.lat, 
-           lng: locationData.lng, 
-           tz: newMeridian,
-           useDST: isDST,
-           timezoneName: tzName
-         });
-      } else {
-        // Fallback if API call fails
-        onChange({ 
-          lat: locationData.lat, 
-          lng: locationData.lng, 
-          tz: tzMeridian 
-        });
-      }
+                   onChange({ 
+            lat: locationData.lat, 
+            lng: locationData.lng, 
+            tz: newMeridian,
+            useDST: isDST,
+            timezoneName: tzName,
+            locationName: locationName
+          });
+               } else {
+           // Fallback if API call fails
+           onChange({ 
+             lat: locationData.lat, 
+             lng: locationData.lng, 
+             tz: tzMeridian,
+             locationName: locationName
+           });
+         }
     }
   };
 
@@ -178,16 +181,70 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
             style={isMobile ? { width: '100%' } : { flex: '1.5' }}
           >
             <label className="form-label">Location</label>
-            <select
-              className="form-select"
-              value={getCurrentLocation()}
-              onChange={(e) => handleLocationChange(e.target.value)}
-            >
-              {Object.keys(locations).map(location => (
-                <option key={location} value={location}>{location}</option>
-              ))}
-              <option value="Custom Location">Custom Location</option>
-            </select>
+            <div style={{ position: 'relative' }}>
+              <select
+                className="form-select"
+                value={getCurrentLocation()}
+                onChange={(e) => handleLocationChange(e.target.value)}
+                style={{ 
+                  visibility: foundLocationName ? 'hidden' : 'visible'
+                }}
+              >
+                {Object.keys(locations).map(location => (
+                  <option key={location} value={location}>{location}</option>
+                ))}
+                <option value="Custom Location">Custom Location</option>
+              </select>
+              {foundLocationName && (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: '#f1f3f4',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  padding: '0.5rem 0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  color: '#6b7280',
+                  fontSize: '0.9rem',
+                  cursor: 'not-allowed',
+                  zIndex: 10
+                }}>
+                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {foundLocationName}
+                  </span>
+                  <button
+                    type="button"
+                    style={{
+                      background: '#fecaca',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '20px',
+                      height: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem',
+                      color: '#dc2626',
+                      fontWeight: 'bold',
+                      flexShrink: 0,
+                      marginLeft: '0.5rem'
+                    }}
+                    onClick={() => {
+                      setFoundLocationName(null);
+                    }}
+                    title="Remove found location"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
           <div
             className="form-group"
@@ -199,7 +256,13 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
               className="form-input"
               value={timezoneName}
               readOnly
-              style={{ backgroundColor: '#f8f9fa', cursor: 'not-allowed' }}
+              style={{ 
+                backgroundColor: '#f1f3f4', 
+                cursor: 'not-allowed',
+                color: '#6b7280',
+                borderColor: '#d1d5db',
+                opacity: 0.8
+              }}
             />
           </div>
         </div>
@@ -223,8 +286,10 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
               className="form-input"
               step={0.0001}
               value={latitude}
-              onChange={async (e) => {
+                            onChange={async (e) => {
                 const newLat = parseFloat(e.target.value);
+                // Clear found location name when manually changing coordinates
+                setFoundLocationName(null);
                 onChange({ lat: newLat, lng: longitude, tz: tzMeridian });
                 
                 // Fetch timezone data for the new coordinates
@@ -248,7 +313,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                      timezoneName: tzName
                    });
                  }
-              }}
+               }}
               style={{ width: isMobile ? '70px' : '120px' }}
             />
           </div>
@@ -262,8 +327,10 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
               className="form-input"
               step={0.0001}
               value={longitude}
-              onChange={async (e) => {
+                            onChange={async (e) => {
                 const newLng = parseFloat(e.target.value);
+                // Clear found location name when manually changing coordinates
+                setFoundLocationName(null);
                 onChange({ lat: latitude, lng: newLng, tz: tzMeridian });
                 
                 // Fetch timezone data for the new coordinates
@@ -287,7 +354,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                      timezoneName: tzName
                    });
                  }
-              }}
+               }}
               style={{ width: isMobile ? '70px' : '120px' }}
             />
           </div>
@@ -313,36 +380,45 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
         {loadingTz && <div style={{ color: '#f59e42', marginTop: 8 }}>Detecting time zone...</div>}
       </div>
       <Suspense fallback={<div style={{textAlign: 'center', padding: 32}}>Loading map…</div>}>
-        <MapPicker
-          open={mapOpen}
-          onClose={() => setMapOpen(false)}
-          onSelect={async (lat, lng) => {
-            setLoadingTz(true);
-            const timeZoneData = await fetchTimeZone(lat, lng);
-            setLoadingTz(false);
-            
-                         if (timeZoneData.timeZoneId) {
-               const isDST = timeZoneData.dstOffset !== null && 
-                            isCurrentlyInDST(timeZoneData.dstOffset);
-               const tzName = timeZoneData.timeZoneName || 'Time Zone';
-               const newMeridian = calculateTzMeridian(lng);
-               
-               setTimezoneName(tzName);
-               
-               onChange({ 
-                 lat, 
-                 lng, 
-                 tz: newMeridian,
-                 useDST: isDST,
-                 timezoneName: tzName
-               });
-             } else {
-               onChange({ lat, lng, tz: tzMeridian });
-             }
-          }}
-          initialLat={latitude}
-          initialLng={longitude}
-        />
+                 <MapPicker
+           open={mapOpen}
+           onClose={() => setMapOpen(false)}
+           onSelect={async (lat, lng, locationName) => {
+             setLoadingTz(true);
+             const timeZoneData = await fetchTimeZone(lat, lng);
+             setLoadingTz(false);
+             
+                           // Set the found location name to show in the overlay
+              setFoundLocationName(locationName || null);
+             
+                          if (timeZoneData.timeZoneId) {
+                const isDST = timeZoneData.dstOffset !== null && 
+                             isCurrentlyInDST(timeZoneData.dstOffset);
+                const tzName = timeZoneData.timeZoneName || 'Time Zone';
+                const newMeridian = calculateTzMeridian(lng);
+                
+                setTimezoneName(tzName);
+                
+                onChange({ 
+                  lat, 
+                  lng, 
+                  tz: newMeridian,
+                  useDST: isDST,
+                  timezoneName: tzName,
+                  locationName: locationName
+                });
+              } else {
+                onChange({ 
+                  lat, 
+                  lng, 
+                  tz: tzMeridian,
+                  locationName: locationName
+                });
+              }
+           }}
+           initialLat={latitude}
+           initialLng={longitude}
+         />
       </Suspense>
     </div>
   );

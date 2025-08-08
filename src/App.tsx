@@ -210,7 +210,7 @@ const App: React.FC = () => {
           latitude={latitude}
           longitude={longitude}
           tzMeridian={tzMeridian}
-          onChange={({ lat, lng, tz, useDST }) => {
+          onChange={({ lat, lng, tz, useDST, locationName }) => {
             setLatitude(lat);
             setLongitude(lng);
             setTzMeridian(tz);
@@ -218,30 +218,35 @@ const App: React.FC = () => {
             if (useDST !== undefined) {
               setUseDST(useDST);
             }
-            // Update location name when coordinates change
-            // Use the new coordinates directly instead of the state values
-            const locations: { [key: string]: { lat: number; lng: number } } = {
-              'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
-              'Marble, CO USA': { lat: 39.0722, lng: -107.1895 },
-              'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321 },
-              'Spangle, WA USA': { lat: 47.4307, lng: -117.3796 },
-              'Henrico, VA USA': { lat: 37.5243, lng: -77.4932 },
-              'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747 },
-              'Quito, Ecuador': { lat: -0.1807, lng: -78.4678 },
-              'Recife, Brazil': { lat: -8.0476, lng: -34.8770 },
-              'Falkenstein, Saxony, Germany': { lat: 50.4777, lng: 12.3649 },
-              'Luxembourg City, Luxembourg': { lat: 49.6116, lng: 6.1319 },
-              'St Petersburg, Russia': { lat: 59.8761, lng: 30.4339 }
-            };
-            
-            let newLocationName = 'Custom Location';
-            for (const [name, data] of Object.entries(locations)) {
-              if (Math.abs(data.lat - lat) < 0.001 && Math.abs(data.lng - lng) < 0.001) {
-                newLocationName = name;
-                break;
+            // Update location name - use the passed locationName if available, otherwise fall back to coordinate matching
+            if (locationName) {
+              setLocationName(locationName);
+            } else {
+              // Update location name when coordinates change
+              // Use the new coordinates directly instead of the state values
+              const locations: { [key: string]: { lat: number; lng: number } } = {
+                'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
+                'Marble, CO USA': { lat: 39.0722, lng: -107.1895 },
+                'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321 },
+                'Spangle, WA USA': { lat: 47.4307, lng: -117.3796 },
+                'Henrico, VA USA': { lat: 37.5243, lng: -77.4932 },
+                'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747 },
+                'Quito, Ecuador': { lat: -0.1807, lng: -78.4678 },
+                'Recife, Brazil': { lat: -8.0476, lng: -34.8770 },
+                'Falkenstein, Saxony, Germany': { lat: 50.4777, lng: 12.3649 },
+                'Luxembourg City, Luxembourg': { lat: 49.6116, lng: 6.1319 },
+                'St Petersburg, Russia': { lat: 59.8761, lng: 30.4339 }
+              };
+              
+              let newLocationName = 'Custom Location';
+              for (const [name, data] of Object.entries(locations)) {
+                if (Math.abs(data.lat - lat) < 0.001 && Math.abs(data.lng - lng) < 0.001) {
+                  newLocationName = name;
+                  break;
+                }
               }
+              setLocationName(newLocationName);
             }
-            setLocationName(newLocationName);
           }}
         />
 
