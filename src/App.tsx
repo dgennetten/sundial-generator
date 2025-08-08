@@ -210,7 +210,7 @@ const App: React.FC = () => {
           latitude={latitude}
           longitude={longitude}
           tzMeridian={tzMeridian}
-          onChange={({ lat, lng, tz, useDST }) => {
+          onChange={({ lat, lng, tz, useDST, timezoneName }) => {
             setLatitude(lat);
             setLongitude(lng);
             setTzMeridian(tz);
