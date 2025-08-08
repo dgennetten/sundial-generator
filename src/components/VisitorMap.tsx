@@ -275,7 +275,7 @@ const VisitorMap: React.FC = () => {
              <div className="card-header">
          <h3 className="card-title">
            <Globe color="#2563eb" size={20} style={{marginRight: 6}} />
-           Visitor Map  —  Please send feedback!
+           Visitor Map  — Last 7 days (GDPR compliant)
            {error && (
              <span style={{ fontSize: '0.75rem', color: '#dc2626', marginLeft: '8px' }}>
                (Using fallback data)
