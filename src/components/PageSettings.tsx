@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { StickyNote } from 'lucide-react';
 
-type PageSize = 'A4' | 'Letter' | '11x17' | '10x15cm Postcard';
+type PageSize = 'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom';
 type Orientation = 'Landscape' | 'Portrait';
 export type InclineType = 'Horizontal' | 'Cancer' | 'Equatorial' | 'Capricorn' | 'Vertical' | 'Manual';
 type DialFacing = 'North' | 'South';
@@ -19,6 +19,12 @@ interface PageSettingsProps {
   latitude: number;
   dialFacing: DialFacing;
   setDialFacing: (facing: DialFacing) => void;
+  customWidth?: number;
+  setCustomWidth?: (width: number) => void;
+  customHeight?: number;
+  setCustomHeight?: (height: number) => void;
+  customUnits?: 'in' | 'cm';
+  setCustomUnits?: (units: 'in' | 'cm') => void;
 }
 
 const PageSettings: React.FC<PageSettingsProps> = ({
@@ -33,6 +39,12 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   latitude,
   dialFacing,
   setDialFacing,
+  customWidth,
+  setCustomWidth,
+  customHeight,
+  setCustomHeight,
+  customUnits,
+  setCustomUnits,
 }) => {
 
   // Responsive: detect mobile
@@ -82,6 +94,67 @@ const PageSettings: React.FC<PageSettingsProps> = ({
 
   const handleDialFacingToggle = () => {
     setDialFacing(dialFacing === 'North' ? 'South' : 'North');
+  };
+
+
+
+  // Handle width change with unit conversion
+  const handleWidthChange = (value: number) => {
+    if (!setCustomWidth) return;
+    
+    // Convert the input value to millimeters (internal storage)
+    let widthInMm: number;
+    if (customUnits === 'in') {
+      widthInMm = value * 25.4; // inches to mm
+    } else {
+      widthInMm = value * 10; // cm to mm
+    }
+    
+    // Store the value in mm internally, but display in the current units
+    setCustomWidth(widthInMm);
+  };
+
+  // Handle height change with unit conversion
+  const handleHeightChange = (value: number) => {
+    if (!setCustomHeight) return;
+    
+    // Convert the input value to millimeters (internal storage)
+    let heightInMm: number;
+    if (customUnits === 'in') {
+      heightInMm = value * 25.4; // inches to mm
+    } else {
+      heightInMm = value * 10; // cm to mm
+    }
+    
+    // Store the value in mm internally, but display in the current units
+    setCustomHeight(heightInMm);
+  };
+
+  // Handle units toggle with conversion
+  const handleUnitsToggle = (newUnits: 'in' | 'cm') => {
+    if (!setCustomUnits || customUnits === newUnits) return;
+    
+    // Only change the display units, don't modify the stored millimeter values
+    setCustomUnits(newUnits);
+  };
+
+  // Get display values in current units
+  const getDisplayWidth = (): number => {
+    if (!customWidth) return 0;
+    if (customUnits === 'in') {
+      return customWidth / 25.4; // mm to inches
+    } else {
+      return customWidth / 10; // mm to cm
+    }
+  };
+
+  const getDisplayHeight = (): number => {
+    if (!customHeight) return 0;
+    if (customUnits === 'in') {
+      return customHeight / 25.4; // mm to inches
+    } else {
+      return customHeight / 10; // mm to cm
+    }
   };
 
   // Determine if dial facing should be locked and what direction it should be
@@ -147,6 +220,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               <option value="A4">A4</option>
               <option value="11x17">11x17 inch</option>
               <option value="10x15cm Postcard">4x6 Post.</option>
+              <option value="Custom">Custom</option>
             </select>
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
@@ -162,6 +236,82 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             </select>
           </div>
         </div>
+
+        {/* Custom size controls - only show when Custom is selected */}
+        {pageSize === 'Custom' && (
+          <div 
+            className="form-row" 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'end', 
+              gap: isMobile ? '0.5rem' : '1rem',
+              flexDirection: 'row',
+              marginTop: isMobile ? '8px' : '0'
+            }}
+          >
+            <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
+              <label className="form-label">Width</label>
+              <input
+                type="number"
+                className="form-input"
+                value={getDisplayWidth()}
+                onChange={(e) => handleWidthChange(parseFloat(e.target.value) || 0)}
+                min={0.1}
+                step={0.1}
+                style={{ width: isMobile ? '60px' : '80px' }}
+              />
+            </div>
+            <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
+              <label className="form-label">Height</label>
+              <input
+                type="number"
+                className="form-input"
+                value={getDisplayHeight()}
+                onChange={(e) => handleHeightChange(parseFloat(e.target.value) || 0)}
+                min={0.1}
+                step={0.1}
+                style={{ width: isMobile ? '60px' : '80px' }}
+              />
+            </div>
+            <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
+              <label className="form-label">Units</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <button
+                  type="button"
+                  onClick={() => handleUnitsToggle('in')}
+                  style={{
+                    padding: '4px 8px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '4px',
+                    backgroundColor: customUnits === 'in' ? '#2563eb' : '#ffffff',
+                    color: customUnits === 'in' ? '#ffffff' : '#374151',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: customUnits === 'in' ? 'bold' : 'normal'
+                  }}
+                >
+                  in
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleUnitsToggle('cm')}
+                  style={{
+                    padding: '4px 8px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '4px',
+                    backgroundColor: customUnits === 'cm' ? '#2563eb' : '#ffffff',
+                    color: customUnits === 'cm' ? '#ffffff' : '#374151',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: customUnits === 'cm' ? 'bold' : 'normal'
+                  }}
+                >
+                  cm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Second row: Incline and Degrees */}
         <div 
