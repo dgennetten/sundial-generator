@@ -126,17 +126,10 @@ const GnomonSettings: React.FC<Props> = ({
         <h3 className="card-title"><MoveUpRight color="#2563eb" size={20} style={{marginRight: 6}} /> Gnomon Settings</h3>
       </div>
       <div className="card-content">
-        <div 
-          className="form-row" 
-          style={{ 
-            display: 'flex', 
-            alignItems: 'end', 
-            gap: isMobile ? '0.5rem' : '1rem',
-            flexDirection: isMobile ? 'row' : 'row' // Keep as row for mobile since they can fit
-          }}
-        >
-          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-            <label className="form-label" style={{ minWidth: isMobile ? '40px' : '60px' }}>Type:</label>
+        {/* Type dropdown on its own line */}
+        <div className="form-row">
+          <div className="form-group" style={{ width: isMobile ? '100%' : 'auto' }}>
+            <label className="form-label">Type</label>
             <select
               className="form-select"
               value={gnomonType}
@@ -149,7 +142,7 @@ const GnomonSettings: React.FC<Props> = ({
                   position: manualPosition,
                 })
               }
-              style={{ minWidth: isMobile ? '80px' : '120px' }}
+              style={{ width: isMobile ? '100%' : 'auto' }}
             >
               <option value="crosshair">Crosshair</option>
               <option value="crosshair-with-north">Crosshair + North Pt</option>
@@ -157,8 +150,20 @@ const GnomonSettings: React.FC<Props> = ({
               <option value="popup-with-brace">Popup with Brace</option>
             </select>
           </div>
+        </div>
+
+        {/* Height and Position dropdowns on one line */}
+        <div 
+          className="form-row" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'end', 
+            gap: isMobile ? '0.5rem' : '1rem',
+            flexDirection: 'row'
+          }}
+        >
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-            <label className="form-label" style={{ minWidth: isMobile ? '40px' : '60px' }}>Height:</label>
+            <label className="form-label">Height</label>
             <select
               className="form-select"
               value={mode}
@@ -171,19 +176,19 @@ const GnomonSettings: React.FC<Props> = ({
                   position: manualPosition,
                 })
               }
-              style={{ minWidth: isMobile ? '60px' : '120px' }}
+              style={{ width: isMobile ? '100%' : 'auto' }}
             >
               <option value="auto">Auto</option>
               <option value="manual">Manual</option>
             </select>
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-            <label className="form-label" style={{ minWidth: isMobile ? '50px' : '70px' }}>Position:</label>
+            <label className="form-label">Position</label>
             <select
               className="form-select"
               value={positionMode}
               onChange={e => setPositionMode(e.target.value as PositionMode)}
-              style={{ minWidth: isMobile ? '60px' : '120px' }}
+              style={{ width: isMobile ? '100%' : 'auto' }}
             >
               <option value="auto">Auto</option>
               <option value="manual">Manual</option>
@@ -199,11 +204,11 @@ const GnomonSettings: React.FC<Props> = ({
               display: 'flex', 
               alignItems: 'end', 
               gap: isMobile ? '0.5rem' : '1rem',
-              flexDirection: isMobile ? 'row' : 'row' // Keep as row for mobile since they can fit
+              flexDirection: 'row'
             }}
           >
             <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-              <label className="form-label">Gnomon Height (mm)</label>
+              <label className="form-label">Height (mm)</label>
               <input
                 type="number"
                 className="form-input"
@@ -220,11 +225,11 @@ const GnomonSettings: React.FC<Props> = ({
                     position: manualPosition,
                   })
                 }
-                style={{ width: isMobile ? '80px' : 'auto' }}
+                style={{ width: isMobile ? '60px' : 'auto' }}
               />
             </div>
             <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-              <label className="form-label">Gnomon Position (mm from top)</label>
+              <label className="form-label">Position (mm from edge)</label>
               <input
                 type="number"
                 className="form-input"
@@ -243,7 +248,7 @@ const GnomonSettings: React.FC<Props> = ({
                     position: val,
                   });
                 }}
-                style={{ width: isMobile ? '80px' : '120px' }}
+                style={{ width: isMobile ? '60px' : '120px' }}
               />
             </div>
           </div>
