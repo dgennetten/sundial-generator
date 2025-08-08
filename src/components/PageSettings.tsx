@@ -125,13 +125,14 @@ const PageSettings: React.FC<PageSettingsProps> = ({
         <h3 className="card-title"><StickyNote color="#2563eb" size={20} style={{marginRight: 6}} /> Page Settings</h3>
       </div>
       <div className="card-content">
+        {/* First row: Page Size and Orientation */}
         <div 
           className="form-row" 
           style={{ 
             display: 'flex', 
             alignItems: 'end', 
             gap: isMobile ? '0.5rem' : '1rem',
-            flexDirection: isMobile ? 'row' : 'row' // Keep as row for mobile since they can fit
+            flexDirection: 'row'
           }}
         >
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
@@ -160,6 +161,19 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               <option value="Portrait">Portrait</option>
             </select>
           </div>
+        </div>
+
+        {/* Second row: Incline and Degrees */}
+        <div 
+          className="form-row" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'end', 
+            gap: isMobile ? '0.5rem' : '1rem',
+            flexDirection: 'row',
+            marginTop: isMobile ? '8px' : '0'
+          }}
+        >
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
             <label className="form-label">Incline</label>
             <select

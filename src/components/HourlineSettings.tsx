@@ -157,16 +157,6 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
               />
             </div>
           </div>
-          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
-            <label className="form-checkbox" style={{ margin: 0 }}>
-              <input
-                type="checkbox"
-                checked={use24Hour}
-                onChange={(e) => onUpdate(startHour, stopHour, e.target.checked, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
-              />
-              24-hour time
-            </label>
-          </div>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -210,7 +200,16 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
           </table>
         </div>
 
-
+        <div className="form-group">
+          <label className="form-checkbox">
+            <input
+              type="checkbox"
+              checked={use24Hour}
+              onChange={(e) => onUpdate(startHour, stopHour, e.target.checked, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
+            />
+            24-hour time
+          </label>
+        </div>
 
         <div className="form-group">
           <label className="form-checkbox">
