@@ -2,7 +2,10 @@
 // Specialized SVG export utilities
 
 export interface SVGExportOptions {
-  pageSize: 'A4' | 'Letter' | '11x17' | '10x15cm Postcard';
+  pageSize: 'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom';
+  customWidth?: number;
+  customHeight?: number;
+  customUnits?: 'in' | 'cm';
   orientation: 'Landscape' | 'Portrait';
   showBackground?: boolean;
   backgroundColor?: string;
@@ -126,7 +129,18 @@ export function createSVGExport(options: SVGExportOptions): string | null {
   console.log('SVG children count:', svgElement.children.length);
   
   // Get page dimensions
-  let { width: printWidth, height: printHeight } = pageSizeMap[options.pageSize] || pageSizeMap.Letter;
+  // Calculate custom page size in mm
+  const getCustomPageSize = () => {
+    if (options.pageSize !== 'Custom' || !options.customWidth || !options.customHeight) return null;
+    // customWidth and customHeight are already stored in millimeters
+    return {
+      width: options.customWidth,
+      height: options.customHeight
+    };
+  };
+  
+  const customPageSize = getCustomPageSize();
+  let { width: printWidth, height: printHeight } = customPageSize || (options.pageSize !== 'Custom' ? pageSizeMap[options.pageSize as keyof typeof pageSizeMap] : pageSizeMap.Letter);
   if (options.orientation === 'Landscape') {
     [printWidth, printHeight] = [printHeight, printWidth];
   }

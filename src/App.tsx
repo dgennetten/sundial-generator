@@ -29,7 +29,11 @@ const App: React.FC = () => {
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
   const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north'>('crosshair');
-  const [pageSize, setPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard'>('Letter');
+  const [pageSize, setPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom'>('Letter');
+  const [customWidth, setCustomWidth] = useState<number>(8.5 * 25.4); // Store in mm
+  const [customHeight, setCustomHeight] = useState<number>(11 * 25.4); // Store in mm
+  const [customUnits, setCustomUnits] = useState<'in' | 'cm'>('in');
+  const [previousPageSize, setPreviousPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom'>('Letter');
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
   const [tiltAngle, setTiltAngle] = useState<number>(0);
@@ -134,6 +138,27 @@ const App: React.FC = () => {
     }
   }, [pageSize]);
 
+  // Track previous page size
+  useEffect(() => {
+    if (pageSize !== 'Custom') {
+      setPreviousPageSize(pageSize);
+    }
+  }, [pageSize]);
+
+  // Initialize custom size values when switching to Custom
+  useEffect(() => {
+    if (pageSize === 'Custom') {
+      // Set initial values based on the previous page size
+      const currentPageSize = pageSizeMap[previousPageSize as keyof typeof pageSizeMap] || pageSizeMap.Letter;
+      const widthInInches = currentPageSize.width / 25.4;
+      const heightInInches = currentPageSize.height / 25.4;
+      
+      setCustomWidth(Math.round(widthInInches * 25.4 * 10) / 10); // Convert to mm and round to 1 decimal place
+      setCustomHeight(Math.round(heightInInches * 25.4 * 10) / 10); // Convert to mm and round to 1 decimal place
+      setCustomUnits('in');
+    }
+  }, [pageSize, previousPageSize]);
+
   // Page size map (mm)
   const pageSizeMap = {
     Letter: { width: 8.5 * 25.4, height: 11 * 25.4 },
@@ -141,7 +166,19 @@ const App: React.FC = () => {
     '11x17': { width: 11 * 25.4, height: 17 * 25.4 },
     '10x15cm Postcard': { width: 100, height: 150 },
   };
-  let { width: pageWidth, height: pageHeight } = pageSizeMap[pageSize] || pageSizeMap.Letter;
+  
+  // Calculate custom page size in mm
+  const getCustomPageSize = () => {
+    if (pageSize !== 'Custom') return null;
+    // customWidth and customHeight are already stored in millimeters
+    return {
+      width: customWidth,
+      height: customHeight
+    };
+  };
+  
+  const customPageSize = getCustomPageSize();
+  let { width: pageWidth, height: pageHeight } = customPageSize || (pageSize !== 'Custom' ? pageSizeMap[pageSize as keyof typeof pageSizeMap] : pageSizeMap.Letter);
   if (orientation === 'Landscape') {
     [pageWidth, pageHeight] = [pageHeight, pageWidth];
   }
@@ -262,6 +299,12 @@ const App: React.FC = () => {
           latitude={latitude}
           dialFacing={dialFacing}
           setDialFacing={setDialFacing}
+          customWidth={customWidth}
+          setCustomWidth={setCustomWidth}
+          customHeight={customHeight}
+          setCustomHeight={setCustomHeight}
+          customUnits={customUnits}
+          setCustomUnits={setCustomUnits}
         />
 
         <GnomonSettings
@@ -391,6 +434,8 @@ const App: React.FC = () => {
           lineStyles={lineStyles}
           pageSize={pageSize}
           orientation={orientation}
+          customWidth={customWidth}
+          customHeight={customHeight}
         />
         <VisitorMap />
         <div className="card">
@@ -407,6 +452,7 @@ const App: React.FC = () => {
                fontSize: '14px',
                fontWeight: '500'
              }}>
+             <p><strong>New Feature:</strong> Custom page sizes.</p>
              <p><strong>New Feature:</strong> Mobile-friendly design.</p>
              <p><strong>New Feature:</strong> Map now has searchbox.</p>
              <p><strong>New Feature:</strong> Added Cancer and Capricorn options for Inclined Dials.</p>
@@ -500,6 +546,8 @@ algorithm with ±3.5 seconds accuracy.
           scale={1}
           orientation={orientation}
           pageSize={pageSize}
+          customWidth={customWidth}
+          customHeight={customHeight}
           dateRange={hourlineDateRange}
           hourlineIntervals={hourlineIntervals.filter(i => i.active)}
           lineStyles={lineStyles}

@@ -28,11 +28,13 @@ interface DesignExportProps {
   lineStyles: LineStyle[];
   pageSize: PageSize;
   orientation: 'Landscape' | 'Portrait';
+  customWidth?: number;
+  customHeight?: number;
 }
 
 
 
-const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroundChange, lineStyles, pageSize, orientation }) => {
+const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroundChange, lineStyles, pageSize, orientation, customWidth, customHeight }) => {
   const [format, setFormat] = useState<ExportFormat>('PNG');
   const [showBorder, setShowBorder] = useState<boolean>(true);
   const [margin, setMargin] = useState<number>(6); // in mm
@@ -78,6 +80,8 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
         dpi: format === 'PNG' ? dpi : undefined,
         showBackground,
         backgroundColor,
+        customWidth,
+        customHeight,
       });
     } catch (error) {
       console.error('Export failed:', error);

@@ -4,7 +4,7 @@ import { createSVGExport, downloadSVG } from './svgExportUtils';
 // import { createSimpleSVGExport, downloadSimpleSVG } from './simpleSvgExport';
 
 export type ExportFormat = 'SVG' | 'PNG' | 'PDF';
-export type PageSize = 'A4' | 'Letter' | '11x17' | '10x15cm Postcard';
+export type PageSize = 'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom';
 
 const pageSizeMap = {
   Letter: { width: 8.5, height: 11 }, // inches
@@ -20,6 +20,9 @@ interface ExportOptions {
   dpi?: number;
   showBackground?: boolean;
   backgroundColor?: string;
+  customWidth?: number;
+  customHeight?: number;
+  customUnits?: 'in' | 'cm';
 }
 
 /**
@@ -147,7 +150,18 @@ export async function exportSundial(options: ExportOptions): Promise<void> {
  */
 async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Promise<void> {
   // Get intended print dimensions
-  let { width: printWidth, height: printHeight } = pageSizeMap[options.pageSize] || pageSizeMap.Letter;
+  // Calculate custom page size in mm
+  const getCustomPageSize = () => {
+    if (options.pageSize !== 'Custom' || !options.customWidth || !options.customHeight) return null;
+    // customWidth and customHeight are already stored in millimeters
+    return {
+      width: options.customWidth,
+      height: options.customHeight
+    };
+  };
+  
+  const customPageSize = getCustomPageSize();
+  let { width: printWidth, height: printHeight } = customPageSize || (options.pageSize !== 'Custom' ? pageSizeMap[options.pageSize as keyof typeof pageSizeMap] : pageSizeMap.Letter);
   if (options.orientation === 'Landscape') {
     [printWidth, printHeight] = [printHeight, printWidth];
   }

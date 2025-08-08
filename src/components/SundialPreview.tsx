@@ -25,7 +25,9 @@ type Props = {
   stopHour: number;
   use24Hour: boolean;
   orientation: 'Landscape' | 'Portrait';
-  pageSize: 'A4' | 'Letter' | '11x17' | '10x15cm Postcard';
+  pageSize: 'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom';
+  customWidth?: number;
+  customHeight?: number;
   dateRange: 'FullYear' | 'SummerToWinter' | 'WinterToSummer';
   hourlineIntervals?: HourlineInterval[];
   declinationLines?: DeclinationLine[];
@@ -66,6 +68,8 @@ const SundialPreview: React.FC<Props> = ({
   use24Hour,
   orientation,
   pageSize,
+  customWidth,
+  customHeight,
   dateRange,
   hourlineIntervals = [],
   declinationLines = [],
@@ -93,7 +97,18 @@ const SundialPreview: React.FC<Props> = ({
   dialFacing = 'South',
   originalLatitude,
 }) => {
-  let { width, height } = pageSizeMap[pageSize] || pageSizeMap.Letter;
+  // Calculate custom page size in mm
+  const getCustomPageSize = () => {
+    if (pageSize !== 'Custom' || !customWidth || !customHeight) return null;
+    // customWidth and customHeight are already stored in millimeters
+    return {
+      width: customWidth,
+      height: customHeight
+    };
+  };
+  
+  const customPageSize = getCustomPageSize();
+  let { width, height } = customPageSize || (pageSize !== 'Custom' ? pageSizeMap[pageSize as keyof typeof pageSizeMap] : pageSizeMap.Letter);
   if (orientation === 'Landscape') {
     [width, height] = [height, width];
   }
