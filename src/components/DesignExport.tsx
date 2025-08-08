@@ -119,40 +119,22 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
             flexDirection: isMobile ? 'column' : 'row'
           }}
         >
-          <div 
-            className="form-group" 
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.25rem',
-              width: isMobile ? '100%' : 'auto'
-            }}
-          >
-            <label className="form-label" htmlFor="border-style" style={{ margin: 0, minWidth: isMobile ? '80px' : 'auto' }}>Border Style</label>
+          <div className="form-group" style={{ width: isMobile ? '100%' : 'auto' }}>
+            <label className="form-label">Border Style</label>
             <select
-              id="border-style"
               className="form-select"
               value={borderStyle}
               onChange={(e) => handleBorderStyleChange(e.target.value)}
-              style={{ flex: 1 }}
+              style={{ width: isMobile ? '100%' : 'auto' }}
             >
               {lineStyles.filter(s => s.name && s.name.trim()).map(style => (
                 <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
               ))}
             </select>
           </div>
-          <div 
-            className="form-group" 
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.25rem',
-              width: isMobile ? '100%' : 'auto'
-            }}
-          >
-            <label className="form-label" htmlFor="border-margin" style={{ margin: 0, minWidth: isMobile ? '80px' : 'auto' }}>Margin (mm)</label>
+          <div className="form-group" style={{ width: isMobile ? '100%' : 'auto' }}>
+            <label className="form-label">Margin (mm)</label>
             <input
-              id="border-margin"
               type="number"
               className="form-input"
               min={1}
@@ -246,18 +228,9 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
           </div>
           {/* DPI input, only show for PNG */}
           {format === 'PNG' && (
-            <div 
-              className="form-group" 
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.25rem',
-                width: isMobile ? '100%' : 'auto'
-              }}
-            >
-              <label htmlFor="dpi-input" style={{ margin: 0, minWidth: isMobile ? '40px' : 'auto' }}>DPI:</label>
+            <div className="form-group" style={{ width: isMobile ? '100%' : 'auto' }}>
+              <label className="form-label">DPI</label>
               <input
-                id="dpi-input"
                 type="number"
                 className="form-input"
                 min={72}
