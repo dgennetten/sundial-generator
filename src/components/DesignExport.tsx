@@ -109,17 +109,17 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
           </div>
         </div>
         
-        {/* Border Style and Margin - responsive layout */}
+                {/* Border Style and Margin - responsive layout */}
         <div 
           className="form-row" 
           style={{ 
             display: 'flex', 
             alignItems: 'center', 
             gap: isMobile ? '0.5rem' : '1rem',
-            flexDirection: isMobile ? 'column' : 'row'
+            flexDirection: 'row'
           }}
         >
-          <div className="form-group" style={{ width: isMobile ? '100%' : 'auto' }}>
+          <div className="form-group" style={{ flex: isMobile ? '1' : 'auto' }}>
             <label className="form-label">Border Style</label>
             <select
               className="form-select"
@@ -132,7 +132,7 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
               ))}
             </select>
           </div>
-          <div className="form-group" style={{ width: isMobile ? '100%' : 'auto' }}>
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
             <label className="form-label">Margin (mm)</label>
             <input
               type="number"
@@ -142,7 +142,7 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
               step={1}
               value={margin}
               onChange={(e) => handleMarginChange(parseFloat(e.target.value) || 6)}
-              style={{ width: isMobile ? '100%' : '60px' }}
+              style={{ width: isMobile ? '60px' : '60px' }}
             />
           </div>
         </div>
@@ -204,16 +204,16 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
           </div>
         </div>
 
-        <div 
+                <div 
           className="form-row" 
           style={{ 
             display: 'flex', 
             alignItems: 'center', 
             gap: isMobile ? '0.5rem' : '1rem',
-            flexDirection: isMobile ? 'column' : 'row'
+            flexDirection: 'row'
           }}
         >
-          <div className="form-group" style={{ width: isMobile ? '100%' : 'auto' }}>
+          <div className="form-group" style={{ flex: isMobile ? '1' : 'auto' }}>
             <label className="form-label">Export Format</label>
             <select 
               className="form-select"
@@ -228,7 +228,7 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
           </div>
           {/* DPI input, only show for PNG */}
           {format === 'PNG' && (
-            <div className="form-group" style={{ width: isMobile ? '100%' : 'auto' }}>
+            <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
               <label className="form-label">DPI</label>
               <input
                 type="number"
@@ -238,15 +238,15 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
                 step={1}
                 value={dpi}
                 onChange={e => setDpi(parseInt(e.target.value) || 600)}
-                style={{ width: isMobile ? '100%' : '70px' }}
+                style={{ width: isMobile ? '60px' : '70px' }}
               />
             </div>
           )}
-          <div className="form-group" style={{ alignSelf: 'end', width: isMobile ? '100%' : 'auto' }}>
+          <div className="form-group" style={{ alignSelf: 'end', flex: isMobile ? '0 0 auto' : 'auto' }}>
             <button 
               className="btn btn-primary"
               onClick={handleExport}
-              style={{ width: isMobile ? '100%' : 'auto' }}
+              style={{ width: isMobile ? 'auto' : 'auto' }}
             >
               Export
             </button>
