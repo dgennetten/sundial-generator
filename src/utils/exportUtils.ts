@@ -302,7 +302,8 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
         }, 'image/png');
       } catch (error) {
         console.error('Error in toBlob:', error);
-        reject(new Error(`Failed to create PNG blob: ${error.message}`));
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        reject(new Error(`Failed to create PNG blob: ${errorMessage}`));
       }
     });
     
@@ -312,7 +313,8 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
       document.body.removeChild(tempContainer);
     }
     console.error('Error in html2canvas:', error);
-    throw new Error(`PNG export failed: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`PNG export failed: ${errorMessage}`);
   }
 }
 

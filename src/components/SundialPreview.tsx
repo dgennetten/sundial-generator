@@ -1276,7 +1276,6 @@ const SundialPreview: React.FC<Props> = ({
   // Calculate y position for the text block based on dial facing and incline
   const calculateTextBlockPosition = (): { x: number; y: number } => {
     // Use the same black circle positioning logic as the debug circles
-    const geographicLat = originalLatitude ?? lat;
     const latRad = degreesToRadians(lat);
     const hourAngle = degreesToRadians(15 * (12 - 12)); // Solar noon
     

@@ -580,7 +580,6 @@ algorithm with ±3.5 seconds accuracy.
            tiltAngle={tiltAngle}
            declinationNoonmarks={declinationNoonmarks}
            dialFacing={dialFacing}
-           originalLatitude={latitude}
         />
       </div>
     </div>
