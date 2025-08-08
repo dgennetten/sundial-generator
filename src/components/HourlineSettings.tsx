@@ -239,8 +239,10 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
                 checked={useDST}
                 disabled={!labelSummerSide}
                 onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, e.target.checked, declinationNoonmarks)}
+                style={{ cursor: 'not-allowed' }}
+                title="Automatically controlled by location timezone"
               />
-              Daylight/Summer Time
+              Daylight/Summer Time (Auto)
             </label>
           </div>
         </div>
