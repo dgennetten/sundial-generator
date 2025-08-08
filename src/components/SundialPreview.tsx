@@ -17,6 +17,7 @@ const pageSizeMap = {
 type Props = {
   lat: number;
   lng: number;
+  originalLat?: number; // Original geographic latitude for hemisphere detection
   tzMeridian: number;
   scale: number;
   gnomonHeight: number;
@@ -1157,10 +1158,6 @@ const SundialPreview: React.FC<Props> = ({
       return `${months[today.getMonth()]} ${today.getDate()}`;
     };
     
-    console.log('Debug - dialTextBlock:', dialTextBlock);
-    console.log('Debug - todayLineActive:', todayLineActive);
-    console.log('Debug - declinationLines:', declinationLines);
-    
     // Process text with placeholders, but handle {today} specially
     let processedText = dialTextBlock
       .replace(/\{location\}/gi, locationString)
@@ -1189,11 +1186,8 @@ const SundialPreview: React.FC<Props> = ({
       processedText = processedText.replace(/\*?\{today\}\*?/gi, '');
     }
     
-    console.log('Debug - processedText:', processedText);
-    
     // Custom parsing function that handles color for {today} text
     const parseTextWithColor = (text: string): Array<{ text: string; bold: boolean; italic: boolean; color?: string }> => {
-      console.log('parseTextWithColor input:', text);
       const parts: Array<{ text: string; bold: boolean; italic: boolean; color?: string }> = [];
       let currentIndex = 0;
       
@@ -1221,12 +1215,10 @@ const SundialPreview: React.FC<Props> = ({
           // Check if this is actually an italic marker (not part of a bold marker)
           const prevChar = text[italicStart - 1];
           const nextChar = text[italicStart + 1];
-          console.log('Italic detection - prevChar:', prevChar, 'nextChar:', nextChar);
           if (prevChar !== '*' && nextChar !== '*') {
             markerStart = italicStart;
             markerType = 'italic';
             markerLength = 1;
-            console.log('Found italic marker at position:', markerStart);
           }
         }
         
@@ -1249,13 +1241,11 @@ const SundialPreview: React.FC<Props> = ({
         }
         
         const markedText = text.slice(markerStart + markerLength, markerEnd);
-        console.log('Extracted marked text:', markedText, 'markerType:', markerType);
         
         // Check if this is the today date text (italic with red color)
         // The {today} placeholder gets replaced with *${todayDate}*, so we need to check if this text
         // was generated from the {today} placeholder by checking if it matches today's date
         const isTodayText = todayLineActive && markedText === getTodayDateString();
-        console.log('isTodayText:', isTodayText, 'todayLineActive:', todayLineActive, 'markedText:', markedText, 'getTodayDateString():', getTodayDateString());
         
         // Add marked text
         const part = { 
@@ -1264,12 +1254,10 @@ const SundialPreview: React.FC<Props> = ({
           italic: markerType === 'italic',
           color: isTodayText ? 'red' : undefined
         };
-        console.log('Created part:', part);
         parts.push(part);
         currentIndex = markerEnd + markerLength;
       }
       
-      console.log('parseTextWithColor output:', parts);
       return parts;
     };
     
@@ -1286,88 +1274,68 @@ const SundialPreview: React.FC<Props> = ({
 
   }
   // Calculate y position for the text block based on dial facing and incline
-  const calculateTextBlockPosition = (): { y: number; side: 'top' | 'bottom' } => {
-    // Get solstice noon positions
-    const winterSolsticeNoon = findDeclinationAnalemmaIntersection(-23.44);
-    const summerSolsticeNoon = findDeclinationAnalemmaIntersection(23.44);
+  const calculateTextBlockPosition = (): { x: number; y: number } => {
+    // Use the same black circle positioning logic as the debug circles
+    const geographicLat = originalLatitude ?? lat;
+    const latRad = degreesToRadians(lat);
+    const hourAngle = degreesToRadians(15 * (12 - 12)); // Solar noon
     
-
-    
-    // Determine which side the gnomon is on
-    let gnomonSide: 'top' | 'bottom' = 'bottom';
-    
-    if (dialFacing === 'South') {
-      // For south-facing dials, gnomon is typically on top (north side)
-      gnomonSide = 'top';
-    } else if (dialFacing === 'North') {
-      // For north-facing dials, gnomon is typically on bottom (south side)
-      gnomonSide = 'bottom';
+    // Calculate solstice positions using the same method as debug circles
+    function calculateSolsticePosition(declination: number) {
+      const declRad = degreesToRadians(declination);
+      const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
+      const altitude = Math.asin(sinAlt);
+      let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
+      cosAz = Math.max(-1, Math.min(1, cosAz));
+      let azimuth = Math.acos(cosAz);
+      if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
+      
+      return projectShadowToSurface(altitude, azimuth, gnomonHeight, 'Horizontal', lat);
     }
     
-    // For equatorial dials (gnomon in center), place text at bottom
-    if (inclineType === 'Equatorial') {
-      gnomonSide = 'bottom';
-    }
+    const summerSolsticeDeclination = 23.44;   // June 21st
+    const winterSolsticeDeclination = -23.44;  // December 21st
     
-    // Place text on opposite side of gnomon
-    const textSide = gnomonSide === 'top' ? 'bottom' : 'top';
+    const summerCoords = calculateSolsticePosition(summerSolsticeDeclination);
+    const winterCoords = calculateSolsticePosition(winterSolsticeDeclination);
+    const grayCoords = calculateSolsticePosition(0); // Equinox
     
-    // Calculate border positions in viewBox coordinates
-    const topBorderY = -height / 2 + borderMarginMm;
-    const bottomBorderY = height / 2 - borderMarginMm;
+    // Calculate black circle position using the same logic as debug circles
+    const greenCoords = { x: 0, y: 0 }; // Gnomon point
     
-    // Center text between border and solstice line
-    let textY: number;
-    if (textSide === 'bottom') {
-      // For bottom text, center between bottom border and winter solstice
-      const winterY = winterSolsticeNoon ? winterSolsticeNoon.y * viewBoxScaleFactor : bottomBorderY + 20;
-      // Ensure we have enough space for the text
-      const availableSpace = winterY - bottomBorderY;
-      if (availableSpace > 30) { // Minimum space needed for text
-        textY = bottomBorderY + (availableSpace / 2);
-      } else {
-        // If not enough space, place text just above bottom border
-        textY = bottomBorderY + 15;
-      }
+    // Determine which side of gray the green circle is on
+    const greenToGrayDistance = grayCoords.y - greenCoords.y;
+    const redToGrayDistance = grayCoords.y - summerCoords.y;
+    const isGreenOnRedSide = Math.sign(greenToGrayDistance) === Math.sign(redToGrayDistance);
+    
+    let blackCoords;
+    if (isGreenOnRedSide) {
+      // Green is on red side of gray: place black circle 150% of the way from red to blue
+      blackCoords = {
+        x: summerCoords.x + 1.5 * (winterCoords.x - summerCoords.x),
+        y: summerCoords.y + 1.5 * (winterCoords.y - summerCoords.y)
+      };
     } else {
-      // For top text, center between top border and summer solstice
-      const summerY = summerSolsticeNoon ? summerSolsticeNoon.y * viewBoxScaleFactor : topBorderY - 20;
-      // Ensure we have enough space for the text
-      const availableSpace = topBorderY - summerY;
-      if (availableSpace > 30) { // Minimum space needed for text
-        textY = topBorderY - (availableSpace / 2);
-      } else {
-        // If not enough space, place text just below top border
-        textY = topBorderY - 15;
-      }
+      // Green is on blue side of gray: place black circle 150% of the way from blue to red
+      blackCoords = {
+        x: winterCoords.x + 1.5 * (summerCoords.x - winterCoords.x),
+        y: winterCoords.y + 1.5 * (summerCoords.y - winterCoords.y)
+      };
     }
     
-    // Add some padding to avoid touching the lines
-    const padding = 10; // mm
-    if (textSide === 'bottom') {
-      textY += padding;
-    } else {
-      textY -= padding;
-    }
-    
-
-    
-
-    
-    return { y: textY, side: textSide };
+    return { x: blackCoords.x, y: blackCoords.y };
   };
   
-  const { y: textBlockY } = calculateTextBlockPosition();
+  const { x: textBlockX, y: textBlockY } = calculateTextBlockPosition();
 
   // Calculate center of text block for rotation
   const lineCount = textBlockLines.length;
   const lineHeight = dialTextBlockFontSizeMm * 1.2;
-  const centerY = textBlockY + ((lineCount - 1) * lineHeight) / 2;
-
-  // For north-facing dials, we need to adjust the text position since the entire group is rotated
-  const adjustedTextBlockY = dialFacing === 'North' ? -centerY : centerY;
-  const adjustedCenterY = dialFacing === 'North' ? -centerY : centerY;
-
+  
+  // The text block position is already the centroid, so we use it directly
+  // For North-facing dials, the entire SVG group is rotated 180°, so we don't need to adjust coordinates
+  const adjustedTextBlockX = textBlockX;
+  const adjustedTextBlockY = textBlockY;
 
   return (
     <div className="card" style={{ width: '100%', margin: 0 }}>
@@ -1400,6 +1368,8 @@ const SundialPreview: React.FC<Props> = ({
               {declinationLineElements}
               {declinationNoonmarkElements}
               
+
+              
               {/* Hour labels - counter-rotate text to keep readable */}
               {hourLabelElements.map((label, index) => {
                 // Extract x and y from the label props
@@ -1413,25 +1383,23 @@ const SundialPreview: React.FC<Props> = ({
               {/* --- Dial Text Block --- */}
 
               {dialTextBlockVisible && textBlockLines.length > 0 && (
-                <>
-                  <text
-                    x={0}
-                    y={adjustedTextBlockY / viewBoxScaleFactor}
+                <text
+                    x={adjustedTextBlockX}
+                    y={adjustedTextBlockY}
                     fontSize={dialTextBlockFontSizeMm}
                     fill="#222"
                     textAnchor="middle"
                     fontFamily={dialTextBlockFontFamily}
                     style={{ userSelect: 'none', pointerEvents: 'none' }}
-                    transform={dialFacing === 'North' ? `rotate(180 0 ${adjustedCenterY / viewBoxScaleFactor})` : undefined}
+                    transform={dialFacing === 'North' ? `rotate(180 ${adjustedTextBlockX} ${adjustedTextBlockY})` : undefined}
                   >
                     {textBlockLines.map((line, lineIndex) => (
                       <tspan
                         key={lineIndex}
-                        x={0}
+                        x={adjustedTextBlockX}
                         dy={lineIndex === 0 ? -((lineCount - 1) * lineHeight) / 2 : dialTextBlockFontSizeMm * 1.2}
                       >
                         {line.map((part, partIndex) => {
-                          console.log('Rendering part:', part, 'fontStyle:', part.italic ? 'italic' : 'normal', 'fill:', part.color || '#222');
                           return (
                             <tspan
                               key={partIndex}
@@ -1446,7 +1414,6 @@ const SundialPreview: React.FC<Props> = ({
                       </tspan>
                     ))}
                   </text>
-                </>
               )}
             </g>
           </g>

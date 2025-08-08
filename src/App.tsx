@@ -537,6 +537,7 @@ algorithm with ±3.5 seconds accuracy.
         <SundialPreview
           lat={effectiveLatitude}
           lng={longitude}
+          originalLatitude={latitude}
           tzMeridian={tzMeridian}
           gnomonHeight={effectiveGnomonHeight}
           gnomonType={gnomonType}

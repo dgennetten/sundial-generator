@@ -170,25 +170,149 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
   const dpi = options.dpi || 600;
   const domWidth = svgContainer.offsetWidth;
   const pixelWidth = printWidth * dpi;
-  const scale = pixelWidth / domWidth;
+  let scale = pixelWidth / domWidth;
 
-  const canvas = await html2canvas(svgContainer, {
-    backgroundColor: options.showBackground ? (options.backgroundColor || '#ffffff') : '#ffffff',
-    scale,
-    useCORS: true,
-    allowTaint: true,
-    logging: false,
+  // Check for potential canvas size limits
+  const maxCanvasSize = 32767; // Common browser limit
+  const estimatedWidth = domWidth * scale;
+  const estimatedHeight = svgContainer.offsetHeight * scale;
+  
+  if (estimatedWidth > maxCanvasSize || estimatedHeight > maxCanvasSize) {
+    console.warn('Canvas would exceed browser limits, reducing scale');
+    const maxScale = Math.min(maxCanvasSize / domWidth, maxCanvasSize / svgContainer.offsetHeight);
+    scale = Math.min(scale, maxScale * 0.9); // Use 90% of max to be safe
+    console.log('Adjusted scale to:', scale);
+  }
+
+  console.log('PNG Export Debug Info:');
+  console.log('- DOM Width:', domWidth);
+  console.log('- Print Width:', printWidth);
+  console.log('- DPI:', dpi);
+  console.log('- Scale:', scale);
+  console.log('- Pixel Width:', pixelWidth);
+  console.log('- SVG Container:', svgContainer);
+  console.log('- SVG Container HTML:', svgContainer.innerHTML.substring(0, 500));
+
+  // Create a temporary clone of the SVG container to fix compatibility issues
+  const tempContainer = svgContainer.cloneNode(true) as HTMLElement;
+  
+  // Fix text positioning attributes that html2canvas doesn't handle well
+  const textElements = tempContainer.querySelectorAll('text');
+  textElements.forEach(textEl => {
+    // Replace alignmentBaseline="middle" with dominant-baseline="central"
+    if (textEl.getAttribute('alignmentBaseline') === 'middle') {
+      textEl.removeAttribute('alignmentBaseline');
+      textEl.setAttribute('dominant-baseline', 'central');
+    }
+    
+    // Ensure text-anchor is properly set
+    if (!textEl.getAttribute('text-anchor') && textEl.getAttribute('textAnchor')) {
+      textEl.setAttribute('text-anchor', textEl.getAttribute('textAnchor') || 'middle');
+    }
+    
+    // Simplify complex transforms that might cause issues
+    const transform = textEl.getAttribute('transform');
+    if (transform && transform.includes('rotate')) {
+      // For now, remove complex transforms that might cause html2canvas issues
+      // This is a temporary fix - in production you might want to handle this differently
+      console.log('Removing complex transform for PNG export:', transform);
+      textEl.removeAttribute('transform');
+    }
   });
-
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        downloadFile(blob, 'sundial.png', 'image/png');
-        resolve();
-      } else {
-        reject(new Error('Failed to create PNG blob'));
+  
+  // Also check for problematic group transforms
+  const groupElements = tempContainer.querySelectorAll('g');
+  groupElements.forEach(groupEl => {
+    const transform = groupEl.getAttribute('transform');
+    if (transform && transform.includes('scale') && transform.includes('rotate')) {
+      // Complex combined transforms can cause issues
+      console.log('Simplifying complex group transform for PNG export:', transform);
+      // Keep only the scale part for now
+      const scaleMatch = transform.match(/scale\([^)]+\)/);
+      if (scaleMatch) {
+        groupEl.setAttribute('transform', scaleMatch[0]);
       }
-    }, 'image/png');
+    }
   });
+  
+  // Temporarily add the container to the DOM for html2canvas
+  tempContainer.style.position = 'absolute';
+  tempContainer.style.left = '-9999px';
+  tempContainer.style.top = '-9999px';
+  document.body.appendChild(tempContainer);
+
+  try {
+    const canvas = await html2canvas(tempContainer, {
+      backgroundColor: options.showBackground ? (options.backgroundColor || '#ffffff') : '#ffffff',
+      scale,
+      useCORS: true,
+      allowTaint: true,
+      logging: true, // Enable logging to see html2canvas errors
+      foreignObjectRendering: false, // Disable foreign object rendering which can cause issues
+    });
+    
+    // Remove the temporary container now that we have the canvas
+    document.body.removeChild(tempContainer);
+    
+    console.log('Canvas created:', canvas);
+    console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
+    console.log('Canvas data URL length:', canvas.toDataURL().length);
+
+    return new Promise((resolve, reject) => {
+      try {
+        canvas.toBlob((blob) => {
+          console.log('Blob creation result:', blob);
+          if (blob) {
+            console.log('Blob size:', blob.size);
+            downloadFile(blob, 'sundial.png', 'image/png');
+            resolve();
+          } else {
+            console.error('Canvas toBlob returned null');
+            console.error('Canvas width:', canvas.width, 'height:', canvas.height);
+            console.error('Canvas context:', canvas.getContext('2d'));
+            
+            // Try with a lower DPI as fallback
+            if (dpi > 150) {
+              console.log('Retrying with lower DPI...');
+              exportPNG(svgContainer, { ...options, dpi: 150 }).then(resolve).catch(reject);
+              return;
+            }
+            
+            // Final fallback: try with minimal options
+            console.log('Trying final fallback with minimal options...');
+            html2canvas(svgContainer, {
+              backgroundColor: '#ffffff',
+              scale: 1,
+              logging: false,
+            }).then(fallbackCanvas => {
+              fallbackCanvas.toBlob((fallbackBlob) => {
+                if (fallbackBlob) {
+                  console.log('Fallback PNG export succeeded');
+                  downloadFile(fallbackBlob, 'sundial.png', 'image/png');
+                  resolve();
+                } else {
+                  reject(new Error('Failed to create PNG blob - all fallback methods failed'));
+                }
+              }, 'image/png');
+            }).catch(fallbackError => {
+              console.error('Fallback also failed:', fallbackError);
+              reject(new Error('Failed to create PNG blob - canvas.toBlob() returned null'));
+            });
+          }
+        }, 'image/png');
+      } catch (error) {
+        console.error('Error in toBlob:', error);
+        reject(new Error(`Failed to create PNG blob: ${error.message}`));
+      }
+    });
+    
+  } catch (error) {
+    // Clean up the temporary container in case of error
+    if (document.body.contains(tempContainer)) {
+      document.body.removeChild(tempContainer);
+    }
+    console.error('Error in html2canvas:', error);
+    throw new Error(`PNG export failed: ${error.message}`);
+  }
 }
 
