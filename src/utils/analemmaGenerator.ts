@@ -184,6 +184,8 @@ export function getAnalemmaPointsProjected(params: AnalemmaParams): {
 
   for (let day = 1; day <= 365; day++) {
     const { altitude, azimuth } = getSolarPosition(day, lat, lng, tzMeridian, hour);
+    // Only skip individual points where the sun is below the horizon
+    // This allows hour lines to show for days when the sun is visible at that hour
     if (altitude <= 0) continue;
 
     const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, orientation, lat);

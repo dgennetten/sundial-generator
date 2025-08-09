@@ -184,21 +184,21 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
     console.log('Adjusted scale to:', scale);
   }
 
-  console.log('PNG Export Debug Info:');
-  console.log('- DOM Width:', domWidth);
-  console.log('- Print Width:', printWidth);
-  console.log('- DPI:', dpi);
-  console.log('- Scale:', scale);
-  console.log('- Pixel Width:', pixelWidth);
-  console.log('- SVG Container:', svgContainer);
-  console.log('- SVG Container HTML:', svgContainer.innerHTML.substring(0, 500));
+  // Minimal logging for PNG export
+  console.log(`PNG Export: ${domWidth}x${svgContainer.offsetHeight} @ ${dpi}DPI (scale: ${scale.toFixed(2)})`);
 
   // Create a temporary clone of the SVG container to fix compatibility issues
   const tempContainer = svgContainer.cloneNode(true) as HTMLElement;
   
+  // Quick optimization check - only log if there are excessive elements
+  const tempPathElements = tempContainer.querySelectorAll('path');
+  if (tempPathElements.length > 100) {
+    console.log(`PNG Export: Processing ${tempPathElements.length} path elements`);
+  }
+  
   // Fix text positioning attributes that html2canvas doesn't handle well
-  const textElements = tempContainer.querySelectorAll('text');
-  textElements.forEach(textEl => {
+  const tempTextElements = tempContainer.querySelectorAll('text');
+  tempTextElements.forEach(textEl => {
     // Replace alignmentBaseline="middle" with dominant-baseline="central"
     if (textEl.getAttribute('alignmentBaseline') === 'middle') {
       textEl.removeAttribute('alignmentBaseline');
@@ -213,10 +213,11 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
     // Simplify complex transforms that might cause issues
     const transform = textEl.getAttribute('transform');
     if (transform && transform.includes('rotate')) {
-      // For now, remove complex transforms that might cause html2canvas issues
-      // This is a temporary fix - in production you might want to handle this differently
-      console.log('Removing complex transform for PNG export:', transform);
-      textEl.removeAttribute('transform');
+      // Only remove very complex transforms, but preserve simple rotations like "rotate(180 x y)"
+      // which are used for dial facing
+      if (transform.includes('matrix') || transform.split(' ').length > 4) {
+        textEl.removeAttribute('transform');
+      }
     }
   });
   
@@ -225,12 +226,15 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
   groupElements.forEach(groupEl => {
     const transform = groupEl.getAttribute('transform');
     if (transform && transform.includes('scale') && transform.includes('rotate')) {
-      // Complex combined transforms can cause issues
-      console.log('Simplifying complex group transform for PNG export:', transform);
-      // Keep only the scale part for now
-      const scaleMatch = transform.match(/scale\([^)]+\)/);
-      if (scaleMatch) {
-        groupEl.setAttribute('transform', scaleMatch[0]);
+      // Check if this is a dial facing transform (scale + rotate(180))
+      if (transform.includes('rotate(180)')) {
+        // Keep the dial facing transform as-is
+      } else if (transform.includes('matrix') || transform.split(' ').length > 6) {
+        // Only simplify very complex transforms
+        const scaleMatch = transform.match(/scale\([^)]+\)/);
+        if (scaleMatch) {
+          groupEl.setAttribute('transform', scaleMatch[0]);
+        }
       }
     }
   });
@@ -242,28 +246,33 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
   document.body.appendChild(tempContainer);
 
   try {
-    const canvas = await html2canvas(tempContainer, {
+    const startTime = performance.now();
+    
+    // Add a timeout to prevent hanging
+    const canvasPromise = html2canvas(tempContainer, {
       backgroundColor: options.showBackground ? (options.backgroundColor || '#ffffff') : '#ffffff',
       scale,
       useCORS: true,
       allowTaint: true,
-      logging: true, // Enable logging to see html2canvas errors
+      logging: false, // Disable html2canvas logging for better performance
       foreignObjectRendering: false, // Disable foreign object rendering which can cause issues
     });
+    
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('PNG export timed out after 30 seconds')), 30000);
+    });
+    
+    const canvas = await Promise.race([canvasPromise, timeoutPromise]) as HTMLCanvasElement;
+    const endTime = performance.now();
+    console.log(`PNG export completed in ${(endTime - startTime).toFixed(0)}ms`);
     
     // Remove the temporary container now that we have the canvas
     document.body.removeChild(tempContainer);
     
-    console.log('Canvas created:', canvas);
-    console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
-    console.log('Canvas data URL length:', canvas.toDataURL().length);
-
     return new Promise((resolve, reject) => {
       try {
         canvas.toBlob((blob) => {
-          console.log('Blob creation result:', blob);
           if (blob) {
-            console.log('Blob size:', blob.size);
             downloadFile(blob, 'sundial.png', 'image/png');
             resolve();
           } else {
@@ -312,8 +321,15 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
     if (document.body.contains(tempContainer)) {
       document.body.removeChild(tempContainer);
     }
+    
     console.error('Error in html2canvas:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
+    
+    // If it's a timeout error and we haven't tried a lower DPI yet, try again
+    if (errorMessage.includes('timed out') && dpi > 150) {
+      console.log('PNG export timed out, retrying with lower DPI...');
+      return exportPNG(svgContainer, { ...options, dpi: 150 });
+    }
     throw new Error(`PNG export failed: ${errorMessage}`);
   }
 }

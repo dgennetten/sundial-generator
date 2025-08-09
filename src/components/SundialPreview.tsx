@@ -149,24 +149,39 @@ const SundialPreview: React.FC<Props> = ({
     const [seg1, seg2] = splitWinterToSummer(noonPoints);
     noonPoints = [...seg1, ...seg2];
   } else {
-    const [start, end] = getDayRange(dateRange);
-    noonPoints = noonPoints.filter(p => p.day >= start && p.day <= end);
+    noonPoints = noonPoints.filter(p => isDayInRange(p.day, dateRange));
   }
   // Removed noonYCenter as it was unused
 
-  // Helper to get day range
-  function getDayRange(dateRange: 'FullYear' | 'SummerToWinter' | 'WinterToSummer') {
-    // Determine solstice days based on hemisphere
-    // For Northern Hemisphere: Summer solstice ~ day 172, Winter solstice ~ day 355
-    // For Southern Hemisphere: Summer solstice ~ day 355, Winter solstice ~ day 172
+  // Helper to check if a day is in the date range (handles wrap-around)
+  function isDayInRange(day: number, dateRange: 'FullYear' | 'SummerToWinter' | 'WinterToSummer'): boolean {
+    if (dateRange === 'FullYear') return true;
+    
     const isNorthernHemisphere = lat >= 0;
     const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
     const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
     
-    if (dateRange === 'FullYear') return [1, 365];
-    if (dateRange === 'SummerToWinter') return [summerSolsticeDay, winterSolsticeDay];
-    if (dateRange === 'WinterToSummer') return [winterSolsticeDay, 365, 1, summerSolsticeDay]; // wrap around
-    return [1, 365];
+    if (dateRange === 'SummerToWinter') {
+      if (isNorthernHemisphere) {
+        // Normal range: summer (172) to winter (355)
+        return day >= summerSolsticeDay && day <= winterSolsticeDay;
+      } else {
+        // Wrap-around: summer (355) to winter (172) next year
+        return day >= summerSolsticeDay || day <= winterSolsticeDay;
+      }
+    }
+    
+    if (dateRange === 'WinterToSummer') {
+      if (isNorthernHemisphere) {
+        // Wrap-around: winter (355) to summer (172) next year
+        return day >= winterSolsticeDay || day <= summerSolsticeDay;
+      } else {
+        // Normal range: winter (172) to summer (355)
+        return day >= winterSolsticeDay && day <= summerSolsticeDay;
+      }
+    }
+    
+    return true;
   }
 
   // Helper to split points for WinterToSummer
@@ -179,6 +194,25 @@ const SundialPreview: React.FC<Props> = ({
     const seg1 = points.filter((p: { day: number; x: number; y: number }) => p.day >= winterSolsticeDay);
     const seg2 = points.filter((p: { day: number; x: number; y: number }) => p.day <= summerSolsticeDay);
     return [seg1, seg2];
+  }
+
+  // Helper to split points for SummerToWinter (handles southern hemisphere wrap-around)
+  function splitSummerToWinter(points: { day: number; x: number; y: number }[]): [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]] {
+    // Determine solstice days based on hemisphere
+    const isNorthernHemisphere = lat >= 0;
+    const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
+    const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
+    
+    if (isNorthernHemisphere) {
+      // Northern hemisphere: normal range, no splitting needed
+      // This should not be called for northern hemisphere, but handle it gracefully
+      return [points.filter(p => p.day >= summerSolsticeDay && p.day <= winterSolsticeDay), []];
+    } else {
+      // Southern hemisphere: summer (355) to winter (172) - needs splitting
+      const seg1 = points.filter((p: { day: number; x: number; y: number }) => p.day >= summerSolsticeDay);
+      const seg2 = points.filter((p: { day: number; x: number; y: number }) => p.day <= winterSolsticeDay);
+      return [seg1, seg2];
+    }
   }
 
   // Helper to get interval step in hours
@@ -429,20 +463,57 @@ const SundialPreview: React.FC<Props> = ({
           orientation: 'Horizontal',
         });
         // Filter points by date range
-        if (dateRange === 'WinterToSummer') {
-          const [seg1, seg2] = splitWinterToSummer(points);
+        const isNorthernHemisphere = lat >= 0;
+        const needsSplitting = (dateRange === 'WinterToSummer') || 
+                              (dateRange === 'SummerToWinter' && !isNorthernHemisphere);
+        
+        if (needsSplitting) {
+          let segments: [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]];
+          
+          if (dateRange === 'WinterToSummer') {
+            segments = splitWinterToSummer(points);
+          } else {
+            // dateRange === 'SummerToWinter' && !isNorthernHemisphere
+            segments = splitSummerToWinter(points);
+          }
+          
+          const [seg1, seg2] = segments;
           // Sort segments by day
           const sortedSeg1 = [...seg1].sort((a, b) => a.day - b.day);
           const sortedSeg2 = [...seg2].sort((a, b) => a.day - b.day);
           // Determine solstice days based on hemisphere
-          const isNorthernHemisphere = lat >= 0;
           const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
           const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
           
-          // If labelWinterSide, place at start of first segment (winter solstice)
-          if (labelWinterSide && sortedSeg1.length > 0) {
-            const pt = sortedSeg1[0];
-            const { nx, ny } = getNormalAtPoint(sortedSeg1, 0);
+          // Determine which segment contains which solstice
+          let winterSegment: { day: number; x: number; y: number }[] = [];
+          let summerSegment: { day: number; x: number; y: number }[] = [];
+          
+          if (dateRange === 'WinterToSummer') {
+            // For WinterToSummer: seg1 has winter solstice, seg2 has summer solstice
+            winterSegment = sortedSeg1;
+            summerSegment = sortedSeg2;
+          } else {
+            // For SummerToWinter (southern hemisphere): seg1 has summer solstice, seg2 has winter solstice
+            winterSegment = sortedSeg2;
+            summerSegment = sortedSeg1;
+          }
+          
+          // If labelWinterSide, place at winter solstice
+          if (labelWinterSide && winterSegment.length > 0) {
+            // Find the point closest to winter solstice day
+            let bestIdx = 0;
+            let minDiff = Math.abs(winterSegment[0].day - winterSolsticeDay);
+            for (let i = 1; i < winterSegment.length; i++) {
+              const diff = Math.abs(winterSegment[i].day - winterSolsticeDay);
+              if (diff < minDiff) {
+                minDiff = diff;
+                bestIdx = i;
+              }
+            }
+            
+            const pt = winterSegment[bestIdx];
+            const { nx, ny } = getNormalAtPoint(winterSegment, bestIdx);
             // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
             const isInvertedGeometry = lat < 0;
             const offset = isInvertedGeometry ? -labelOffsetPx : labelOffsetPx;
@@ -463,11 +534,22 @@ const SundialPreview: React.FC<Props> = ({
               </text>
             );
           }
-          // If labelSummerSide, place at end of last segment (summer solstice)
-          if (labelSummerSide && sortedSeg2.length > 0) {
-            const lastIdx = sortedSeg2.length - 1;
-            const pt = sortedSeg2[lastIdx];
-            const { nx, ny } = getNormalAtPoint(sortedSeg2, lastIdx);
+          
+          // If labelSummerSide, place at summer solstice
+          if (labelSummerSide && summerSegment.length > 0) {
+            // Find the point closest to summer solstice day
+            let bestIdx = 0;
+            let minDiff = Math.abs(summerSegment[0].day - summerSolsticeDay);
+            for (let i = 1; i < summerSegment.length; i++) {
+              const diff = Math.abs(summerSegment[i].day - summerSolsticeDay);
+              if (diff < minDiff) {
+                minDiff = diff;
+                bestIdx = i;
+              }
+            }
+            
+            const pt = summerSegment[bestIdx];
+            const { nx, ny } = getNormalAtPoint(summerSegment, bestIdx);
             // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
             const isInvertedGeometry = lat < 0;
             const offset = isInvertedGeometry ? labelOffsetPx : -labelOffsetPx;
@@ -490,8 +572,7 @@ const SundialPreview: React.FC<Props> = ({
           }
         } else if (dateRange === 'SummerToWinter') {
           // Only one segment: summer to winter solstice
-          const [start, end] = getDayRange(dateRange);
-          points = points.filter((p: { day: number }) => p.day >= start && p.day <= end);
+          points = points.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
           if (points.length === 0) continue;
           // Sort points by day
           const sortedPoints = [...points].sort((a, b) => a.day - b.day);
@@ -551,8 +632,7 @@ const SundialPreview: React.FC<Props> = ({
             );
           }
         } else {
-          const [start, end] = getDayRange(dateRange);
-          points = points.filter((p: { day: number }) => p.day >= start && p.day <= end);
+          points = points.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
           if (points.length === 0) continue;
           
           // Determine solstice days based on hemisphere
@@ -635,12 +715,32 @@ const SundialPreview: React.FC<Props> = ({
           orientation: 'Horizontal',
         });
         // Filter points by date range
-        if (dateRange === 'WinterToSummer') {
-          const [seg1, seg2] = splitWinterToSummer(points);
+        const isNorthernHemisphere = lat >= 0;
+        const needsSplitting = (dateRange === 'WinterToSummer') || 
+                              (dateRange === 'SummerToWinter' && !isNorthernHemisphere);
+        
+        if (needsSplitting) {
+          let segments: [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]];
+          
+          if (dateRange === 'WinterToSummer') {
+            segments = splitWinterToSummer(points);
+          } else {
+            // dateRange === 'SummerToWinter' && !isNorthernHemisphere
+            segments = splitSummerToWinter(points);
+          }
+          
+          const [seg1, seg2] = segments;
           [seg1, seg2].forEach((segment, idx) => {
             if (segment.length === 0) return;
             // Sort segment by day to avoid a straight line between segments
-            const sortedSegment = [...segment].sort((a, b) => a.day - b.day);
+            let sortedSegment = [...segment].sort((a, b) => a.day - b.day);
+            
+            // Optimize for performance: if segment has too many points, reduce them
+            if (sortedSegment.length > 100) {
+              const step = Math.ceil(sortedSegment.length / 50); // Keep ~50 points max
+              sortedSegment = sortedSegment.filter((_, index) => index % step === 0);
+            }
+            
             const pathData = clipPathData(sortedSegment);
             if (pathData) {
               elements.push(
@@ -659,9 +759,15 @@ const SundialPreview: React.FC<Props> = ({
             }
           });
         } else {
-          const [start, end] = getDayRange(dateRange);
-          points = points.filter((p: { day: number }) => p.day >= start && p.day <= end);
+          points = points.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
           if (points.length === 0) continue;
+          
+          // Optimize for performance: if too many points, reduce them
+          if (points.length > 100) {
+            const step = Math.ceil(points.length / 50); // Keep ~50 points max
+            points = points.filter((_, index) => index % step === 0);
+          }
+          
           const pathData = clipPathData(points);
           if (pathData) {
             elements.push(
@@ -732,7 +838,6 @@ const SundialPreview: React.FC<Props> = ({
   // This function generates declination lines for the first day of each month
   // that falls within the selected date range (FullYear, SummerToWinter, or WinterToSummer)
   function getMonthBoundaryDeclinations(): { day: number; decl: number; month: string }[] {
-    const [start, end] = getDayRange(dateRange);
     const monthBoundaries: { day: number; decl: number; month: string }[] = [];
     
     // Month start days (approximate, for a non-leap year)
@@ -763,9 +868,9 @@ const SundialPreview: React.FC<Props> = ({
         }
       }
     } else {
-      // Normal range case
+      // Use the new helper function for consistent filtering
       for (const monthStart of monthStarts) {
-        if (monthStart.day >= start && monthStart.day <= end) {
+        if (isDayInRange(monthStart.day, dateRange)) {
           monthBoundaries.push({
             day: monthStart.day,
             decl: getSolarDeclination(monthStart.day),
@@ -797,8 +902,7 @@ const SundialPreview: React.FC<Props> = ({
       const [seg1, seg2] = splitWinterToSummer(filteredPoints);
       filteredPoints = [...seg1, ...seg2];
     } else {
-      const [start, end] = getDayRange(dateRange);
-      filteredPoints = filteredPoints.filter((p: { day: number }) => p.day >= start && p.day <= end);
+      filteredPoints = filteredPoints.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
     }
     
     // eslint-disable-next-line no-console

@@ -13,6 +13,9 @@ const defaultCenter = {
   lng: 0,
 };
 
+// Keep libraries array as a constant to prevent reloading
+const GOOGLE_MAPS_LIBRARIES: ("places")[] = ['places'];
+
 interface MapPickerProps {
   open: boolean;
   onClose: () => void;
@@ -43,7 +46,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
-    libraries: ['places'],
+    libraries: GOOGLE_MAPS_LIBRARIES,
   });
 
   const handleMapClick = useCallback((e: google.maps.MapMouseEvent) => {

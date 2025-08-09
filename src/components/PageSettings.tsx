@@ -68,15 +68,20 @@ const PageSettings: React.FC<PageSettingsProps> = ({
 
   // Calculate effective tilt angle
   const getEffectiveTiltAngle = () => {
-    switch (inclineType) {
-      case 'Horizontal': return 0;
-      case 'Cancer': return getCancerIncline(latitude);
-      case 'Equatorial': return latitude;
-      case 'Capricorn': return getCapricornIncline(latitude);
-      case 'Vertical': return 90;
-      case 'Manual': return tiltAngle;
-      default: return 0;
-    }
+    const result = (() => {
+      switch (inclineType) {
+        case 'Horizontal': return 0;
+        case 'Cancer': return getCancerIncline(latitude);
+        case 'Equatorial': return Math.abs(latitude);
+        case 'Capricorn': return getCapricornIncline(latitude);
+        case 'Vertical': return 90;
+        case 'Manual': return tiltAngle;
+        default: return 0;
+      }
+    })();
+    
+    // Ensure we return a valid number
+    return isNaN(result) ? 0 : result;
   };
 
   const handleInclineTypeChange = (newType: InclineType) => {
@@ -345,14 +350,14 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             <input
               type="number"
               className="form-input"
-              value={getEffectiveTiltAngle().toFixed(1)}
+              value={inclineType === 'Manual' ? tiltAngle.toFixed(1) : getEffectiveTiltAngle().toFixed(1)}
               onChange={(e) => setTiltAngle(parseFloat(e.target.value) || 0)}
               disabled={inclineType !== 'Manual'}
               min={0}
               max={90}
               step={1.0}
               style={{ 
-                width: isMobile ? '50px' : '40px',
+                width: isMobile ? '70px' : '80px',
                 backgroundColor: inclineType !== 'Manual' ? '#f7fafc' : undefined,
                 color: inclineType !== 'Manual' ? '#a0aec0' : undefined
               }}

@@ -48,7 +48,7 @@ const App: React.FC = () => {
     return loadDeclinationLines();
   });
   const [startHour, setStartHour] = useState<number>(4);
-  const [stopHour, setStopHour] = useState<number>(19);
+  const [stopHour, setStopHour] = useState<number>(20);
   const [use24Hour, setUse24Hour] = useState<boolean>(false);
   const [labelWinterSide, setLabelWinterSide] = useState<boolean>(true);
   const [labelSummerSide, setLabelSummerSide] = useState<boolean>(true);
@@ -460,8 +460,7 @@ const App: React.FC = () => {
              <p><strong>New Feature:</strong> Today's date, when plotted, optionally printed on dial.</p>
               <p><strong>New Feature:</strong> Added Gnomon type option. North Pt. on/off.</p>
                <p><strong>New feature:</strong> Properly supported Inclined Dials. </p>
-               <p><strong>Known Bug:</strong> Text block placement is inconsistent and sometimes missing for certain locations/inclines. </p>
-             </div>
+              </div>
             <div dangerouslySetInnerHTML={{ __html: `
 <p>
   This App traces its origins back to a gloriously nerdy gem—the 

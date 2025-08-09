@@ -42,6 +42,7 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
   const [showBackground, setShowBackground] = useState<boolean>(true);
   const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
   const [dpi, setDpi] = useState<number>(600);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
 
   // Responsive: detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
@@ -72,6 +73,13 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
   };
 
   const handleExport = async () => {
+    if (isExporting) {
+      console.log('Export already in progress, ignoring click');
+      return; // Prevent multiple simultaneous exports
+    }
+    
+    console.log('Starting export, format:', format);
+    setIsExporting(true);
     try {
       await exportSundial({
         format,
@@ -83,9 +91,13 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
         customWidth,
         customHeight,
       });
+      console.log('Export completed successfully');
     } catch (error) {
       console.error('Export failed:', error);
       // You could add user-facing error handling here, like showing a toast notification
+    } finally {
+      console.log('Resetting export state');
+      setIsExporting(false);
     }
   };
 
@@ -222,7 +234,10 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
             <select 
               className="form-select"
               value={format} 
-              onChange={(e) => setFormat(e.target.value as ExportFormat)}
+              onChange={(e) => {
+                console.log('Format change:', e.target.value);
+                setFormat(e.target.value as ExportFormat);
+              }}
               style={{ width: isMobile ? '100%' : 'auto' }}
             >
               <option value="SVG">SVG</option>
@@ -250,9 +265,16 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
             <button 
               className="btn btn-primary"
               onClick={handleExport}
-              style={{ width: isMobile ? 'auto' : 'auto' }}
+              disabled={isExporting}
+              style={{ 
+                width: isMobile ? 'auto' : 'auto',
+                opacity: isExporting ? 0.7 : 1,
+                cursor: isExporting ? 'not-allowed' : 'pointer',
+                transform: isExporting ? 'scale(0.98)' : 'scale(1)',
+                transition: 'all 0.1s ease'
+              }}
             >
-              Export
+              {isExporting ? 'Exporting...' : 'Export'}
             </button>
           </div>
         </div>
