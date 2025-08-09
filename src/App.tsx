@@ -28,7 +28,7 @@ const App: React.FC = () => {
   const [tzMeridian, setTzMeridian] = useState(-105);
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
-  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north'>('crosshair');
+  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north'>('crosshair-with-north');
   const [pageSize, setPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom'>('Letter');
   const [customWidth, setCustomWidth] = useState<number>(8.5 * 25.4); // Store in mm
   const [customHeight, setCustomHeight] = useState<number>(11 * 25.4); // Store in mm
@@ -37,7 +37,7 @@ const App: React.FC = () => {
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
   const [tiltAngle, setTiltAngle] = useState<number>(0);
-  const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToWinter' | 'WinterToSummer'>('FullYear');
+  const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SumumerToWinter' | 'WinterToSummer'>('SummerToWinter');
   const [lineStyles, setLineStyles] = useState<LineStyle[]>(() => {
     return loadLineStyles();
   });

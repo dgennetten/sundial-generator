@@ -33,8 +33,19 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
   const [loadingTz, setLoadingTz] = useState(false);
   const [foundLocationName, setFoundLocationName] = useState<string | null>(null);
 
-  // Responsive: detect mobile
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
+  // Responsive: detect mobile using media query
+  const [isMobile, setIsMobile] = useState(false);
+  
+  React.useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
 
   // Find current location based on lat/lng
   const getCurrentLocation = () => {
@@ -172,13 +183,26 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
           className="form-row"
           style={
             isMobile
-              ? { display: 'flex', flexDirection: 'column', width: '100%', gap: 8 }
-              : { display: 'flex', flexDirection: 'row', alignItems: 'end', gap: 12 }
+              ? { display: 'flex', flexDirection: 'column', width: '100%', gap: '0.5rem' }
+              : { 
+                  display: 'flex', 
+                  flexDirection: 'row', 
+                  alignItems: 'end', 
+                  gap: '0.75rem',
+                  flexWrap: 'nowrap'
+                }
           }
         >
           <div
             className="form-group"
-            style={isMobile ? { width: '100%' } : { flex: '1.5' }}
+            style={
+              isMobile 
+                ? { width: '100%' } 
+                : { 
+                    flex: '1',
+                    minWidth: '150px'
+                  }
+            }
           >
             <label className="form-label">Location</label>
             <div style={{ position: 'relative' }}>
@@ -187,7 +211,9 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                 value={getCurrentLocation()}
                 onChange={(e) => handleLocationChange(e.target.value)}
                 style={{ 
-                  visibility: foundLocationName ? 'hidden' : 'visible'
+                  visibility: foundLocationName ? 'hidden' : 'visible',
+                  width: '100%',
+                  minWidth: 0
                 }}
               >
                 {Object.keys(locations).map(location => (
@@ -248,37 +274,67 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
           </div>
           <div
             className="form-group"
-            style={isMobile ? { width: '100%' } : { flex: '1.5' }}
+            style={
+              isMobile 
+                ? { width: '100%' } 
+                : { 
+                    flex: '0 0 140px',
+                    minWidth: '120px'
+                  }
+            }
           >
             <label className="form-label">Time Zone</label>
-            <input
-              type="text"
+            <div
               className="form-input"
-              value={timezoneName}
-              readOnly
               style={{ 
                 backgroundColor: '#f1f3f4', 
                 cursor: 'not-allowed',
                 color: '#6b7280',
                 borderColor: '#d1d5db',
-                opacity: 0.8
+                opacity: 0.8,
+                width: '100%',
+                minWidth: 0,
+                whiteSpace: 'normal',
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
+                height: 'auto',
+                minHeight: '34px',
+                lineHeight: '1.2',
+                display: 'flex',
+                alignItems: 'center',
+                paddingTop: '0.45rem',
+                paddingBottom: '0.45rem'
               }}
-            />
+            >
+              {timezoneName}
+            </div>
           </div>
         </div>
 
         <div
           className="form-row"
-          style={{
-            display: 'flex',
-            alignItems: 'end',
-            gap: isMobile ? '0.5rem' : '1rem',
-            flexDirection: 'row' // Keep as row for mobile since they can fit
-          }}
+          style={
+            isMobile
+              ? { display: 'flex', flexDirection: 'column', width: '100%', gap: '0.5rem' }
+              : {
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'end',
+                  gap: '0.75rem',
+                  flexWrap: 'nowrap'
+                }
+          }
         >
           <div
             className="form-group"
-            style={{ flex: isMobile ? '0 0 auto' : '1' }}
+            style={
+              isMobile 
+                ? { width: '100%' } 
+                : { 
+                    flex: '1',
+                    minWidth: '80px'
+                  }
+            }
           >
             <label className="form-label">Latitude</label>
             <input
@@ -314,12 +370,22 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                    });
                  }
                }}
-              style={{ width: isMobile ? '70px' : '120px' }}
+              style={{ 
+                width: '100%',
+                minWidth: 0
+              }}
             />
           </div>
           <div
             className="form-group"
-            style={{ flex: isMobile ? '0 0 auto' : '1' }}
+            style={
+              isMobile 
+                ? { width: '100%' } 
+                : { 
+                    flex: '1',
+                    minWidth: '80px'
+                  }
+            }
           >
             <label className="form-label">Longitude</label>
             <input
@@ -355,12 +421,21 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                    });
                  }
                }}
-              style={{ width: isMobile ? '70px' : '120px' }}
+              style={{ 
+                width: '100%',
+                minWidth: 0
+              }}
             />
           </div>
           <div
             className="form-group"
-            style={{ flex: isMobile ? '0 0 auto' : 'auto' }}
+            style={
+              isMobile 
+                ? { width: '100%' } 
+                : { 
+                    flex: '0 0 auto'
+                  }
+            }
           >
             <button
               type="button"
@@ -369,7 +444,9 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                 height: 36, 
                 cursor: 'pointer', 
                 padding: isMobile ? '0 8px' : '0 12px',
-                width: isMobile ? 'auto' : 'auto'
+                width: isMobile ? '100%' : 'auto',
+                minWidth: isMobile ? 0 : '80px',
+                whiteSpace: 'nowrap'
               }}
               onClick={() => setMapOpen(true)}
             >
