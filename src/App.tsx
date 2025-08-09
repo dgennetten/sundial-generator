@@ -37,7 +37,7 @@ const App: React.FC = () => {
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
   const [tiltAngle, setTiltAngle] = useState<number>(0);
-  const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SumumerToWinter' | 'WinterToSummer'>('SummerToWinter');
+  const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToWinter' | 'WinterToSummer'>('SummerToWinter');
   const [lineStyles, setLineStyles] = useState<LineStyle[]>(() => {
     return loadLineStyles();
   });

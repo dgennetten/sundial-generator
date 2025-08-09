@@ -33,18 +33,28 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
   const [loadingTz, setLoadingTz] = useState(false);
   const [foundLocationName, setFoundLocationName] = useState<string | null>(null);
 
-  // Responsive: detect mobile using media query
-  const [isMobile, setIsMobile] = useState(false);
+  // Responsive: detect layout mode using media query
+  const [layoutMode, setLayoutMode] = useState<'desktop' | 'mobile-portrait' | 'mobile-landscape'>('desktop');
   
   React.useEffect(() => {
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+    const checkLayoutMode = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const isLandscape = width > height;
+      
+      if (width <= 900 && isLandscape && height >= 500) {
+        setLayoutMode('mobile-landscape');
+      } else if (width <= 900) {
+        setLayoutMode('mobile-portrait');
+      } else {
+        setLayoutMode('desktop');
+      }
     };
     
-    checkIsMobile();
-    window.addEventListener('resize', checkIsMobile);
+    checkLayoutMode();
+    window.addEventListener('resize', checkLayoutMode);
     
-    return () => window.removeEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener('resize', checkLayoutMode);
   }, []);
 
   // Find current location based on lat/lng
@@ -182,13 +192,13 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
         <div
           className="form-row"
           style={
-            isMobile
+            layoutMode === 'mobile-portrait'
               ? { display: 'flex', flexDirection: 'column', width: '100%', gap: '0.5rem' }
               : { 
                   display: 'flex', 
                   flexDirection: 'row', 
                   alignItems: 'end', 
-                  gap: '0.75rem',
+                  gap: layoutMode === 'mobile-landscape' ? '0.5rem' : '0.75rem',
                   flexWrap: 'nowrap'
                 }
           }
@@ -196,11 +206,11 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
           <div
             className="form-group"
             style={
-              isMobile 
+              layoutMode === 'mobile-portrait'
                 ? { width: '100%' } 
                 : { 
                     flex: '1',
-                    minWidth: '150px'
+                    minWidth: layoutMode === 'mobile-landscape' ? '120px' : '150px'
                   }
             }
           >
@@ -213,7 +223,8 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                 style={{ 
                   visibility: foundLocationName ? 'hidden' : 'visible',
                   width: '100%',
-                  minWidth: 0
+                  minWidth: 0,
+                  fontSize: layoutMode === 'mobile-landscape' ? '0.85rem' : '0.9rem'
                 }}
               >
                 {Object.keys(locations).map(location => (
@@ -275,17 +286,17 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
           <div
             className="form-group"
             style={
-              isMobile 
+              layoutMode === 'mobile-portrait'
                 ? { width: '100%' } 
                 : { 
-                    flex: '0 0 140px',
-                    minWidth: '120px'
+                    flex: layoutMode === 'mobile-landscape' ? '0 0 120px' : '0 0 140px',
+                    minWidth: layoutMode === 'mobile-landscape' ? '100px' : '120px'
                   }
             }
           >
             <label className="form-label">Time Zone</label>
             <div
-              className="form-input"
+              className="form-input location-timezone-field"
               style={{ 
                 backgroundColor: '#f1f3f4', 
                 cursor: 'not-allowed',
@@ -294,16 +305,13 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                 opacity: 0.8,
                 width: '100%',
                 minWidth: 0,
-                whiteSpace: 'normal',
-                wordWrap: 'break-word',
-                overflowWrap: 'break-word',
                 height: 'auto',
                 minHeight: '34px',
-                lineHeight: '1.2',
                 display: 'flex',
                 alignItems: 'center',
                 paddingTop: '0.45rem',
-                paddingBottom: '0.45rem'
+                paddingBottom: '0.45rem',
+                fontSize: layoutMode === 'mobile-landscape' ? '0.8rem' : '0.9rem'
               }}
             >
               {timezoneName}
@@ -314,13 +322,13 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
         <div
           className="form-row"
           style={
-            isMobile
+            layoutMode === 'mobile-portrait'
               ? { display: 'flex', flexDirection: 'column', width: '100%', gap: '0.5rem' }
               : {
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'end',
-                  gap: '0.75rem',
+                  gap: layoutMode === 'mobile-landscape' ? '0.5rem' : '0.75rem',
                   flexWrap: 'nowrap'
                 }
           }
@@ -328,11 +336,11 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
           <div
             className="form-group"
             style={
-              isMobile 
+              layoutMode === 'mobile-portrait'
                 ? { width: '100%' } 
                 : { 
                     flex: '1',
-                    minWidth: '80px'
+                    minWidth: layoutMode === 'mobile-landscape' ? '70px' : '80px'
                   }
             }
           >
@@ -372,18 +380,19 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                }}
               style={{ 
                 width: '100%',
-                minWidth: 0
+                minWidth: 0,
+                fontSize: layoutMode === 'mobile-landscape' ? '0.85rem' : '0.9rem'
               }}
             />
           </div>
           <div
             className="form-group"
             style={
-              isMobile 
+              layoutMode === 'mobile-portrait'
                 ? { width: '100%' } 
                 : { 
                     flex: '1',
-                    minWidth: '80px'
+                    minWidth: layoutMode === 'mobile-landscape' ? '70px' : '80px'
                   }
             }
           >
@@ -423,14 +432,15 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                }}
               style={{ 
                 width: '100%',
-                minWidth: 0
+                minWidth: 0,
+                fontSize: layoutMode === 'mobile-landscape' ? '0.85rem' : '0.9rem'
               }}
             />
           </div>
           <div
             className="form-group"
             style={
-              isMobile 
+              layoutMode === 'mobile-portrait'
                 ? { width: '100%' } 
                 : { 
                     flex: '0 0 auto'
@@ -443,14 +453,15 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
               style={{ 
                 height: 36, 
                 cursor: 'pointer', 
-                padding: isMobile ? '0 8px' : '0 12px',
-                width: isMobile ? '100%' : 'auto',
-                minWidth: isMobile ? 0 : '80px',
-                whiteSpace: 'nowrap'
+                padding: layoutMode === 'mobile-portrait' ? '0 8px' : layoutMode === 'mobile-landscape' ? '0 6px' : '0 12px',
+                width: layoutMode === 'mobile-portrait' ? '100%' : 'auto',
+                minWidth: layoutMode === 'mobile-portrait' ? 0 : layoutMode === 'mobile-landscape' ? '60px' : '80px',
+                whiteSpace: 'nowrap',
+                fontSize: layoutMode === 'mobile-landscape' ? '0.85rem' : '0.9rem'
               }}
               onClick={() => setMapOpen(true)}
             >
-              Use Map
+              {layoutMode === 'mobile-landscape' ? 'Map' : 'Use Map'}
             </button>
           </div>
         </div>

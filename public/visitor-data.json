@@ -62,8 +62,8 @@
       "lon": -122.917,
       "timezone": "America/Los_Angeles",
       "firstVisit": "08/Aug/2025:05:11:44 -0700",
-      "lastVisit": "08/Aug/2025:05:11:44 -0700",
-      "visitCount": 7
+      "lastVisit": "09/Aug/2025:05:34:55 -0700",
+      "visitCount": 9
     },
     {
       "ip": "172.59.227.198",
@@ -75,8 +75,8 @@
       "lon": -105.0346,
       "timezone": "America/Denver",
       "firstVisit": "08/Aug/2025:07:29:06 -0700",
-      "lastVisit": "08/Aug/2025:14:40:19 -0700",
-      "visitCount": 271
+      "lastVisit": "09/Aug/2025:10:03:08 -0700",
+      "visitCount": 275
     },
     {
       "ip": "51.222.253.13",
@@ -233,10 +233,23 @@
       "firstVisit": "08/Aug/2025:13:49:18 -0700",
       "lastVisit": "08/Aug/2025:13:52:52 -0700",
       "visitCount": 5
+    },
+    {
+      "ip": "54.36.148.125",
+      "country": "France",
+      "countryCode": "FR",
+      "region": "Hauts-de-France",
+      "city": "Roubaix",
+      "lat": 50.6917,
+      "lon": 3.20157,
+      "timezone": "Europe/Paris",
+      "firstVisit": "09/Aug/2025:04:47:55 -0700",
+      "lastVisit": "09/Aug/2025:04:47:55 -0700",
+      "visitCount": 2
     }
   ],
-  "totalVisitors": 18,
-  "totalVisits": 407,
-  "processedDate": "2025-08-08T23:25:58.969Z",
+  "totalVisitors": 19,
+  "totalVisits": 415,
+  "processedDate": "2025-08-09T17:32:51.901Z",
   "daysSince": 7
 }

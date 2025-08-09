@@ -50,12 +50,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  min-width: 0; /* Allow flex items to shrink below their content size */
 }
 
 .form-row {
   display: flex;
   gap: 0.75rem;
   align-items: center;
+  min-width: 0; /* Allow flex items to shrink below their content size */
 }
 
 .form-label {
@@ -73,6 +75,8 @@
   font-size: 0.9rem;
   transition: all 0.2s ease;
   background: #ffffff;
+  min-width: 0; /* Allow inputs to shrink */
+  box-sizing: border-box;
 }
 
 .form-input:focus,
@@ -239,7 +243,64 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
+
+/* Large tablets and small desktops - keep side-by-side */
+@media (max-width: 1200px) and (min-width: 901px) {
+  .app-container {
+    gap: 1.5rem;
+    padding: 1rem;
+  }
+  
+  .controls-panel {
+    flex: 0 0 420px;
+  }
+  
+  .app-title {
+    font-size: 2rem;
+  }
+}
+
+/* Landscape mobile and small tablets - side-by-side layout */
+@media (max-width: 900px) and (min-height: 500px) and (orientation: landscape) {
+  .app-container {
+    flex-direction: row;
+    padding: 0.75rem;
+    gap: 1rem;
+  }
+  
+  .controls-panel {
+    flex: 0 0 380px;
+    overflow-y: auto;
+    max-height: 100vh;
+    padding-right: 0.5rem;
+  }
+  
+  .preview-panel {
+    flex: 1;
+    height: calc(100vh - 1.5rem);
+    overflow: hidden;
+  }
+  
+  .app-header {
+    margin-bottom: 1rem;
+  }
+  
+  .app-title {
+    font-size: 1.5rem;
+  }
+  
+  .app-subtitle {
+    font-size: 0.85rem;
+  }
+  
+  .card {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Portrait tablets and large phones - vertical layout */
+@media (max-width: 900px) and (orientation: portrait) {
   .app-container {
     flex-direction: column;
     padding: 1rem;
@@ -266,7 +327,61 @@
   }
 }
 
-@media (max-width: 768px) {
+/* Small landscape phones - still use side-by-side but more compact */
+@media (max-width: 900px) and (max-height: 499px) and (orientation: landscape) {
+  .app-container {
+    flex-direction: row;
+    padding: 0.5rem;
+    gap: 0.75rem;
+  }
+  
+  .controls-panel {
+    flex: 0 0 320px;
+    overflow-y: auto;
+    max-height: 100vh;
+    padding-right: 0.25rem;
+  }
+  
+  .preview-panel {
+    flex: 1;
+    height: calc(100vh - 1rem);
+    overflow: hidden;
+  }
+  
+  .app-header {
+    margin-bottom: 0.75rem;
+  }
+  
+  .app-title {
+    font-size: 1.25rem;
+  }
+  
+  .app-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .card {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .card-title {
+    font-size: 1rem;
+  }
+  
+  .form-label {
+    font-size: 0.8rem;
+  }
+  
+  .form-input,
+  .form-select {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Portrait mobile phones - vertical layout with optimized spacing */
+@media (max-width: 768px) and (orientation: portrait) {
   .card {
     padding: 0.75rem;
     margin-bottom: 0.75rem;
@@ -305,6 +420,14 @@
 
 .w-full {
   width: 100%;
+}
+
+/* Location Card Specific Styles */
+.location-timezone-field {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  line-height: 1.3;
 }
 
 /* Animation for smooth transitions */
