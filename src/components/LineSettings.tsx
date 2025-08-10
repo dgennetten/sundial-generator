@@ -14,7 +14,7 @@ export type LineStyle = {
 const LineSettings: React.FC<{
   lineStyles: LineStyle[];
   setLineStyles: (styles: LineStyle[]) => void;
-}> = ({ lineStyles, setLineStyles }) => {
+}> = React.memo(({ lineStyles, setLineStyles }) => {
   // Handle editing
   const handleChange = (idx: number, field: keyof LineStyle, value: string) => {
     const updated = [...lineStyles];
@@ -197,6 +197,6 @@ const LineSettings: React.FC<{
       </div>
     </div>
   );
-};
+});
 
 export default LineSettings;

@@ -55,7 +55,7 @@ export type {
   LocationInputsProps,
   GnomonSettingsProps,
   PageSettingsProps,
-  SundialPreviewProps,
+
   DesignExportProps,
   HourlineSettingsProps,
   LineSettingsProps,

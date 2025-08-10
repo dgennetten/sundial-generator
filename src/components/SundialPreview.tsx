@@ -56,48 +56,54 @@ type Props = {
   dialFacing?: 'North' | 'South';
   originalLatitude?: number;
 };
+// Note: App now prefers passing a single `config` prop. To keep JSX happy where only `config` is provided,
+// we use a union props type here and normalize to a single `p` object.
 
-const SundialPreview: React.FC<Props> = ({
-  lat,
-  lng,
-  tzMeridian,
-  scale,
-  gnomonHeight,
-  gnomonType,
-  startHour,
-  stopHour,
-  use24Hour,
-  orientation,
-  pageSize,
-  customWidth,
-  customHeight,
-  dateRange,
-  hourlineIntervals = [],
-  declinationLines = [],
-  lineStyles = [],
-  labelWinterSide = true,
-  labelSummerSide = true,
-  labelOffset = 6, // now in mm
-  fontFamily = 'sans-serif',
-  fontSize = 20, // in pt
-  useDST = true,
-  showBorder = true,
-  borderMargin = 0.25, // in inches
-  borderStyle = 'default-hairline',
-  gnomonPosition = 0,
-  showBackground = true,
-  backgroundColor = 'Cornsilk',
-  dialTextBlock = '',
-  dialTextBlockVisible = false,
-  dialTextBlockFontSize = 14,
-  dialTextBlockFontFamily = 'sans-serif',
-  locationName = '',
-  inclineType = 'Horizontal',
-  tiltAngle = 0,
-  declinationNoonmarks = true,
-  dialFacing = 'South',
-  originalLatitude,
-}) => {
+type SundialPreviewProps = { config: Props } | Props;
+
+const SundialPreview = React.memo((props: SundialPreviewProps) => {
+  const p: Props = (props as any).config ?? (props as Props);
+  const {
+    lat,
+    lng,
+    tzMeridian,
+    scale,
+    gnomonHeight,
+    gnomonType,
+    startHour,
+    stopHour,
+    use24Hour,
+    orientation,
+    pageSize,
+    customWidth,
+    customHeight,
+    dateRange,
+    hourlineIntervals = [],
+    declinationLines = [],
+    lineStyles = [],
+    labelWinterSide = true,
+    labelSummerSide = true,
+    labelOffset = 6, // now in mm
+    fontFamily = 'sans-serif',
+    fontSize = 20, // in pt
+    useDST = true,
+    showBorder = true,
+    borderMargin = 0.25, // in inches
+    borderStyle = 'default-hairline',
+    gnomonPosition = 0,
+    showBackground = true,
+    backgroundColor = 'Cornsilk',
+    dialTextBlock = '',
+    dialTextBlockVisible = false,
+    dialTextBlockFontSize = 14,
+    dialTextBlockFontFamily = 'sans-serif',
+    locationName = '',
+    inclineType = 'Horizontal',
+    tiltAngle = 0,
+    declinationNoonmarks = true,
+    dialFacing = 'South',
+    originalLatitude,
+  } = p;
   // Calculate custom page size in mm
   const getCustomPageSize = () => {
     if (pageSize !== 'Custom' || !customWidth || !customHeight) return null;
@@ -107,7 +113,7 @@ const SundialPreview: React.FC<Props> = ({
       height: customHeight
     };
   };
-  
+
   const customPageSize = getCustomPageSize();
   let { width, height } = customPageSize || (pageSize !== 'Custom' ? pageSizeMap[pageSize as keyof typeof pageSizeMap] : pageSizeMap.Letter);
   if (orientation === 'Landscape') {
@@ -116,17 +122,17 @@ const SundialPreview: React.FC<Props> = ({
 
   // Convert border margin from inches to mm (moved up to avoid initialization error)
   const borderMarginMm = borderMargin * 25.4;
-  
+
   // Calculate normalized viewBox for consistent preview scaling
   // Use a minimum viewBox size to prevent tiny pages from appearing too zoomed in
   const minViewBoxSize = 200; // mm
 
-  
+
   // Scale up small pages while maintaining aspect ratio
   let viewBoxWidth = width;
   let viewBoxHeight = height;
   let viewBoxScaleFactor = 1;
-  
+
   if (Math.min(width, height) < minViewBoxSize) {
     viewBoxScaleFactor = minViewBoxSize / Math.min(width, height);
     viewBoxWidth = width * viewBoxScaleFactor;
@@ -156,11 +162,11 @@ const SundialPreview: React.FC<Props> = ({
   // Helper to check if a day is in the date range (handles wrap-around)
   function isDayInRange(day: number, dateRange: 'FullYear' | 'SummerToWinter' | 'WinterToSummer'): boolean {
     if (dateRange === 'FullYear') return true;
-    
+
     const isNorthernHemisphere = lat >= 0;
     const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
     const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
-    
+
     if (dateRange === 'SummerToWinter') {
       if (isNorthernHemisphere) {
         // Normal range: summer (172) to winter (355)
@@ -170,7 +176,7 @@ const SundialPreview: React.FC<Props> = ({
         return day >= summerSolsticeDay || day <= winterSolsticeDay;
       }
     }
-    
+
     if (dateRange === 'WinterToSummer') {
       if (isNorthernHemisphere) {
         // Wrap-around: winter (355) to summer (172) next year
@@ -180,7 +186,7 @@ const SundialPreview: React.FC<Props> = ({
         return day >= winterSolsticeDay && day <= summerSolsticeDay;
       }
     }
-    
+
     return true;
   }
 
@@ -190,7 +196,7 @@ const SundialPreview: React.FC<Props> = ({
     const isNorthernHemisphere = lat >= 0;
     const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
     const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
-    
+
     const seg1 = points.filter((p: { day: number; x: number; y: number }) => p.day >= winterSolsticeDay);
     const seg2 = points.filter((p: { day: number; x: number; y: number }) => p.day <= summerSolsticeDay);
     return [seg1, seg2];
@@ -202,7 +208,7 @@ const SundialPreview: React.FC<Props> = ({
     const isNorthernHemisphere = lat >= 0;
     const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
     const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
-    
+
     if (isNorthernHemisphere) {
       // Northern hemisphere: normal range, no splitting needed
       // This should not be called for northern hemisphere, but handle it gracefully
@@ -253,12 +259,12 @@ const SundialPreview: React.FC<Props> = ({
   // Helper to format hour for display
   function formatHour(hour: number, isSummerSolstice: boolean = false): string {
     let adjustedHour = hour;
-    
+
     // Add one hour for DST if it's summer solstice and DST is enabled
     if (isSummerSolstice && useDST) {
       adjustedHour = hour + 1;
     }
-    
+
     if (use24Hour) {
       return Math.round(adjustedHour).toString();
     } else {
@@ -387,7 +393,7 @@ const SundialPreview: React.FC<Props> = ({
 
     // Account for the transform applied to the sundial content group
     const transformY = (gnomonPosition ?? 0) - (height / 2);
-    
+
     const left = -width / 2 + borderMarginMm;
     const top = -height / 2 + borderMarginMm - transformY;
     const right = width / 2 - borderMarginMm;
@@ -399,14 +405,14 @@ const SundialPreview: React.FC<Props> = ({
     for (let i = 0; i < points.length - 1; i++) {
       const p1 = points[i];
       const p2 = points[i + 1];
-      
+
       const x1 = scale * p1.x;
       const y1 = scale * p1.y;
       const x2 = scale * p2.x;
       const y2 = scale * p2.y;
 
       const clipped = clipLineToRectangle(x1, y1, x2, y2, left, top, right, bottom);
-      
+
       if (clipped) {
         // If this is the start of a new segment
         if (currentSegment.length === 0) {
@@ -464,19 +470,19 @@ const SundialPreview: React.FC<Props> = ({
         });
         // Filter points by date range
         const isNorthernHemisphere = lat >= 0;
-        const needsSplitting = (dateRange === 'WinterToSummer') || 
+        const needsSplitting = (dateRange === 'WinterToSummer') ||
                               (dateRange === 'SummerToWinter' && !isNorthernHemisphere);
-        
+
         if (needsSplitting) {
           let segments: [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]];
-          
+
           if (dateRange === 'WinterToSummer') {
             segments = splitWinterToSummer(points);
           } else {
             // dateRange === 'SummerToWinter' && !isNorthernHemisphere
             segments = splitSummerToWinter(points);
           }
-          
+
           const [seg1, seg2] = segments;
           // Sort segments by day
           const sortedSeg1 = [...seg1].sort((a, b) => a.day - b.day);
@@ -484,11 +490,11 @@ const SundialPreview: React.FC<Props> = ({
           // Determine solstice days based on hemisphere
           const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
           const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
-          
+
           // Determine which segment contains which solstice
           let winterSegment: { day: number; x: number; y: number }[] = [];
           let summerSegment: { day: number; x: number; y: number }[] = [];
-          
+
           if (dateRange === 'WinterToSummer') {
             // For WinterToSummer: seg1 has winter solstice, seg2 has summer solstice
             winterSegment = sortedSeg1;
@@ -498,7 +504,7 @@ const SundialPreview: React.FC<Props> = ({
             winterSegment = sortedSeg2;
             summerSegment = sortedSeg1;
           }
-          
+
           // If labelWinterSide, place at winter solstice
           if (labelWinterSide && winterSegment.length > 0) {
             // Find the point closest to winter solstice day
@@ -511,7 +517,7 @@ const SundialPreview: React.FC<Props> = ({
                 bestIdx = i;
               }
             }
-            
+
             const pt = winterSegment[bestIdx];
             const { nx, ny } = getNormalAtPoint(winterSegment, bestIdx);
             // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
@@ -534,7 +540,7 @@ const SundialPreview: React.FC<Props> = ({
               </text>
             );
           }
-          
+
           // If labelSummerSide, place at summer solstice
           if (labelSummerSide && summerSegment.length > 0) {
             // Find the point closest to summer solstice day
@@ -547,7 +553,7 @@ const SundialPreview: React.FC<Props> = ({
                 bestIdx = i;
               }
             }
-            
+
             const pt = summerSegment[bestIdx];
             const { nx, ny } = getNormalAtPoint(summerSegment, bestIdx);
             // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
@@ -576,12 +582,12 @@ const SundialPreview: React.FC<Props> = ({
           if (points.length === 0) continue;
           // Sort points by day
           const sortedPoints = [...points].sort((a, b) => a.day - b.day);
-          
+
           // Determine solstice days based on hemisphere
           const isNorthernHemisphere = lat >= 0;
           const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
           const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
-          
+
           // If labelSummerSide, place at start (summer solstice)
           if (labelSummerSide) {
             const pt = sortedPoints[0];
@@ -634,12 +640,12 @@ const SundialPreview: React.FC<Props> = ({
         } else {
           points = points.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
           if (points.length === 0) continue;
-          
+
           // Determine solstice days based on hemisphere
           const isNorthernHemisphere = lat >= 0;
           const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
           const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
-          
+
           // Find solstice points
           const solsticeDays = [];
           if (labelSummerSide) solsticeDays.push(summerSolsticeDay); // Summer solstice
@@ -660,7 +666,7 @@ const SundialPreview: React.FC<Props> = ({
             // Offset outward by labelOffsetPx (mm to px)
             // The direction depends on both the solstice type and the effective latitude
             const isSummer = solsticeDay === summerSolsticeDay;
-            
+
             // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
             // We need to reverse the offset direction to keep labels outside the curves
             const isInvertedGeometry = lat < 0;
@@ -672,7 +678,7 @@ const SundialPreview: React.FC<Props> = ({
               // For normal geometry: Summer labels go above (negative offset), Winter labels go below (positive offset)
               offset = isSummer ? -labelOffsetPx : labelOffsetPx;
             }
-            
+
             const x = scale * pt.x + nx * offset;
             const y = scale * pt.y + ny * offset;
             hourLabelElements.push(
@@ -716,31 +722,31 @@ const SundialPreview: React.FC<Props> = ({
         });
         // Filter points by date range
         const isNorthernHemisphere = lat >= 0;
-        const needsSplitting = (dateRange === 'WinterToSummer') || 
+        const needsSplitting = (dateRange === 'WinterToSummer') ||
                               (dateRange === 'SummerToWinter' && !isNorthernHemisphere);
-        
+
         if (needsSplitting) {
           let segments: [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]];
-          
+
           if (dateRange === 'WinterToSummer') {
             segments = splitWinterToSummer(points);
           } else {
             // dateRange === 'SummerToWinter' && !isNorthernHemisphere
             segments = splitSummerToWinter(points);
           }
-          
+
           const [seg1, seg2] = segments;
           [seg1, seg2].forEach((segment, idx) => {
             if (segment.length === 0) return;
             // Sort segment by day to avoid a straight line between segments
             let sortedSegment = [...segment].sort((a, b) => a.day - b.day);
-            
+
             // Optimize for performance: if segment has too many points, reduce them
             if (sortedSegment.length > 100) {
               const step = Math.ceil(sortedSegment.length / 50); // Keep ~50 points max
               sortedSegment = sortedSegment.filter((_, index) => index % step === 0);
             }
-            
+
             const pathData = clipPathData(sortedSegment);
             if (pathData) {
               elements.push(
@@ -761,13 +767,13 @@ const SundialPreview: React.FC<Props> = ({
         } else {
           points = points.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
           if (points.length === 0) continue;
-          
+
           // Optimize for performance: if too many points, reduce them
           if (points.length > 100) {
             const step = Math.ceil(points.length / 50); // Keep ~50 points max
             points = points.filter((_, index) => index % step === 0);
           }
-          
+
           const pathData = clipPathData(points);
           if (pathData) {
             elements.push(
@@ -838,7 +844,7 @@ const SundialPreview: React.FC<Props> = ({
   // that falls within the selected date range (FullYear, SummerToWinter, or WinterToSummer)
   function getMonthBoundaryDeclinations(): { day: number; decl: number; month: string }[] {
     const monthBoundaries: { day: number; decl: number; month: string }[] = [];
-    
+
     // Month start days (approximate, for a non-leap year)
     const monthStarts = [
       { month: 'January', day: 1 },
@@ -894,7 +900,7 @@ const SundialPreview: React.FC<Props> = ({
       gnomonHeight,
       orientation: 'Horizontal',
     });
-    
+
     // Filter points by date range
     let filteredPoints = noonAnalemmaPoints;
     if (dateRange === 'WinterToSummer') {
@@ -905,29 +911,29 @@ const SundialPreview: React.FC<Props> = ({
     }
 
     console.log(`Finding intersection for declination ${decl.toFixed(2)}°, filtered points: ${filteredPoints.length}`);
-    
+
     // Find the point with the closest declination match
     let bestPoint: { x: number; y: number } | null = null;
     let smallestDifference = Infinity;
-    
+
     for (const point of filteredPoints) {
       const pointDeclination = getSolarDeclination(point.day);
       const difference = Math.abs(pointDeclination - decl);
-      
+
       if (difference < smallestDifference) {
         smallestDifference = difference;
         bestPoint = { x: point.x, y: point.y };
       }
     }
-    
+
     // eslint-disable-next-line no-console
     console.log(`Best match for declination ${decl.toFixed(2)}°: difference = ${smallestDifference.toFixed(2)}°`);
-    
+
     // Only return the point if it's reasonably close (within 5 degrees)
     if (bestPoint && smallestDifference < 5.0) {
       return bestPoint;
     }
-    
+
     // eslint-disable-next-line no-console
     console.log(`No suitable intersection found for declination ${decl.toFixed(2)}° (tolerance: 5.0°)`);
     return null;
@@ -936,7 +942,7 @@ const SundialPreview: React.FC<Props> = ({
   // Helper function to render a single declination line
   function renderDeclinationLine(decl: number, style: LineStyle | undefined, key: string) {
     const maxRadius = Math.sqrt(width * width + height * height);
-    
+
     if (decl === 0) {
       // Equinox: draw a straight line for all hours, but clip to maxRadius
       const points = [];
@@ -972,7 +978,7 @@ const SundialPreview: React.FC<Props> = ({
         />
       );
     }
-    
+
     // For each hour, compute the shadow tip for this declination
     const segments: { x: number; y: number }[][] = [];
     let currentSegment: { x: number; y: number }[] = [];
@@ -1029,12 +1035,12 @@ const SundialPreview: React.FC<Props> = ({
     // eslint-disable-next-line no-console
     console.log('Declination lines to render:', declinationLines.map(l => ({date: l.date, active: l.active, styleId: l.styleId, id: l.id, decl: getDeclinationForLine(l)})));
   }
-  
+
   const declinationLineElements = declinationLines.flatMap((line, idx) => {
     if (!line.active) return [];
-    
+
     const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
-    
+
     // Handle Month Boundaries as a special case
     if (line.date === 'Month Boundaries') {
       const monthBoundaries = getMonthBoundaryDeclinations();
@@ -1045,11 +1051,11 @@ const SundialPreview: React.FC<Props> = ({
         return elements || [];
       });
     }
-    
+
     // Handle regular declination lines
     const decl = getDeclinationForLine(line);
     if (decl === null) return [];
-    
+
     const elements = renderDeclinationLine(decl, style, line.id || line.date || idx.toString());
     return elements || [];
   });
@@ -1057,54 +1063,54 @@ const SundialPreview: React.FC<Props> = ({
   // Create declination noonmarks if enabled
   // eslint-disable-next-line no-console
   console.log(`Declination noonmarks enabled: ${declinationNoonmarks}, scale: ${scale}, viewBoxScaleFactor: ${viewBoxScaleFactor}`);
-  
+
   const declinationNoonmarkElements = declinationNoonmarks ? declinationLines.flatMap((line, idx) => {
     // eslint-disable-next-line no-console
     console.log(`Processing declination line ${idx}: ${line.date}, active: ${line.active}`);
-    
+
     if (!line.active) return [];
-    
+
     const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
     if (!style) {
       // eslint-disable-next-line no-console
       console.log(`No style found for line ${line.date}, styleId: ${line.styleId}`);
       return [];
     }
-    
+
     // Get the noon hour line style to determine circle diameter
     // Look for the 'Hour' interval style, or fall back to the default '0.5mm-black' style
     const noonHourInterval = hourlineIntervals.find(interval => interval.name === 'Hour');
     let noonHourStyle = null;
-    
+
     if (noonHourInterval) {
       noonHourStyle = lineStyles.find(s => s.id === noonHourInterval.styleId || s.name === noonHourInterval.styleId);
     }
-    
+
     // If no Hour interval or style found, use the default '0.5mm-black' style
     if (!noonHourStyle) {
       noonHourStyle = lineStyles.find(s => s.id === '0.5mm-black');
     }
-    
+
     // Extract the raw mm value from the stroke width
     const strokeWidthStr = noonHourStyle?.width || '0.5mm';
     let strokeWidthMm = 0.5; // Default
     if (strokeWidthStr.endsWith('mm')) {
       strokeWidthMm = parseFloat(strokeWidthStr) || 0.5;
     }
-    
+
     // Circle diameter should be 2x the width of the hour line stroke width
     // So radius = stroke width (in mm, same coordinate system as the circle position)
     // Make it a bit larger for visibility
     const circleRadius = strokeWidthMm * 2;
-    
+
     // Debug logging for declination noonmarks
     // eslint-disable-next-line no-console
     console.log(`Declination noonmark processing: ${line.date}, active: ${line.active}, style: ${style?.color}`);
-    
 
-    
 
-    
+
+
+
     // Handle Month Boundaries as a special case
     if (line.date === 'Month Boundaries') {
       const monthBoundaries = getMonthBoundaryDeclinations();
@@ -1118,11 +1124,11 @@ const SundialPreview: React.FC<Props> = ({
           console.log(`No intersection found for month boundary ${boundary.month} (decl ${boundary.decl.toFixed(2)}°)`);
           return [];
         }
-        
+
         // eslint-disable-next-line no-console
         console.log(`Found intersection for ${boundary.month}: (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
         console.log(`Rendering circle for ${boundary.month} at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
-        
+
         return [
           <circle
             key={`noonmark-${line.id || line.date || idx}-${boundary.month}-${boundaryIdx}`}
@@ -1136,7 +1142,7 @@ const SundialPreview: React.FC<Props> = ({
         ];
       });
     }
-    
+
     // Handle regular declination lines
     const decl = getDeclinationForLine(line);
     if (decl === null) {
@@ -1144,7 +1150,7 @@ const SundialPreview: React.FC<Props> = ({
       console.log(`No declination found for line: ${line.date}`);
       return [];
     }
-    
+
     // Find single intersection point with noon analemma for this declination
     const intersectionPoint = findDeclinationAnalemmaIntersection(decl);
     if (!intersectionPoint) {
@@ -1152,11 +1158,11 @@ const SundialPreview: React.FC<Props> = ({
       console.log(`No intersection found for declination ${decl.toFixed(2)}° (line: ${line.date})`);
       return [];
     }
-    
+
     // eslint-disable-next-line no-console
     console.log(`Found intersection for ${line.date} (decl ${decl.toFixed(2)}°): (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
     console.log(`Rendering circle at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
-    
+
     return [
       <circle
         key={`noonmark-${line.id || line.date || idx}`}
@@ -1172,9 +1178,9 @@ const SundialPreview: React.FC<Props> = ({
 
   // Get border line style
   const borderLineStyle = lineStyles.find(s => s.id === borderStyle || s.name === borderStyle);
-  
 
-  
+
+
 
 
   // Create border rectangle if border is enabled
@@ -1182,7 +1188,7 @@ const SundialPreview: React.FC<Props> = ({
   const scaledWidth = width * viewBoxScaleFactor;
   const scaledHeight = height * viewBoxScaleFactor;
   const scaledBorderMargin = borderMarginMm * viewBoxScaleFactor;
-  
+
   const borderRect = showBorder ? (
     <rect
       x={-scaledWidth / 2 + scaledBorderMargin}
@@ -1248,25 +1254,25 @@ const SundialPreview: React.FC<Props> = ({
                             inclineType === 'Capricorn' ? getCapricornIncline(originalLatitude || lat || 0) :
                             inclineType === 'Vertical' ? 90 : tiltAngle;
   const inclineString = inclineType !== 'Horizontal' ? `incline: ${effectiveTiltAngle.toFixed(1)}°` : '';
-    
+
     // Check if "Today" declination line is active
     const todayLineActive = declinationLines.some(line => line.active && line.date === 'Today');
-    
+
     // Get today's date in "Month Day" format
     const getTodayDateString = (): string => {
       const today = new Date();
-      const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+      const months = ['January', 'February', 'March', 'April', 'May', 'June',
                      'July', 'August', 'September', 'October', 'November', 'December'];
       return `${months[today.getMonth()]} ${today.getDate()}`;
     };
-    
+
     // Process text with placeholders, but handle {today} specially
     let processedText = dialTextBlock
       .replace(/\{location\}/gi, locationString)
       .replace(/\{coordinates\}/gi, coordinatesString)
       .replace(/\{gnomon\}/gi, `gnomon height: ${gnomonHeight} mm`)
       .replace(/\{incline\}/gi, inclineString);
-    
+
     // Handle {today} placeholder specially - replace with red-colored text
     if (todayLineActive) {
       const todayDate = getTodayDateString();
@@ -1287,21 +1293,21 @@ const SundialPreview: React.FC<Props> = ({
       // Remove {today} and any surrounding asterisks
       processedText = processedText.replace(/\*?\{today\}\*?/gi, '');
     }
-    
+
     // Custom parsing function that handles color for {today} text
     const parseTextWithColor = (text: string): Array<{ text: string; bold: boolean; italic: boolean; color?: string }> => {
       const parts: Array<{ text: string; bold: boolean; italic: boolean; color?: string }> = [];
       let currentIndex = 0;
-      
+
       while (currentIndex < text.length) {
         const boldStart = text.indexOf('**', currentIndex);
         const italicStart = text.indexOf('*', currentIndex);
-        
+
         // Find the earliest marker, but prioritize bold markers
         let markerStart = -1;
         let markerType = '';
         let markerLength = 0;
-        
+
         if (boldStart !== -1) {
           // Check if this is actually a bold marker (not part of an italic marker)
           const nextChar = text[boldStart + 2];
@@ -1311,7 +1317,7 @@ const SundialPreview: React.FC<Props> = ({
             markerLength = 2;
           }
         }
-        
+
         // If no bold marker found, look for italic marker
         if (markerStart === -1 && italicStart !== -1) {
           // Check if this is actually an italic marker (not part of a bold marker)
@@ -1323,46 +1329,46 @@ const SundialPreview: React.FC<Props> = ({
             markerLength = 1;
           }
         }
-        
+
         if (markerStart === -1) {
           // No more markers, add remaining text as normal
           parts.push({ text: text.slice(currentIndex), bold: false, italic: false });
           break;
         }
-        
+
         // Add text before marker as normal
         if (markerStart > currentIndex) {
           parts.push({ text: text.slice(currentIndex, markerStart), bold: false, italic: false });
         }
-        
+
         const markerEnd = text.indexOf(markerType === 'bold' ? '**' : '*', markerStart + markerLength);
         if (markerEnd === -1) {
           // No closing marker, treat as normal text
           parts.push({ text: text.slice(currentIndex), bold: false, italic: false });
           break;
         }
-        
+
         const markedText = text.slice(markerStart + markerLength, markerEnd);
-        
+
         // Check if this is the today date text (italic with red color)
         // The {today} placeholder gets replaced with *${todayDate}*, so we need to check if this text
         // was generated from the {today} placeholder by checking if it matches today's date
         const isTodayText = todayLineActive && markedText === getTodayDateString();
-        
+
         // Add marked text
-        const part = { 
-          text: markedText, 
-          bold: markerType === 'bold', 
+        const part = {
+          text: markedText,
+          bold: markerType === 'bold',
           italic: markerType === 'italic',
           color: isTodayText ? 'red' : undefined
         };
         parts.push(part);
         currentIndex = markerEnd + markerLength;
       }
-      
+
       return parts;
     };
-    
+
     // Filter out lines that become empty or contain only markup after replacement
     textBlockLines = processedText.split('\n')
       .filter(line => {
@@ -1371,7 +1377,7 @@ const SundialPreview: React.FC<Props> = ({
         return trimmed !== '' && !trimmed.match(/^\*+$/);
       })
       .map(line => parseTextWithColor(line));
-    
+
 
 
   }
@@ -1380,7 +1386,7 @@ const SundialPreview: React.FC<Props> = ({
     // Use the same black circle positioning logic as the debug circles
     const latRad = degreesToRadians(lat);
     const hourAngle = degreesToRadians(15 * (12 - 12)); // Solar noon
-    
+
     // Calculate solstice positions using the same method as debug circles
     function calculateSolsticePosition(declination: number) {
       const declRad = degreesToRadians(declination);
@@ -1390,25 +1396,25 @@ const SundialPreview: React.FC<Props> = ({
       cosAz = Math.max(-1, Math.min(1, cosAz));
       let azimuth = Math.acos(cosAz);
       if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-      
+
       return projectShadowToSurface(altitude, azimuth, gnomonHeight, 'Horizontal', lat);
     }
-    
+
     const summerSolsticeDeclination = 23.44;   // June 21st
     const winterSolsticeDeclination = -23.44;  // December 21st
-    
+
     const summerCoords = calculateSolsticePosition(summerSolsticeDeclination);
     const winterCoords = calculateSolsticePosition(winterSolsticeDeclination);
     const grayCoords = calculateSolsticePosition(0); // Equinox
-    
+
     // Calculate black circle position using the same logic as debug circles
     const greenCoords = { x: 0, y: 0 }; // Gnomon point
-    
+
     // Determine which side of gray the green circle is on
     const greenToGrayDistance = grayCoords.y - greenCoords.y;
     const redToGrayDistance = grayCoords.y - summerCoords.y;
     const isGreenOnRedSide = Math.sign(greenToGrayDistance) === Math.sign(redToGrayDistance);
-    
+
     let blackCoords;
     if (isGreenOnRedSide) {
       // Green is on red side of gray: place black circle 150% of the way from red to blue
@@ -1423,16 +1429,16 @@ const SundialPreview: React.FC<Props> = ({
         y: winterCoords.y + 1.5 * (summerCoords.y - winterCoords.y)
       };
     }
-    
+
     return { x: blackCoords.x, y: blackCoords.y };
   };
-  
+
   const { x: textBlockX, y: textBlockY } = calculateTextBlockPosition();
 
   // Calculate center of text block for rotation
   const lineCount = textBlockLines.length;
   const lineHeight = dialTextBlockFontSizeMm * 1.2;
-  
+
   // The text block position is already the centroid, so we use it directly
   // For North-facing dials, the entire SVG group is rotated 180°, so we don't need to adjust coordinates
   const adjustedTextBlockX = textBlockX;
@@ -1458,19 +1464,19 @@ const SundialPreview: React.FC<Props> = ({
             {/* Content positioned relative to gnomon */}
             <g transform={`translate(0, ${(gnomonPosition ?? 0) - (height / 2)})`}>
               {/* Gnomon mark at (0,0) */}
-              <GnomonSVG 
-                gnomonType={gnomonType} 
-                gnomonHeight={gnomonHeight} 
+              <GnomonSVG
+                gnomonType={gnomonType}
+                gnomonHeight={gnomonHeight}
                 lat={lat}
                 inclineType={inclineType}
               />
-              
+
               {hourlineElements.flat()}
               {declinationLineElements}
               {declinationNoonmarkElements}
-              
 
-              
+
+
               {/* Hour labels - counter-rotate text to keep readable */}
               {hourLabelElements.map((label, index) => {
                 // Extract x and y from the label props
@@ -1480,7 +1486,7 @@ const SundialPreview: React.FC<Props> = ({
                   transform: dialFacing === 'North' ? `rotate(180 ${x} ${y})` : undefined
                 });
               })}
-              
+
               {/* --- Dial Text Block --- */}
 
               {dialTextBlockVisible && textBlockLines.length > 0 && (
@@ -1522,5 +1528,5 @@ const SundialPreview: React.FC<Props> = ({
       </div>
     </div>
   );
-};
+});
 export default SundialPreview;

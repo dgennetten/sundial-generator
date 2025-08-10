@@ -1,7 +1,7 @@
 // src/App.tsx
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Text, Info, Instagram, Mail, Coffee, Github } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+
 import PageSettings, { type InclineType } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
@@ -16,8 +16,9 @@ import DeclinationLineOptions from './components/DeclinationLineOptions';
 import { loadDeclinationLines } from './components/declinationLineUtils';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
 import { getSolarPosition, projectShadowToSurface } from './utils/analemmaGenerator';
-import BuildDate from './components/BuildDate';
+import AboutCard from './components/AboutCard';
 import VisitorMap from './components/VisitorMap';
+import DialTextBlockSettings from './components/DialTextBlockSettings';
 
 
 const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n*{gnomon}*\n*{incline}*\n*{today}*`;
@@ -70,12 +71,12 @@ const App: React.FC = () => {
   const [dialTextBlockFontSize, setDialTextBlockFontSize] = useState<number>(pageSize === '10x15cm Postcard' ? 8 : 14);
   const [dialTextBlockFontFamily, setDialTextBlockFontFamily] = useState<string>(fontFamily);
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
-  
+
   // Calculate default dial facing based on hemisphere
   const getDefaultDialFacing = (lat: number): 'North' | 'South' => {
     return lat >= 0 ? 'North' : 'South';
   };
-  
+
   const [dialFacing, setDialFacing] = useState<'North' | 'South'>(getDefaultDialFacing(latitude));
 
   // Page size map (mm)
@@ -91,8 +92,8 @@ const App: React.FC = () => {
     // Ensure all hourline intervals have valid styles
     const updated = hourlineIntervals.map(interval => ({
       ...interval,
-      styleId: lineStyles.some(s => s.id === interval.styleId || s.name === interval.styleId) 
-        ? interval.styleId 
+      styleId: lineStyles.some(s => s.id === interval.styleId || s.name === interval.styleId)
+        ? interval.styleId
         : 'default-hairline'
     }));
     if (JSON.stringify(updated) !== JSON.stringify(hourlineIntervals)) {
@@ -116,7 +117,7 @@ const App: React.FC = () => {
   // Update tilt angle when incline type or latitude changes
   useEffect(() => {
     if (inclineType !== 'Manual') {
-      const newAngle = inclineType === 'Horizontal' ? 0 : 
+      const newAngle = inclineType === 'Horizontal' ? 0 :
                       inclineType === 'Cancer' ? getCancerIncline(latitude) :
                       inclineType === 'Equatorial' ? latitude :
                       inclineType === 'Capricorn' ? getCapricornIncline(latitude) :
@@ -159,7 +160,7 @@ const App: React.FC = () => {
       const currentPageSize = pageSizeMap[previousPageSize as keyof typeof pageSizeMap] || pageSizeMap.Letter;
       const widthInInches = currentPageSize.width / 25.4;
       const heightInInches = currentPageSize.height / 25.4;
-      
+
       setCustomWidth(Math.round(widthInInches * 25.4 * 10) / 10); // Convert to mm and round to 1 decimal place
       setCustomHeight(Math.round(heightInInches * 25.4 * 10) / 10); // Convert to mm and round to 1 decimal place
       setCustomUnits('in');
@@ -167,35 +168,28 @@ const App: React.FC = () => {
   }, [pageSize, previousPageSize, pageSizeMap]);
 
   // Calculate custom page size in mm
-  const getCustomPageSize = () => {
+  const customPageSize = useMemo(() => {
     if (pageSize !== 'Custom') return null;
-    // customWidth and customHeight are already stored in millimeters
     return {
       width: customWidth,
-      height: customHeight
+      height: customHeight,
     };
-  };
-  
-  const customPageSize = getCustomPageSize();
+  }, [pageSize, customWidth, customHeight]);
+
   let { width: pageWidth, height: pageHeight } = customPageSize || (pageSize !== 'Custom' ? pageSizeMap[pageSize as keyof typeof pageSizeMap] : pageSizeMap.Letter);
   if (orientation === 'Landscape') {
     [pageWidth, pageHeight] = [pageHeight, pageWidth];
   }
 
   // Calculate effective latitude based on incline
-  const getEffectiveLatitude = (): number => {
-    const tilt = inclineType === 'Horizontal' ? 0 : 
+  const effectiveLatitude = useMemo(() => {
+    const tilt = inclineType === 'Horizontal' ? 0 :
                  inclineType === 'Cancer' ? getCancerIncline(latitude) :
                  inclineType === 'Equatorial' ? latitude :
                  inclineType === 'Capricorn' ? getCapricornIncline(latitude) :
                  inclineType === 'Vertical' ? 90 : tiltAngle;
-    
-    // For inclined dials, the effective latitude is (original latitude - tilt angle)
-    // This simulates tilting the dial toward the sun
     return latitude - tilt;
-  };
-
-  const effectiveLatitude = getEffectiveLatitude();
+  }, [inclineType, latitude, tiltAngle]);
 
   // Function to calculate gnomon height based on winter-to-summer solstice distance
   const calculateAutoGnomonHeight = (lat: number, pageHeight: number): number => {
@@ -203,24 +197,24 @@ const App: React.FC = () => {
     const winterSolsticeDay = 355;
     const summerSolsticeDay = 172;
     const noonHour = 12;
-    
+
     // Calculate shadow positions for winter and summer solstices at noon
     const winterPos = getSolarPosition(winterSolsticeDay, lat, longitude, tzMeridian, noonHour);
     const summerPos = getSolarPosition(summerSolsticeDay, lat, longitude, tzMeridian, noonHour);
-    
+
     if (winterPos.altitude <= 0 || summerPos.altitude <= 0) {
       // Fallback to original calculation if sun is below horizon
       return Math.round(Math.tan((lat * Math.PI) / 180) * 100 * 3.7 / 8);
     }
-    
+
     // Project shadows to surface (using a temporary gnomon height of 1)
     const tempGnomonHeight = 1;
     const winterShadow = projectShadowToSurface(winterPos.altitude, winterPos.azimuth, tempGnomonHeight, 'Horizontal', lat);
     const summerShadow = projectShadowToSurface(summerPos.altitude, summerPos.azimuth, tempGnomonHeight, 'Horizontal', lat);
-    
+
     // Calculate the distance between winter and summer shadows
     const shadowDistance = Math.abs(winterShadow.y - summerShadow.y);
-    
+
     // Calculate required gnomon height to make this distance 40% of page height
     const targetDistance = pageHeight * 0.4;
     const requiredGnomonHeight = targetDistance / shadowDistance;
@@ -228,11 +222,107 @@ const App: React.FC = () => {
     return Math.round(requiredGnomonHeight * 0.66 * (55/40));
   };
 
-  const effectiveGnomonHeight =
+  const effectiveGnomonHeight = useMemo(() => (
     gnomonMode === 'auto'
       ? calculateAutoGnomonHeight(effectiveLatitude, pageHeight)
-      : gnomonHeight;
+      : gnomonHeight
+  ), [gnomonMode, effectiveLatitude, pageHeight, gnomonHeight]);
 
+  const activeHourlineIntervals = useMemo(() =>
+    hourlineIntervals.filter(i => i.active),
+    [hourlineIntervals]
+  );
+
+  const normalizedDeclinationLines = useMemo(() =>
+    declinationLines
+      .map(l => ({
+        ...l,
+        id: l.id || `user-${Date.now()}-${Math.random()}`,
+        styleId: l.styleId || 'default-hairline',
+      }))
+      .filter(l => l.active && l.date && l.styleId),
+    [declinationLines]
+  );
+  const previewConfig = useMemo(() => ({
+    lat: effectiveLatitude,
+    lng: longitude,
+    tzMeridian,
+    scale: 1,
+    gnomonHeight: effectiveGnomonHeight,
+    gnomonType,
+    startHour,
+    stopHour,
+    use24Hour,
+    orientation,
+    pageSize,
+    customWidth,
+    customHeight,
+    dateRange: hourlineDateRange,
+    hourlineIntervals: activeHourlineIntervals,
+    declinationLines: normalizedDeclinationLines,
+    lineStyles,
+    labelWinterSide,
+    labelSummerSide,
+    labelOffset,
+    fontFamily,
+    fontSize,
+    useDST,
+    showBorder,
+    borderMargin,
+    borderStyle,
+    gnomonPosition,
+    showBackground,
+    backgroundColor,
+    dialTextBlock,
+    dialTextBlockVisible,
+    dialTextBlockFontSize,
+    dialTextBlockFontFamily,
+    locationName,
+    inclineType,
+    tiltAngle,
+    declinationNoonmarks,
+    dialFacing,
+    originalLatitude: latitude,
+  }), [
+    effectiveLatitude,
+    longitude,
+    tzMeridian,
+    effectiveGnomonHeight,
+    gnomonType,
+    startHour,
+    stopHour,
+    use24Hour,
+    orientation,
+    pageSize,
+    customWidth,
+    customHeight,
+    hourlineDateRange,
+    hourlineIntervals,
+    declinationLines,
+    lineStyles,
+    labelWinterSide,
+    labelSummerSide,
+    labelOffset,
+    fontFamily,
+    fontSize,
+    useDST,
+    showBorder,
+    borderMargin,
+    borderStyle,
+    gnomonPosition,
+    showBackground,
+    backgroundColor,
+    dialTextBlock,
+    dialTextBlockVisible,
+    dialTextBlockFontSize,
+    dialTextBlockFontFamily,
+    locationName,
+    inclineType,
+    tiltAngle,
+    declinationNoonmarks,
+    dialFacing,
+    latitude,
+  ]);
   return (
     <div className="app-container">
       {/* Controls Panel - Left Side */}
@@ -246,20 +336,14 @@ const App: React.FC = () => {
           latitude={latitude}
           longitude={longitude}
           tzMeridian={tzMeridian}
-          onChange={({ lat, lng, tz, useDST, locationName }) => {
+          onChange={useCallback(({ lat, lng, tz, useDST, locationName }) => {
             setLatitude(lat);
             setLongitude(lng);
             setTzMeridian(tz);
-            // Automatically set DST checkbox based on Google Time Zone API response
-            if (useDST !== undefined) {
-              setUseDST(useDST);
-            }
-            // Update location name - use the passed locationName if available, otherwise fall back to coordinate matching
+            if (useDST !== undefined) setUseDST(useDST);
             if (locationName) {
               setLocationName(locationName);
             } else {
-              // Update location name when coordinates change
-              // Use the new coordinates directly instead of the state values
               const locations: { [key: string]: { lat: number; lng: number } } = {
                 'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
                 'Marble, CO USA': { lat: 39.0722, lng: -107.1895 },
@@ -273,7 +357,6 @@ const App: React.FC = () => {
                 'Luxembourg City, Luxembourg': { lat: 49.6116, lng: 6.1319 },
                 'St Petersburg, Russia': { lat: 59.8761, lng: 30.4339 }
               };
-              
               let newLocationName = 'Custom Location';
               for (const [name, data] of Object.entries(locations)) {
                 if (Math.abs(data.lat - lat) < 0.001 && Math.abs(data.lng - lng) < 0.001) {
@@ -283,7 +366,7 @@ const App: React.FC = () => {
               }
               setLocationName(newLocationName);
             }
-          }}
+          }, [])}
         />
 
         <PageSettings
@@ -315,19 +398,28 @@ const App: React.FC = () => {
           pageHeight={pageHeight}
           gnomonType={gnomonType}
           positionMode={gnomonPositionMode}
-          position={gnomonPosition}
-          onChange={({ mode, height, gnomonType, positionMode, position }) => {
+          onChange={useCallback(({ mode, height, gnomonType, positionMode, position }) => {
             setGnomonMode(mode);
             setGnomonHeight(height);
             setGnomonType(gnomonType);
             if (positionMode) setGnomonPositionMode(positionMode);
             if (typeof position === 'number') setGnomonPosition(position);
-          }}
+          }, [])}
+          position={gnomonPosition}
         />
+        <React.Profiler id="LineSettings" onRender={(id, phase, actualDuration) => {
+          if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
+        }}>
+
         <LineSettings
           lineStyles={lineStyles}
           setLineStyles={setLineStyles}
         />
+        </React.Profiler>
+        <React.Profiler id="HourlineSettings" onRender={(id, phase, actualDuration) => {
+          if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
+        }}>
+
         <DeclinationLineOptions
           lineStyles={lineStyles}
           declinationLines={declinationLines}
@@ -342,14 +434,7 @@ const App: React.FC = () => {
           startHour={startHour}
           stopHour={stopHour}
           use24Hour={use24Hour}
-          labelWinterSide={labelWinterSide}
-          labelSummerSide={labelSummerSide}
-          labelOffset={labelOffset}
-          fontFamily={fontFamily}
-          fontSize={fontSize}
-          useDST={useDST}
-          declinationNoonmarks={declinationNoonmarks}
-          onUpdate={(start, stop, use24, winter, summer, offset, fontFam, fontSz, dst, declNoonmarks) => {
+          onUpdate={useCallback((start, stop, use24, winter, summer, offset, fontFam, fontSz, dst, declNoonmarks) => {
             setStartHour(start);
             setStopHour(stop);
             setUse24Hour(use24);
@@ -360,67 +445,27 @@ const App: React.FC = () => {
             setFontSize(fontSz);
             setUseDST(dst);
             setDeclinationNoonmarks(declNoonmarks);
-          }}
+          }, [])}
+          labelWinterSide={labelWinterSide}
+          labelSummerSide={labelSummerSide}
+          labelOffset={labelOffset}
+          fontFamily={fontFamily}
+          fontSize={fontSize}
+          useDST={useDST}
+          declinationNoonmarks={declinationNoonmarks}
         />
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title"><Text color="#2563eb" size={20} style={{marginRight: 6}} /> Dial Text Block</h3>
-          </div>
-          <div className="card-content">
-            <div className="form-group">
-              <label className="form-checkbox">
-                <input
-                  type="checkbox"
-                  checked={dialTextBlockVisible}
-                  onChange={e => setDialTextBlockVisible(e.target.checked)}
-                />
-                Show Text Block
-              </label>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Text (supports {"{location}"}, {"{coordinates}"}, {"{gnomon}"}, {"{today}"} and some Markup codes)</label>
-              <textarea
-                className="form-input"
-                rows={5}
-                value={dialTextBlock}
-                onChange={e => setDialTextBlock(e.target.value)}
-                style={{ width: '100%', fontFamily: dialTextBlockFontFamily, fontSize: '12pt', maxWidth: '100%', boxSizing: 'border-box' }}
-              />
-            </div>
-            <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end' }}>
-              <div className="form-group" style={{ flex: '0 0 auto' }}>
-                <label className="form-label">Font Size (pt)</label>
-                <input
-                  type="number"
-                  className="form-input"
-                  min={4}
-                  max={24}
-                  value={dialTextBlockFontSize}
-                  onChange={e => setDialTextBlockFontSize(Number(e.target.value))}
-                  style={{ width: '80px' }}
-                />
-              </div>
-              <div className="form-group" style={{ flex: '1 1 auto' }}>
-                <label className="form-label">Font Family</label>
-                <select
-                  className="form-select"
-                  value={dialTextBlockFontFamily}
-                  onChange={e => setDialTextBlockFontFamily(e.target.value)}
-                  style={{ width: '100%' }}
-                >
-                  <option value="sans-serif">Sans-serif</option>
-                  <option value="serif">Serif</option>
-                  <option value="monospace">Monospace</option>
-                  <option value="Arial">Arial</option>
-                  <option value="Times New Roman">Times New Roman</option>
-                  <option value="Georgia">Georgia</option>
-                  <option value="Courier New">Courier New</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-        <DesignExport 
+        </React.Profiler>
+        <DialTextBlockSettings
+          dialTextBlock={dialTextBlock}
+          setDialTextBlock={setDialTextBlock}
+          dialTextBlockVisible={dialTextBlockVisible}
+          setDialTextBlockVisible={setDialTextBlockVisible}
+          dialTextBlockFontSize={dialTextBlockFontSize}
+          setDialTextBlockFontSize={setDialTextBlockFontSize}
+          dialTextBlockFontFamily={dialTextBlockFontFamily}
+          setDialTextBlockFontFamily={setDialTextBlockFontFamily}
+        />
+        <DesignExport
           onBorderChange={(showBorder, margin, style) => {
             setShowBorder(showBorder);
             setBorderMargin(margin / 25.4); // Convert mm to inches
@@ -437,150 +482,18 @@ const App: React.FC = () => {
           customHeight={customHeight}
         />
         <VisitorMap />
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title"><Info color="#2563eb" size={20} style={{marginRight: 6}} /> About</h3>
-          </div>
-          <div className="card-content">
-                         <div style={{ 
-               backgroundColor: '#fefce8', 
-               color: '#7c2d12', 
-               padding: '8px 12px', 
-               borderRadius: '6px', 
-               marginBottom: '16px',
-               fontSize: '14px',
-               fontWeight: '500'
-             }}>
-             <p><strong>New Feature:</strong> Massive perfomance, security and reliabilty improvements! (thx Augmentcode.com!).</p>
-             <p><strong>New Feature:</strong> Custom page sizes.</p>
-             <p><strong>New Feature:</strong> Mobile-friendly design.</p>
-             <p><strong>New Feature:</strong> Map now has searchbox.</p>
-             <p><strong>New Feature:</strong> Added Cancer and Capricorn options for Inclined Dials.</p>
-             <p><strong>New Feature:</strong> Gnomon height optionally printed on dial.</p>
-             <p><strong>New Feature:</strong> Today's date, when plotted, optionally printed on dial.</p>
-              <p><strong>New Feature:</strong> Added Gnomon type option. North Pt. on/off.</p>
-               <p><strong>New feature:</strong> Properly supported Inclined Dials. </p>
-              </div>
-            <div dangerouslySetInnerHTML={{ __html: `
-<p>
-  This App traces its origins back to a gloriously nerdy gem—the 
-  <a href="http://sundial.gennetten.org/docs/1980-12-SundialArticle.pdf">Amateur Scientist column</a>
-  from the December 1980 issue of Scientific American. 
-  Back then, my first sundial app was coded with love (and 
-  <a href="https://www.hp9845.net/9845/software/basic/">Rocky Mountain Basic</a>
-  ) on an 
-  <a href="https://www.hp9845.net/">HP9845</a> 
-    desktop workstation, which was basically a space shuttle cockpit compared to the future IBM PC toddlers.
-
-  Not content with digital wizardry alone, I whipped up an 
-  <a href="http://sundial.gennetten.org/docs/SolarClockAd.pdf">advertisement</a>
-  and, like a caffinated Da Vinci, scribbled out hand-drawn 
-  <a href="http://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf">instructional</a>,
-  <a href="http://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf">illustrations</a>.
-   Here's an example 
-  <a href="http://sundial.gennetten.org/docs/Tabloid-sizeDial.pdf">11x17 inch sundial</a>,
- plotted using an 
-  <a href="https://www.hpmuseum.net/display_item.php?hw=79">HP9872 plotter</a>.
-</p>
-<p>The sundial generator now uses the professional-grade 
-<a href="https://academic.oup.com/mnras/article/238/4/1529/1037665">Hughes, Yallop & Hohenkerk</a>
-algorithm with ±3.5 seconds accuracy. 
-</p>
-` }} />
-            {/* Bottom row with build date and social icons */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
-              <BuildDate />
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <a
-                  href="https://buymeacoffee.com/dgennetten"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Buy me a Coffee!"
-                  style={{ color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-                >
-                  <Coffee size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
-                </a>
-                <a
-                  href="https://github.com/dgennetten/sundial-generator"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="View Source Code on GitHub"
-                  style={{ color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-                >
-                  <Github size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
-                </a>
-                <a
-                  href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
-                  title="eMail the Author"
-                  style={{ color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-                >
-                  <Mail size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
-                </a>
-                <a
-                  href="https://instagram.com/dgennetten"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Follow @dgennetten on Instagram"
-                  style={{ color: '#2563eb', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
-                >
-                  <Instagram size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AboutCard />
       </div>
+
+
 
       {/* Preview Panel - Right Side */}
-      <div className="preview-panel">
-        <SundialPreview
-          lat={effectiveLatitude}
-          lng={longitude}
-          originalLatitude={latitude}
-          tzMeridian={tzMeridian}
-          gnomonHeight={effectiveGnomonHeight}
-          gnomonType={gnomonType}
-          startHour={startHour}
-          stopHour={stopHour}
-          use24Hour={use24Hour}
-          scale={1}
-          orientation={orientation}
-          pageSize={pageSize}
-          customWidth={customWidth}
-          customHeight={customHeight}
-          dateRange={hourlineDateRange}
-          hourlineIntervals={hourlineIntervals.filter(i => i.active)}
-          lineStyles={lineStyles}
-          declinationLines={declinationLines
-            .map(l => ({
-              ...l,
-              id: l.id || `user-${Date.now()}-${Math.random()}`,
-              styleId: l.styleId || 'default-hairline',
-            }))
-            .filter(l => l.active && l.date && l.styleId)}
-          labelWinterSide={labelWinterSide}
-          labelSummerSide={labelSummerSide}
-          labelOffset={labelOffset}
-          fontFamily={fontFamily}
-          fontSize={fontSize}
-          useDST={useDST}
-          showBorder={showBorder}
-          borderMargin={borderMargin}
-          borderStyle={borderStyle}
-          gnomonPosition={gnomonPosition}
-          showBackground={showBackground}
-          backgroundColor={backgroundColor}
-          dialTextBlock={dialTextBlock}
-          dialTextBlockVisible={dialTextBlockVisible}
-          dialTextBlockFontSize={dialTextBlockFontSize}
-          dialTextBlockFontFamily={dialTextBlockFontFamily}
-           locationName={locationName}
-           inclineType={inclineType}
-           tiltAngle={tiltAngle}
-           declinationNoonmarks={declinationNoonmarks}
-           dialFacing={dialFacing}
-        />
-      </div>
+        <React.Profiler id="SundialPreview" onRender={(id, phase, actualDuration) => {
+          if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
+        }}>
+          <SundialPreview config={previewConfig} />
+        </React.Profiler>
+
     </div>
   );
 };

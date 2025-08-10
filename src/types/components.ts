@@ -5,7 +5,7 @@ import type {
   PageSize,
   PageOrientation,
   InclineType,
-  DialFacing,
+
   GnomonType,
   DateRange,
   HourlineInterval,
@@ -68,50 +68,6 @@ export interface PageSettingsProps {
   onInclineTypeChange: (type: InclineType) => void;
 }
 
-/**
- * Props for SundialPreview component
- */
-export interface SundialPreviewProps {
-  lat: number;
-  lng: number;
-  originalLatitude: number;
-  tzMeridian: number;
-  gnomonHeight: number;
-  gnomonType: GnomonType;
-  startHour: number;
-  stopHour: number;
-  use24Hour: boolean;
-  scale: number;
-  orientation: PageOrientation;
-  pageSize: PageSize;
-  customWidth: number;
-  customHeight: number;
-  dateRange: DateRange;
-  hourlineIntervals: HourlineInterval[];
-  lineStyles: LineStyle[];
-  declinationLines: DeclinationLine[];
-  labelWinterSide: boolean;
-  labelSummerSide: boolean;
-  labelOffset: number;
-  fontFamily: string;
-  fontSize: number;
-  useDST: boolean;
-  showBorder: boolean;
-  borderMargin: number;
-  borderStyle: string;
-  gnomonPosition: number;
-  showBackground: boolean;
-  backgroundColor: string;
-  dialTextBlock: string;
-  dialTextBlockVisible: boolean;
-  dialTextBlockFontSize: number;
-  dialTextBlockFontFamily: string;
-  locationName: string;
-  inclineType: InclineType;
-  tiltAngle: number;
-  declinationNoonmarks: boolean;
-  dialFacing: DialFacing;
-}
 
 /**
  * Props for DesignExport component

@@ -34,7 +34,7 @@ interface DesignExportProps {
 
 
 
-const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroundChange, lineStyles, pageSize, orientation, customWidth, customHeight }) => {
+const DesignExport: React.FC<DesignExportProps> = React.memo(({ onBorderChange, onBackgroundChange, lineStyles, pageSize, orientation, customWidth, customHeight }) => {
   const [format, setFormat] = useState<ExportFormat>('PNG');
   const [showBorder, setShowBorder] = useState<boolean>(true);
   const [margin, setMargin] = useState<number>(6); // in mm
@@ -287,6 +287,6 @@ const DesignExport: React.FC<DesignExportProps> = ({ onBorderChange, onBackgroun
       </div>
     </div>
   );
-};
+});
 
 export default DesignExport;

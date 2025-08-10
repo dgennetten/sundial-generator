@@ -36,7 +36,7 @@ interface HourlineSettingsProps {
   ) => void;
 }
 
-const HourlineSettings: React.FC<HourlineSettingsProps> = ({
+const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
   dateRange,
   setDateRange,
   lineStyles,
@@ -286,6 +286,6 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default HourlineSettings;

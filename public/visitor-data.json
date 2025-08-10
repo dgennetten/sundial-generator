@@ -62,8 +62,8 @@
       "lon": -122.917,
       "timezone": "America/Los_Angeles",
       "firstVisit": "08/Aug/2025:05:11:44 -0700",
-      "lastVisit": "09/Aug/2025:05:34:55 -0700",
-      "visitCount": 12
+      "lastVisit": "10/Aug/2025:05:12:23 -0700",
+      "visitCount": 13
     },
     {
       "ip": "172.59.227.198",
@@ -75,8 +75,8 @@
       "lon": -105.0346,
       "timezone": "America/Denver",
       "firstVisit": "08/Aug/2025:07:29:06 -0700",
-      "lastVisit": "09/Aug/2025:12:10:09 -0700",
-      "visitCount": 323
+      "lastVisit": "10/Aug/2025:11:53:49 -0700",
+      "visitCount": 332
     },
     {
       "ip": "51.222.253.13",
@@ -270,8 +270,8 @@
       "lon": -85.7359,
       "timezone": "America/Kentucky/Louisville",
       "firstVisit": "09/Aug/2025:12:54:23 -0700",
-      "lastVisit": "09/Aug/2025:12:54:25 -0700",
-      "visitCount": 2
+      "lastVisit": "10/Aug/2025:06:48:49 -0700",
+      "visitCount": 4
     },
     {
       "ip": "66.249.66.13",
@@ -298,10 +298,127 @@
       "firstVisit": "09/Aug/2025:13:05:14 -0700",
       "lastVisit": "09/Aug/2025:13:05:14 -0700",
       "visitCount": 1
+    },
+    {
+      "ip": "4.227.36.113",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Arizona",
+      "city": "Phoenix",
+      "lat": 33.448376,
+      "lon": -112.074036,
+      "timezone": "America/Phoenix",
+      "firstVisit": "10/Aug/2025:03:05:14 -0700",
+      "lastVisit": "10/Aug/2025:03:05:14 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "180.163.220.126",
+      "country": "China",
+      "countryCode": "CN",
+      "region": "Shanghai",
+      "city": "Shanghai",
+      "lat": 31.2304,
+      "lon": 121.474,
+      "timezone": "Asia/Shanghai",
+      "firstVisit": "10/Aug/2025:04:37:52 -0700",
+      "lastVisit": "10/Aug/2025:04:37:52 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "180.163.220.45",
+      "country": "China",
+      "countryCode": "CN",
+      "region": "Shanghai",
+      "city": "Shanghai",
+      "lat": 31.2304,
+      "lon": 121.474,
+      "timezone": "Asia/Shanghai",
+      "firstVisit": "10/Aug/2025:04:37:59 -0700",
+      "lastVisit": "10/Aug/2025:04:37:59 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "180.163.220.46",
+      "country": "China",
+      "countryCode": "CN",
+      "region": "Shanghai",
+      "city": "Shanghai",
+      "lat": 31.2304,
+      "lon": 121.474,
+      "timezone": "Asia/Shanghai",
+      "firstVisit": "10/Aug/2025:04:38:00 -0700",
+      "lastVisit": "10/Aug/2025:04:38:00 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "180.163.220.42",
+      "country": "China",
+      "countryCode": "CN",
+      "region": "Shanghai",
+      "city": "Shanghai",
+      "lat": 31.2304,
+      "lon": 121.474,
+      "timezone": "Asia/Shanghai",
+      "firstVisit": "10/Aug/2025:04:38:10 -0700",
+      "lastVisit": "10/Aug/2025:04:38:10 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "51.222.253.7",
+      "country": "Canada",
+      "countryCode": "CA",
+      "region": "Quebec",
+      "city": "Beauharnois",
+      "lat": 45.3147,
+      "lon": -73.8785,
+      "timezone": "America/Toronto",
+      "firstVisit": "10/Aug/2025:05:42:50 -0700",
+      "lastVisit": "10/Aug/2025:05:42:50 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "38.147.233.109",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Fort Collins",
+      "lat": 40.5447,
+      "lon": -105.1069,
+      "timezone": "America/Denver",
+      "firstVisit": "10/Aug/2025:05:57:21 -0700",
+      "lastVisit": "10/Aug/2025:05:57:21 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "199.195.248.168",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "New York",
+      "city": "New York",
+      "lat": 40.7038,
+      "lon": -74.0138,
+      "timezone": "America/New_York",
+      "firstVisit": "10/Aug/2025:08:50:37 -0700",
+      "lastVisit": "10/Aug/2025:08:50:37 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "43.130.39.254",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "California",
+      "city": "Santa Clara",
+      "lat": 37.3541,
+      "lon": -121.9552,
+      "timezone": "America/Los_Angeles",
+      "firstVisit": "10/Aug/2025:09:57:36 -0700",
+      "lastVisit": "10/Aug/2025:09:57:36 -0700",
+      "visitCount": 1
     }
   ],
-  "totalVisitors": 23,
-  "totalVisits": 475,
-  "processedDate": "2025-08-09T21:28:08.666Z",
+  "totalVisitors": 32,
+  "totalVisits": 497,
+  "processedDate": "2025-08-10T19:49:13.512Z",
   "daysSince": 7
 }
