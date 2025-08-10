@@ -1,5 +1,4 @@
 // src/utils/exportUtils.ts
-import html2canvas from 'html2canvas';
 import { createSVGExport, downloadSVG } from './svgExportUtils';
 // import { createSimpleSVGExport, downloadSimpleSVG } from './simpleSvgExport';
 
@@ -146,9 +145,11 @@ export async function exportSundial(options: ExportOptions): Promise<void> {
 }
 
 /**
- * Exports as PNG using html2canvas
+ * Exports as PNG using html2canvas (dynamically imported)
  */
 async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Promise<void> {
+  // Dynamically import html2canvas to reduce initial bundle size
+  const { default: html2canvas } = await import('html2canvas');
   // Get intended print dimensions
   // Calculate custom page size in mm
   const getCustomPageSize = () => {

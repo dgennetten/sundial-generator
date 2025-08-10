@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Globe, Users, MapPin } from 'lucide-react';
-import VisitorMapLeaflet from './VisitorMapLeaflet';
+
+// Lazy load the Leaflet map component to reduce initial bundle size
+const VisitorMapLeaflet = lazy(() => import('./VisitorMapLeaflet'));
 
 interface VisitorLocation {
   ip: string;
@@ -322,12 +324,26 @@ const VisitorMap: React.FC = () => {
           
           {/* Leaflet Map Component */}
           <div style={{ marginBottom: '0.5rem' }}>
-            <VisitorMapLeaflet
-              visitors={visitorData?.visitors || []}
-              selectedCountry={selectedCountry}
-              onCountrySelect={setSelectedCountry}
-              height="300px"
-            />
+            <Suspense fallback={
+              <div style={{
+                height: '300px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f8fafc',
+                borderRadius: '6px',
+                color: '#64748b'
+              }}>
+                Loading world map...
+              </div>
+            }>
+              <VisitorMapLeaflet
+                visitors={visitorData?.visitors || []}
+                selectedCountry={selectedCountry}
+                onCountrySelect={setSelectedCountry}
+                height="300px"
+              />
+            </Suspense>
           </div>
           
           {/* Simple list of visitor locations - one per country */}
