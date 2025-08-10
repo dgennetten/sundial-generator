@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import type { VisitorMapProps } from '../types';
 
 // Fix for default markers in Leaflet with React
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -11,28 +12,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-interface VisitorLocation {
-  ip: string;
-  country: string;
-  countryCode: string;
-  region: string;
-  city: string;
-  lat: number;
-  lon: number;
-  timezone: string;
-  firstVisit: string;
-  lastVisit: string;
-  visitCount: number;
-}
-
-interface VisitorMapLeafletProps {
-  visitors: VisitorLocation[];
-  selectedCountry: string | null;
-  onCountrySelect: (country: string | null) => void;
-  height?: string;
-}
-
-const VisitorMapLeaflet: React.FC<VisitorMapLeafletProps> = ({
+const VisitorMapLeaflet: React.FC<VisitorMapProps> = ({
   visitors,
   selectedCountry,
   onCountrySelect,

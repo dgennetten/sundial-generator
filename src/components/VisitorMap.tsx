@@ -1,30 +1,10 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Globe, Users, MapPin } from 'lucide-react';
+import type { VisitorData, VisitorLocation } from '../types';
+import { isVisitorData, safeJsonParse } from '../utils/typeGuards';
 
 // Lazy load the Leaflet map component to reduce initial bundle size
 const VisitorMapLeaflet = lazy(() => import('./VisitorMapLeaflet'));
-
-interface VisitorLocation {
-  ip: string;
-  country: string;
-  countryCode: string;
-  region: string;
-  city: string;
-  lat: number;
-  lon: number;
-  timezone: string;
-  firstVisit: string;
-  lastVisit: string;
-  visitCount: number;
-}
-
-interface VisitorData {
-  visitors: VisitorLocation[];
-  totalVisitors: number;
-  totalVisits: number;
-  processedDate: string;
-  daysSince?: number;
-}
 
 // Move getSampleData function before the component
 const getSampleData = (): VisitorData => {
@@ -99,10 +79,16 @@ const VisitorMap: React.FC = () => {
         throw new Error(`Failed to load visitor data: ${response.status}`);
       }
       
-      const data: VisitorData = await response.json();
-      console.log('VisitorMap: Successfully loaded visitor data - Visitors:', data.totalVisitors, 'Visits:', data.totalVisits);
-      setVisitorData(data);
-      setError(null);
+      const rawData = await response.text();
+      const parseResult = safeJsonParse(rawData, isVisitorData);
+
+      if (parseResult.success) {
+        console.log('VisitorMap: Successfully loaded visitor data - Visitors:', parseResult.data.totalVisitors, 'Visits:', parseResult.data.totalVisits);
+        setVisitorData(parseResult.data);
+        setError(null);
+      } else {
+        throw new Error(`Invalid visitor data format: ${parseResult.error}`);
+      }
     } catch (err) {
       console.error('VisitorMap: Error loading visitor data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load visitor data');

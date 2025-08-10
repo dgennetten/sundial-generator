@@ -1,28 +1,17 @@
 // src/utils/exportUtils.ts
 import { createSVGExport, downloadSVG } from './svgExportUtils';
+import type { ExportOptions, PageSize } from '../types';
+
+// Re-export types for backward compatibility
+export type { ExportFormat, PageSize } from '../types';
 // import { createSimpleSVGExport, downloadSimpleSVG } from './simpleSvgExport';
 
-export type ExportFormat = 'SVG' | 'PNG' | 'PDF';
-export type PageSize = 'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom';
-
-const pageSizeMap = {
+const pageSizeMap: Record<Exclude<PageSize, 'Custom'>, { width: number; height: number }> = {
   Letter: { width: 8.5, height: 11 }, // inches
   A4: { width: 8.27, height: 11.69 }, // inches
   '11x17': { width: 11, height: 17 },
   '10x15cm Postcard': { width: 3.94, height: 5.91 }, // inches (100mm = 3.94", 150mm = 5.91")
 };
-
-interface ExportOptions {
-  format: ExportFormat;
-  pageSize: PageSize;
-  orientation: 'Landscape' | 'Portrait';
-  dpi?: number;
-  showBackground?: boolean;
-  backgroundColor?: string;
-  customWidth?: number;
-  customHeight?: number;
-  customUnits?: 'in' | 'cm';
-}
 
 /**
  * Finds the sundial preview container in the DOM
