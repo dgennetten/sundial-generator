@@ -1,6 +1,8 @@
 // src/utils/svgExportUtils.ts
 // Specialized SVG export utilities
 
+import type { LineStyle } from '../components/LineSettings';
+
 export interface SVGExportOptions {
   pageSize: 'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom';
   customWidth?: number;
@@ -30,7 +32,7 @@ function getLineStylesFromDOM(): Record<string, string> {
     if (storedStyles) {
       const styles = JSON.parse(storedStyles);
       if (Array.isArray(styles)) {
-        styles.forEach((style: any) => {
+        styles.forEach((style: LineStyle) => {
           if (style.id && style.name) {
             lineStyleMap[style.id] = style.name;
           }
@@ -171,7 +173,7 @@ export function createSVGExport(options: SVGExportOptions): string | null {
       const bbox = svgElement.getBBox();
       svgContent += `viewBox="${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}" `;
       console.log('Created viewBox from bbox:', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
-    } catch (e) {
+    } catch {
       console.warn('Could not get bounding box, using default viewBox');
       svgContent += `viewBox="0 0 800 600" `;
     }
@@ -262,7 +264,7 @@ function extractAndOrganizeSVGContentByLineStyle(svgElement: SVGSVGElement, line
     // Categorize element by line style or element type
     const layerName = categorizeElementForLayer(child, lineStyleMap);
     
-    if (specialLayers.hasOwnProperty(layerName)) {
+    if (Object.prototype.hasOwnProperty.call(specialLayers, layerName)) {
       specialLayers[layerName] += `    ${fixedContent}\n`;
     } else {
       // It's a line style layer

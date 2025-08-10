@@ -3,7 +3,7 @@ import type { JSX } from 'react';
 import { getAnalemmaPointsProjected, degreesToRadians, getSolarDeclination, projectShadowToSurface } from '../utils/analemmaGenerator';
 import type { DeclinationLine } from './DeclinationLineOptions';
 import type { LineStyle } from './LineSettings';
-import type { HourlineInterval } from './HourlineSettings';
+import type { HourlineInterval } from './hourlineUtils';
 import { Sun } from 'lucide-react';
 import GnomonSVG from './GnomonSVG';
 
@@ -826,7 +826,6 @@ const SundialPreview: React.FC<Props> = ({
       const decl = getSolarDeclination(day);
       if (line.date && line.id && !line.fixed) {
         // Debug log for user dates
-        // eslint-disable-next-line no-console
         console.log(`User declination line: ${line.date} => day ${day}, decl ${decl}`);
       }
       return decl;
@@ -904,8 +903,7 @@ const SundialPreview: React.FC<Props> = ({
     } else {
       filteredPoints = filteredPoints.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
     }
-    
-    // eslint-disable-next-line no-console
+
     console.log(`Finding intersection for declination ${decl.toFixed(2)}°, filtered points: ${filteredPoints.length}`);
     
     // Find the point with the closest declination match

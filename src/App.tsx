@@ -1,14 +1,14 @@
 // src/App.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Text, Info, Instagram, Mail, Coffee, Github } from 'lucide-react';
 import PageSettings, { type InclineType } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
 import DesignExport from './components/DesignExport';
 import SundialPreview from './components/SundialPreview';
-import HourlineSettings, { loadHourlineIntervals } from './components/HourlineSettings';
-import type { HourlineInterval } from './components/HourlineSettings';
+import HourlineSettings from './components/HourlineSettings';
+import { loadHourlineIntervals, type HourlineInterval } from './components/hourlineUtils';
 import LineSettings from './components/LineSettings';
 import { loadLineStyles } from './components/lineStyleUtils';
 import type { LineStyle } from './components/LineSettings';
@@ -78,6 +78,14 @@ const App: React.FC = () => {
   
   const [dialFacing, setDialFacing] = useState<'North' | 'South'>(getDefaultDialFacing(latitude));
 
+  // Page size map (mm)
+  const pageSizeMap = useMemo(() => ({
+    Letter: { width: 8.5 * 25.4, height: 11 * 25.4 },
+    A4: { width: 210, height: 297 },
+    '11x17': { width: 11 * 25.4, height: 17 * 25.4 },
+    '10x15cm Postcard': { width: 100, height: 150 },
+  }), []);
+
   useEffect(() => {
     // Ensure selected style is valid
     // Ensure all hourline intervals have valid styles
@@ -119,7 +127,6 @@ const App: React.FC = () => {
 
   // Debug: log declinationLines before filtering
   React.useEffect(() => {
-    // eslint-disable-next-line no-console
     console.log('App declinationLines state:', declinationLines);
   }, [declinationLines]);
 
@@ -157,16 +164,8 @@ const App: React.FC = () => {
       setCustomHeight(Math.round(heightInInches * 25.4 * 10) / 10); // Convert to mm and round to 1 decimal place
       setCustomUnits('in');
     }
-  }, [pageSize, previousPageSize]);
+  }, [pageSize, previousPageSize, pageSizeMap]);
 
-  // Page size map (mm)
-  const pageSizeMap = {
-    Letter: { width: 8.5 * 25.4, height: 11 * 25.4 },
-    A4: { width: 210, height: 297 },
-    '11x17': { width: 11 * 25.4, height: 17 * 25.4 },
-    '10x15cm Postcard': { width: 100, height: 150 },
-  };
-  
   // Calculate custom page size in mm
   const getCustomPageSize = () => {
     if (pageSize !== 'Custom') return null;

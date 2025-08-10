@@ -1,6 +1,17 @@
 // src/utils/simpleSvgExport.ts
 // Simplified SVG export for debugging
 
+import type { LineStyle } from '../components/LineSettings';
+
+interface SpecialLayers {
+  background: SVGGElement;
+  border: SVGGElement;
+  labels: SVGGElement;
+  gnomon: SVGGElement;
+  textBlock: SVGGElement;
+  other: SVGGElement;
+}
+
 export interface SimpleSVGExportOptions {
   pageSize: 'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom';
   orientation: 'Landscape' | 'Portrait';
@@ -30,7 +41,7 @@ function getLineStylesFromDOM(): Record<string, string> {
     if (storedStyles) {
       const styles = JSON.parse(storedStyles);
       if (Array.isArray(styles)) {
-        styles.forEach((style: any) => {
+        styles.forEach((style: LineStyle) => {
           if (style.id && style.name) {
             lineStyleMap[style.id] = style.name;
           }
@@ -337,9 +348,9 @@ function createLayer(id: string, name: string): SVGGElement {
  * Categorizes an element based on its line style or element type
  */
 function categorizeElementByLineStyle(
-  element: Element, 
+  element: Element,
   lineStyleLayers: Record<string, SVGGElement>,
-  specialLayers: any,
+  specialLayers: SpecialLayers,
   lineStyleMap: Record<string, string>
 ): SVGGElement {
   // Handle special element types first

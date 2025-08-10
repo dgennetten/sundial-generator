@@ -1,5 +1,5 @@
 // src/components/GnomonSettings.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { getSolarPosition, projectShadowToSurface, getAnalemmaPointsProjected } from '../utils/analemmaGenerator';
 import { MoveUpRight } from 'lucide-react';
 
@@ -72,7 +72,7 @@ const GnomonSettings: React.FC<Props> = ({
   };
 
   // Function to calculate gnomon position from top so that noon analemma is vertically centered
-  const calculateAutoGnomonPosition = (pageH: number): number => {
+  const calculateAutoGnomonPosition = useCallback((pageH: number): number => {
     // Get noon analemma points for current latitude, longitude, tzMeridian, and autoHeight
     const noonPoints = getAnalemmaPointsProjected({
       lat: latitude,
@@ -90,7 +90,7 @@ const GnomonSettings: React.FC<Props> = ({
     // Position so that analemma center is at pageH/2
     const gnomonPos = pageH / 2 - analemmaCenterY;
     return Math.round(gnomonPos);
-  };
+  }, [latitude, longitude, tzMeridian, autoHeight, height]);
 
   // Restore effect for autoHeight calculation
   useEffect(() => {
@@ -109,7 +109,7 @@ const GnomonSettings: React.FC<Props> = ({
     } else {
       onChange({ mode, height, gnomonType, positionMode, position: manualPosition });
     }
-  }, [mode, height, latitude, longitude, tzMeridian, pageHeight, gnomonType, positionMode, manualPosition]);
+  }, [mode, height, latitude, longitude, tzMeridian, pageHeight, gnomonType, positionMode, manualPosition, calculateAutoGnomonPosition, onChange]);
 
   // When switching from auto to manual height mode, set manual height to autoHeight
   useEffect(() => {
