@@ -91,13 +91,13 @@ The SFTP configuration is in `scripts/fetchLogs.js`:
 
 ```javascript
 const SFTP_CONFIG = {
-  host: 'gennetten.org',
-  username: 'dgennetten@gennetten.org',
-  password: 'td!stayAct1ve', // Consider using SSH keys for better security
-  port: 22
+  host: process.env.SFTP_HOST || 'your-host.com',
+  username: process.env.SFTP_USERNAME || 'your-username',
+  password: process.env.SFTP_PASSWORD, // NEVER hardcode passwords!
+  port: parseInt(process.env.SFTP_PORT) || 22
 };
 
-const LOG_PATH = '/home/_domain_logs/dgennetten/sundial.gennetten.org/https.54243421/';
+const LOG_PATH = process.env.SFTP_LOG_PATH || '/path/to/your/logs/';
 ```
 
 ### Security Recommendations

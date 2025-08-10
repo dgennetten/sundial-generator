@@ -349,9 +349,17 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
               type="number"
               className="form-input"
               step={0.0001}
+              min={-90}
+              max={90}
               value={latitude}
                             onChange={async (e) => {
                 const newLat = parseFloat(e.target.value);
+
+                // Validate latitude range
+                if (isNaN(newLat) || newLat < -90 || newLat > 90) {
+                  return; // Don't update if invalid
+                }
+
                 // Clear found location name when manually changing coordinates
                 setFoundLocationName(null);
                 onChange({ lat: newLat, lng: longitude, tz: tzMeridian });
@@ -401,9 +409,17 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
               type="number"
               className="form-input"
               step={0.0001}
+              min={-180}
+              max={180}
               value={longitude}
                             onChange={async (e) => {
                 const newLng = parseFloat(e.target.value);
+
+                // Validate longitude range
+                if (isNaN(newLng) || newLng < -180 || newLng > 180) {
+                  return; // Don't update if invalid
+                }
+
                 // Clear found location name when manually changing coordinates
                 setFoundLocationName(null);
                 onChange({ lat: latitude, lng: newLng, tz: tzMeridian });
