@@ -42,7 +42,7 @@ const DialTextBlockSettings: React.FC<Props> = ({
         </div>
         <div className="form-group">
           <label className="form-label">
-            Text (supports {"{location}"}, {"{coordinates}"}, {"{gnomon}"}, {"{today}"} and some Markup codes)
+            Text (supports {"{location}"}, {"{coordinates}"}, {"{half-year}"}, {"{gnomon}"}, {"{today}"} and some Markup codes)
           </label>
           <textarea
             className="form-input"

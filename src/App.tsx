@@ -21,7 +21,7 @@ import VisitorMap from './components/VisitorMap';
 import DialTextBlockSettings from './components/DialTextBlockSettings';
 
 
-const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n*{gnomon}*\n*{incline}*\n*{today}*`;
+const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n{half-year}\n*{gnomon}*\n*{incline}*\n*{today}*`;
 
 const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);

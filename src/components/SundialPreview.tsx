@@ -1270,7 +1270,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     let processedText = dialTextBlock
       .replace(/\{location\}/gi, locationString)
       .replace(/\{coordinates\}/gi, coordinatesString)
-      .replace(/\{gnomon\}/gi, `gnomon height: ${gnomonHeight} mm`)
+      .replace(/\{half-year\}/gi, dateRange === 'FullYear' ? '' : dateRange === 'SummerToWinter' ? 'Summer-to-Winter' : 'Winter-to-Summer')
+      .replace(/\{gnomon\}/gi, `height: ${gnomonHeight} mm`)
       .replace(/\{incline\}/gi, inclineString);
 
     // Handle {today} placeholder specially - replace with red-colored text
