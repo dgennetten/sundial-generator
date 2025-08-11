@@ -490,22 +490,25 @@ const App: React.FC = () => {
           dialTextBlockFontFamily={dialTextBlockFontFamily}
           setDialTextBlockFontFamily={setDialTextBlockFontFamily}
         />
-        <DesignExport
-          onBorderChange={(showBorder, margin, style) => {
-            setShowBorder(showBorder);
-            setBorderMargin(margin / 25.4); // Convert mm to inches
-            setBorderStyle(style);
-          }}
-          onBackgroundChange={(showBackground, backgroundColor) => {
-            setShowBackground(showBackground);
-            setBackgroundColor(backgroundColor);
-          }}
-          lineStyles={lineStyles}
-          pageSize={pageSize}
-          orientation={orientation}
-          customWidth={customWidth}
-          customHeight={customHeight}
-        />
+                 <DesignExport
+           onBorderChange={(showBorder, margin, style) => {
+             setShowBorder(showBorder);
+             setBorderMargin(margin / 25.4); // Convert mm to inches
+             setBorderStyle(style);
+           }}
+           onBackgroundChange={(showBackground, backgroundColor) => {
+             setShowBackground(showBackground);
+             setBackgroundColor(backgroundColor);
+           }}
+           lineStyles={lineStyles}
+           pageSize={pageSize}
+           orientation={orientation}
+           customWidth={customWidth}
+           customHeight={customHeight}
+           dateRange={hourlineDateRange}
+           gnomonType={gnomonType}
+           locationName={locationName}
+         />
         <VisitorMap />
         <AboutCard />
       </div>

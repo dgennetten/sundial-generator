@@ -30,11 +30,14 @@ interface DesignExportProps {
   orientation: 'Landscape' | 'Portrait';
   customWidth?: number;
   customHeight?: number;
+  dateRange?: 'FullYear' | 'SummerToFall' | 'WinterToSpring';
+  gnomonType?: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north';
+  locationName?: string;
 }
 
 
 
-const DesignExport: React.FC<DesignExportProps> = React.memo(({ onBorderChange, onBackgroundChange, lineStyles, pageSize, orientation, customWidth, customHeight }) => {
+const DesignExport: React.FC<DesignExportProps> = React.memo(({ onBorderChange, onBackgroundChange, lineStyles, pageSize, orientation, customWidth, customHeight, dateRange, gnomonType, locationName }) => {
   const [format, setFormat] = useState<ExportFormat>('PNG');
   const [showBorder, setShowBorder] = useState<boolean>(true);
   const [margin, setMargin] = useState<number>(6); // in mm
@@ -90,6 +93,9 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ onBorderChange, 
         backgroundColor,
         customWidth,
         customHeight,
+        dateRange,
+        gnomonType,
+        locationName,
       });
       console.log('Export completed successfully');
     } catch (error) {

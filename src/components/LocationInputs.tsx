@@ -362,7 +362,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
 
                 // Clear found location name when manually changing coordinates
                 setFoundLocationName(null);
-                onChange({ lat: newLat, lng: longitude, tz: tzMeridian });
+                onChange({ lat: newLat, lng: longitude, tz: tzMeridian, locationName: 'Custom Lat/Long' });
                 
                 // Fetch timezone data for the new coordinates
                 setLoadingTz(true);
@@ -382,7 +382,8 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                      lng: longitude, 
                      tz: newMeridian,
                      useDST: isDST,
-                     timezoneName: tzName
+                     timezoneName: tzName,
+                     locationName: 'Custom Lat/Long'
                    });
                  }
                }}
@@ -422,7 +423,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
 
                 // Clear found location name when manually changing coordinates
                 setFoundLocationName(null);
-                onChange({ lat: latitude, lng: newLng, tz: tzMeridian });
+                onChange({ lat: latitude, lng: newLng, tz: tzMeridian, locationName: 'Custom Lat/Long' });
                 
                 // Fetch timezone data for the new coordinates
                 setLoadingTz(true);
@@ -442,7 +443,8 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                      lng: newLng, 
                      tz: newMeridian,
                      useDST: isDST,
-                     timezoneName: tzName
+                     timezoneName: tzName,
+                     locationName: 'Custom Lat/Long'
                    });
                  }
                }}

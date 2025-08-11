@@ -1,7 +1,8 @@
 {
   "name": "sundial-generator",
+  "version": "1.6.4",
   "private": true,
-  "version": "1.6.3",
+  
   "type": "module",
   "scripts": {
     "dev": "vite",

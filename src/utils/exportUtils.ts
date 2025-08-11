@@ -68,6 +68,39 @@ function findPreviewContainer(): HTMLElement | null {
 
 
 /**
+ * Logs export activity to the server
+ */
+async function logExportActivity(options: ExportOptions): Promise<void> {
+  try {
+    const logData = {
+      exportFormat: options.format,
+      pageSize: options.pageSize,
+      dateRange: options.dateRange || 'Unknown',
+      gnomonType: options.gnomonType || 'Unknown',
+      locationName: options.locationName || 'Unknown'
+    };
+
+    const response = await fetch('/export-logger.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(logData)
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log('Export logged successfully:', result);
+    } else {
+      console.warn('Failed to log export activity:', response.statusText);
+    }
+  } catch (error) {
+    console.warn('Error logging export activity:', error);
+    // Don't throw error - logging failure shouldn't prevent export
+  }
+}
+
+/**
  * Downloads a file with the given content
  */
 function downloadFile(content: string | Blob, filename: string, mimeType: string) {
@@ -127,6 +160,9 @@ export async function exportSundial(options: ExportOptions): Promise<void> {
     } else if (options.format === 'PDF') {
       throw new Error('PDF export is not yet implemented');
     }
+    
+    // Log the export activity after successful export
+    await logExportActivity(options);
   } catch (error) {
     console.error(`Error exporting ${options.format}:`, error);
     throw error;

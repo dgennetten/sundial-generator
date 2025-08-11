@@ -146,6 +146,12 @@ export interface ExportOptions {
   customWidth?: number;
   /** Custom height in millimeters (for Custom page size) */
   customHeight?: number;
+  /** Date range for hourlines */
+  dateRange?: DateRange;
+  /** Type of gnomon */
+  gnomonType?: GnomonType;
+  /** Location name for logging */
+  locationName?: string;
 }
 
 /**
