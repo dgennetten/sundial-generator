@@ -7,12 +7,8 @@ const MapPicker = lazy(() => import('./MapPicker'));
 // Location data
 const locations: { [key: string]: { lat: number; lng: number } } = {
   'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
-  'Marble, CO USA': { lat: 39.0722, lng: -107.1895 },
   'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321 },
-  'Spangle, WA USA': { lat: 47.4307, lng: -117.3796 },
-  'Henrico, VA USA': { lat: 37.5243, lng: -77.4932 },
   'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747 },
-  'Quito, Ecuador': { lat: -0.1807, lng: -78.4678 },
   'Recife, Brazil': { lat: -8.0476, lng: -34.8770 },
   'Sydney, Australia': { lat: -33.8688, lng: 151.2093 },
   'Falkenstein, Saxony, Germany': { lat: 50.4777, lng: 12.3649 },
@@ -64,12 +60,15 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
         return name;
       }
     }
-    return 'Custom Location';
+    return 'Custom Lat/Long';
   };
 
   const handleLocationChange = async (locationName: string) => {
-    if (locationName === 'Custom Location') return; // Don't change anything for custom
-    
+    if (locationName === 'Custom Lat/Long') return; // Don't change anything for custom
+    if (locationName === 'Use Map') {
+      setMapOpen(true);
+      return;
+    }
     const locationData = locations[locationName];
     if (locationData) {
       // Fetch timezone data for the selected location
@@ -230,7 +229,8 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                 {Object.keys(locations).map(location => (
                   <option key={location} value={location}>{location}</option>
                 ))}
-                <option value="Custom Location">Custom Location</option>
+                <option value="Custom Lat/Long">Custom Lat/Long</option>
+                <option value="Use Map">Use Map…</option>
               </select>
               {foundLocationName && (
                 <div style={{

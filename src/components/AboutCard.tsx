@@ -23,6 +23,9 @@ const AboutCard: React.FC = () => {
           }}
         >
           <p>
+            <strong>New Feature:</strong> Automatic default Hourline optimization for half vs full year.
+          </p>
+           <p>
             <strong>New Feature:</strong> Massive perfomance, security and reliabilty improvements! (thx
             Augmentcode.com!).
           </p>
@@ -40,12 +43,6 @@ const AboutCard: React.FC = () => {
           </p>
           <p>
             <strong>New Feature:</strong> Gnomon height optionally printed on dial.
-          </p>
-          <p>
-            <strong>New Feature:</strong> Today's date, when plotted, optionally printed on dial.
-          </p>
-          <p>
-            <strong>New feature:</strong> Properly supported Inclined Dials.
           </p>
         </div>
         <div

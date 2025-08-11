@@ -3,7 +3,7 @@ import type { LineStyle } from './LineSettings';
 import { Timer } from 'lucide-react';
 import { saveHourlineIntervals, type HourlineInterval } from './hourlineUtils';
 
-type DateRange = 'FullYear' | 'SummerToWinter' | 'WinterToSummer';
+type DateRange = 'FullYear' | 'SummerToFall' | 'WinterToSpring';
 
 interface HourlineSettingsProps {
   dateRange: DateRange;
@@ -90,8 +90,8 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
               style={{ minWidth: isMobile ? '100px' : 'auto' }}
             >
               <option value="FullYear">Full Year</option>
-              <option value="SummerToWinter">Summer to Winter</option>
-              <option value="WinterToSummer">Winter to Summer</option>
+              <option value="SummerToFall">Summer - Fall</option>
+              <option value="WinterToSpring">Winter - Spring</option>
             </select>
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>

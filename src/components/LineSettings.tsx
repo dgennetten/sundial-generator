@@ -81,7 +81,7 @@ const LineSettings: React.FC<{
                         onChange={e => handleChange(idx, 'name', e.target.value)}
                         disabled={!!style.fixed}
                         style={{ width: '100%', fontSize: '0.9rem' }}
-                        placeholder={style.id === '' ? "Month Day" : undefined}
+                        placeholder={style.id === '' ? "Style Name" : undefined}
                       />
                     </td>
                     <td style={{ padding: '0.3rem 0.3rem' }}>

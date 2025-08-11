@@ -29,7 +29,7 @@ type Props = {
   pageSize: 'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom';
   customWidth?: number;
   customHeight?: number;
-  dateRange: 'FullYear' | 'SummerToWinter' | 'WinterToSummer';
+  dateRange: 'FullYear' | 'SummerToFall' | 'WinterToSpring';
   hourlineIntervals?: HourlineInterval[];
   declinationLines?: DeclinationLine[];
   lineStyles?: LineStyle[];
@@ -150,9 +150,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     orientation: 'Horizontal',
   });
   // Filter noonPoints by date range
-  if (dateRange === 'WinterToSummer') {
+  // WinterToSpring (UI: Winter - Spring), SummerToFall (UI: Summer - Fall)
+  if (dateRange === 'WinterToSpring') {
     // Split into two segments and combine for y-centering
-    const [seg1, seg2] = splitWinterToSummer(noonPoints);
+    const [seg1, seg2] = splitWinterToSpring(noonPoints);
     noonPoints = [...seg1, ...seg2];
   } else {
     noonPoints = noonPoints.filter(p => isDayInRange(p.day, dateRange));
@@ -160,14 +161,14 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Removed noonYCenter as it was unused
 
   // Helper to check if a day is in the date range (handles wrap-around)
-  function isDayInRange(day: number, dateRange: 'FullYear' | 'SummerToWinter' | 'WinterToSummer'): boolean {
+  function isDayInRange(day: number, dateRange: 'FullYear' | 'SummerToFall' | 'WinterToSpring'): boolean {
     if (dateRange === 'FullYear') return true;
 
     const isNorthernHemisphere = lat >= 0;
     const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
     const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
 
-    if (dateRange === 'SummerToWinter') {
+    if (dateRange === 'SummerToFall') {
       if (isNorthernHemisphere) {
         // Normal range: summer (172) to winter (355)
         return day >= summerSolsticeDay && day <= winterSolsticeDay;
@@ -177,7 +178,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       }
     }
 
-    if (dateRange === 'WinterToSummer') {
+    if (dateRange === 'WinterToSpring') {
       if (isNorthernHemisphere) {
         // Wrap-around: winter (355) to summer (172) next year
         return day >= winterSolsticeDay || day <= summerSolsticeDay;
@@ -190,8 +191,25 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     return true;
   }
 
-  // Helper to split points for WinterToSummer
-  function splitWinterToSummer(points: { day: number; x: number; y: number }[]): [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]] {
+  // Check whether a date string (e.g., 'Today' or 'March 12') falls within selected dateRange
+  function isDateStringInRange(dateStr: string): boolean {
+    if (dateRange === 'FullYear') return true;
+    if (!dateStr || dateStr === 'Month Boundaries' || dateStr === 'Equinox' || dateStr === 'Summer Solstice' || dateStr === 'Winter Solstice') return true;
+    if (dateStr === 'Today') {
+      const today = new Date();
+      const startOfYear = new Date(today.getFullYear(), 0, 1);
+      const dayOfYear = Math.floor((today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      return isDayInRange(dayOfYear, dateRange);
+    }
+    const parsed = new Date(dateStr + ' 2000');
+    if (isNaN(parsed.getTime())) return true; // Unknown format: do not block
+    const start = new Date(parsed.getFullYear(), 0, 0);
+    const day = Math.floor((parsed.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    return isDayInRange(day, dateRange);
+  }
+
+  // Helper to split points for Winter - Spring (formerly WinterToSummer)
+  function splitWinterToSpring(points: { day: number; x: number; y: number }[]): [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]] {
     // Determine solstice days based on hemisphere
     const isNorthernHemisphere = lat >= 0;
     const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
@@ -202,8 +220,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     return [seg1, seg2];
   }
 
-  // Helper to split points for SummerToWinter (handles southern hemisphere wrap-around)
-  function splitSummerToWinter(points: { day: number; x: number; y: number }[]): [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]] {
+  // Helper to split points for Summer - Fall (formerly SummerToWinter); handles southern hemisphere wrap-around
+  function splitSummerToFall(points: { day: number; x: number; y: number }[]): [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]] {
     // Determine solstice days based on hemisphere
     const isNorthernHemisphere = lat >= 0;
     const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
@@ -442,6 +460,27 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     return clippedSegments.join(' ');
   }
 
+  // Join clipped segments into a single closed loop when rendering Full Year paths
+  function joinSegmentsForClosedLoop(segments: string[]): string {
+    if (segments.length === 0) return '';
+    if (segments.length === 1) return `${segments[0]} Z`;
+    // Extract points in order and rebuild a single path
+    const allPoints: { x: number; y: number }[] = [];
+    for (const seg of segments) {
+      // seg is like "M x y L x y L x y ..."; split and parse numbers
+      const tokens = seg.split(/[ML\s,]+/).filter(Boolean);
+      for (let i = 0; i < tokens.length; i += 2) {
+        const x = parseFloat(tokens[i]);
+        const y = parseFloat(tokens[i + 1]);
+        if (!isNaN(x) && !isNaN(y)) allPoints.push({ x, y });
+      }
+    }
+    if (allPoints.length < 2) return '';
+    // Build single path and close
+    const path = allPoints.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(' ');
+    return `${path} Z`;
+  }
+
   // Convert labelOffset from mm to px
   const labelOffsetPx = labelOffset * 3.78;
 
@@ -470,17 +509,17 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         });
         // Filter points by date range
         const isNorthernHemisphere = lat >= 0;
-        const needsSplitting = (dateRange === 'WinterToSummer') ||
-                              (dateRange === 'SummerToWinter' && !isNorthernHemisphere);
+        const needsSplitting = (dateRange === 'WinterToSpring') ||
+                              (dateRange === 'SummerToFall' && !isNorthernHemisphere);
 
         if (needsSplitting) {
           let segments: [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]];
 
-          if (dateRange === 'WinterToSummer') {
-            segments = splitWinterToSummer(points);
+          if (dateRange === 'WinterToSpring') {
+            segments = splitWinterToSpring(points);
           } else {
-            // dateRange === 'SummerToWinter' && !isNorthernHemisphere
-            segments = splitSummerToWinter(points);
+            // dateRange === 'SummerToFall' && !isNorthernHemisphere
+            segments = splitSummerToFall(points);
           }
 
           const [seg1, seg2] = segments;
@@ -495,12 +534,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           let winterSegment: { day: number; x: number; y: number }[] = [];
           let summerSegment: { day: number; x: number; y: number }[] = [];
 
-          if (dateRange === 'WinterToSummer') {
-            // For WinterToSummer: seg1 has winter solstice, seg2 has summer solstice
+          if (dateRange === 'WinterToSpring') {
+            // For WinterToSpring: seg1 has winter solstice, seg2 has summer solstice
             winterSegment = sortedSeg1;
             summerSegment = sortedSeg2;
           } else {
-            // For SummerToWinter (southern hemisphere): seg1 has summer solstice, seg2 has winter solstice
+            // For SummerToFall (southern hemisphere): seg1 has summer solstice, seg2 has winter solstice
             winterSegment = sortedSeg2;
             summerSegment = sortedSeg1;
           }
@@ -576,7 +615,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               </text>
             );
           }
-        } else if (dateRange === 'SummerToWinter') {
+        } else if (dateRange === 'SummerToFall') {
           // Only one segment: summer to winter solstice
           points = points.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
           if (points.length === 0) continue;
@@ -722,17 +761,17 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         });
         // Filter points by date range
         const isNorthernHemisphere = lat >= 0;
-        const needsSplitting = (dateRange === 'WinterToSummer') ||
-                              (dateRange === 'SummerToWinter' && !isNorthernHemisphere);
+        const needsSplitting = (dateRange === 'WinterToSpring') ||
+                              (dateRange === 'SummerToFall' && !isNorthernHemisphere);
 
         if (needsSplitting) {
           let segments: [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]];
 
-          if (dateRange === 'WinterToSummer') {
-            segments = splitWinterToSummer(points);
+          if (dateRange === 'WinterToSpring') {
+            segments = splitWinterToSpring(points);
           } else {
-            // dateRange === 'SummerToWinter' && !isNorthernHemisphere
-            segments = splitSummerToWinter(points);
+            // dateRange === 'SummerToFall' && !isNorthernHemisphere
+            segments = splitSummerToFall(points);
           }
 
           const [seg1, seg2] = segments;
@@ -768,18 +807,28 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           points = points.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
           if (points.length === 0) continue;
 
-          // Optimize for performance: if too many points, reduce them
-          if (points.length > 100) {
+          // Optimize for performance only for half-year views; keep full-year at 1 point/day
+          if (dateRange !== 'FullYear' && points.length > 100) {
             const step = Math.ceil(points.length / 50); // Keep ~50 points max
             points = points.filter((_, index) => index % step === 0);
           }
 
+          // For full-year, sort strictly by day to ensure smooth loop and one vertex per day
+          if (dateRange === 'FullYear') {
+            points = [...points].sort((a, b) => (a.day ?? 0) - (b.day ?? 0));
+          }
+
           const pathData = clipPathData(points);
           if (pathData) {
+            let dOut = pathData;
+            if (dateRange === 'FullYear') {
+              const segments = pathData.split(/(?=M\s)/); // split on each 'M'
+              dOut = joinSegmentsForClosedLoop(segments.filter(Boolean));
+            }
             elements.push(
               <g key={`${h}-${interval.id}`}>
                 <path
-                  d={pathData}
+                  d={dOut}
                   stroke={style.color || 'black'}
                   fill="none"
                   strokeWidth={getStrokeWidth(style.width)}
@@ -841,7 +890,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
   // Helper to get month boundary declinations within the date range
   // This function generates declination lines for the first day of each month
-  // that falls within the selected date range (FullYear, SummerToWinter, or WinterToSummer)
+  // that falls within the selected date range (FullYear, SummerToFall, or WinterToSpring)
   function getMonthBoundaryDeclinations(): { day: number; decl: number; month: string }[] {
     const monthBoundaries: { day: number; decl: number; month: string }[] = [];
 
@@ -861,7 +910,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       { month: 'December', day: 335 }
     ];
 
-    if (dateRange === 'WinterToSummer') {
+    if (dateRange === 'WinterToSpring') {
       // Handle wrap-around case: days 355-365 and 1-172
       for (const monthStart of monthStarts) {
         if ((monthStart.day >= 355 && monthStart.day <= 365) || (monthStart.day >= 1 && monthStart.day <= 172)) {
@@ -903,8 +952,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     // Filter points by date range
     let filteredPoints = noonAnalemmaPoints;
-    if (dateRange === 'WinterToSummer') {
-      const [seg1, seg2] = splitWinterToSummer(filteredPoints);
+    if (dateRange === 'WinterToSpring') {
+      const [seg1, seg2] = splitWinterToSpring(filteredPoints);
       filteredPoints = [...seg1, ...seg2];
     } else {
       filteredPoints = filteredPoints.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
@@ -1038,6 +1087,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
   const declinationLineElements = declinationLines.flatMap((line, idx) => {
     if (!line.active) return [];
+    if (!isDateStringInRange(line.date)) return [];
 
     const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
 
@@ -1069,6 +1119,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     console.log(`Processing declination line ${idx}: ${line.date}, active: ${line.active}`);
 
     if (!line.active) return [];
+    if (!isDateStringInRange(line.date)) return [];
 
     const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
     if (!style) {
@@ -1256,7 +1307,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const inclineString = inclineType !== 'Horizontal' ? `incline: ${effectiveTiltAngle.toFixed(1)}°` : '';
 
     // Check if "Today" declination line is active
-    const todayLineActive = declinationLines.some(line => line.active && line.date === 'Today');
+    const todayLineActive = declinationLines.some(line => line.active && line.date === 'Today' && isDateStringInRange('Today'));
 
     // Get today's date in "Month Day" format
     const getTodayDateString = (): string => {
@@ -1270,7 +1321,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     let processedText = dialTextBlock
       .replace(/\{location\}/gi, locationString)
       .replace(/\{coordinates\}/gi, coordinatesString)
-      .replace(/\{half-year\}/gi, dateRange === 'FullYear' ? '' : dateRange === 'SummerToWinter' ? 'Summer-to-Winter' : 'Winter-to-Summer')
+      .replace(/\{half-year\}/gi, dateRange === 'FullYear' ? '' : dateRange === 'SummerToFall' ? 'Summer - Fall' : 'Winter - Spring')
       .replace(/\{gnomon\}/gi, `height: ${gnomonHeight} mm`)
       .replace(/\{incline\}/gi, inclineString);
 

@@ -79,7 +79,7 @@ export interface GnomonConfig {
 /**
  * Date range options for hourline generation
  */
-export type DateRange = 'FullYear' | 'SummerToWinter' | 'WinterToSummer';
+export type DateRange = 'FullYear' | 'SummerToFall' | 'WinterToSpring';
 
 /**
  * Solar position data

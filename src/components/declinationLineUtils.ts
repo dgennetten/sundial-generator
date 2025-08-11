@@ -51,6 +51,6 @@ export function saveDeclinationLines(lines: DeclinationLine[]) {
 export const emptyLine: DeclinationLine = {
   active: false,
   date: '',
-  styleId: 'default-hairline',
+  styleId: 'red-dashed-hairline',
   id: '',
-}; 
+};

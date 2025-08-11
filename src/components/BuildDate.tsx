@@ -6,8 +6,9 @@ const BuildDate: React.FC = () => {
       // Clear all localStorage items related to the app
       const keysToRemove = [
         'sundial-line-styles',
-        'sundial-declination-lines', 
-        'sundial-hourline-intervals'
+        'sundial-declination-lines',
+        'sundial-hourline-intervals',
+        'sundial-hourline-overrides',
       ];
       
       keysToRemove.forEach(key => {

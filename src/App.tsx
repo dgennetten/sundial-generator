@@ -8,7 +8,7 @@ import GnomonSettings from './components/GnomonSettings';
 import DesignExport from './components/DesignExport';
 import SundialPreview from './components/SundialPreview';
 import HourlineSettings from './components/HourlineSettings';
-import { loadHourlineIntervals, type HourlineInterval } from './components/hourlineUtils';
+import { loadHourlineIntervals, type HourlineInterval, saveHourlineOverrides } from './components/hourlineUtils';
 import LineSettings from './components/LineSettings';
 import { loadLineStyles } from './components/lineStyleUtils';
 import type { LineStyle } from './components/LineSettings';
@@ -38,7 +38,7 @@ const App: React.FC = () => {
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
   const [tiltAngle, setTiltAngle] = useState<number>(0);
-  const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToWinter' | 'WinterToSummer'>('SummerToWinter');
+  const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToFall' | 'WinterToSpring'>('SummerToFall');
   const [lineStyles, setLineStyles] = useState<LineStyle[]>(() => {
     return loadLineStyles();
   });
@@ -48,6 +48,32 @@ const App: React.FC = () => {
   const [declinationLines, setDeclinationLines] = useState<DeclinationLine[]>(() => {
     return loadDeclinationLines();
   });
+  const handleDateRangeChange = useCallback((range: 'FullYear' | 'SummerToFall' | 'WinterToSpring') => {
+    setHourlineDateRange(range);
+    setHourlineIntervals(prev => {
+      const updated = prev.map(i => {
+        if (i.id === 'half-hour') {
+          return { ...i, styleId: range === 'FullYear' ? 'dashed-hairline' : 'default-hairline' };
+        }
+        if (i.id === 'quarter-hour') {
+          return { ...i, active: range !== 'FullYear', styleId: 'dashed-hairline' };
+        }
+        if (i.id === '5-minute' || i.id === '2-minute') {
+          return { ...i, active: false };
+        }
+        return i;
+      });
+      // Persist overrides of built-ins so refresh keeps the setting
+      saveHourlineOverrides({
+        'half-hour': { styleId: range === 'FullYear' ? 'dashed-hairline' : 'default-hairline' },
+        'quarter-hour': { active: range !== 'FullYear', styleId: 'dashed-hairline' },
+        '5-minute': { active: false },
+        '2-minute': { active: false },
+      });
+      return updated;
+    });
+  }, []);
+
   const [startHour, setStartHour] = useState<number>(4);
   const [stopHour, setStopHour] = useState<number>(20);
   const [use24Hour, setUse24Hour] = useState<boolean>(false);
@@ -346,18 +372,15 @@ const App: React.FC = () => {
             } else {
               const locations: { [key: string]: { lat: number; lng: number } } = {
                 'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
-                'Marble, CO USA': { lat: 39.0722, lng: -107.1895 },
                 'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321 },
-                'Spangle, WA USA': { lat: 47.4307, lng: -117.3796 },
-                'Henrico, VA USA': { lat: 37.5243, lng: -77.4932 },
                 'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747 },
-                'Quito, Ecuador': { lat: -0.1807, lng: -78.4678 },
                 'Recife, Brazil': { lat: -8.0476, lng: -34.8770 },
+                'Sydney, Australia': { lat: -33.8688, lng: 151.2093 },
                 'Falkenstein, Saxony, Germany': { lat: 50.4777, lng: 12.3649 },
                 'Luxembourg City, Luxembourg': { lat: 49.6116, lng: 6.1319 },
                 'St Petersburg, Russia': { lat: 59.8761, lng: 30.4339 }
               };
-              let newLocationName = 'Custom Location';
+              let newLocationName = 'Custom Lat/Long';
               for (const [name, data] of Object.entries(locations)) {
                 if (Math.abs(data.lat - lat) < 0.001 && Math.abs(data.lng - lng) < 0.001) {
                   newLocationName = name;
@@ -424,10 +447,12 @@ const App: React.FC = () => {
           lineStyles={lineStyles}
           declinationLines={declinationLines}
           setDeclinationLines={setDeclinationLines}
+          dateRange={hourlineDateRange}
+          lat={effectiveLatitude}
         />
         <HourlineSettings
           dateRange={hourlineDateRange}
-          setDateRange={setHourlineDateRange}
+          setDateRange={handleDateRangeChange}
           lineStyles={lineStyles}
           hourlineIntervals={hourlineIntervals}
           setHourlineIntervals={setHourlineIntervals}

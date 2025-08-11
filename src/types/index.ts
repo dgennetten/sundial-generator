@@ -23,7 +23,7 @@ export type {
   DialFacing,
   GnomonType,
   GnomonConfig,
-  DateRange,
+  DateRange, // 'FullYear' | 'SummerToFall' | 'WinterToSpring'
   SolarPosition,
   ShadowPoint,
   AnalemmaData,

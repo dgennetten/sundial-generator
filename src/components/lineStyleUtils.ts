@@ -38,6 +38,7 @@ export const DEFAULT_LINE_STYLES: LineStyle[] = [
     style: 'dashed',
     name: 'red dash hairline',
     id: 'red-dashed-hairline',
+    fixed: true,
   }
 ];
 
@@ -49,10 +50,11 @@ export function loadLineStyles(): LineStyle[] {
   try {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      // Always ensure the default is present
-      const hasDefault = parsed.some((s: LineStyle) => s.id === 'default-hairline');
-      if (!hasDefault) return [DEFAULT_LINE_STYLES[0], ...parsed];
-      return parsed;
+      // Merge defaults with stored, ensuring all built-ins exist (including red-dashed-hairline)
+      const byId = new Map<string, LineStyle>();
+      DEFAULT_LINE_STYLES.forEach(d => byId.set(d.id, d));
+      parsed.forEach((p: LineStyle) => byId.set(p.id, p));
+      return Array.from(byId.values());
     }
     return DEFAULT_LINE_STYLES;
   } catch {
