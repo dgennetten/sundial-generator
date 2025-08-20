@@ -25,10 +25,13 @@ jobs:
     - name: Update visitor data
       run: npm run update-visitors
       
-    - name: Commit and push changes
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add public/visitor-data.json
-        git diff --quiet && git diff --staged --quiet || git commit -m "Update visitor data [skip ci]"
-        git push 
+- name: Commit and push changes
+  env:
+    TOKEN: ${{ secrets.ActionTokenSundial }}
+  run: |
+    git config --local user.email "action@github.com"
+    git config --local user.name "GitHub Action"
+    git add public/visitor-data.json
+    git diff --quiet && git diff --staged --quiet || git commit -m "Update visitor data [skip ci]"
+    git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
+    git push
