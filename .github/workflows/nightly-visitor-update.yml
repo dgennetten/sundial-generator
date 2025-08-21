@@ -9,29 +9,29 @@ on:
 jobs:
   update-visitors:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        
+
     - name: Install dependencies
       run: npm ci
-      
+
     - name: Update visitor data
       run: npm run update-visitors
-      
-- name: Commit and push changes
-  env:
-    TOKEN: ${{ secrets.ActionTokenSundial }}
-  run: |
-    git config --local user.email "action@github.com"
-    git config --local user.name "GitHub Action"
-    git add public/visitor-data.json
-    git diff --quiet && git diff --staged --quiet || git commit -m "Update visitor data [skip ci]"
-    git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
-    git push
+
+    - name: Commit and push changes
+      env:
+        TOKEN: ${{ secrets.ActionTokenSundial }}
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add public/visitor-data.json
+        git diff --quiet && git diff --staged --quiet || git commit -m "Update visitor data [skip ci]"
+        git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
+        git push
