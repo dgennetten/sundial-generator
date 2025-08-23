@@ -119,16 +119,14 @@ export interface CanvasExportConfig {
  * HTML2Canvas options with proper typing
  */
 export interface Html2CanvasOptions {
-  backgroundColor?: string;
-  scale?: number;
-  useCORS?: boolean;
-  allowTaint?: boolean;
-  logging?: boolean;
-  foreignObjectRendering?: boolean;
+  background?: string;
   width?: number;
   height?: number;
   x?: number;
   y?: number;
+  useCORS?: boolean;
+  allowTaint?: boolean;
+  logging?: boolean;
 }
 
 /**

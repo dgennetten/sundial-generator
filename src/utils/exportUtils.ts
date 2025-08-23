@@ -276,12 +276,12 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
     
     // Add a timeout to prevent hanging
     const canvasPromise = html2canvas(tempContainer, {
-      backgroundColor: options.showBackground ? (options.backgroundColor || '#ffffff') : '#ffffff',
-      scale,
+      background: options.showBackground ? (options.backgroundColor || '#ffffff') : '#ffffff',
+      width: tempContainer.offsetWidth * scale,
+      height: tempContainer.offsetHeight * scale,
       useCORS: true,
       allowTaint: true,
       logging: false, // Disable html2canvas logging for better performance
-      foreignObjectRendering: false, // Disable foreign object rendering which can cause issues
     });
     
     const timeoutPromise = new Promise((_, reject) => {
@@ -316,8 +316,9 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
             // Final fallback: try with minimal options
             console.log('Trying final fallback with minimal options...');
             html2canvas(svgContainer, {
-              backgroundColor: '#ffffff',
-              scale: 1,
+              background: '#ffffff',
+              width: svgContainer.offsetWidth,
+              height: svgContainer.offsetHeight,
               logging: false,
             }).then(fallbackCanvas => {
               fallbackCanvas.toBlob((fallbackBlob) => {
