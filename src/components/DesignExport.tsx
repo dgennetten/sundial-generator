@@ -287,7 +287,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ onBorderChange, 
 
         <div className="form-group">
           <p style={{ fontSize: '0.9em', color: '#718096', margin: 0 }}>
-            {format === 'SVG' ? 'SVG export is now functional!' : format === 'PNG' ? 'PNG export is functional!' : 'PDF export functionality coming soon'}
+            {format === 'SVG' ? 'SVG export is now functional!' : format === 'PNG' ? 'PNG export is functional!' : 'PDF export is functional!'}
           </p>
         </div>
       </div>

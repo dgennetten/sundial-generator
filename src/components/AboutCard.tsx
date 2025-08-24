@@ -22,6 +22,9 @@ const AboutCard: React.FC = () => {
             fontWeight: '500',
           }}
         >
+           <p>
+            <strong>New Feature:</strong> PDF Export!! .
+          </p>
           <p>
             <strong>New Feature:</strong> Automatic default Hourline optimization for half vs full year.
           </p>
@@ -31,18 +34,6 @@ const AboutCard: React.FC = () => {
           </p>
           <p>
             <strong>New Feature:</strong> Custom page sizes.
-          </p>
-          <p>
-            <strong>New Feature:</strong> Mobile-friendly design.
-          </p>
-          <p>
-            <strong>New Feature:</strong> Map now has searchbox.
-          </p>
-          <p>
-            <strong>New Feature:</strong> Added Cancer and Capricorn options for Inclined Dials.
-          </p>
-          <p>
-            <strong>New Feature:</strong> Gnomon height optionally printed on dial.
           </p>
         </div>
         <div

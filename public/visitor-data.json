@@ -62,8 +62,8 @@
       "lon": -122.917,
       "timezone": "America/Los_Angeles",
       "firstVisit": "08/Aug/2025:05:11:44 -0700",
-      "lastVisit": "22/Aug/2025:05:32:42 -0700",
-      "visitCount": 16
+      "lastVisit": "24/Aug/2025:05:38:20 -0700",
+      "visitCount": 17
     },
     {
       "ip": "172.59.227.198",
@@ -675,10 +675,23 @@
       "firstVisit": "22/Aug/2025:16:20:40 -0700",
       "lastVisit": "22/Aug/2025:16:21:15 -0700",
       "visitCount": 2
+    },
+    {
+      "ip": "4.227.36.104",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Arizona",
+      "city": "Phoenix",
+      "lat": 33.448376,
+      "lon": -112.074036,
+      "timezone": "America/Phoenix",
+      "firstVisit": "24/Aug/2025:04:20:48 -0700",
+      "lastVisit": "24/Aug/2025:04:20:48 -0700",
+      "visitCount": 1
     }
   ],
-  "totalVisitors": 52,
-  "totalVisits": 570,
-  "processedDate": "2025-08-23T00:50:29.956Z",
+  "totalVisitors": 53,
+  "totalVisits": 572,
+  "processedDate": "2025-08-24T14:05:23.859Z",
   "daysSince": 7
 }

@@ -88,11 +88,19 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
       body: JSON.stringify(logData)
     });
 
-    if (response.ok) {
-      const result = await response.json();
+    if (!response.ok) {
+      console.warn('Failed to log export activity:', response.status, response.statusText);
+      return; // Do not throw
+    }
+
+    // In dev, the PHP file may return HTML or plain text. Try JSON, fall back to text.
+    const text = await response.text();
+    try {
+      const result = JSON.parse(text);
       console.log('Export logged successfully:', result);
-    } else {
-      console.warn('Failed to log export activity:', response.statusText);
+    } catch {
+      // Non-JSON response (e.g., HTML dev page). Log and continue.
+      console.log('Export logged (non-JSON response).');
     }
   } catch (error) {
     console.warn('Error logging export activity:', error);
@@ -113,6 +121,26 @@ function downloadFile(content: string | Blob, filename: string, mimeType: string
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+// Build a consistent filename like: sundial-[Location]-YYYYMMDD-HHMM.ext
+function buildFilename(options: ExportOptions, ext: 'svg' | 'png' | 'pdf'): string {
+  const sanitize = (s: string) => s
+    .trim()
+    .replace(/[\\/:*?"<>|]+/g, '') // remove illegal filename chars
+    .replace(/\s+/g, ' ')
+    .replace(/[^A-Za-z0-9 _-]/g, '')
+    .replace(/\s/g, '_')
+    .slice(0, 60);
+
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+
+  const base = 'sundial';
+  const loc = options.locationName ? sanitize(options.locationName) : '';
+  const name = [base, loc].filter(Boolean).join('-');
+  return `${name}-${stamp}.${ext}`;
 }
 
 /**
@@ -149,16 +177,20 @@ export async function exportSundial(options: ExportOptions): Promise<void> {
         orientation: options.orientation,
         showBackground: options.showBackground,
         backgroundColor: options.backgroundColor,
+        customWidth: options.customWidth,
+        customHeight: options.customHeight,
       });
       
       if (!svgContent) {
         throw new Error('Failed to create SVG content');
       }
       
-      downloadSVG(svgContent);
+      downloadSVG(svgContent, buildFilename(options, 'svg'));
       console.log('SVG export completed successfully');
     } else if (options.format === 'PDF') {
-      throw new Error('PDF export is not yet implemented');
+      console.log('Exporting as PDF...');
+      await exportPDF(options);
+      console.log('PDF export completed successfully');
     }
     
     // Log the export activity after successful export
@@ -167,6 +199,114 @@ export async function exportSundial(options: ExportOptions): Promise<void> {
     console.error(`Error exporting ${options.format}:`, error);
     throw error;
   }
+}
+
+/**
+ * Exports as vector PDF by converting the generated SVG
+ */
+async function exportPDF(options: ExportOptions): Promise<void> {
+  // Build SVG content using the existing SVG export path
+  const svgContent = createSVGExport({
+    pageSize: options.pageSize,
+    orientation: options.orientation,
+    showBackground: options.showBackground,
+    backgroundColor: options.backgroundColor,
+    // Pass through custom size when available
+    customWidth: options.customWidth,
+    customHeight: options.customHeight,
+  });
+
+  if (!svgContent) {
+    throw new Error('Failed to create SVG content for PDF export');
+  }
+
+  // Parse the SVG string back into a DOM element
+  const parsed = new DOMParser().parseFromString(svgContent, 'image/svg+xml');
+  const svgEl = parsed.documentElement as unknown as SVGSVGElement;
+  if (!svgEl || svgEl.tagName.toLowerCase() !== 'svg') {
+    throw new Error('Parsed SVG content is invalid');
+  }
+
+  // Ensure strokes don't get thicker due to scaling when fitting to page
+  try {
+    const styleEl = parsed.createElementNS('http://www.w3.org/2000/svg', 'style');
+    styleEl.setAttribute('type', 'text/css');
+    styleEl.textContent = 'path,line,polyline,polygon,circle,ellipse,rect { vector-effect: non-scaling-stroke; }';
+    svgEl.insertBefore(styleEl, svgEl.firstChild);
+  } catch {}
+
+  // Compute page size in points (1pt = 1/72in) to match the SVG width/height generated in pt
+  const inToPt = (inches: number) => inches * 72;
+  const mmToPt = (mm: number) => inToPt(mm / 25.4);
+
+  let widthPt: number;
+  let heightPt: number;
+
+  const isCustom = options.pageSize === 'Custom' && options.customWidth && options.customHeight;
+  if (isCustom) {
+    widthPt = mmToPt(options.customWidth!);
+    heightPt = mmToPt(options.customHeight!);
+  } else {
+    let { width, height } = pageSizeMap[options.pageSize as keyof typeof pageSizeMap] || pageSizeMap.Letter;
+    if (options.orientation === 'Landscape') {
+      [width, height] = [height, width];
+    }
+    widthPt = inToPt(width);
+    heightPt = inToPt(height);
+  }
+
+  // Adjust stroke width and dash lengths to counteract viewBox scaling
+  const viewBoxAttr = svgEl.getAttribute('viewBox');
+  if (viewBoxAttr) {
+    const parts = viewBoxAttr.split(/\s+/).map(Number);
+    if (parts.length === 4) {
+      const [, , vbW, vbH] = parts;
+      const scaleX = widthPt / vbW;
+      const scaleY = heightPt / vbH;
+      const strokeScale = (isFinite(scaleX) && isFinite(scaleY) && scaleX > 0 && scaleY > 0) ? (scaleX === scaleY ? scaleX : Math.max(scaleX, scaleY)) : 1;
+      if (strokeScale !== 1) {
+        const elements = svgEl.querySelectorAll('path,line,polyline,polygon,rect,circle,ellipse');
+        elements.forEach(el => {
+          const sw = el.getAttribute('stroke-width');
+          if (sw) {
+            const hasPx = /px$/i.test(sw);
+            const num = parseFloat(sw);
+            if (isFinite(num) && num > 0) {
+              const adjusted = num / strokeScale;
+              el.setAttribute('stroke-width', hasPx ? `${adjusted}px` : String(adjusted));
+            }
+          }
+          const dash = el.getAttribute('stroke-dasharray');
+          if (dash && dash !== 'none') {
+            const hasPxDash = /px/i.test(dash);
+            const parts = dash.split(/[\s,]+/).filter(Boolean);
+            const adjusted = parts.map(p => {
+              const val = parseFloat(p);
+              return isFinite(val) ? (val / strokeScale) : p;
+            }).join(',');
+            el.setAttribute('stroke-dasharray', hasPxDash ? adjusted.replace(/(\d+(?:\.\d+)?)(?!px)/g, '$1px') : adjusted);
+          }
+        });
+      }
+    }
+  }
+
+  // Dynamically import dependencies to keep initial bundle small
+  const { jsPDF } = await import('jspdf');
+  const svg2pdfModule: any = await import('svg2pdf.js');
+  const svg2pdfFn: any = svg2pdfModule?.default || svg2pdfModule?.svg2pdf || (globalThis as any)?.svg2pdf;
+  if (typeof svg2pdfFn !== 'function') {
+    throw new Error('svg2pdf function not available (module format mismatch)');
+  }
+
+  // Use pt so the SVG's pt dimensions map 1:1 to PDF, avoiding any implicit scaling
+  const doc = new jsPDF({ unit: 'pt', format: [widthPt, heightPt] });
+
+  // Render SVG without forcing a different width/height (prevents stroke/dash scaling)
+  await Promise.resolve(svg2pdfFn(svgEl, doc, { x: 0, y: 0, useCSS: true }));
+
+  // Trigger download
+  doc.save(buildFilename(options, 'pdf'));
 }
 
 /**
@@ -299,7 +439,7 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
       try {
         canvas.toBlob((blob) => {
           if (blob) {
-            downloadFile(blob, 'sundial.png', 'image/png');
+            downloadFile(blob, buildFilename(options, 'png'), 'image/png');
             resolve();
           } else {
             console.error('Canvas toBlob returned null');
@@ -324,7 +464,7 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
               fallbackCanvas.toBlob((fallbackBlob) => {
                 if (fallbackBlob) {
                   console.log('Fallback PNG export succeeded');
-                  downloadFile(fallbackBlob, 'sundial.png', 'image/png');
+                  downloadFile(fallbackBlob, buildFilename(options, 'png'), 'image/png');
                   resolve();
                 } else {
                   reject(new Error('Failed to create PNG blob - all fallback methods failed'));
