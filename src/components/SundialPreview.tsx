@@ -46,9 +46,9 @@ type Props = {
   showBackground?: boolean;
   backgroundColor?: string;
   dialTextBlock?: string;
-  dialTextBlockVisible?: boolean;
   dialTextBlockFontSize?: number;
   dialTextBlockFontFamily?: string;
+  sundialNotesMode?: string;
   locationName?: string;
   inclineType?: string;
   tiltAngle?: number;
@@ -94,9 +94,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     showBackground = true,
     backgroundColor = 'Cornsilk',
     dialTextBlock = '',
-    dialTextBlockVisible = false,
     dialTextBlockFontSize = 14,
     dialTextBlockFontFamily = 'sans-serif',
+    sundialNotesMode = 'textBlock',
     locationName = '',
     inclineType = 'Horizontal',
     tiltAngle = 0,
@@ -1541,7 +1541,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
               {/* --- Dial Text Block --- */}
 
-              {dialTextBlockVisible && textBlockLines.length > 0 && (
+              {sundialNotesMode === 'textBlock' && textBlockLines.length > 0 && (
                 <text
                     x={adjustedTextBlockX}
                     y={adjustedTextBlockY}

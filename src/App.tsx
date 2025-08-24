@@ -93,9 +93,9 @@ const App: React.FC = () => {
   const [showBackground, setShowBackground] = useState<boolean>(true);
   const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
   const [dialTextBlock, setDialTextBlock] = useState<string>(DEFAULT_DIAL_TEXTBLOCK);
-  const [dialTextBlockVisible, setDialTextBlockVisible] = useState<boolean>(true);
   const [dialTextBlockFontSize, setDialTextBlockFontSize] = useState<number>(pageSize === '10x15cm Postcard' ? 8 : 14);
   const [dialTextBlockFontFamily, setDialTextBlockFontFamily] = useState<string>(fontFamily);
+  const [sundialNotesMode, setSundialNotesMode] = useState<string>('textBlock');
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
 
   // Calculate default dial facing based on hemisphere
@@ -300,9 +300,9 @@ const App: React.FC = () => {
     showBackground,
     backgroundColor,
     dialTextBlock,
-    dialTextBlockVisible,
     dialTextBlockFontSize,
     dialTextBlockFontFamily,
+    sundialNotesMode,
     locationName,
     inclineType,
     tiltAngle,
@@ -339,9 +339,9 @@ const App: React.FC = () => {
     showBackground,
     backgroundColor,
     dialTextBlock,
-    dialTextBlockVisible,
     dialTextBlockFontSize,
     dialTextBlockFontFamily,
+    sundialNotesMode,
     locationName,
     inclineType,
     tiltAngle,
@@ -483,12 +483,12 @@ const App: React.FC = () => {
         <DialTextBlockSettings
           dialTextBlock={dialTextBlock}
           setDialTextBlock={setDialTextBlock}
-          dialTextBlockVisible={dialTextBlockVisible}
-          setDialTextBlockVisible={setDialTextBlockVisible}
           dialTextBlockFontSize={dialTextBlockFontSize}
           setDialTextBlockFontSize={setDialTextBlockFontSize}
           dialTextBlockFontFamily={dialTextBlockFontFamily}
           setDialTextBlockFontFamily={setDialTextBlockFontFamily}
+          sundialNotesMode={sundialNotesMode}
+          setSundialNotesMode={setSundialNotesMode}
         />
                  <DesignExport
            onBorderChange={(showBorder, margin, style) => {
