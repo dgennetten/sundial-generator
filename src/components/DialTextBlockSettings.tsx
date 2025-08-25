@@ -82,16 +82,35 @@ const DialTextBlockSettings: React.FC<Props> = ({
         )}
         
         {sundialNotesMode === 'seasonsGuide' && (
-          <div className="form-group">
-            <div style={{ 
-              padding: '20px', 
-              backgroundColor: '#f8f9fa', 
-              border: '1px solid #dee2e6', 
-              borderRadius: '4px',
-              textAlign: 'center',
-              color: '#6c757d'
-            }}>
-              Not Yet Implemented - check back soon!
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end' }}>
+            <div className="form-group" style={{ flex: '0 0 auto' }}>
+              <label className="form-label">Font Size (pt)</label>
+              <input
+                type="number"
+                className="form-input"
+                min={4}
+                max={24}
+                value={dialTextBlockFontSize}
+                onChange={(e) => setDialTextBlockFontSize(Number(e.target.value))}
+                style={{ width: '80px' }}
+              />
+            </div>
+            <div className="form-group" style={{ flex: '1 1 auto' }}>
+              <label className="form-label">Font Family</label>
+              <select
+                className="form-select"
+                value={dialTextBlockFontFamily}
+                onChange={(e) => setDialTextBlockFontFamily(e.target.value)}
+                style={{ width: '100%' }}
+              >
+                <option value="sans-serif">Sans-serif</option>
+                <option value="serif">Serif</option>
+                <option value="monospace">Monospace</option>
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Courier New">Courier New</option>
+              </select>
             </div>
           </div>
         )}

@@ -22,6 +22,9 @@ const AboutCard: React.FC = () => {
             fontWeight: '500',
           }}
         >
+            <p>
+            <strong>New Feature:</strong> 'Season Guide' option in Sundial Notes. (Great for full-year dials)
+          </p>
            <p>
             <strong>New Feature:</strong> PDF Export!! .
           </p>

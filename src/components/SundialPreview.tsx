@@ -1574,6 +1574,427 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                     ))}
                   </text>
               )}
+
+              {/* --- Seasons Guide --- */}
+
+              {sundialNotesMode === 'seasonsGuide' && (() => {
+                // Generate noon analemma using the EXACT same logic as the main sundial hourlines
+                let seasonsNoonPoints = getAnalemmaPointsProjected({
+                  lat,
+                  lng,
+                  tzMeridian,
+                  hour: 12, // Noon hour
+                  gnomonHeight,
+                  orientation: 'Horizontal',
+                });
+
+                // Calculate the bounding box of the original analemma for proper centering
+                const calculateBoundingBox = (points: { x: number; y: number }[]) => {
+                  if (points.length === 0) return { minX: 0, maxX: 0, minY: 0, maxY: 0, centerX: 0, centerY: 0 };
+                  
+                  const minX = Math.min(...points.map(p => p.x));
+                  const maxX = Math.max(...points.map(p => p.x));
+                  const minY = Math.min(...points.map(p => p.y));
+                  const maxY = Math.max(...points.map(p => p.y));
+                  
+                  return {
+                    minX, maxX, minY, maxY,
+                    centerX: (minX + maxX) / 2,
+                    centerY: (minY + maxY) / 2
+                  };
+                };
+
+                // Scale by 55% and center at text block position
+                const seasonsGuideScale = 0.55;
+
+                // Generate path data with simple boundary filtering to avoid clipping artifacts
+                const generateSeasonsGuidePath = (points: { x: number; y: number }[]): string | null => {
+                  if (points.length < 2) return null;
+
+                  // Calculate bounding box for centering
+                  const bbox = calculateBoundingBox(points);
+                  
+                  const transformedPoints = points.map(p => ({
+                    x: adjustedTextBlockX + (scale * seasonsGuideScale * (p.x - bbox.centerX)),
+                    y: adjustedTextBlockY + (scale * seasonsGuideScale * (p.y - bbox.centerY))
+                  }));
+
+                  // Simple approach: filter out points that are far outside the visible area
+                  // This avoids clipping artifacts while keeping the analemma shape intact
+                  const transformY = (gnomonPosition ?? 0) - (height / 2);
+                  const margin = Math.max(width, height) * 0.1; // 10% margin for safety
+                  const left = -width / 2 - margin;
+                  const top = -height / 2 - margin - transformY;
+                  const right = width / 2 + margin;
+                  const bottom = height / 2 + margin - transformY;
+
+                  // Filter points that are reasonably within the extended bounds
+                  const visiblePoints = transformedPoints.filter(p => 
+                    p.x >= left && p.x <= right && p.y >= top && p.y <= bottom
+                  );
+
+                  if (visiblePoints.length < 2) return null;
+
+                  // Generate simple path without clipping - let SVG handle overflow
+                  const pathData = visiblePoints
+                    .map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`)
+                    .join(' ');
+
+                  return pathData;
+                };
+
+                // Always show full-year replica for seasons guide, regardless of hourline date range
+                const needsSplitting = false; // Force full-year display for seasons guide
+                
+                // Convert InclineType to Orientation for analemma generation
+                const getOrientation = (inclineType: string): 'Horizontal' | 'Vertical' | 'Equatorial' => {
+                  switch (inclineType) {
+                    case 'Horizontal':
+                    case 'Cancer':
+                    case 'Capricorn':
+                    case 'Manual':
+                      return 'Horizontal';
+                    case 'Vertical':
+                      return 'Vertical';
+                    case 'Equatorial':
+                      return 'Equatorial';
+                    default:
+                      return 'Horizontal';
+                  }
+                };
+
+                if (needsSplitting) {
+                  let segments: [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]];
+
+                  if (dateRange === 'WinterToSpring') {
+                    segments = splitWinterToSpring(seasonsNoonPoints);
+                  } else {
+                    segments = splitSummerToFall(seasonsNoonPoints);
+                  }
+
+                  const [seg1, seg2] = segments;
+                  
+                  // Calculate equinox line for segmented case too
+                  const calculateEquinoxLine = () => {
+                    try {
+                      // Spring equinox is around day 80 (March 21)
+                      const equinoxDay = 80;
+                      
+                      // Get equinox position at noon (hour 12) - use same orientation as main dial
+                      const equinoxNoonPoint = getAnalemmaPointsProjected({
+                        lat,
+                        lng,
+                        tzMeridian,
+                        hour: 12,
+                        gnomonHeight,
+                        orientation: getOrientation(inclineType),
+                      }).find(p => Math.abs(p.day - equinoxDay) < 1);
+
+                      if (!equinoxNoonPoint) return null;
+
+                      // Calculate the equinox Y position in the replica coordinate system
+                      const bbox = calculateBoundingBox(seasonsNoonPoints);
+                      if (!bbox || isNaN(bbox.centerY)) return null;
+                      
+                      const equinoxY = adjustedTextBlockY + (scale * seasonsGuideScale * (equinoxNoonPoint.y - bbox.centerY));
+                      if (isNaN(equinoxY)) return null;
+
+                      // Create horizontal line with 1-hour width
+                      // 1 hour = ±30 minutes, so we need points at 11:30 and 12:30
+                      const leftHourPoint = getAnalemmaPointsProjected({
+                        lat,
+                        lng,
+                        tzMeridian,
+                        hour: 11.5, // 11:30
+                        gnomonHeight,
+                        orientation: getOrientation(inclineType),
+                      }).find(p => Math.abs(p.day - equinoxDay) < 1);
+
+                      const rightHourPoint = getAnalemmaPointsProjected({
+                        lat,
+                        lng,
+                        tzMeridian,
+                        hour: 12.5, // 12:30
+                        gnomonHeight,
+                        orientation: getOrientation(inclineType),
+                      }).find(p => Math.abs(p.day - equinoxDay) < 1);
+
+                      if (!leftHourPoint || !rightHourPoint) return null;
+
+                      // Transform the hour points to replica coordinate system
+                      const leftX = adjustedTextBlockX + (scale * seasonsGuideScale * (leftHourPoint.x - bbox.centerX));
+                      const rightX = adjustedTextBlockX + (scale * seasonsGuideScale * (rightHourPoint.x - bbox.centerX));
+                      
+                      // Center the line horizontally over the replica analemma
+                      const replicaCenterX = adjustedTextBlockX; // The replica is centered at the text block position
+                      const halfWidth = Math.abs(rightX - leftX) / 2;
+                      const centeredLeftX = replicaCenterX - halfWidth;
+                      const centeredRightX = replicaCenterX + halfWidth;
+
+                      if (isNaN(centeredLeftX) || isNaN(centeredRightX)) return null;
+
+                      const result = {
+                        x1: centeredLeftX,
+                        y1: equinoxY,
+                        x2: centeredRightX,
+                        y2: equinoxY
+                      };
+                      
+                      console.log('Equinox line calculated:', result);
+                      return result;
+                    } catch (error) {
+                      console.error('Error calculating equinox line:', error);
+                      return null;
+                    }
+                  };
+
+                  const equinoxLine = calculateEquinoxLine();
+
+                  return (
+                    <>
+                      {[seg1, seg2].map((segment, idx) => {
+                        if (segment.length === 0) return null;
+                        const sortedSegment = [...segment].sort((a, b) => a.day - b.day);
+                        
+                        // Optimize for performance: if segment has too many points, reduce them
+                        let optimizedSegment = sortedSegment;
+                        if (optimizedSegment.length > 100) {
+                          const step = Math.ceil(optimizedSegment.length / 50);
+                          optimizedSegment = optimizedSegment.filter((_, index) => index % step === 0);
+                        }
+                        
+                        const pathData = generateSeasonsGuidePath(optimizedSegment);
+                        if (!pathData) return null;
+                        
+                        return (
+                          <path
+                            key={`seasons-guide-seg${idx}`}
+                            d={pathData}
+                            stroke="#2563eb"
+                            fill="none"
+                            strokeWidth={2}
+                            vectorEffect="non-scaling-stroke"
+                          />
+                        );
+                      })}
+                      {equinoxLine && (
+                        <line
+                          x1={equinoxLine.x1}
+                          y1={equinoxLine.y1}
+                          x2={equinoxLine.x2}
+                          y2={equinoxLine.y2}
+                          stroke="#2563eb"
+                          strokeWidth={2}
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      )}
+                    </>
+                  );
+                } else {
+                  // Always use full-year data for seasons guide (no date range filtering)
+                  if (seasonsNoonPoints.length === 0) return null;
+
+                  // Always sort by day for smooth full-year loop
+                  let optimizedPoints = [...seasonsNoonPoints].sort((a, b) => (a.day ?? 0) - (b.day ?? 0));
+
+                  const pathData = generateSeasonsGuidePath(optimizedPoints);
+                  if (!pathData) return null;
+
+                  // Always use closed loop logic for seasons guide (full year display)
+                  const segments = pathData.split(/(?=M\s)/);
+                  const joinSegmentsForClosedLoop = (segments: string[]): string => {
+                    if (segments.length <= 1) return segments.join(' ');
+                    return segments.join(' ') + ' Z';
+                  };
+                  const finalPathData = joinSegmentsForClosedLoop(segments.filter(Boolean));
+
+                  // Calculate equinox line position using the same logic as the main dial
+                  const calculateEquinoxLine = () => {
+                    try {
+                      // Spring equinox is around day 80 (March 21)
+                      const equinoxDay = 80;
+                      
+                      // Get equinox position at noon (hour 12) - use same orientation as main dial
+                      const equinoxNoonPoint = getAnalemmaPointsProjected({
+                        lat,
+                        lng,
+                        tzMeridian,
+                        hour: 12,
+                        gnomonHeight,
+                        orientation: getOrientation(inclineType),
+                      }).find(p => Math.abs(p.day - equinoxDay) < 1);
+
+                      if (!equinoxNoonPoint) return null;
+
+                      // Calculate the equinox Y position in the replica coordinate system
+                      const bbox = calculateBoundingBox(optimizedPoints);
+                      if (!bbox || isNaN(bbox.centerY)) return null;
+                      
+                      const equinoxY = adjustedTextBlockY + (scale * seasonsGuideScale * (equinoxNoonPoint.y - bbox.centerY));
+                      if (isNaN(equinoxY)) return null;
+
+                      // Create horizontal line with 1-hour width
+                      // 1 hour = ±30 minutes, so we need points at 11:30 and 12:30
+                      const leftHourPoint = getAnalemmaPointsProjected({
+                        lat,
+                        lng,
+                        tzMeridian,
+                        hour: 11.5, // 11:30
+                        gnomonHeight,
+                        orientation: getOrientation(inclineType),
+                      }).find(p => Math.abs(p.day - equinoxDay) < 1);
+
+                      const rightHourPoint = getAnalemmaPointsProjected({
+                        lat,
+                        lng,
+                        tzMeridian,
+                        hour: 12.5, // 12:30
+                        gnomonHeight,
+                        orientation: getOrientation(inclineType),
+                      }).find(p => Math.abs(p.day - equinoxDay) < 1);
+
+                      if (!leftHourPoint || !rightHourPoint) return null;
+
+                      // Transform the hour points to replica coordinate system
+                      const leftX = adjustedTextBlockX + (scale * seasonsGuideScale * (leftHourPoint.x - bbox.centerX));
+                      const rightX = adjustedTextBlockX + (scale * seasonsGuideScale * (rightHourPoint.x - bbox.centerX));
+                      
+                      // Center the line horizontally over the replica analemma
+                      const replicaCenterX = adjustedTextBlockX; // The replica is centered at the text block position
+                      const halfWidth = Math.abs(rightX - leftX) / 2;
+                      const centeredLeftX = replicaCenterX - halfWidth;
+                      const centeredRightX = replicaCenterX + halfWidth;
+
+                      if (isNaN(centeredLeftX) || isNaN(centeredRightX)) return null;
+
+                      const result = {
+                        x1: centeredLeftX,
+                        y1: equinoxY,
+                        x2: centeredRightX,
+                        y2: equinoxY
+                      };
+                      
+                      console.log('Equinox line calculated:', result);
+                      return result;
+                    } catch (error) {
+                      console.error('Error calculating equinox line:', error);
+                      return null;
+                    }
+                  };
+
+                  const equinoxLine = calculateEquinoxLine();
+
+                  // Calculate quarter-year positions for seasonal labels
+                  const getSeasonQuarterPoint = (dayOfYear: number) => {
+                    const point = optimizedPoints.find(p => Math.abs(p.day - dayOfYear) < 5);
+                    if (!point) return null;
+                    
+                    const replicaBbox = calculateBoundingBox(optimizedPoints);
+                    return {
+                      x: adjustedTextBlockX + (scale * seasonsGuideScale * (point.x - replicaBbox.centerX)),
+                      y: adjustedTextBlockY + (scale * seasonsGuideScale * (point.y - replicaBbox.centerY))
+                    };
+                  };
+
+                  // Quarter-year days (middle of each season)
+                  const summerQuarter = getSeasonQuarterPoint(135); // Mid-May (middle of spring-summer)
+                  const fallQuarter = getSeasonQuarterPoint(227);   // Mid-August (middle of summer-fall)  
+                  const winterQuarter = getSeasonQuarterPoint(318); // Mid-November (middle of fall-winter)
+                  const springQuarter = getSeasonQuarterPoint(45);  // Mid-February (middle of winter-spring)
+
+                  return (
+                    <>
+                      <path
+                        d={finalPathData}
+                        stroke="#2563eb"
+                        fill="none"
+                        strokeWidth={2}
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      {equinoxLine && (
+                        <line
+                          x1={equinoxLine.x1}
+                          y1={equinoxLine.y1}
+                          x2={equinoxLine.x2}
+                          y2={equinoxLine.y2}
+                          stroke="#2563eb"
+                          strokeWidth={2}
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      )}
+                      
+                      {/* Seasonal Labels positioned relative to equinox line */}
+                      {equinoxLine && (
+                        <>
+                          {/* Spring - above equinox line, left of analemma */}
+                          {summerQuarter && (
+                            <text
+                              x={summerQuarter.x - 10}
+                              y={equinoxLine.y1 - 8}
+                              textAnchor="middle"
+                              dominantBaseline="bottom"
+                              fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
+                              fontFamily={dialTextBlockFontFamily}
+                              fill="#2563eb"
+                              transform={dialFacing === 'North' ? `rotate(180 ${summerQuarter.x - 10} ${equinoxLine.y1 - 8})` : undefined}
+                            >
+                              Spring
+                            </text>
+                          )}
+                          
+                          {/* Summer - above equinox line, right of analemma */}
+                          {fallQuarter && (
+                            <text
+                              x={fallQuarter.x + 12}
+                              y={equinoxLine.y1 - 8}
+                              textAnchor="middle"
+                              dominantBaseline="bottom"
+                              fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
+                              fontFamily={dialTextBlockFontFamily}
+                              fill="#2563eb"
+                              transform={dialFacing === 'North' ? `rotate(180 ${fallQuarter.x + 12} ${equinoxLine.y1 - 8})` : undefined}
+                            >
+                              Summer
+                            </text>
+                          )}
+                          
+                          {/* Fall - below equinox line, left of analemma */}
+                          {winterQuarter && (
+                            <text
+                              x={winterQuarter.x - 5}
+                              y={equinoxLine.y1 + 8}
+                              textAnchor="middle"
+                              dominantBaseline="top"
+                              fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
+                              fontFamily={dialTextBlockFontFamily}
+                              fill="#2563eb"
+                              transform={dialFacing === 'North' ? `rotate(180 ${winterQuarter.x - 5} ${equinoxLine.y1 + 8})` : undefined}
+                            >
+                              Fall
+                            </text>
+                          )}
+                          
+                          {/* Winter - below equinox line, right of analemma */}
+                          {springQuarter && (
+                            <text
+                              x={springQuarter.x + 10}
+                              y={equinoxLine.y1 + 8}
+                              textAnchor="middle"
+                              dominantBaseline="top"
+                              fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
+                              fontFamily={dialTextBlockFontFamily}
+                              fill="#2563eb"
+                              transform={dialFacing === 'North' ? `rotate(180 ${springQuarter.x + 10} ${equinoxLine.y1 + 8})` : undefined}
+                            >
+                              Winter
+                            </text>
+                          )}
+                        </>
+                      )}
+                    </>
+                  );
+                }
+              })()}
             </g>
           </g>
         </svg>
