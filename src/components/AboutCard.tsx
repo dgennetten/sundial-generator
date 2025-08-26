@@ -22,6 +22,9 @@ const AboutCard: React.FC = () => {
             fontWeight: '500',
           }}
         >
+             <p>
+            <strong>New Feature:</strong> New 'Compass Rose' option in Sundial Notes.
+          </p>
             <p>
             <strong>New Feature:</strong> 'Season Guide' option in Sundial Notes. (Great for full-year dials)
           </p>
@@ -37,6 +40,9 @@ const AboutCard: React.FC = () => {
           </p>
           <p>
             <strong>New Feature:</strong> Custom page sizes.
+          </p>
+           <p>
+            <strong>Known Bug:</strong> Southern Hemisphere dials are not yet supported. (and no Southern Hemisphere visitors have shown up yet.)
           </p>
         </div>
         <div

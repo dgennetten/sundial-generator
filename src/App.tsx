@@ -29,7 +29,7 @@ const App: React.FC = () => {
   const [tzMeridian, setTzMeridian] = useState(-105);
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
-  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north'>('crosshair-with-north');
+  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north'>('crosshair');
   const [pageSize, setPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom'>('Letter');
   const [customWidth, setCustomWidth] = useState<number>(8.5 * 25.4); // Store in mm
   const [customHeight, setCustomHeight] = useState<number>(11 * 25.4); // Store in mm
@@ -95,7 +95,7 @@ const App: React.FC = () => {
   const [dialTextBlock, setDialTextBlock] = useState<string>(DEFAULT_DIAL_TEXTBLOCK);
   const [dialTextBlockFontSize, setDialTextBlockFontSize] = useState<number>(pageSize === '10x15cm Postcard' ? 8 : 14);
   const [dialTextBlockFontFamily, setDialTextBlockFontFamily] = useState<string>(fontFamily);
-  const [sundialNotesMode, setSundialNotesMode] = useState<string>('seasonsGuide');
+  const [sundialNotesMode, setSundialNotesMode] = useState<string>('northPoint');
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
 
   // Calculate default dial facing based on hemisphere

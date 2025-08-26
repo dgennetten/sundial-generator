@@ -1995,6 +1995,90 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   );
                 }
               })()}
+
+              {/* --- North Point --- */}
+
+              {sundialNotesMode === 'northPoint' && (() => {
+                // Generate noon analemma to calculate the replica height for scaling
+                let noonPoints = getAnalemmaPointsProjected({
+                  lat,
+                  lng,
+                  tzMeridian,
+                  hour: 12, // Noon hour
+                  gnomonHeight,
+                  orientation: 'Horizontal',
+                });
+
+                // Calculate the bounding box of the analemma
+                const calculateBoundingBox = (points: { x: number; y: number }[]) => {
+                  if (points.length === 0) return { minX: 0, maxX: 0, minY: 0, maxY: 0, height: 0 };
+                  
+                  const minX = Math.min(...points.map(p => p.x));
+                  const maxX = Math.max(...points.map(p => p.x));
+                  const minY = Math.min(...points.map(p => p.y));
+                  const maxY = Math.max(...points.map(p => p.y));
+                  
+                  return {
+                    minX, maxX, minY, maxY,
+                    height: maxY - minY
+                  };
+                };
+
+                const bbox = calculateBoundingBox(noonPoints);
+                
+                // Calculate the replica analemma height (same scaling as seasons guide)
+                const seasonsGuideScale = 0.55;
+                const replicaAnalemmaHeight = bbox.height * scale * seasonsGuideScale;
+                
+                // Scale North Point SVG to 82.5% of replica analemma height (75% * 1.1 for 10% larger)
+                const northPointScale = replicaAnalemmaHeight * 0.825;
+                
+                // North Point SVG viewBox is "0 0 920.07 1200", so original height is 1200
+                const svgOriginalHeight = 1200;
+                const scaleFactor = northPointScale / svgOriginalHeight;
+
+                return (
+                  <g
+                    transform={`translate(${adjustedTextBlockX}, ${adjustedTextBlockY}) scale(${scaleFactor}) translate(-460.035, -600) ${dialFacing === 'North' ? 'rotate(180 460.035 600)' : ''}`}
+                  >
+                    {/* North Point SVG content */}
+                    <g>
+                      <path 
+                        d="M920.07,600l-365.24-59.95,88.65-123.49-123.49,88.65-59.95-365.24-59.95,365.24-123.49-88.65,88.65,123.49L0,600l365.24,59.95-88.65,123.49,123.49-88.65,59.95,365.24,59.95-365.24,123.49,88.65-88.65-123.49,365.24-59.95ZM460.04,668.63c-37.83,0-68.6-30.8-68.6-68.63s30.77-68.63,68.6-68.63,68.6,30.8,68.6,68.63-30.77,68.63-68.6,68.63ZM460.04,280.44v228.18c-13.91,0-27.08,3.1-38.88,8.67l38.88-236.86ZM140.47,600h228.21c0,13.91,3.1,27.08,8.67,38.88l-236.89-38.88ZM460.04,919.56v-228.18c13.91,0,27.08-3.1,38.88-8.67l-38.88,236.86ZM542.71,561.12l236.89,38.88h-228.21c0-13.91-3.1-27.08-8.67-38.88Z" 
+                        fill="#2563eb"
+                      />
+                      <path 
+                        d="M460.04,552.22c-7.28,0-14.16,1.62-20.34,4.55-16.21,7.62-27.42,24.12-27.42,43.23,0,7.28,1.62,14.16,4.52,20.34,7.62,16.21,24.12,27.45,43.23,27.45,7.28,0,14.16-1.62,20.34-4.55,16.21-7.62,27.42-24.12,27.42-43.23,0-7.28-1.62-14.16-4.52-20.34-7.62-16.21-24.12-27.45-43.23-27.45Z" 
+                        fill="#2563eb"
+                      />
+                      <path 
+                        d="M523.03,313.01c111.53,24.46,199.53,112.46,223.99,223.99l45.44,7.46c-23.55-141.43-135.46-253.34-276.89-276.89l7.46,45.44Z" 
+                        fill="#2563eb"
+                      />
+                      <path 
+                        d="M173.05,537.01c24.46-111.53,112.46-199.53,223.99-223.99l7.46-45.44c-141.43,23.55-253.34,135.46-276.89,276.89l45.44-7.46Z" 
+                        fill="#2563eb"
+                      />
+                      <path 
+                        d="M397.04,886.99c-111.53-24.46-199.53-112.46-223.99-223.99l-45.44-7.46c23.55,141.43,135.46,253.34,276.89,276.89l-7.46-45.44Z" 
+                        fill="#2563eb"
+                      />
+                      <path 
+                        d="M747.02,662.99c-24.46,111.53-112.46,199.53-223.99,223.99l-7.46,45.44c141.43-23.55,253.34-135.46,276.89-276.89l-45.44,7.46Z" 
+                        fill="#2563eb"
+                      />
+                      <path 
+                        d="M502.22,95.1h-25.63l-41.37-71.94h-.59c.82,12.71,1.24,21.77,1.24,27.19v44.75h-18.02V0h25.43l41.3,71.23h.46c-.65-12.36-.98-21.1-.98-26.21V0h18.15v95.1Z" 
+                        fill="#2563eb"
+                      />
+                      <path 
+                        d="M491.03,1172.29c0,8.59-3.09,15.35-9.27,20.29-6.18,4.94-14.78,7.42-25.79,7.42-10.15,0-19.12-1.91-26.93-5.72v-18.73c6.42,2.86,11.85,4.88,16.29,6.05,4.44,1.17,8.51,1.76,12.2,1.76,4.42,0,7.82-.85,10.18-2.54,2.36-1.69,3.55-4.21,3.55-7.55,0-1.86-.52-3.52-1.56-4.98-1.04-1.45-2.57-2.85-4.59-4.2-2.02-1.34-6.13-3.49-12.33-6.44-5.81-2.73-10.17-5.36-13.07-7.87-2.91-2.51-5.23-5.44-6.96-8.78-1.73-3.34-2.6-7.24-2.6-11.71,0-8.41,2.85-15.03,8.55-19.84,5.7-4.81,13.58-7.22,23.64-7.22,4.94,0,9.66.59,14.15,1.76,4.49,1.17,9.18,2.82,14.08,4.94l-6.5,15.68c-5.07-2.08-9.27-3.53-12.59-4.36-3.32-.82-6.58-1.24-9.79-1.24-3.82,0-6.74.89-8.78,2.67-2.04,1.78-3.06,4.1-3.06,6.96,0,1.78.41,3.33,1.24,4.65.82,1.32,2.14,2.6,3.94,3.84,1.8,1.24,6.06,3.46,12.78,6.67,8.89,4.25,14.98,8.51,18.28,12.78,3.3,4.27,4.94,9.51,4.94,15.71Z" 
+                        fill="#2563eb"
+                      />
+                    </g>
+                  </g>
+                );
+              })()}
             </g>
           </g>
         </svg>

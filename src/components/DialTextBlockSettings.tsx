@@ -36,11 +36,21 @@ const DialTextBlockSettings: React.FC<Props> = ({
               <input
                 type="radio"
                 name="sundialNotesMode"
+                value="none"
+                checked={sundialNotesMode === 'none'}
+                onChange={(e) => setSundialNotesMode(e.target.value)}
+              />
+              None
+            </label>
+            <label className="form-radio">
+              <input
+                type="radio"
+                name="sundialNotesMode"
                 value="northPoint"
                 checked={sundialNotesMode === 'northPoint'}
                 onChange={(e) => setSundialNotesMode(e.target.value)}
               />
-              North Point
+              Compass Rose
             </label>
             <label className="form-radio">
               <input
@@ -66,20 +76,6 @@ const DialTextBlockSettings: React.FC<Props> = ({
         </div>
         
         {/* Conditional content based on selected mode */}
-        {sundialNotesMode === 'northPoint' && (
-          <div className="form-group">
-            <div style={{ 
-              padding: '20px', 
-              backgroundColor: '#f8f9fa', 
-              border: '1px solid #dee2e6', 
-              borderRadius: '4px',
-              textAlign: 'center',
-              color: '#6c757d'
-            }}>
-              Not Yet Implemented - check back soon!
-            </div>
-          </div>
-        )}
         
         {sundialNotesMode === 'seasonsGuide' && (
           <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end' }}>
