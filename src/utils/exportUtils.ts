@@ -18,6 +18,49 @@ const pageSizeMap: Record<Exclude<PageSize, 'Custom'>, { width: number; height: 
  */
 function findPreviewContainer(): HTMLElement | null {
   console.log('=== MAIN EXPORT CONTAINER SEARCH ===');
+  
+  // First, let's try a more direct approach - look for any large SVG on the page
+  const allSvgs = document.querySelectorAll('svg');
+  console.log(`Found ${allSvgs.length} total SVG elements on page`);
+  
+  for (const svg of allSvgs) {
+    const width = svg.getAttribute('width') || svg.clientWidth;
+    const height = svg.getAttribute('height') || svg.clientHeight;
+    const viewBox = svg.getAttribute('viewBox');
+    const classes = svg.className;
+    
+    console.log(`SVG: width=${width}, height=${height}, viewBox=${viewBox}, classes="${classes}"`);
+    
+    // Skip small icons
+    if (svg.classList.contains('lucide') || 
+        (width && height && parseInt(width.toString()) <= 50 && parseInt(height.toString()) <= 50)) {
+      console.log('Skipping small SVG');
+      continue;
+    }
+    
+    // Look for SVGs that might be the sundial (larger or no explicit size)
+    const numWidth = width ? parseInt(width.toString()) : 0;
+    const numHeight = height ? parseInt(height.toString()) : 0;
+    
+    if (numWidth > 100 || numHeight > 100 || (!width && !height) || 
+        (viewBox && !viewBox.includes('0 0 24 24'))) {
+      console.log('Found potential sundial SVG - checking parent');
+      const parent = svg.parentElement;
+      if (parent) {
+        console.log(`SVG parent: ${parent.tagName}, classes: "${parent.className}"`);
+        console.log(`Parent dimensions: ${parent.offsetWidth}x${parent.offsetHeight}`);
+        
+        // Make sure this isn't in a card header
+        if (!parent.closest('.card-header') && !parent.closest('h1, h2, h3, h4, h5, h6')) {
+          console.log('Found suitable sundial container');
+          return parent;
+        }
+      }
+    }
+  }
+  
+  // Fallback: original card-based search
+  console.log('Direct SVG search failed, trying card-based search...');
   const previewCards = document.querySelectorAll('.card');
   console.log('Found', previewCards.length, 'cards');
   
@@ -27,39 +70,31 @@ function findPreviewContainer(): HTMLElement | null {
     
     if (title && title.textContent && title.textContent.includes('Sundial Preview')) {
       console.log('Found Sundial Preview card');
+      console.log('Card HTML structure:', card.outerHTML.substring(0, 500));
       
-      // Return the SVG container div, not the entire card
-      let svgContainer = card.querySelector('div[style*="display: flex"]') as HTMLElement;
-      console.log('Found flex div:', !!svgContainer);
+      // Look everywhere in the card for SVGs
+      const allSvgsInCard = card.querySelectorAll('svg');
+      console.log(`Found ${allSvgsInCard.length} SVG elements in entire card`);
       
-      // If that doesn't work, try finding the parent of the SVG
-      if (!svgContainer) {
-        const svg = card.querySelector('svg');
-        console.log('Found SVG in card:', !!svg);
-        if (svg) {
-          svgContainer = svg.parentElement as HTMLElement;
-          console.log('Using SVG parent as container');
+      for (const svg of allSvgsInCard) {
+        const width = svg.getAttribute('width') || svg.clientWidth;
+        const height = svg.getAttribute('height') || svg.clientHeight;
+        const viewBox = svg.getAttribute('viewBox');
+        
+        console.log(`Card SVG: width=${width}, height=${height}, viewBox=${viewBox}, classes=${svg.className}`);
+        console.log(`SVG parent: ${svg.parentElement?.tagName}, parent classes: ${svg.parentElement?.className}`);
+        
+        // Skip obvious icons
+        if (!svg.classList.contains('lucide') && 
+            (!width || !height || parseInt(width.toString()) > 50 || parseInt(height.toString()) > 50)) {
+          console.log('Found potential sundial SVG in card');
+          return svg.parentElement as HTMLElement;
         }
       }
-      
-      // Additional fallback - find any div with SVG
-      if (!svgContainer) {
-        const allDivs = card.querySelectorAll('div');
-        for (const div of allDivs) {
-          if (div.querySelector('svg[viewBox]')) {
-            svgContainer = div as HTMLElement;
-            console.log('Found container via viewBox selector');
-            break;
-          }
-        }
-      }
-      
-      console.log('Final container found:', !!svgContainer);
-      return svgContainer;
     }
   }
   
-  console.log('No Sundial Preview card found');
+  console.log('No suitable sundial container found anywhere');
   return null;
 }
 
@@ -205,15 +240,29 @@ export async function exportSundial(options: ExportOptions): Promise<void> {
  * Exports as vector PDF by converting the generated SVG
  */
 async function exportPDF(options: ExportOptions): Promise<void> {
+  // Add a small delay to ensure all DOM updates are complete
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
   // Build SVG content using the existing SVG export path
+  console.log('PDF Export calling SVG export with options:', {
+    pageSize: options.pageSize,
+    orientation: options.orientation,
+    showBackground: options.showBackground,
+    backgroundColor: options.backgroundColor,
+    customWidth: options.pageSize === 'Custom' ? options.customWidth : 'not passed',
+    customHeight: options.pageSize === 'Custom' ? options.customHeight : 'not passed',
+  });
+  
   const svgContent = createSVGExport({
     pageSize: options.pageSize,
     orientation: options.orientation,
     showBackground: options.showBackground,
     backgroundColor: options.backgroundColor,
-    // Pass through custom size when available
-    customWidth: options.customWidth,
-    customHeight: options.customHeight,
+    // Only pass custom dimensions if pageSize is actually 'Custom'
+    ...(options.pageSize === 'Custom' && {
+      customWidth: options.customWidth,
+      customHeight: options.customHeight,
+    }),
   });
 
   if (!svgContent) {
@@ -226,6 +275,21 @@ async function exportPDF(options: ExportOptions): Promise<void> {
   if (!svgEl || svgEl.tagName.toLowerCase() !== 'svg') {
     throw new Error('Parsed SVG content is invalid');
   }
+  
+  console.log('Parsed SVG dimensions:', {
+    width: svgEl.getAttribute('width'),
+    height: svgEl.getAttribute('height'),
+    viewBox: svgEl.getAttribute('viewBox')
+  });
+  
+  // Also log the first few lines of the SVG content to see what was actually generated
+  console.log('SVG content first 300 chars:', svgContent.substring(0, 300));
+  
+  // Extract the SVG tag to see the exact dimensions
+  const svgTagMatch = svgContent.match(/<svg[^>]*>/);
+  if (svgTagMatch) {
+    console.log('SVG tag:', svgTagMatch[0]);
+  }
 
   // Ensure strokes don't get thicker due to scaling when fitting to page
   try {
@@ -235,25 +299,19 @@ async function exportPDF(options: ExportOptions): Promise<void> {
     svgEl.insertBefore(styleEl, svgEl.firstChild);
   } catch {}
 
-  // Compute page size in points (1pt = 1/72in) to match the SVG width/height generated in pt
-  const inToPt = (inches: number) => inches * 72;
-  const mmToPt = (mm: number) => inToPt(mm / 25.4);
-
-  let widthPt: number;
-  let heightPt: number;
-
-  const isCustom = options.pageSize === 'Custom' && options.customWidth && options.customHeight;
-  if (isCustom) {
-    widthPt = mmToPt(options.customWidth!);
-    heightPt = mmToPt(options.customHeight!);
-  } else {
-    let { width, height } = pageSizeMap[options.pageSize as keyof typeof pageSizeMap] || pageSizeMap.Letter;
-    if (options.orientation === 'Landscape') {
-      [width, height] = [height, width];
-    }
-    widthPt = inToPt(width);
-    heightPt = inToPt(height);
+  // Extract dimensions directly from the SVG that was generated
+  const svgWidthAttr = svgEl.getAttribute('width');
+  const svgHeightAttr = svgEl.getAttribute('height');
+  
+  if (!svgWidthAttr || !svgHeightAttr) {
+    throw new Error('SVG missing width or height attributes');
   }
+  
+  // Parse the dimensions (should be in format "792pt")
+  const widthPt = parseFloat(svgWidthAttr.replace('pt', ''));
+  const heightPt = parseFloat(svgHeightAttr.replace('pt', ''));
+  
+  console.log('Using SVG dimensions for PDF (pt):', { widthPt, heightPt });
 
   // Adjust stroke width and dash lengths to counteract viewBox scaling
   const viewBoxAttr = svgEl.getAttribute('viewBox');
@@ -300,7 +358,32 @@ async function exportPDF(options: ExportOptions): Promise<void> {
   }
 
   // Use pt so the SVG's pt dimensions map 1:1 to PDF, avoiding any implicit scaling
-  const doc = new jsPDF({ unit: 'pt', format: [widthPt, heightPt] });
+  console.log('Creating jsPDF with format:', [widthPt, heightPt]);
+  
+  // Determine orientation based on dimensions
+  const orientation = widthPt > heightPt ? 'landscape' : 'portrait';
+  console.log('Calculated orientation:', orientation);
+  
+  // Try using standard format name if it matches
+  let format: string | number[] = [widthPt, heightPt];
+  if (Math.abs(widthPt - 792) < 1 && Math.abs(heightPt - 612) < 1) {
+    format = 'letter';
+    console.log('Using standard letter format with landscape orientation');
+  } else if (Math.abs(widthPt - 612) < 1 && Math.abs(heightPt - 792) < 1) {
+    format = 'letter';
+    console.log('Using standard letter format with portrait orientation');
+  }
+  
+  const doc = new jsPDF({ 
+    unit: 'pt', 
+    format: format,
+    orientation: orientation as 'landscape' | 'portrait'
+  });
+  console.log('jsPDF created with internal page size:', doc.internal.pageSize);
+  console.log('jsPDF page dimensions:', {
+    width: doc.internal.pageSize.getWidth(),
+    height: doc.internal.pageSize.getHeight()
+  });
 
   // Render SVG without forcing a different width/height (prevents stroke/dash scaling)
   await Promise.resolve(svg2pdfFn(svgEl, doc, { x: 0, y: 0, useCSS: true }));
@@ -335,26 +418,125 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
   // Calculate scale for the specified DPI
   const dpi = options.dpi || 600;
   const domWidth = svgContainer.offsetWidth;
+  const domHeight = svgContainer.offsetHeight;
   const pixelWidth = printWidth * dpi;
   let scale = pixelWidth / domWidth;
 
   // Check for potential canvas size limits
   const maxCanvasSize = 32767; // Common browser limit
   const estimatedWidth = domWidth * scale;
-  const estimatedHeight = svgContainer.offsetHeight * scale;
+  const estimatedHeight = domHeight * scale;
   
   if (estimatedWidth > maxCanvasSize || estimatedHeight > maxCanvasSize) {
     console.warn('Canvas would exceed browser limits, reducing scale');
-    const maxScale = Math.min(maxCanvasSize / domWidth, maxCanvasSize / svgContainer.offsetHeight);
+    const maxScale = Math.min(maxCanvasSize / domWidth, maxCanvasSize / domHeight);
     scale = Math.min(scale, maxScale * 0.9); // Use 90% of max to be safe
     console.log('Adjusted scale to:', scale);
   }
 
   // Minimal logging for PNG export
-  console.log(`PNG Export: ${domWidth}x${svgContainer.offsetHeight} @ ${dpi}DPI (scale: ${scale.toFixed(2)})`);
+  console.log(`PNG Export: ${domWidth}x${domHeight} @ ${dpi}DPI (scale: ${scale.toFixed(2)})`);
 
-  // Create a temporary clone of the SVG container to fix compatibility issues
+  // Find the SVG element within the container
+  const originalSvg = svgContainer.querySelector('svg');
+  if (!originalSvg) {
+    console.error('No SVG found in container. Container HTML:', svgContainer.innerHTML.substring(0, 500));
+    throw new Error('No SVG found in the container');
+  }
+  
+  console.log(`Original SVG found: ${originalSvg.tagName}`);
+  console.log(`Original SVG dimensions: ${originalSvg.clientWidth}x${originalSvg.clientHeight}`);
+  console.log(`SVG viewBox: ${originalSvg.getAttribute('viewBox')}`);
+  console.log(`SVG children count: ${originalSvg.children.length}`);
+  
+  // Log what children the original SVG has
+  for (let i = 0; i < originalSvg.children.length; i++) {
+    const child = originalSvg.children[i];
+    console.log(`Original SVG child ${i}: ${child.tagName}, id="${child.id}", class="${child.className}"`);
+  }
+  
+  // Check if there are other SVGs in the container (like compass rose)
+  const allSvgsInContainer = svgContainer.querySelectorAll('svg');
+  console.log(`Total SVGs in container: ${allSvgsInContainer.length}`);
+  if (allSvgsInContainer.length > 1) {
+    console.log('Multiple SVGs found - checking for compass rose...');
+    allSvgsInContainer.forEach((svg, index) => {
+      console.log(`SVG ${index}: ${svg.getAttribute('width')}x${svg.getAttribute('height')}, children: ${svg.children.length}`);
+    });
+  }
+  
+  // Instead of creating a new container, let's clone the original container
+  // but ensure it has the right content and dimensions
   const tempContainer = svgContainer.cloneNode(true) as HTMLElement;
+  console.log(`Cloned container children count: ${tempContainer.children.length}`);
+  
+  // Find the SVG in the cloned container
+  const tempSvg = tempContainer.querySelector('svg');
+  if (!tempSvg) {
+    console.error('No SVG found in cloned container!');
+    throw new Error('Cloned container has no SVG');
+  }
+  
+  console.log(`Cloned SVG children count: ${tempSvg.children.length}`);
+  
+  // Log what children we actually have
+  for (let i = 0; i < tempSvg.children.length; i++) {
+    const child = tempSvg.children[i];
+    console.log(`SVG child ${i}: ${child.tagName}, id="${child.id}", class="${child.className}"`);
+  }
+  
+  // Verify the clone has content
+  if (tempSvg.children.length === 0) {
+    console.error('Cloned SVG has no children! Trying to re-clone...');
+    // Try to replace the empty SVG with a fresh clone
+    const freshSvgClone = originalSvg.cloneNode(true) as SVGElement;
+    tempSvg.parentNode?.replaceChild(freshSvgClone, tempSvg);
+    console.log(`Fresh clone children count: ${freshSvgClone.children.length}`);
+  }
+  
+  // Set up the container dimensions
+  let svgWidth = originalSvg.clientWidth || (originalSvg as any).offsetWidth || domWidth;
+  let svgHeight = originalSvg.clientHeight || (originalSvg as any).offsetHeight || domHeight;
+  
+  // Fallback: if SVG dimensions are still zero, use container dimensions
+  if (svgWidth === 0) svgWidth = domWidth;
+  if (svgHeight === 0) svgHeight = domHeight;
+  
+  // Ensure minimum dimensions
+  if (svgWidth < 100) svgWidth = Math.max(domWidth, 400);
+  if (svgHeight < 100) svgHeight = Math.max(domHeight, 400);
+  
+  // Copy important styles from the original container
+  const originalComputedStyle = window.getComputedStyle(svgContainer);
+  tempContainer.style.display = originalComputedStyle.display;
+  tempContainer.style.justifyContent = originalComputedStyle.justifyContent;
+  tempContainer.style.alignItems = originalComputedStyle.alignItems;
+  tempContainer.style.overflow = 'visible';
+  
+  // Apply dimensions to the container (keep original size)
+  tempContainer.style.width = `${svgWidth}px`;
+  tempContainer.style.height = `${svgHeight}px`;
+  tempContainer.style.minWidth = `${svgWidth}px`;
+  tempContainer.style.minHeight = `${svgHeight}px`;
+  
+  // Fix the SVG dimensions for html2canvas
+  if (tempSvg) {
+    // Remove percentage-based dimensions and set explicit pixel dimensions
+    tempSvg.removeAttribute('width');
+    tempSvg.removeAttribute('height');
+    tempSvg.setAttribute('width', svgWidth.toString());
+    tempSvg.setAttribute('height', svgHeight.toString());
+    
+    // Ensure the SVG fills the container
+    tempSvg.style.width = `${svgWidth}px`;
+    tempSvg.style.height = `${svgHeight}px`;
+    tempSvg.style.display = 'block';
+    
+    console.log(`Fixed SVG dimensions: ${tempSvg.getAttribute('width')}x${tempSvg.getAttribute('height')}`);
+  }
+  
+  console.log(`Temp container setup: ${svgWidth}x${svgHeight}`);
+  console.log(`Temp container final HTML length: ${tempContainer.outerHTML.length}`);
   
   // Quick optimization check - only log if there are excessive elements
   const tempPathElements = tempContainer.querySelectorAll('path');
@@ -391,15 +573,61 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
   const groupElements = tempContainer.querySelectorAll('g');
   groupElements.forEach(groupEl => {
     const transform = groupEl.getAttribute('transform');
-    if (transform && transform.includes('scale') && transform.includes('rotate')) {
-      // Check if this is a dial facing transform (scale + rotate(180))
-      if (transform.includes('rotate(180)')) {
-        // Keep the dial facing transform as-is
-      } else if (transform.includes('matrix') || transform.split(' ').length > 6) {
-        // Only simplify very complex transforms
-        const scaleMatch = transform.match(/scale\([^)]+\)/);
-        if (scaleMatch) {
-          groupEl.setAttribute('transform', scaleMatch[0]);
+    if (transform) {
+      // Special handling for NorthPoint (compass rose) transforms
+      // These have the pattern: translate(x, y) scale(s) translate(-460.035, -600) [rotate(180 460.035 600)]
+      if (transform.includes('translate') && transform.includes('scale') && transform.includes('-460.035')) {
+        console.log('Found NorthPoint transform, attempting to fix for html2canvas:', transform);
+        
+        // Parse the transform components
+        const translateMatch1 = transform.match(/translate\(([^)]+)\)/);
+        const scaleMatch = transform.match(/scale\(([^)]+)\)/);
+        const rotateMatch = transform.match(/rotate\(180 460\.035 600\)/);
+        
+        if (translateMatch1 && scaleMatch) {
+          const [tx, ty] = translateMatch1[1].split(',').map(s => parseFloat(s.trim()));
+          const scaleFactor = parseFloat(scaleMatch[1]);
+          
+          console.log('NorthPoint transform parsing:', {
+            originalTransform: transform,
+            tx, ty, scaleFactor,
+            rotateMatch: !!rotateMatch
+          });
+          
+          // The original transform chain is: translate(tx, ty) scale(s) translate(-460.035, -600) [rotate(180 460.035 600)]
+          // We need to apply the transforms in order to get the final position
+          
+          // After translate(tx, ty) scale(s), the coordinate system is scaled
+          // Then translate(-460.035, -600) moves by (-460.035 * s, -600 * s) in the original coordinate system
+          const finalTx = tx + (-460.035 * scaleFactor);
+          const finalTy = ty + (-600 * scaleFactor);
+          
+          let newTransform = `translate(${finalTx}, ${finalTy}) scale(${scaleFactor})`;
+          
+          // Add rotation if present - rotate around the NorthPoint center in the scaled coordinate system
+          if (rotateMatch) {
+            // The rotation center should be at the center of the NorthPoint after all transforms
+            newTransform += ` rotate(180 460.035 600)`;
+          }
+          
+          console.log('Simplified NorthPoint transform:', {
+            finalTx, finalTy, scaleFactor,
+            newTransform
+          });
+          groupEl.setAttribute('transform', newTransform);
+        }
+      }
+      // Handle other complex transforms
+      else if (transform.includes('scale') && transform.includes('rotate')) {
+        // Check if this is a dial facing transform (scale + rotate(180))
+        if (transform.includes('rotate(180)')) {
+          // Keep the dial facing transform as-is
+        } else if (transform.includes('matrix') || transform.split(' ').length > 6) {
+          // Only simplify very complex transforms
+          const scaleMatch = transform.match(/scale\([^)]+\)/);
+          if (scaleMatch) {
+            groupEl.setAttribute('transform', scaleMatch[0]);
+          }
         }
       }
     }
@@ -410,41 +638,75 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
   tempContainer.style.left = '-9999px';
   tempContainer.style.top = '-9999px';
   document.body.appendChild(tempContainer);
+  
+  // Force layout and check dimensions after adding to DOM
+  tempContainer.offsetHeight; // Force reflow
+  console.log(`Final temp container dimensions: ${tempContainer.offsetWidth}x${tempContainer.offsetHeight}`);
+  
+  // If the temp container has no dimensions, try to fix it
+  if (tempContainer.offsetWidth === 0 || tempContainer.offsetHeight === 0) {
+    console.warn('Temp container has zero dimensions, attempting to fix...');
+    tempContainer.style.width = `${svgWidth}px`;
+    tempContainer.style.height = `${svgHeight}px`;
+    tempContainer.style.minWidth = `${svgWidth}px`;
+    tempContainer.style.minHeight = `${svgHeight}px`;
+    
+    // Force another reflow
+    tempContainer.offsetHeight;
+    console.log(`After fix: ${tempContainer.offsetWidth}x${tempContainer.offsetHeight}`);
+  }
 
   try {
     const startTime = performance.now();
     
-    // Add a timeout to prevent hanging
+    // Final verification before html2canvas
+    const finalSvg = tempContainer.querySelector('svg');
+    if (!finalSvg || finalSvg.children.length === 0) {
+      console.error('CRITICAL: No SVG content found before html2canvas!');
+      console.error('Container HTML:', tempContainer.outerHTML.substring(0, 2000));
+      throw new Error('No SVG content to export');
+    }
+    
+    console.log(`Final verification: SVG has ${finalSvg.children.length} children`);
+    console.log(`SVG viewBox: ${finalSvg.getAttribute('viewBox')}`);
+    
+    // Capture at original size with scale option for high DPI
+    const containerWidth = tempContainer.offsetWidth;
+    const containerHeight = tempContainer.offsetHeight;
+    
+    console.log(`html2canvas options: width=${containerWidth}, height=${containerHeight}, scale=${scale}`);
+    console.log(`Container dimensions: ${containerWidth}x${containerHeight}`);
+    
     const canvasPromise = html2canvas(tempContainer, {
       background: options.showBackground ? (options.backgroundColor || '#ffffff') : '#ffffff',
-      width: tempContainer.offsetWidth * scale,
-      height: tempContainer.offsetHeight * scale,
       useCORS: true,
       allowTaint: true,
       logging: false, // Disable html2canvas logging for better performance
+      ...(scale > 1 && { scale: scale }), // Add scale option if > 1
     });
     
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('PNG export timed out after 30 seconds')), 30000);
     });
     
-    const canvas = await Promise.race([canvasPromise, timeoutPromise]) as HTMLCanvasElement;
+    const finalCanvas = await Promise.race([canvasPromise, timeoutPromise]) as HTMLCanvasElement;
     const endTime = performance.now();
     console.log(`PNG export completed in ${(endTime - startTime).toFixed(0)}ms`);
+    console.log(`Final canvas dimensions: ${finalCanvas.width}x${finalCanvas.height}`);
     
     // Remove the temporary container now that we have the canvas
     document.body.removeChild(tempContainer);
     
     return new Promise((resolve, reject) => {
       try {
-        canvas.toBlob((blob) => {
+        finalCanvas.toBlob((blob) => {
           if (blob) {
             downloadFile(blob, buildFilename(options, 'png'), 'image/png');
             resolve();
           } else {
             console.error('Canvas toBlob returned null');
-            console.error('Canvas width:', canvas.width, 'height:', canvas.height);
-            console.error('Canvas context:', canvas.getContext('2d'));
+            console.error('Canvas width:', finalCanvas.width, 'height:', finalCanvas.height);
+            console.error('Canvas context:', finalCanvas.getContext('2d'));
             
             // Try with a lower DPI as fallback
             if (dpi > 150) {

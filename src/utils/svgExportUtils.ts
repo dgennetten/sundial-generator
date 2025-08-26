@@ -61,6 +61,10 @@ function getLineStylesFromDOM(): Record<string, string> {
 export function createSVGExport(options: SVGExportOptions): string | null {
   console.log('Starting SVG export with options:', options);
   
+  // Add a small delay to ensure all elements are rendered
+  // This is a synchronous function, so we'll just log timing info
+  console.log('Export timestamp:', Date.now());
+  
   // Get line styles from the application state to use for layer naming
   const lineStyles = getLineStylesFromDOM();
   
@@ -118,7 +122,36 @@ export function createSVGExport(options: SVGExportOptions): string | null {
   
   console.log('Found SVG container:', svgContainer);
   
-  // Find the SVG element within the container
+  // Check for multiple SVGs in the container (like compass rose)
+  const allSvgsInContainer = svgContainer.querySelectorAll('svg');
+  console.log(`Total SVGs in container: ${allSvgsInContainer.length}`);
+  allSvgsInContainer.forEach((svg, index) => {
+    console.log(`SVG ${index}:`, {
+      width: svg.getAttribute('width'),
+      height: svg.getAttribute('height'),
+      viewBox: svg.getAttribute('viewBox'),
+      children: svg.children.length,
+      id: svg.getAttribute('id'),
+      class: svg.getAttribute('class')
+    });
+  });
+  
+  // Check for NorthPoint elements in the container
+  const allElements = svgContainer.querySelectorAll('*');
+  let foundNorthPoint = false;
+  allElements.forEach((element) => {
+    const transform = element.getAttribute('transform');
+    if (transform && (transform.includes('-460.035') || transform.includes('460.035'))) {
+      console.log('Found NorthPoint element in container:', element.tagName);
+      foundNorthPoint = true;
+    }
+  });
+  
+  if (!foundNorthPoint) {
+    console.log('No NorthPoint elements found in container');
+  }
+  
+  // Find the main SVG element within the container
   const svgElement = svgContainer.querySelector('svg') as SVGSVGElement;
   if (!svgElement) {
     console.error('Could not find SVG element in container');
@@ -126,7 +159,7 @@ export function createSVGExport(options: SVGExportOptions): string | null {
     return null;
   }
   
-  console.log('Found SVG element:', svgElement);
+  console.log('Found main SVG element:', svgElement);
   console.log('SVG viewBox:', svgElement.getAttribute('viewBox'));
   console.log('SVG children count:', svgElement.children.length);
   
@@ -135,21 +168,37 @@ export function createSVGExport(options: SVGExportOptions): string | null {
   const getCustomPageSize = () => {
     if (options.pageSize !== 'Custom' || !options.customWidth || !options.customHeight) return null;
     // customWidth and customHeight are already stored in millimeters
-    return {
-      width: options.customWidth,
-      height: options.customHeight
-    };
+    let width = options.customWidth;
+    let height = options.customHeight;
+    
+    // Apply orientation to custom sizes
+    if (options.orientation === 'Landscape') {
+      [width, height] = [height, width];
+    }
+    
+    return { width, height };
   };
   
   const customPageSize = getCustomPageSize();
   let { width: printWidth, height: printHeight } = customPageSize || (options.pageSize !== 'Custom' ? pageSizeMap[options.pageSize as keyof typeof pageSizeMap] : pageSizeMap.Letter);
-  if (options.orientation === 'Landscape') {
+  
+  // Apply orientation to standard page sizes only (custom sizes already have orientation applied)
+  if (!customPageSize && options.orientation === 'Landscape') {
     [printWidth, printHeight] = [printHeight, printWidth];
   }
   
   // Convert to points for SVG (1 inch = 72 points)
   const pageWidthPt = printWidth * 72;
   const pageHeightPt = printHeight * 72;
+  
+  console.log('SVG Export dimensions:', {
+    pageSize: options.pageSize,
+    orientation: options.orientation,
+    printWidth,
+    printHeight,
+    pageWidthPt,
+    pageHeightPt
+  });
   
   // Get the original viewBox
   const originalViewBox = svgElement.getAttribute('viewBox') || '';
@@ -196,9 +245,32 @@ export function createSVGExport(options: SVGExportOptions): string | null {
     }
   }
   
-  // Extract and organize the SVG content by line style
-  const organizedContent = extractAndOrganizeSVGContentByLineStyle(svgElement, lineStyles);
+  // Extract and organize the SVG content by line style from all SVGs
+  let organizedContent: Record<string, string> = {};
+  
+  // Process all SVGs in the container
+  allSvgsInContainer.forEach((svg, index) => {
+    console.log(`Processing SVG ${index} for content extraction`);
+    const svgContent = extractAndOrganizeSVGContentByLineStyle(svg as SVGSVGElement, lineStyles);
+    
+    // Merge content from this SVG into the organized content
+    Object.entries(svgContent).forEach(([layerName, content]) => {
+      if (!organizedContent[layerName]) {
+        organizedContent[layerName] = '';
+      }
+      organizedContent[layerName] += content;
+    });
+  });
+  
   console.log('Organized content layers:', Object.keys(organizedContent));
+  
+  // Debug the North Point layer content
+  if (organizedContent['North Point']) {
+    console.log('North Point layer content length:', organizedContent['North Point'].length);
+    console.log('North Point layer preview:', organizedContent['North Point'].substring(0, 200));
+  } else {
+    console.log('North Point layer is missing or empty');
+  }
   
   // Add each layer as a separate group
   Object.entries(organizedContent).forEach(([layerName, content]) => {
@@ -232,11 +304,38 @@ function extractAndOrganizeSVGContentByLineStyle(svgElement: SVGSVGElement, line
     'Labels': '',
     'Gnomon': '',
     'Text Block': '',
+    'North Point': '',
     'Other Elements': ''
   };
 
   console.log('Analyzing SVG structure by line style...');
   console.log('SVG children:', svgElement.children.length);
+  
+  // Log all children to see what we're working with
+  Array.from(svgElement.children).forEach((child, index) => {
+    console.log(`Child ${index}:`, {
+      tagName: child.tagName,
+      id: child.getAttribute('id'),
+      class: child.getAttribute('class'),
+      transform: child.getAttribute('transform')
+    });
+  });
+
+  // Helper function to find NorthPoint elements within a group
+  const findNorthPointInGroup = (element: Element): Element | null => {
+    // Check if this element itself is a NorthPoint
+    if (isNorthPointElementString(element)) {
+      return element;
+    }
+    
+    // Recursively search children
+    for (const child of Array.from(element.children)) {
+      const found = findNorthPointInGroup(child);
+      if (found) return found;
+    }
+    
+    return null;
+  };
 
   // Process each child element of the SVG
   Array.from(svgElement.children).forEach((child, index) => {
@@ -245,8 +344,46 @@ function extractAndOrganizeSVGContentByLineStyle(svgElement: SVGSVGElement, line
       stroke: child.getAttribute('stroke'),
       fill: child.getAttribute('fill'),
       strokeDasharray: child.getAttribute('stroke-dasharray'),
-      id: child.getAttribute('id')
+      id: child.getAttribute('id'),
+      transform: child.getAttribute('transform')
     });
+    
+    // Check if this element or any of its descendants contains a NorthPoint
+    const northPointElement = findNorthPointInGroup(child);
+    if (northPointElement) {
+      console.log('Found NorthPoint within group - extracting it separately');
+      const serialized = new XMLSerializer().serializeToString(northPointElement);
+      console.log('NorthPoint serialized length:', serialized.length);
+      console.log('NorthPoint serialized preview:', serialized.substring(0, 150));
+      const fixedContent = fixSVGContent(serialized);
+      console.log('NorthPoint fixed content length:', fixedContent.length);
+      specialLayers['North Point'] += `    ${fixedContent}\n`;
+      console.log('Added NorthPoint to special layers, total North Point content length:', specialLayers['North Point'].length);
+      
+      // Continue processing the rest of the group without the NorthPoint
+      // Clone the element and remove the NorthPoint
+      const clonedChild = child.cloneNode(true) as Element;
+      const clonedNorthPoint = findNorthPointInGroup(clonedChild);
+      if (clonedNorthPoint && clonedNorthPoint.parentElement) {
+        clonedNorthPoint.parentElement.removeChild(clonedNorthPoint);
+      }
+      
+      // Process the remaining content
+      const remainingContent = new XMLSerializer().serializeToString(clonedChild);
+      const fixedRemainingContent = fixSVGContent(remainingContent);
+      const layerName = categorizeElementForLayer(clonedChild, lineStyleMap);
+      
+      if (Object.prototype.hasOwnProperty.call(specialLayers, layerName)) {
+        specialLayers[layerName] += `    ${fixedRemainingContent}\n`;
+      } else {
+        if (!layers[layerName]) {
+          layers[layerName] = '';
+        }
+        layers[layerName] += `    ${fixedRemainingContent}\n`;
+      }
+      
+      return; // Skip normal processing for this element
+    }
     
     // Skip clipping boundary (debugging element)
     if ((child.getAttribute('stroke') === '#ccc' && 
@@ -275,12 +412,24 @@ function extractAndOrganizeSVGContentByLineStyle(svgElement: SVGSVGElement, line
     }
   });
 
+  // Debug special layers before combining
+  console.log('Special layers before combining:', Object.keys(specialLayers));
+  Object.entries(specialLayers).forEach(([name, content]) => {
+    console.log(`Special layer "${name}": ${content.length} chars`);
+    if (name === 'North Point') {
+      console.log('North Point content preview:', content.substring(0, 100));
+    }
+  });
+  
   // Combine special layers and line style layers
   const allLayers = { ...specialLayers, ...layers };
+  
+  console.log('All layers after combining:', Object.keys(allLayers));
   
   // Remove empty layers
   Object.keys(allLayers).forEach(key => {
     if (!allLayers[key].trim()) {
+      console.log(`Removing empty layer: ${key}`);
       delete allLayers[key];
     }
   });
@@ -325,6 +474,15 @@ function categorizeElementForLayer(element: Element, lineStyleMap: Record<string
   // Check if it's a text block
   if (isTextBlockElementString(element)) {
     return 'Text Block';
+  }
+  
+  // Check if it's a NorthPoint (compass rose)
+  if (isNorthPointElementString(element)) {
+    console.log('Found NorthPoint element for SVG export:', {
+      tagName: element.tagName,
+      transform: element.getAttribute('transform')
+    });
+    return 'North Point';
   }
   
   return 'Other Elements';
@@ -432,6 +590,33 @@ function isTextBlockElementString(element: Element): boolean {
   if (element.tagName === 'g') {
     const children = Array.from(element.children);
     return children.some(child => child.tagName === 'text' || child.tagName === 'tspan');
+  }
+  
+  return false;
+}
+
+/**
+ * Checks if an element is a NorthPoint (compass rose) element
+ */
+function isNorthPointElementString(element: Element): boolean {
+  if (element.tagName === 'g') {
+    const transform = element.getAttribute('transform');
+    
+    // NorthPoint has a distinctive transform pattern with -460.035 and -600 offsets
+    if (transform && transform.includes('-460.035') && transform.includes('-600')) {
+      console.log('Found NorthPoint by transform pattern:', transform);
+      return true;
+    }
+    
+    // Also check if it contains the distinctive NorthPoint path data
+    const paths = element.querySelectorAll('path');
+    for (const path of paths) {
+      const d = path.getAttribute('d');
+      if (d && (d.includes('920.07,600') || d.includes('M920.07,600')) && d.includes('365.24')) {
+        console.log('Found NorthPoint by path data:', d.substring(0, 50) + '...');
+        return true;
+      }
+    }
   }
   
   return false;
