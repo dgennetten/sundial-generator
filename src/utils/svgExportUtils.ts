@@ -1,7 +1,5 @@
 // src/utils/svgExportUtils.ts
-// Specialized SVG export utilities
-
-import type { LineStyle } from '../components/LineSettings';
+// Simple SVG export utilities - restored to the original working approach
 
 export interface SVGExportOptions {
   pageSize: 'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom';
@@ -21,95 +19,33 @@ const pageSizeMap = {
 };
 
 /**
- * Extracts line styles from the DOM to use for layer naming
- */
-function getLineStylesFromDOM(): Record<string, string> {
-  const lineStyleMap: Record<string, string> = {};
-  
-  try {
-    // Try to get line styles from localStorage (where they're stored)
-    const storedStyles = localStorage.getItem('sundial-line-styles');
-    if (storedStyles) {
-      const styles = JSON.parse(storedStyles);
-      if (Array.isArray(styles)) {
-        styles.forEach((style: LineStyle) => {
-          if (style.id && style.name) {
-            lineStyleMap[style.id] = style.name;
-          }
-        });
-      }
-    }
-  } catch (e) {
-    console.warn('Could not load line styles from localStorage:', e);
-  }
-  
-  // Add some default mappings in case localStorage is empty
-  if (Object.keys(lineStyleMap).length === 0) {
-    lineStyleMap['0.5mm-black'] = 'Thick Black';
-    lineStyleMap['default-hairline'] = 'Hairline';
-    lineStyleMap['dashed-hairline'] = 'Dashed Hairline';
-    lineStyleMap['dotted-hairline'] = 'Dotted Hairline';
-  }
-  
-  console.log('Line style mapping:', lineStyleMap);
-  return lineStyleMap;
-}
-
-/**
- * Creates an SVG export by directly serializing the sundial SVG with proper formatting
+ * Creates a simple SVG export by directly serializing the sundial SVG
+ * This is the original working approach that was replaced by complex layering
  */
 export function createSVGExport(options: SVGExportOptions): string | null {
-  console.log('Starting SVG export with options:', options);
+  console.log('Starting simple SVG export with options:', options);
   
-  // Add a small delay to ensure all elements are rendered
-  // This is a synchronous function, so we'll just log timing info
-  console.log('Export timestamp:', Date.now());
-  
-  // Get line styles from the application state to use for layer naming
-  const lineStyles = getLineStylesFromDOM();
-  
-  // Find the sundial preview container using the robust logic
-  console.log('=== SVG EXPORT CONTAINER SEARCH ===');
+  // Find the sundial preview container
+  console.log('=== SIMPLE SVG EXPORT - FINDING SUNDIAL ===');
   const previewCards = document.querySelectorAll('.card');
   let svgContainer: HTMLElement | null = null;
   
-  console.log('Found', previewCards.length, 'cards');
-  
   for (const card of previewCards) {
     const title = card.querySelector('.card-title');
-    console.log('Card title:', title?.textContent);
-    
     if (title && title.textContent && title.textContent.includes('Sundial Preview')) {
       console.log('Found Sundial Preview card');
       
-      // Try multiple selectors to find the SVG container
+      // Find the SVG container
       svgContainer = card.querySelector('div[style*="display: flex"]') as HTMLElement;
-      console.log('Found flex div:', !!svgContainer);
-      
       if (!svgContainer) {
-        // Try alternative selectors
         const svg = card.querySelector('svg');
-        console.log('Found SVG in card:', !!svg);
         if (svg) {
           svgContainer = svg.parentElement as HTMLElement;
-          console.log('Using SVG parent as container');
-        }
-      }
-      
-      if (!svgContainer) {
-        // Additional fallback - find any div with SVG
-        const allDivs = card.querySelectorAll('div');
-        for (const div of allDivs) {
-          if (div.querySelector('svg[viewBox]')) {
-            svgContainer = div as HTMLElement;
-            console.log('Found container via viewBox selector');
-            break;
-          }
         }
       }
       
       if (svgContainer) {
-        console.log('Final container found');
+        console.log('Found SVG container');
         break;
       }
     }
@@ -120,69 +56,25 @@ export function createSVGExport(options: SVGExportOptions): string | null {
     return null;
   }
   
-  console.log('Found SVG container:', svgContainer);
-  
-  // Check for multiple SVGs in the container (like compass rose)
-  const allSvgsInContainer = svgContainer.querySelectorAll('svg');
-  console.log(`Total SVGs in container: ${allSvgsInContainer.length}`);
-  allSvgsInContainer.forEach((svg, index) => {
-    console.log(`SVG ${index}:`, {
-      width: svg.getAttribute('width'),
-      height: svg.getAttribute('height'),
-      viewBox: svg.getAttribute('viewBox'),
-      children: svg.children.length,
-      id: svg.getAttribute('id'),
-      class: svg.getAttribute('class')
-    });
-  });
-  
-  // Check for NorthPoint elements in the container
-  const allElements = svgContainer.querySelectorAll('*');
-  let foundNorthPoint = false;
-  allElements.forEach((element) => {
-    const transform = element.getAttribute('transform');
-    if (transform && (transform.includes('-460.035') || transform.includes('460.035'))) {
-      console.log('Found NorthPoint element in container:', element.tagName);
-      foundNorthPoint = true;
-    }
-  });
-  
-  if (!foundNorthPoint) {
-    console.log('No NorthPoint elements found in container');
-  }
-  
-  // Find the main SVG element within the container
+  // Find the main SVG element
   const svgElement = svgContainer.querySelector('svg') as SVGSVGElement;
   if (!svgElement) {
-    console.error('Could not find SVG element in container');
-    console.log('Container HTML:', svgContainer.innerHTML.substring(0, 500));
+    console.error('Could not find SVG element');
     return null;
   }
   
-  console.log('Found main SVG element:', svgElement);
+  console.log('Found SVG element:', svgElement);
   console.log('SVG viewBox:', svgElement.getAttribute('viewBox'));
-  console.log('SVG children count:', svgElement.children.length);
   
   // Get page dimensions
-  // Calculate custom page size in mm
-  const getCustomPageSize = () => {
-    if (options.pageSize !== 'Custom' || !options.customWidth || !options.customHeight) return null;
-    // customWidth and customHeight are already stored in millimeters
-    let width = options.customWidth;
-    let height = options.customHeight;
-    
-    // Apply orientation to custom sizes
-    if (options.orientation === 'Landscape') {
-      [width, height] = [height, width];
-    }
-    
-    return { width, height };
-  };
+  const customPageSize = options.pageSize === 'Custom' && options.customWidth && options.customHeight
+    ? { width: options.customWidth / 25.4, height: options.customHeight / 25.4 } // Convert mm to inches
+    : null;
   
-  const customPageSize = getCustomPageSize();
-  let { width: printWidth, height: printHeight } = customPageSize || (options.pageSize !== 'Custom' ? pageSizeMap[options.pageSize as keyof typeof pageSizeMap] : pageSizeMap.Letter);
+  let { width: printWidth, height: printHeight } = customPageSize || 
+    (options.pageSize !== 'Custom' ? pageSizeMap[options.pageSize as keyof typeof pageSizeMap] : pageSizeMap.Letter);
   
-  // Apply orientation to standard page sizes only (custom sizes already have orientation applied)
+  // Apply orientation
   if (!customPageSize && options.orientation === 'Landscape') {
     [printWidth, printHeight] = [printHeight, printWidth];
   }
@@ -191,41 +83,24 @@ export function createSVGExport(options: SVGExportOptions): string | null {
   const pageWidthPt = printWidth * 72;
   const pageHeightPt = printHeight * 72;
   
-  console.log('SVG Export dimensions:', {
-    pageSize: options.pageSize,
-    orientation: options.orientation,
-    printWidth,
-    printHeight,
-    pageWidthPt,
-    pageHeightPt
-  });
+  console.log('SVG Export dimensions:', { pageSize: options.pageSize, orientation: options.orientation, printWidth, printHeight, pageWidthPt, pageHeightPt });
   
   // Get the original viewBox
   const originalViewBox = svgElement.getAttribute('viewBox') || '';
   console.log('Original viewBox:', originalViewBox);
   
-  // Create the export SVG structure
+  // Create the export SVG structure - SIMPLE APPROACH
   let svgContent = '';
   
   // Add XML declaration
   svgContent += '<?xml version="1.0" encoding="UTF-8"?>\n';
   
-  // Start SVG element with proper dimensions and namespace
+  // Start SVG element with proper dimensions
   svgContent += `<svg xmlns="http://www.w3.org/2000/svg" `;
   svgContent += `width="${pageWidthPt}pt" height="${pageHeightPt}pt" `;
   
   if (originalViewBox) {
     svgContent += `viewBox="${originalViewBox}" `;
-  } else {
-    // Try to get bounding box
-    try {
-      const bbox = svgElement.getBBox();
-      svgContent += `viewBox="${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}" `;
-      console.log('Created viewBox from bbox:', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
-    } catch {
-      console.warn('Could not get bounding box, using default viewBox');
-      svgContent += `viewBox="0 0 800 600" `;
-    }
   }
   
   svgContent += `preserveAspectRatio="xMidYMid meet">\n`;
@@ -233,421 +108,25 @@ export function createSVGExport(options: SVGExportOptions): string | null {
   // Add background if specified
   if (options.showBackground) {
     const bgColor = options.backgroundColor || '#ffffff';
-    
-    // Position background to cover the entire viewBox area
     if (originalViewBox) {
       const [x, y, width, height] = originalViewBox.split(' ').map(Number);
       svgContent += `  <rect x="${x}" y="${y}" width="${width}" height="${height}" fill="${bgColor}"/>\n`;
-      console.log(`Background positioned at: x=${x}, y=${y}, width=${width}, height=${height}`);
-    } else {
-      svgContent += `  <rect x="0" y="0" width="100%" height="100%" fill="${bgColor}"/>\n`;
-      console.log('Using percentage-based background positioning');
     }
   }
   
-  // Extract and organize the SVG content by line style from all SVGs
-  let organizedContent: Record<string, string> = {};
+  // SIMPLE APPROACH: Just serialize the entire SVG content directly
+  // This avoids all the complex layering that was causing duplicate dials
+  const svgInnerContent = svgElement.innerHTML;
+  console.log('SVG inner content length:', svgInnerContent.length);
   
-  // Process all SVGs in the container
-  allSvgsInContainer.forEach((svg, index) => {
-    console.log(`Processing SVG ${index} for content extraction`);
-    const svgContent = extractAndOrganizeSVGContentByLineStyle(svg as SVGSVGElement, lineStyles);
-    
-    // Merge content from this SVG into the organized content
-    Object.entries(svgContent).forEach(([layerName, content]) => {
-      if (!organizedContent[layerName]) {
-        organizedContent[layerName] = '';
-      }
-      organizedContent[layerName] += content;
-    });
-  });
-  
-  console.log('Organized content layers:', Object.keys(organizedContent));
-  
-  // Debug the North Point layer content
-  if (organizedContent['North Point']) {
-    console.log('North Point layer content length:', organizedContent['North Point'].length);
-    console.log('North Point layer preview:', organizedContent['North Point'].substring(0, 200));
-  } else {
-    console.log('North Point layer is missing or empty');
-  }
-  
-  // Add each layer as a separate group
-  Object.entries(organizedContent).forEach(([layerName, content]) => {
-    if (content.trim()) {
-      svgContent += `  <!-- ${layerName} -->\n`;
-      svgContent += `  <g id="${layerName.toLowerCase().replace(/\s+/g, '-')}" data-layer="${layerName}">\n`;
-      svgContent += content;
-      svgContent += `  </g>\n`;
-    }
-  });
+  // Add the content directly without any special processing
+  svgContent += svgInnerContent;
   
   // Close SVG
   svgContent += '\n</svg>';
   
-  console.log('Generated SVG content length:', svgContent.length);
+  console.log('Generated simple SVG content length:', svgContent.length);
   console.log('SVG preview:', svgContent.substring(0, 500) + '...');
-  
-  return svgContent;
-}
-
-/**
- * Extracts and organizes SVG content into layers based on line styles
- */
-function extractAndOrganizeSVGContentByLineStyle(svgElement: SVGSVGElement, lineStyleMap: Record<string, string>): Record<string, string> {
-  const layers: Record<string, string> = {};
-  
-  // Special layers for non-line elements
-  const specialLayers: Record<string, string> = {
-    'Background': '',
-    'Page Border': '',
-    'Labels': '',
-    'Gnomon': '',
-    'Text Block': '',
-    'North Point': '',
-    'Other Elements': ''
-  };
-
-  console.log('Analyzing SVG structure by line style...');
-  console.log('SVG children:', svgElement.children.length);
-  
-  // Log all children to see what we're working with
-  Array.from(svgElement.children).forEach((child, index) => {
-    console.log(`Child ${index}:`, {
-      tagName: child.tagName,
-      id: child.getAttribute('id'),
-      class: child.getAttribute('class'),
-      transform: child.getAttribute('transform')
-    });
-  });
-
-  // Helper function to find NorthPoint elements within a group
-  const findNorthPointInGroup = (element: Element): Element | null => {
-    // Check if this element itself is a NorthPoint
-    if (isNorthPointElementString(element)) {
-      return element;
-    }
-    
-    // Recursively search children
-    for (const child of Array.from(element.children)) {
-      const found = findNorthPointInGroup(child);
-      if (found) return found;
-    }
-    
-    return null;
-  };
-
-  // Process each child element of the SVG
-  Array.from(svgElement.children).forEach((child, index) => {
-    console.log(`Processing child ${index}:`, child.tagName, {
-      class: child.getAttribute('class'),
-      stroke: child.getAttribute('stroke'),
-      fill: child.getAttribute('fill'),
-      strokeDasharray: child.getAttribute('stroke-dasharray'),
-      id: child.getAttribute('id'),
-      transform: child.getAttribute('transform')
-    });
-    
-    // Check if this element or any of its descendants contains a NorthPoint
-    const northPointElement = findNorthPointInGroup(child);
-    if (northPointElement) {
-      console.log('Found NorthPoint within group - extracting it separately');
-      const serialized = new XMLSerializer().serializeToString(northPointElement);
-      console.log('NorthPoint serialized length:', serialized.length);
-      console.log('NorthPoint serialized preview:', serialized.substring(0, 150));
-      const fixedContent = fixSVGContent(serialized);
-      console.log('NorthPoint fixed content length:', fixedContent.length);
-      specialLayers['North Point'] += `    ${fixedContent}\n`;
-      console.log('Added NorthPoint to special layers, total North Point content length:', specialLayers['North Point'].length);
-      
-      // Continue processing the rest of the group without the NorthPoint
-      // Clone the element and remove the NorthPoint
-      const clonedChild = child.cloneNode(true) as Element;
-      const clonedNorthPoint = findNorthPointInGroup(clonedChild);
-      if (clonedNorthPoint && clonedNorthPoint.parentElement) {
-        clonedNorthPoint.parentElement.removeChild(clonedNorthPoint);
-      }
-      
-      // Process the remaining content
-      const remainingContent = new XMLSerializer().serializeToString(clonedChild);
-      const fixedRemainingContent = fixSVGContent(remainingContent);
-      const layerName = categorizeElementForLayer(clonedChild, lineStyleMap);
-      
-      if (Object.prototype.hasOwnProperty.call(specialLayers, layerName)) {
-        specialLayers[layerName] += `    ${fixedRemainingContent}\n`;
-      } else {
-        if (!layers[layerName]) {
-          layers[layerName] = '';
-        }
-        layers[layerName] += `    ${fixedRemainingContent}\n`;
-      }
-      
-      return; // Skip normal processing for this element
-    }
-    
-    // Skip clipping boundary (debugging element)
-    if ((child.getAttribute('stroke') === '#ccc' && 
-         child.getAttribute('fill') === 'none' && 
-         child.getAttribute('stroke-dasharray') === '5,5') ||
-        (child.getAttribute('stroke-dasharray') === '5,5' && 
-         child.getAttribute('fill') === 'none')) {
-      console.log('Skipping clipping boundary element');
-      return;
-    }
-
-    const serialized = new XMLSerializer().serializeToString(child);
-    const fixedContent = fixSVGContent(serialized);
-
-    // Categorize element by line style or element type
-    const layerName = categorizeElementForLayer(child, lineStyleMap);
-    
-    if (Object.prototype.hasOwnProperty.call(specialLayers, layerName)) {
-      specialLayers[layerName] += `    ${fixedContent}\n`;
-    } else {
-      // It's a line style layer
-      if (!layers[layerName]) {
-        layers[layerName] = '';
-      }
-      layers[layerName] += `    ${fixedContent}\n`;
-    }
-  });
-
-  // Debug special layers before combining
-  console.log('Special layers before combining:', Object.keys(specialLayers));
-  Object.entries(specialLayers).forEach(([name, content]) => {
-    console.log(`Special layer "${name}": ${content.length} chars`);
-    if (name === 'North Point') {
-      console.log('North Point content preview:', content.substring(0, 100));
-    }
-  });
-  
-  // Combine special layers and line style layers
-  const allLayers = { ...specialLayers, ...layers };
-  
-  console.log('All layers after combining:', Object.keys(allLayers));
-  
-  // Remove empty layers
-  Object.keys(allLayers).forEach(key => {
-    if (!allLayers[key].trim()) {
-      console.log(`Removing empty layer: ${key}`);
-      delete allLayers[key];
-    }
-  });
-
-  return allLayers;
-}
-
-/**
- * Categorizes an element for layer assignment
- */
-function categorizeElementForLayer(element: Element, lineStyleMap: Record<string, string>): string {
-  // Handle special element types first
-  if (element.tagName === 'rect') {
-    const fill = element.getAttribute('fill');
-    const stroke = element.getAttribute('stroke');
-    
-    if (fill && fill !== 'none' && !stroke) {
-      return 'Background';
-    } else if (stroke) {
-      return 'Page Border';
-    }
-  }
-  
-  if (element.tagName === 'text') {
-    return 'Labels';
-  }
-  
-  // For groups and line elements, analyze their line style
-  const lineStyleInfo = extractLineStyleFromElementString(element);
-  
-  if (lineStyleInfo) {
-    const styleKey = lineStyleInfo.styleKey;
-    const styleName = lineStyleMap[styleKey] || lineStyleInfo.descriptiveName || styleKey;
-    return styleName;
-  }
-  
-  // Check if it's a gnomon element
-  if (isGnomonElementString(element)) {
-    return 'Gnomon';
-  }
-  
-  // Check if it's a text block
-  if (isTextBlockElementString(element)) {
-    return 'Text Block';
-  }
-  
-  // Check if it's a NorthPoint (compass rose)
-  if (isNorthPointElementString(element)) {
-    console.log('Found NorthPoint element for SVG export:', {
-      tagName: element.tagName,
-      transform: element.getAttribute('transform')
-    });
-    return 'North Point';
-  }
-  
-  return 'Other Elements';
-}
-
-/**
- * Extracts line style information from an SVG element (string-based version)
- */
-function extractLineStyleFromElementString(element: Element): { styleKey: string, descriptiveName: string } | null {
-  // Check if element has line/stroke properties
-  const stroke = element.getAttribute('stroke');
-  const strokeWidth = element.getAttribute('stroke-width');
-  const strokeDasharray = element.getAttribute('stroke-dasharray');
-  
-  if (!stroke || stroke === 'none') {
-    // Check children for line properties (for groups)
-    const children = Array.from(element.children);
-    for (const child of children) {
-      const childResult = extractLineStyleFromElementString(child);
-      if (childResult) return childResult;
-    }
-    return null;
-  }
-  
-  // Create a style key based on the visual properties
-  let styleKey = '';
-  let descriptiveName = '';
-  
-  // Determine line width
-  if (strokeWidth) {
-    if (strokeWidth.includes('0.1') || strokeWidth.includes('hairline')) {
-      styleKey += 'hairline';
-      descriptiveName += 'Hairline ';
-    } else if (strokeWidth.includes('0.5')) {
-      styleKey += '0.5mm';
-      descriptiveName += 'Medium ';
-    } else if (strokeWidth.includes('1')) {
-      styleKey += '1mm';
-      descriptiveName += 'Thick ';
-    } else {
-      styleKey += strokeWidth.replace(/[^a-zA-Z0-9]/g, '');
-      descriptiveName += strokeWidth + ' ';
-    }
-  } else {
-    styleKey += 'default';
-    descriptiveName += 'Default ';
-  }
-  
-  // Determine line style
-  if (strokeDasharray && strokeDasharray !== 'none') {
-    if (strokeDasharray.includes('5,5') || strokeDasharray.includes('10,10')) {
-      styleKey += '-dashed';
-      descriptiveName += 'Dashed';
-    } else if (strokeDasharray.includes('2,2') || strokeDasharray.includes('1,1')) {
-      styleKey += '-dotted';
-      descriptiveName += 'Dotted';
-    } else {
-      styleKey += '-custom-dash';
-      descriptiveName += 'Custom Dashed';
-    }
-  } else {
-    styleKey += '-solid';
-    descriptiveName += 'Solid';
-  }
-  
-  // Add color info
-  if (stroke && stroke !== 'black' && stroke !== '#000000') {
-    styleKey += '-' + stroke.replace(/[^a-zA-Z0-9]/g, '');
-    descriptiveName += ' ' + stroke;
-  } else {
-    styleKey += '-black';
-    descriptiveName += ' Black';
-  }
-  
-  return { styleKey, descriptiveName };
-}
-
-/**
- * Checks if an element is a gnomon element (string-based version)
- */
-function isGnomonElementString(element: Element): boolean {
-  if (element.tagName === 'polygon' || element.tagName === 'path') {
-    return true;
-  }
-  
-  if (element.tagName === 'g') {
-    const children = Array.from(element.children);
-    return children.some(child => 
-      child.tagName === 'polygon' || 
-      (child.tagName === 'path' && child.getAttribute('d')?.includes('M'))
-    );
-  }
-  
-  return false;
-}
-
-/**
- * Checks if an element is a text block element (string-based version)
- */
-function isTextBlockElementString(element: Element): boolean {
-  if (element.tagName === 'text') {
-    return true;
-  }
-  
-  if (element.tagName === 'g') {
-    const children = Array.from(element.children);
-    return children.some(child => child.tagName === 'text' || child.tagName === 'tspan');
-  }
-  
-  return false;
-}
-
-/**
- * Checks if an element is a NorthPoint (compass rose) element
- */
-function isNorthPointElementString(element: Element): boolean {
-  if (element.tagName === 'g') {
-    const transform = element.getAttribute('transform');
-    
-    // NorthPoint has a distinctive transform pattern with -460.035 and -600 offsets
-    if (transform && transform.includes('-460.035') && transform.includes('-600')) {
-      console.log('Found NorthPoint by transform pattern:', transform);
-      return true;
-    }
-    
-    // Also check if it contains the distinctive NorthPoint path data
-    const paths = element.querySelectorAll('path');
-    for (const path of paths) {
-      const d = path.getAttribute('d');
-      if (d && (d.includes('920.07,600') || d.includes('M920.07,600')) && d.includes('365.24')) {
-        console.log('Found NorthPoint by path data:', d.substring(0, 50) + '...');
-        return true;
-      }
-    }
-  }
-  
-  return false;
-}
-
-/**
- * Fixes common issues in SVG content for export
- */
-function fixSVGContent(svgContent: string): string {
-  // Fix stroke-width values without units
-  svgContent = svgContent.replace(/stroke-width="([0-9.]+)"/g, (_, value) => {
-    return `stroke-width="${value}px"`;
-  });
-  
-  // Fix stroke-dasharray values without units
-  svgContent = svgContent.replace(/stroke-dasharray="([0-9.,\s]+)"/g, (_, value) => {
-    const fixedValue = value.split(',').map((v: string) => {
-      const trimmed = v.trim();
-      const num = parseFloat(trimmed);
-      if (!isNaN(num) && !trimmed.includes('px')) {
-        return num + 'px';
-      }
-      return trimmed;
-    }).join(',');
-    return `stroke-dasharray="${fixedValue}"`;
-  });
-  
-  // Fix font-size values without units
-  svgContent = svgContent.replace(/font-size="([0-9.]+)"/g, (_, value) => {
-    return `font-size="${value}px"`;
-  });
   
   return svgContent;
 }
