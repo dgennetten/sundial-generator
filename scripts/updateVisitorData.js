@@ -56,7 +56,6 @@ async function updateVisitorData(daysSince = 7) {
 async function main() {
   const daysSince = parseInt(process.argv[2]) || 7;
   const shouldBuild = process.argv.includes('--build');
-  const shouldDeploy = process.argv.includes('--deploy');
   
   try {
     // Update visitor data
@@ -74,18 +73,6 @@ async function main() {
       const distVisitorDataPath = path.join(__dirname, '..', 'dist', 'visitor-data.json');
       fs.copyFileSync(OUTPUT_FILE, distVisitorDataPath);
       console.log('✅ Build complete and visitor data copied!');
-    }
-    
-    // Optionally deploy (if you have a deploy script)
-    if (shouldDeploy) {
-      console.log('\n🚀 Deploying...');
-      try {
-        const { execSync } = await import('child_process');
-        execSync('node deploy.js', { stdio: 'inherit' });
-        console.log('✅ Deployment complete!');
-      } catch (deployError) {
-        console.log('⚠️  Deploy script not found or failed. You can deploy manually.');
-      }
     }
     
     console.log('\n🎉 All done! Your visitor map should now show updated data.');
