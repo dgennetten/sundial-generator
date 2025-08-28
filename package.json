@@ -22,6 +22,7 @@
     "update-and-build": "node scripts/updateVisitorData.js 7 --build",
     "update-and-deploy": "npm run update-and-build && npm run deploy",
     "deploy": "node deploy.js",
+    "local-deploy": "node localDeploy.js",
     "test-connection": "node scripts/testConnection.js",
     "verify-credentials": "node scripts/verifyCredentials.js",
     "update-credentials": "node scripts/updateCredentials.js",
