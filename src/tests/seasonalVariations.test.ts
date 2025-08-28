@@ -43,7 +43,7 @@ describe('Seasonal Shadow Variations - Fort Collins', () => {
   });
 
   describe('Shadow Length Seasonal Variations', () => {
-    Object.entries(seasonalDates).forEach(([season, dateInfo]) => {
+    Object.entries(seasonalDates).forEach(([, dateInfo]) => {
       it(`should calculate realistic shadow length for ${dateInfo.name}`, () => {
         const solarPos = getSolarPosition(dateInfo.day, latitude, longitude, tzMeridian, testHour);
         const shadowCoords = projectShadowToSurface(solarPos.altitude, solarPos.azimuth, gnomonHeight, 'Horizontal', latitude);

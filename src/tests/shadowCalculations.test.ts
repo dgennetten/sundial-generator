@@ -11,7 +11,7 @@ describe('Shadow Calculations - Fort Collins Test', () => {
   // Fort Collins coordinates
   const latitude = 40.5853;  // degrees North
   const longitude = -105.0844; // degrees West
-  const timezone = -7; // Mountain Standard Time (UTC-7)
+  // const timezone = -7; // Mountain Standard Time (UTC-7) - not currently used
   const tzMeridian = -105; // Mountain Time zone meridian
   const gnomonHeight = 1.0; // Normalized gnomon height of 1 unit
   const testHour = 12.0; // Noon (solar time will be adjusted)
@@ -99,7 +99,6 @@ describe('Shadow Calculations - Fort Collins Test', () => {
       const shadowAngleDeg = Math.atan2(shadowCoords.x, shadowCoords.y) * 180 / Math.PI;
       
       // Alternative calculation using trigonometry for verification
-      const altitudeDeg = solarPos.altitude * 180 / Math.PI;
       const expectedShadowLength = gnomonHeight / Math.tan(solarPos.altitude);
       const expectedNormalizedLength = expectedShadowLength / gnomonHeight;
       
