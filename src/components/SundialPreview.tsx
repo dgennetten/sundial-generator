@@ -62,7 +62,7 @@ type Props = {
 type SundialPreviewProps = { config: Props } | Props;
 
 const SundialPreview = React.memo((props: SundialPreviewProps) => {
-  const p: Props = (props as any).config ?? (props as Props);
+  const p: Props = (props as { config?: Props }).config ?? (props as Props);
   const {
     lat,
     lng,
@@ -975,7 +975,6 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       }
     }
 
-    // eslint-disable-next-line no-console
     console.log(`Best match for declination ${decl.toFixed(2)}°: difference = ${smallestDifference.toFixed(2)}°`);
 
     // Only return the point if it's reasonably close (within 5 degrees)
@@ -983,7 +982,6 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       return bestPoint;
     }
 
-    // eslint-disable-next-line no-console
     console.log(`No suitable intersection found for declination ${decl.toFixed(2)}° (tolerance: 5.0°)`);
     return null;
   }
@@ -1058,7 +1056,6 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       if (segment.length < 2) {
         // Debug log for short segments
         if (segment.length === 1) {
-          // eslint-disable-next-line no-console
           console.log('Short declination segment (1 point):', segment[0]);
         }
         return null;
@@ -1081,7 +1078,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
   // Draw declination lines
   if (declinationLines.length > 0) {
-    // eslint-disable-next-line no-console
+
     console.log('Declination lines to render:', declinationLines.map(l => ({date: l.date, active: l.active, styleId: l.styleId, id: l.id, decl: getDeclinationForLine(l)})));
   }
 
@@ -1094,7 +1091,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Handle Month Boundaries as a special case
     if (line.date === 'Month Boundaries') {
       const monthBoundaries = getMonthBoundaryDeclinations();
-      // eslint-disable-next-line no-console
+  
       console.log(`Month Boundaries for ${dateRange}:`, monthBoundaries.map(b => `${b.month} (day ${b.day}, decl ${b.decl.toFixed(2)}°)`));
       return monthBoundaries.flatMap((boundary, boundaryIdx) => {
         const elements = renderDeclinationLine(boundary.decl, style, `${line.id || line.date || idx}-${boundary.month}-${boundaryIdx}`);
@@ -1111,11 +1108,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   });
 
   // Create declination noonmarks if enabled
-  // eslint-disable-next-line no-console
   console.log(`Declination noonmarks enabled: ${declinationNoonmarks}, scale: ${scale}, viewBoxScaleFactor: ${viewBoxScaleFactor}`);
 
   const declinationNoonmarkElements = declinationNoonmarks ? declinationLines.flatMap((line, idx) => {
-    // eslint-disable-next-line no-console
+
     console.log(`Processing declination line ${idx}: ${line.date}, active: ${line.active}`);
 
     if (!line.active) return [];
@@ -1123,7 +1119,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
     if (!style) {
-      // eslint-disable-next-line no-console
+  
       console.log(`No style found for line ${line.date}, styleId: ${line.styleId}`);
       return [];
     }
@@ -1155,7 +1151,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const circleRadius = strokeWidthMm * 2;
 
     // Debug logging for declination noonmarks
-    // eslint-disable-next-line no-console
+
     console.log(`Declination noonmark processing: ${line.date}, active: ${line.active}, style: ${style?.color}`);
 
 
@@ -1165,18 +1161,18 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Handle Month Boundaries as a special case
     if (line.date === 'Month Boundaries') {
       const monthBoundaries = getMonthBoundaryDeclinations();
-      // eslint-disable-next-line no-console
+  
       console.log(`Month boundaries for noonmarks:`, monthBoundaries.map(b => `${b.month} (decl ${b.decl.toFixed(2)}°)`));
       return monthBoundaries.flatMap((boundary, boundaryIdx) => {
         // Find single intersection point with noon analemma for this declination
         const intersectionPoint = findDeclinationAnalemmaIntersection(boundary.decl);
         if (!intersectionPoint) {
-          // eslint-disable-next-line no-console
+      
           console.log(`No intersection found for month boundary ${boundary.month} (decl ${boundary.decl.toFixed(2)}°)`);
           return [];
         }
 
-        // eslint-disable-next-line no-console
+    
         console.log(`Found intersection for ${boundary.month}: (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
         console.log(`Rendering circle for ${boundary.month} at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
 
@@ -1197,7 +1193,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Handle regular declination lines
     const decl = getDeclinationForLine(line);
     if (decl === null) {
-      // eslint-disable-next-line no-console
+  
       console.log(`No declination found for line: ${line.date}`);
       return [];
     }
@@ -1205,12 +1201,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Find single intersection point with noon analemma for this declination
     const intersectionPoint = findDeclinationAnalemmaIntersection(decl);
     if (!intersectionPoint) {
-      // eslint-disable-next-line no-console
+  
       console.log(`No intersection found for declination ${decl.toFixed(2)}° (line: ${line.date})`);
       return [];
     }
 
-    // eslint-disable-next-line no-console
+
     console.log(`Found intersection for ${line.date} (decl ${decl.toFixed(2)}°): (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
     console.log(`Rendering circle at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
 
@@ -1579,7 +1575,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
               {sundialNotesMode === 'seasonsGuide' && (() => {
                 // Generate noon analemma using the EXACT same logic as the main sundial hourlines
-                let seasonsNoonPoints = getAnalemmaPointsProjected({
+                const seasonsNoonPoints = getAnalemmaPointsProjected({
                   lat,
                   lng,
                   tzMeridian,
@@ -1795,7 +1791,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   if (seasonsNoonPoints.length === 0) return null;
 
                   // Always sort by day for smooth full-year loop
-                  let optimizedPoints = [...seasonsNoonPoints].sort((a, b) => (a.day ?? 0) - (b.day ?? 0));
+                  const optimizedPoints = [...seasonsNoonPoints].sort((a, b) => (a.day ?? 0) - (b.day ?? 0));
 
                   const pathData = generateSeasonsGuidePath(optimizedPoints);
                   if (!pathData) return null;
@@ -2000,7 +1996,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
               {sundialNotesMode === 'northPoint' && (() => {
                 // Generate noon analemma to calculate the replica height for scaling
-                let noonPoints = getAnalemmaPointsProjected({
+                const noonPoints = getAnalemmaPointsProjected({
                   lat,
                   lng,
                   tzMeridian,

@@ -218,7 +218,7 @@ const App: React.FC = () => {
   }, [inclineType, latitude, tiltAngle]);
 
   // Function to calculate gnomon height based on winter-to-summer solstice distance
-  const calculateAutoGnomonHeight = (lat: number, pageHeight: number): number => {
+  const calculateAutoGnomonHeight = useCallback((lat: number, pageHeight: number): number => {
     // Winter solstice is around day 355, Summer solstice is around day 172
     const winterSolsticeDay = 355;
     const summerSolsticeDay = 172;
@@ -246,13 +246,13 @@ const App: React.FC = () => {
     const requiredGnomonHeight = targetDistance / shadowDistance;
     // Reduce to 66% of previous value, then increase by factor of 55/40
     return Math.round(requiredGnomonHeight * 0.66 * (55/40));
-  };
+  }, [longitude, tzMeridian]);
 
   const effectiveGnomonHeight = useMemo(() => (
     gnomonMode === 'auto'
       ? calculateAutoGnomonHeight(effectiveLatitude, pageHeight)
       : gnomonHeight
-  ), [gnomonMode, effectiveLatitude, pageHeight, gnomonHeight]);
+  ), [gnomonMode, effectiveLatitude, pageHeight, gnomonHeight, calculateAutoGnomonHeight]);
 
   const activeHourlineIntervals = useMemo(() =>
     hourlineIntervals.filter(i => i.active),
@@ -323,8 +323,6 @@ const App: React.FC = () => {
     customWidth,
     customHeight,
     hourlineDateRange,
-    hourlineIntervals,
-    declinationLines,
     lineStyles,
     labelWinterSide,
     labelSummerSide,
@@ -348,6 +346,8 @@ const App: React.FC = () => {
     declinationNoonmarks,
     dialFacing,
     latitude,
+    activeHourlineIntervals,
+    normalizedDeclinationLines,
   ]);
   return (
     <div className="app-container">

@@ -297,7 +297,9 @@ async function exportPDF(options: ExportOptions): Promise<void> {
     styleEl.setAttribute('type', 'text/css');
     styleEl.textContent = 'path,line,polyline,polygon,circle,ellipse,rect { vector-effect: non-scaling-stroke; }';
     svgEl.insertBefore(styleEl, svgEl.firstChild);
-  } catch {}
+  } catch {
+    // Silently fail if style element insertion fails
+  }
 
   // Extract dimensions directly from the SVG that was generated
   const svgWidthAttr = svgEl.getAttribute('width');
@@ -351,8 +353,8 @@ async function exportPDF(options: ExportOptions): Promise<void> {
 
   // Dynamically import dependencies to keep initial bundle small
   const { jsPDF } = await import('jspdf');
-  const svg2pdfModule: any = await import('svg2pdf.js');
-  const svg2pdfFn: any = svg2pdfModule?.default || svg2pdfModule?.svg2pdf || (globalThis as any)?.svg2pdf;
+  const svg2pdfModule: Record<string, unknown> = await import('svg2pdf.js');
+  const svg2pdfFn: unknown = svg2pdfModule?.default || svg2pdfModule?.svg2pdf || (globalThis as Record<string, unknown>)?.svg2pdf;
   if (typeof svg2pdfFn !== 'function') {
     throw new Error('svg2pdf function not available (module format mismatch)');
   }
@@ -495,8 +497,8 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
   }
   
   // Set up the container dimensions
-  let svgWidth = originalSvg.clientWidth || (originalSvg as any).offsetWidth || domWidth;
-  let svgHeight = originalSvg.clientHeight || (originalSvg as any).offsetHeight || domHeight;
+  let svgWidth = originalSvg.clientWidth || (originalSvg as unknown as HTMLElement).offsetWidth || domWidth;
+  let svgHeight = originalSvg.clientHeight || (originalSvg as unknown as HTMLElement).offsetHeight || domHeight;
   
   // Fallback: if SVG dimensions are still zero, use container dimensions
   if (svgWidth === 0) svgWidth = domWidth;
@@ -640,7 +642,7 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
   document.body.appendChild(tempContainer);
   
   // Force layout and check dimensions after adding to DOM
-  tempContainer.offsetHeight; // Force reflow
+  void tempContainer.offsetHeight; // Force reflow by accessing layout property
   console.log(`Final temp container dimensions: ${tempContainer.offsetWidth}x${tempContainer.offsetHeight}`);
   
   // If the temp container has no dimensions, try to fix it
@@ -652,7 +654,7 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
     tempContainer.style.minHeight = `${svgHeight}px`;
     
     // Force another reflow
-    tempContainer.offsetHeight;
+    void tempContainer.offsetHeight; // Force reflow by accessing layout property
     console.log(`After fix: ${tempContainer.offsetWidth}x${tempContainer.offsetHeight}`);
   }
 
