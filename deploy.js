@@ -13,7 +13,7 @@ const config = {
   remotePath: 'sundial.gennetten.org' // Your remote directory on DreamHost
 };
 
-const localPath = path.join(__dirname, '..', 'dist');
+const localPath = path.join(__dirname, 'dist');
 
 const c = new ftp();
 
