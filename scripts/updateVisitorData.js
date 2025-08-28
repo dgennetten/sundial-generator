@@ -55,26 +55,12 @@ async function updateVisitorData(daysSince = 7) {
 // Main function
 async function main() {
   const daysSince = parseInt(process.argv[2]) || 7;
-  const shouldBuild = process.argv.includes('--build');
   
   try {
     // Update visitor data
     await updateVisitorData(daysSince);
     
     // Optionally build the project
-    if (shouldBuild) {
-      console.log('\n🔨 Building project...');
-      const { execSync } = await import('child_process');
-      execSync('npm run build', { stdio: 'inherit' });
-      
-      // Ensure visitor data is copied to dist folder after build
-      console.log('📋 Copying visitor data to dist folder...');
-      const fs = await import('fs');
-      const distVisitorDataPath = path.join(__dirname, '..', 'dist', 'visitor-data.json');
-      fs.copyFileSync(OUTPUT_FILE, distVisitorDataPath);
-      console.log('✅ Build complete and visitor data copied!');
-    }
-    
     console.log('\n🎉 All done! Your visitor map should now show updated data.');
     
   } catch (error) {

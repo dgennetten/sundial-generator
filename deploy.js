@@ -10,7 +10,7 @@ const config = {
   host: process.env.FTP_HOST,
   user: process.env.FTP_USER,
   password: process.env.FTP_PASSWORD,
-  remotePath: '/home/dgennetten/sundial.gennetten.org/' // Your remote directory on DreamHost
+  remotePath: 'sundial.gennetten.org' // Your remote directory on DreamHost
 };
 
 const localPath = path.join(__dirname, 'dist');

@@ -21,8 +21,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Update, Build, and Deploy
-        run: npm run update-and-deploy
+      - name: Update Visitor Data
+        run: npm run update-visitors-7d
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Deploy to DreamHost
+        run: npm run deploy
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
