@@ -387,12 +387,73 @@ async function exportPDF(options: ExportOptions): Promise<void> {
     height: doc.internal.pageSize.getHeight()
   });
 
+
+
+
+
+
+
+
+
+  // Process the North Point specifically to handle its unique rendering issues
+  processNorthPointForPdf(svgEl);
+
   // Render SVG without forcing a different width/height (prevents stroke/dash scaling)
   await Promise.resolve(svg2pdfFn(svgEl, doc, { x: 0, y: 0, useCSS: true }));
 
   // Trigger download
   doc.save(buildFilename(options, 'pdf'));
 }
+
+/**
+ * Finds and processes the North Point (Compass Rose) in the SVG for PDF export.
+ * This function simplifies the complex transform attribute to ensure it is rendered correctly.
+ * @param svgEl The SVG element to process.
+ */
+function processNorthPointForPdf(svgEl: SVGSVGElement) {
+  console.log('Processing North Point for PDF export by simplifying its transform...');
+
+  const groupElements = svgEl.querySelectorAll('g');
+  let northPointFound = false;
+
+  groupElements.forEach(groupEl => {
+    const transform = groupEl.getAttribute('transform');
+    if (transform && transform.includes('translate') && transform.includes('scale') && transform.includes('-460.035')) {
+      console.log('Found North Point group with transform:', transform);
+      northPointFound = true;
+
+      // This logic is borrowed from the successful PNG export
+      const translateMatch = transform.match(/translate\(([^)]+)\)/);
+      const scaleMatch = transform.match(/scale\(([^)]+)\)/);
+
+      if (translateMatch && scaleMatch) {
+        const [tx, ty] = translateMatch[1].split(',').map(s => parseFloat(s.trim()));
+        const scaleFactor = parseFloat(scaleMatch[1]);
+
+        // The original transform is a chain that svg2pdf.js cannot handle.
+        // We simplify it to a single translate and scale.
+        const finalTx = tx + (-460.035 * scaleFactor);
+        const finalTy = ty + (-600 * scaleFactor);
+        const newTransform = `translate(${finalTx}, ${finalTy}) scale(${scaleFactor})`;
+
+        console.log('Simplified North Point transform to:', newTransform);
+        groupEl.setAttribute('transform', newTransform);
+      }
+    }
+  });
+
+  if (!northPointFound) {
+    console.log('North Point group not found in SVG for PDF processing.');
+  }
+}
+
+
+
+
+
+
+
+
 
 /**
  * Exports as PNG using html2canvas (dynamically imported)
