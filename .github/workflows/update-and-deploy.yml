@@ -5,6 +5,9 @@ on:
     - cron: "0 0 * * *" # Runs every day at midnight
   workflow_dispatch: # Allows manual triggering
 
+permissions:
+  contents: write # Allow write access to the repository
+
 jobs:
   update-and-deploy:
     runs-on: ubuntu-latest

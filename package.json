@@ -23,6 +23,8 @@
     "update-and-deploy": "npm run update-and-build && npm run deploy",
     "deploy": "node deploy.js",
     "local-deploy": "node localDeploy.js",
+    "test-credentials": "node scripts/testCredentials.js",
+    "update-and-local-deploy": "npm run update-visitors-7d && npm run build && npm run local-deploy",
     "test-connection": "node scripts/testConnection.js",
     "verify-credentials": "node scripts/verifyCredentials.js",
     "update-credentials": "node scripts/updateCredentials.js",
