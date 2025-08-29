@@ -152,6 +152,8 @@ export interface ExportOptions {
   gnomonType?: GnomonType;
   /** Location name for logging */
   locationName?: string;
+  /** Sundial notes mode for logging */
+  sundialNotesMode?: string;
 }
 
 /**

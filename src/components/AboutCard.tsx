@@ -22,7 +22,11 @@ const AboutCard: React.FC = () => {
             fontWeight: '500',
           }}
         >
-             <p>
+           <p>
+            <strong>PLEASE SHARE!</strong> I'm seeing lots of traffic from all over the Northern Hemisphere. Would love to hear from some of you!
+          
+          </p>
+          <p>
             <strong>New Feature:</strong> New 'Compass Rose' option in Sundial Notes.
           </p>
             <p>
@@ -30,19 +34,6 @@ const AboutCard: React.FC = () => {
           </p>
            <p>
             <strong>New Feature:</strong> PDF Export!! .
-          </p>
-          <p>
-            <strong>New Feature:</strong> Automatic default Hourline optimization for half vs full year.
-          </p>
-           <p>
-            <strong>New Feature:</strong> Massive perfomance, security and reliabilty improvements! (thx
-            Augmentcode.com!).
-          </p>
-          <p>
-            <strong>New Feature:</strong> Custom page sizes.
-          </p>
-           <p>
-            <strong>Known Bug:</strong> Southern Hemisphere dials are not yet supported. (and no Southern Hemisphere visitors have shown up yet.)
           </p>
         </div>
         <div

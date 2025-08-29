@@ -112,10 +112,21 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
       pageSize: options.pageSize,
       dateRange: options.dateRange || 'Unknown',
       gnomonType: options.gnomonType || 'Unknown',
-      locationName: options.locationName || 'Unknown'
+      locationName: options.locationName || 'Unknown',
+      sundialNotesMode: options.sundialNotesMode || 'Unknown'
     };
 
-    const response = await fetch('/export-logger.php', {
+    console.log('Sending log data to server:', logData);
+
+    // Use production URL in development since Vite doesn't handle PHP
+    const isDevelopment = import.meta.env.DEV;
+    const loggerUrl = isDevelopment 
+      ? 'https://sundial.gennetten.org/export-logger.php'
+      : '/export-logger.php';
+
+    console.log('Using logger URL:', loggerUrl);
+
+    const response = await fetch(loggerUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -133,9 +144,12 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
     try {
       const result = JSON.parse(text);
       console.log('Export logged successfully:', result);
+      if (!result.emailSent) {
+        console.warn('Email was not sent:', result.emailError || 'Unknown error');
+      }
     } catch {
       // Non-JSON response (e.g., HTML dev page). Log and continue.
-      console.log('Export logged (non-JSON response).');
+      console.log('Export logged (non-JSON response):', text.substring(0, 200));
     }
   } catch (error) {
     console.warn('Error logging export activity:', error);
@@ -352,7 +366,11 @@ async function exportPDF(options: ExportOptions): Promise<void> {
   }
 
   // Dynamically import dependencies to keep initial bundle small
-  const { jsPDF } = await import('jspdf');
+  const jsPDFModule = await import('jspdf');
+  const jsPDF = (jsPDFModule as { jsPDF: new (options?: unknown) => {
+    internal: { pageSize: { getWidth(): number; getHeight(): number } };
+    save(filename: string): void;
+  } }).jsPDF;
   const svg2pdfModule: Record<string, unknown> = await import('svg2pdf.js');
   const svg2pdfFn: unknown = svg2pdfModule?.default || svg2pdfModule?.svg2pdf || (globalThis as Record<string, unknown>)?.svg2pdf;
   if (typeof svg2pdfFn !== 'function') {
@@ -741,12 +759,12 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
     console.log(`Container dimensions: ${containerWidth}x${containerHeight}`);
     
     const canvasPromise = html2canvas(tempContainer, {
-      background: options.showBackground ? (options.backgroundColor || '#ffffff') : '#ffffff',
+      backgroundColor: options.showBackground ? (options.backgroundColor || '#ffffff') : '#ffffff',
       useCORS: true,
       allowTaint: true,
       logging: false, // Disable html2canvas logging for better performance
       ...(scale > 1 && { scale: scale }), // Add scale option if > 1
-    });
+    } as Parameters<typeof html2canvas>[1]);
     
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('PNG export timed out after 30 seconds')), 30000);
@@ -781,11 +799,11 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
             // Final fallback: try with minimal options
             console.log('Trying final fallback with minimal options...');
             html2canvas(svgContainer, {
-              background: '#ffffff',
+              backgroundColor: '#ffffff',
               width: svgContainer.offsetWidth,
               height: svgContainer.offsetHeight,
               logging: false,
-            }).then(fallbackCanvas => {
+            } as Parameters<typeof html2canvas>[1]).then(fallbackCanvas => {
               fallbackCanvas.toBlob((fallbackBlob) => {
                 if (fallbackBlob) {
                   console.log('Fallback PNG export succeeded');

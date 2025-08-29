@@ -3,7 +3,18 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
+
+// Add CORS headers to allow requests from localhost during development
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -12,8 +23,30 @@ require '/home/dgennetten/PHPMailer/src/Exception.php';
 require '/home/dgennetten/PHPMailer/src/PHPMailer.php';
 require '/home/dgennetten/PHPMailer/src/SMTP.php';
 
+// Convert sundialNotesMode to readable format
+function formatSundialNotesMode($mode) {
+    switch ($mode) {
+        case 'none':
+            return 'None';
+        case 'northPoint':
+            return 'Compass Rose';
+        case 'seasonsGuide':
+            return 'Season Guide';
+        case 'textBlock':
+            return 'Text Block';
+        default:
+            return ucfirst($mode);
+    }
+}
+
 // Get export data from POST request
-$data = json_decode(file_get_contents('php://input'), true);
+$rawInput = file_get_contents('php://input');
+$data = json_decode($rawInput, true);
+
+// Check if data was received and parsed correctly
+if ($data === null) {
+    $data = []; // Fallback to empty array if JSON parsing failed
+}
 
 // Extract export details
 $exportFormat = $data['exportFormat'] ?? 'Unknown';
@@ -21,6 +54,9 @@ $pageSize = $data['pageSize'] ?? 'Unknown';
 $dateRange = $data['dateRange'] ?? 'Unknown';
 $gnomonType = $data['gnomonType'] ?? 'Unknown';
 $locationName = $data['locationName'] ?? 'Unknown';
+$sundialNotesMode = $data['sundialNotesMode'] ?? 'Unknown';
+
+$sundialNotesDisplay = formatSundialNotesMode($sundialNotesMode);
 
 // Get current date and time
 $date = date('Y-m-d');
@@ -35,7 +71,7 @@ if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
 }
 
 // Create log entry
-$logEntry = "$date; $time; $locationName; $ipAddress; $exportFormat; $pageSize; $dateRange; $gnomonType\n";
+$logEntry = "$date; $time; $locationName; $ipAddress; $exportFormat; $pageSize; $dateRange; $gnomonType; $sundialNotesMode\n";
 
 // Log directory path - try multiple locations
 $logDir = null;
@@ -79,8 +115,23 @@ $debugInfo = [
     'logDirWritable' => $logDir ? is_writable($logDir) : false,
     'logFileWritable' => $logFile ? is_writable($logFile) : false,
     'logSuccess' => $logSuccess,
+    'rawInputLength' => strlen($rawInput ?? ''),
+    'jsonParseSuccess' => $data !== null,
+    'receivedData' => $data,
     'phpError' => error_get_last()
 ];
+
+// Prepare email body
+$emailBody = "Sundial Export Activity\n\n";
+$emailBody .= "Date: $date\n";
+$emailBody .= "Time: $time\n";
+$emailBody .= "Location: $locationName\n";
+$emailBody .= "IP Address: $ipAddress\n";
+$emailBody .= "Export Format: $exportFormat\n";
+$emailBody .= "Page Size: $pageSize\n";
+$emailBody .= "Date Range: $dateRange\n";
+$emailBody .= "Gnomon Type: $gnomonType\n";
+$emailBody .= "Sundial Notes: $sundialNotesDisplay\n";
 
 // Send email notification
 $mail = new PHPMailer(true);
@@ -102,24 +153,13 @@ try {
 
     $mail->isHTML(false);
     $mail->Subject = "Sundial Export: $exportFormat - $pageSize - $dateRange";
-    
-    $emailBody = "Sundial Export Activity\n\n";
-    $emailBody .= "Date: $date\n";
-    $emailBody .= "Time: $time\n";
-    $emailBody .= "Location: $locationName\n";
-    $emailBody .= "IP Address: $ipAddress\n";
-    $emailBody .= "Export Format: $exportFormat\n";
-    $emailBody .= "Page Size: $pageSize\n";
-    $emailBody .= "Date Range: $dateRange\n";
-    $emailBody .= "Gnomon Type: $gnomonType\n";
-    
     $mail->Body = $emailBody;
 
     $mail->send();
     $emailSent = true;
 } catch (Exception $e) {
     $emailSent = false;
-    $emailError = $mail->ErrorInfo;
+    $emailError = $mail->ErrorInfo . ' | Exception: ' . $e->getMessage();
 }
 
 // Prepare response
@@ -134,6 +174,9 @@ $response = [
     'pageSize' => $pageSize,
     'dateRange' => $dateRange,
     'gnomonType' => $gnomonType,
+    'sundialNotesMode' => $sundialNotesMode,
+    'sundialNotesDisplay' => $sundialNotesDisplay,
+    'emailBody' => $emailBody ?? 'Not set',
     'debug' => $debugInfo
 ];
 

@@ -410,6 +410,16 @@ const App: React.FC = () => {
           setCustomHeight={setCustomHeight}
           customUnits={customUnits}
           setCustomUnits={setCustomUnits}
+          onBorderChange={(showBorder, margin, style) => {
+            setShowBorder(showBorder);
+            setBorderMargin(margin / 25.4); // Convert mm to inches
+            setBorderStyle(style);
+          }}
+          onBackgroundChange={(showBackground, backgroundColor) => {
+            setShowBackground(showBackground);
+            setBackgroundColor(backgroundColor);
+          }}
+          lineStyles={lineStyles}
         />
 
         <GnomonSettings
@@ -491,16 +501,6 @@ const App: React.FC = () => {
           setSundialNotesMode={setSundialNotesMode}
         />
                  <DesignExport
-           onBorderChange={(showBorder, margin, style) => {
-             setShowBorder(showBorder);
-             setBorderMargin(margin / 25.4); // Convert mm to inches
-             setBorderStyle(style);
-           }}
-           onBackgroundChange={(showBackground, backgroundColor) => {
-             setShowBackground(showBackground);
-             setBackgroundColor(backgroundColor);
-           }}
-           lineStyles={lineStyles}
            pageSize={pageSize}
            orientation={orientation}
            customWidth={customWidth}
@@ -508,6 +508,9 @@ const App: React.FC = () => {
            dateRange={hourlineDateRange}
            gnomonType={gnomonType}
            locationName={locationName}
+           showBackground={showBackground}
+           backgroundColor={backgroundColor}
+           sundialNotesMode={sundialNotesMode}
          />
         <VisitorMap />
         <AboutCard />
