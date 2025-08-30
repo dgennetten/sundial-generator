@@ -193,6 +193,70 @@ function buildFilename(options: ExportOptions, ext: 'svg' | 'png' | 'pdf'): stri
 }
 
 /**
+ * Logs print activity to the server (exported for use in components)
+ */
+export async function logPrintActivity(options: {
+  pageSize: PageSize;
+  orientation: 'Landscape' | 'Portrait';
+  customWidth?: number;
+  customHeight?: number;
+  dateRange?: string;
+  gnomonType?: string;
+  locationName?: string;
+  sundialNotesMode?: string;
+}): Promise<void> {
+  try {
+    const logData = {
+      exportFormat: 'PRINT', // Use 'PRINT' to distinguish from file exports
+      pageSize: options.pageSize,
+      dateRange: options.dateRange || 'Unknown',
+      gnomonType: options.gnomonType || 'Unknown',
+      locationName: options.locationName || 'Unknown',
+      sundialNotesMode: options.sundialNotesMode || 'Unknown'
+    };
+
+    console.log('Sending print log data to server:', logData);
+
+    // Use production URL in development since Vite doesn't handle PHP
+    const isDevelopment = import.meta.env.DEV;
+    const loggerUrl = isDevelopment 
+      ? 'https://sundial.gennetten.org/export-logger.php'
+      : '/export-logger.php';
+
+    console.log('Using logger URL:', loggerUrl);
+
+    const response = await fetch(loggerUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(logData)
+    });
+
+    if (!response.ok) {
+      console.warn('Failed to log print activity:', response.status, response.statusText);
+      return; // Do not throw
+    }
+
+    // In dev, the PHP file may return HTML or plain text. Try JSON, fall back to text.
+    const text = await response.text();
+    try {
+      const result = JSON.parse(text);
+      console.log('Print logged successfully:', result);
+      if (!result.emailSent) {
+        console.warn('Email was not sent:', result.emailError || 'Unknown error');
+      }
+    } catch {
+      // Non-JSON response (e.g., HTML dev page). Log and continue.
+      console.log('Print logged (non-JSON response):', text.substring(0, 200));
+    }
+  } catch (error) {
+    console.warn('Error logging print activity:', error);
+    // Don't throw error - logging failure shouldn't prevent printing
+  }
+}
+
+/**
  * Exports the sundial design in the specified format
  */
 export async function exportSundial(options: ExportOptions): Promise<void> {

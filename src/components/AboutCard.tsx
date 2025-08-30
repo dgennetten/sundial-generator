@@ -26,6 +26,9 @@ const AboutCard: React.FC = () => {
             <strong>PLEASE SHARE!</strong> I'm seeing lots of traffic from all over the Northern Hemisphere. Would love to hear from some of you!
           
           </p>
+           <p>
+            <strong>New Feature:</strong> PRINT BUTTON!
+          </p>
           <p>
             <strong>New Feature:</strong> New 'Compass Rose' option in Sundial Notes.
           </p>

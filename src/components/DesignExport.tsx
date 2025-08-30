@@ -1,7 +1,7 @@
 // src/components/DesignExport.tsx
 import React, { useState } from 'react';
 import { Printer, Download } from 'lucide-react';
-import { exportSundial, type ExportFormat, type PageSize } from '../utils/exportUtils';
+import { exportSundial, logPrintActivity, type ExportFormat, type PageSize } from '../utils/exportUtils';
 
 
 
@@ -28,7 +28,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
   // Responsive: detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     console.log('Starting print...');
     
     // Create dynamic print styles based on current page settings
@@ -81,6 +81,24 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
     
     // Trigger print
     window.print();
+    
+    // Log the print activity
+    try {
+      await logPrintActivity({
+        pageSize,
+        orientation,
+        customWidth,
+        customHeight,
+        dateRange,
+        gnomonType,
+        locationName,
+        sundialNotesMode,
+      });
+      console.log('Print activity logged successfully');
+    } catch (error) {
+      console.error('Failed to log print activity:', error);
+      // Don't prevent printing if logging fails
+    }
     
     // Clean up the dynamic style after a delay
     setTimeout(() => {

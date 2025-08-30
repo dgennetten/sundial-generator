@@ -62,8 +62,8 @@
       "lon": -122.917,
       "timezone": "America/Los_Angeles",
       "firstVisit": "08/Aug/2025:05:11:44 -0700",
-      "lastVisit": "29/Aug/2025:03:12:48 -0700",
-      "visitCount": 36
+      "lastVisit": "30/Aug/2025:04:10:10 -0700",
+      "visitCount": 37
     },
     {
       "ip": "172.59.227.198",
@@ -738,8 +738,8 @@
       "lon": -95.2787,
       "timezone": "America/Chicago",
       "firstVisit": "25/Aug/2025:07:58:38 -0700",
-      "lastVisit": "29/Aug/2025:11:50:54 -0700",
-      "visitCount": 394
+      "lastVisit": "30/Aug/2025:11:17:07 -0700",
+      "visitCount": 402
     },
     {
       "ip": "43.157.147.3",
@@ -868,8 +868,8 @@
       "lon": -112.074036,
       "timezone": "America/Phoenix",
       "firstVisit": "28/Aug/2025:01:12:05 -0700",
-      "lastVisit": "28/Aug/2025:01:12:05 -0700",
-      "visitCount": 1
+      "lastVisit": "30/Aug/2025:06:08:19 -0700",
+      "visitCount": 2
     },
     {
       "ip": "188.246.111.252",
@@ -922,10 +922,88 @@
       "firstVisit": "29/Aug/2025:05:51:33 -0700",
       "lastVisit": "29/Aug/2025:06:13:50 -0700",
       "visitCount": 22
+    },
+    {
+      "ip": "52.167.144.67",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Virginia",
+      "city": "Boydton",
+      "lat": 36.677696,
+      "lon": -78.37471,
+      "timezone": "America/New_York",
+      "firstVisit": "30/Aug/2025:02:28:27 -0700",
+      "lastVisit": "30/Aug/2025:02:28:27 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "52.167.144.187",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Virginia",
+      "city": "Boydton",
+      "lat": 36.677696,
+      "lon": -78.37471,
+      "timezone": "America/New_York",
+      "firstVisit": "30/Aug/2025:02:28:33 -0700",
+      "lastVisit": "30/Aug/2025:02:28:33 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "198.55.98.216",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "California",
+      "city": "Los Angeles",
+      "lat": 34.0544,
+      "lon": -118.244,
+      "timezone": "America/Los_Angeles",
+      "firstVisit": "30/Aug/2025:05:39:23 -0700",
+      "lastVisit": "30/Aug/2025:05:39:23 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "4.227.36.53",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Arizona",
+      "city": "Phoenix",
+      "lat": 33.448376,
+      "lon": -112.074036,
+      "timezone": "America/Phoenix",
+      "firstVisit": "30/Aug/2025:06:08:38 -0700",
+      "lastVisit": "30/Aug/2025:06:08:38 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "38.147.235.15",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Fort Collins",
+      "lat": 40.5447,
+      "lon": -105.1069,
+      "timezone": "America/Denver",
+      "firstVisit": "30/Aug/2025:10:26:24 -0700",
+      "lastVisit": "30/Aug/2025:10:26:29 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "66.115.181.159",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Georgia",
+      "city": "Atlanta",
+      "lat": 33.8743,
+      "lon": -84.4653,
+      "timezone": "America/New_York",
+      "firstVisit": "30/Aug/2025:10:48:27 -0700",
+      "lastVisit": "30/Aug/2025:10:48:27 -0700",
+      "visitCount": 1
     }
   ],
-  "totalVisitors": 71,
-  "totalVisits": 1192,
-  "processedDate": "2025-08-29T19:06:57.738Z",
+  "totalVisitors": 77,
+  "totalVisits": 1209,
+  "processedDate": "2025-08-30T18:28:57.896Z",
   "daysSince": 7
 }
