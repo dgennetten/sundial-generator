@@ -488,6 +488,25 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const fontSizeMm = fontSize * 0.3528;
   const dialTextBlockFontSizeMm = dialTextBlockFontSize * 0.3528;
 
+  // Helper function to check if a text element is within the border bounds
+  function isTextWithinBounds(x: number, y: number): boolean {
+    // Account for the transform applied to the sundial content group
+    const transformY = (gnomonPosition ?? 0) - (height / 2);
+    
+    const left = -width / 2 + borderMarginMm;
+    const top = -height / 2 + borderMarginMm - transformY;
+    const right = width / 2 - borderMarginMm;
+    const bottom = height / 2 - borderMarginMm - transformY;
+    
+    // Add some padding for text size (approximate text bounds)
+    const textPadding = fontSizeMm / 2;
+    
+    return x >= (left + textPadding) && 
+           x <= (right - textPadding) && 
+           y >= (top + textPadding) && 
+           y <= (bottom - textPadding);
+  }
+
   // Improved hour label placement
   const hourLabelElements: JSX.Element[] = [];
   if (hourlineIntervals) {
@@ -564,20 +583,23 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             const offset = isInvertedGeometry ? -labelOffsetPx : labelOffsetPx;
             const x = scale * pt.x + nx * offset;
             const y = scale * pt.y + ny * offset;
-            hourLabelElements.push(
-              <text
-                key={`label-${h}-${winterSolsticeDay}`}
-                x={x}
-                y={y}
-                fontSize={fontSizeMm}
-                fill={style.color || 'black'}
-                textAnchor="middle"
-                alignmentBaseline="middle"
-                style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
-              >
-                {formatHour(h)}
-              </text>
-            );
+            // Only add label if it's within the border bounds
+            if (isTextWithinBounds(x, y)) {
+              hourLabelElements.push(
+                <text
+                  key={`label-${h}-${winterSolsticeDay}`}
+                  x={x}
+                  y={y}
+                  fontSize={fontSizeMm}
+                  fill={style.color || 'black'}
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+                >
+                  {formatHour(h)}
+                </text>
+              );
+            }
           }
 
           // If labelSummerSide, place at summer solstice
@@ -600,20 +622,23 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             const offset = isInvertedGeometry ? labelOffsetPx : -labelOffsetPx;
             const x = scale * pt.x + nx * offset;
             const y = scale * pt.y + ny * offset;
-            hourLabelElements.push(
-              <text
-                key={`label-${h}-${summerSolsticeDay}`}
-                x={x}
-                y={y}
-                fontSize={fontSizeMm}
-                fill={style.color || 'black'}
-                textAnchor="middle"
-                alignmentBaseline="middle"
-                style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
-              >
-                {formatHour(h, true)}
-              </text>
-            );
+            // Only add label if it's within the border bounds
+            if (isTextWithinBounds(x, y)) {
+              hourLabelElements.push(
+                <text
+                  key={`label-${h}-${summerSolsticeDay}`}
+                  x={x}
+                  y={y}
+                  fontSize={fontSizeMm}
+                  fill={style.color || 'black'}
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+                >
+                  {formatHour(h, true)}
+                </text>
+              );
+            }
           }
         } else if (dateRange === 'SummerToFall') {
           // Only one segment: summer to winter solstice
@@ -636,20 +661,23 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             const offset = isInvertedGeometry ? labelOffsetPx : -labelOffsetPx;
             const x = scale * pt.x + nx * offset;
             const y = scale * pt.y + ny * offset;
-            hourLabelElements.push(
-              <text
-                key={`label-${h}-${summerSolsticeDay}`}
-                x={x}
-                y={y}
-                fontSize={fontSizeMm}
-                fill={style.color || 'black'}
-                textAnchor="middle"
-                alignmentBaseline="middle"
-                style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
-              >
-                {formatHour(h, true)}
-              </text>
-            );
+            // Only add label if it's within the border bounds
+            if (isTextWithinBounds(x, y)) {
+              hourLabelElements.push(
+                <text
+                  key={`label-${h}-${summerSolsticeDay}`}
+                  x={x}
+                  y={y}
+                  fontSize={fontSizeMm}
+                  fill={style.color || 'black'}
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+                >
+                  {formatHour(h, true)}
+                </text>
+              );
+            }
           }
           // If labelWinterSide, place at end (winter solstice)
           if (labelWinterSide) {
@@ -661,20 +689,23 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             const offset = isInvertedGeometry ? -labelOffsetPx : labelOffsetPx;
             const x = scale * pt.x + nx * offset;
             const y = scale * pt.y + ny * offset;
-            hourLabelElements.push(
-              <text
-                key={`label-${h}-${winterSolsticeDay}`}
-                x={x}
-                y={y}
-                fontSize={fontSizeMm}
-                fill={style.color || 'black'}
-                textAnchor="middle"
-                alignmentBaseline="middle"
-                style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
-              >
-                {formatHour(h)}
-              </text>
-            );
+            // Only add label if it's within the border bounds
+            if (isTextWithinBounds(x, y)) {
+              hourLabelElements.push(
+                <text
+                  key={`label-${h}-${winterSolsticeDay}`}
+                  x={x}
+                  y={y}
+                  fontSize={fontSizeMm}
+                  fill={style.color || 'black'}
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+                >
+                  {formatHour(h)}
+                </text>
+              );
+            }
           }
         } else {
           points = points.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
@@ -720,20 +751,23 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
             const x = scale * pt.x + nx * offset;
             const y = scale * pt.y + ny * offset;
-            hourLabelElements.push(
-              <text
-                key={`label-${h}-${solsticeDay}`}
-                x={x}
-                y={y}
-                fontSize={fontSizeMm}
-                fill={style.color || 'black'}
-                textAnchor="middle"
-                alignmentBaseline="middle"
-                style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
-              >
-                {formatHour(h, isSummer)}
-              </text>
-            );
+            // Only add label if it's within the border bounds
+            if (isTextWithinBounds(x, y)) {
+              hourLabelElements.push(
+                <text
+                  key={`label-${h}-${solsticeDay}`}
+                  x={x}
+                  y={y}
+                  fontSize={fontSizeMm}
+                  fill={style.color || 'black'}
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+                >
+                  {formatHour(h, isSummer)}
+                </text>
+              );
+            }
           });
         }
       }
