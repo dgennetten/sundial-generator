@@ -516,14 +516,12 @@ const App: React.FC = () => {
         <AboutCard />
       </div>
 
-
-
       {/* Preview Panel - Right Side */}
-        <React.Profiler id="SundialPreview" onRender={(id, phase, actualDuration) => {
-          if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
-        }}>
-          <SundialPreview config={previewConfig} />
-        </React.Profiler>
+      <React.Profiler id="SundialPreview" onRender={(id, phase, actualDuration) => {
+        if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
+      }}>
+        <SundialPreview config={previewConfig} />
+      </React.Profiler>
 
     </div>
   );

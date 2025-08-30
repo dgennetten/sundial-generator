@@ -6,6 +6,9 @@ on:
     - cron: '0 2 * * *'
   workflow_dispatch: # Allow manual trigger
 
+permissions:
+  contents: write # Allow write access to the repository
+
 jobs:
   update-visitors:
     runs-on: ubuntu-latest
@@ -13,6 +16,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -26,12 +31,13 @@ jobs:
       run: npm run update-visitors
 
     - name: Commit and push changes
-      env:
-        TOKEN: ${{ secrets.ActionTokenSundial }}
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add public/visitor-data.json
-        git diff --quiet && git diff --staged --quiet || git commit -m "Update visitor data [skip ci]"
-        git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
-        git push
+        if ! git diff --staged --quiet; then
+          git commit -m "Update visitor data [skip ci]"
+          git push
+        else
+          echo "No changes to commit"
+        fi

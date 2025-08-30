@@ -1,6 +1,6 @@
 // src/components/DesignExport.tsx
 import React, { useState } from 'react';
-import { Save } from 'lucide-react';
+import { Printer, Download } from 'lucide-react';
 import { exportSundial, type ExportFormat, type PageSize } from '../utils/exportUtils';
 
 
@@ -27,6 +27,69 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
 
   // Responsive: detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
+
+  const handlePrint = () => {
+    console.log('Starting print...');
+    
+    // Create dynamic print styles based on current page settings
+    const printStyleId = 'dynamic-print-styles';
+    let existingStyle = document.getElementById(printStyleId);
+    
+    if (existingStyle) {
+      existingStyle.remove();
+    }
+    
+    // Determine page size and orientation
+    const isLandscape = orientation === 'Landscape';
+    let pageSizeStr = 'letter';
+    
+    switch (pageSize) {
+      case 'A4':
+        pageSizeStr = 'A4';
+        break;
+      case 'Letter':
+        pageSizeStr = 'letter';
+        break;
+      case '11x17':
+        pageSizeStr = 'ledger'; // 11x17 is also known as ledger/tabloid
+        break;
+      case '10x15cm Postcard':
+        pageSizeStr = '100mm 150mm';
+        break;
+      case 'Custom':
+        if (customWidth && customHeight) {
+          pageSizeStr = `${customWidth}mm ${customHeight}mm`;
+        }
+        break;
+    }
+    
+    const orientationStr = isLandscape ? 'landscape' : 'portrait';
+    
+    // Create and inject dynamic print styles
+    const style = document.createElement('style');
+    style.id = printStyleId;
+    style.textContent = `
+      @media print {
+        @page {
+          size: ${pageSizeStr} ${orientationStr};
+          margin: 0.5in;
+        }
+      }
+    `;
+    
+    document.head.appendChild(style);
+    
+    // Trigger print
+    window.print();
+    
+    // Clean up the dynamic style after a delay
+    setTimeout(() => {
+      const styleToRemove = document.getElementById(printStyleId);
+      if (styleToRemove) {
+        styleToRemove.remove();
+      }
+    }, 1000);
+  };
 
   const handleExport = async () => {
     if (isExporting) {
@@ -64,7 +127,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title"><Save color="#2563eb" size={20} style={{marginRight: 6}} />Export</h3>
+        <h3 className="card-title"><Printer color="#2563eb" size={20} style={{marginRight: 6}} />Print and Export</h3>
       </div>
       <div className="card-content">
         <div 
@@ -76,6 +139,30 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
             flexDirection: 'row'
           }}
         >
+          {/* Print button first */}
+          <div className="form-group" style={{ alignSelf: 'end', flex: isMobile ? '0 0 auto' : 'auto' }}>
+            <button 
+              className="btn btn-primary"
+              onClick={handlePrint}
+              style={{ 
+                width: isMobile ? '100%' : 'auto',
+                minWidth: isMobile ? 'auto' : '70px'
+              }}
+            >
+              <Printer size={16} style={{ marginRight: '4px' }} />
+              Print
+            </button>
+          </div>
+          
+          {/* Separator */}
+          <div style={{ 
+            width: isMobile ? '100%' : '1px', 
+            height: isMobile ? '1px' : '20px', 
+            backgroundColor: '#e5e7eb',
+            margin: isMobile ? '0' : '0 0.5rem'
+          }} />
+          
+          {/* Export Format */}
           <div className="form-group" style={{ flex: isMobile ? '1' : 'auto' }}>
             <label className="form-label">Export Format</label>
             <select 
@@ -92,6 +179,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
               <option value="PDF">PDF</option>
             </select>
           </div>
+          
           {/* DPI input, only show for PNG */}
           {format === 'PNG' && (
             <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
@@ -108,28 +196,26 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
               />
             </div>
           )}
+          
+          {/* Export button */}
           <div className="form-group" style={{ alignSelf: 'end', flex: isMobile ? '0 0 auto' : 'auto' }}>
             <button 
               className="btn btn-primary"
               onClick={handleExport}
               disabled={isExporting}
               style={{ 
-                width: isMobile ? 'auto' : 'auto',
+                width: isMobile ? '100%' : 'auto',
+                minWidth: isMobile ? 'auto' : '70px',
                 opacity: isExporting ? 0.7 : 1,
                 cursor: isExporting ? 'not-allowed' : 'pointer',
                 transform: isExporting ? 'scale(0.98)' : 'scale(1)',
                 transition: 'all 0.1s ease'
               }}
             >
+              <Download size={16} style={{ marginRight: '4px' }} />
               {isExporting ? 'Exporting...' : 'Export'}
             </button>
           </div>
-        </div>
-
-        <div className="form-group">
-          <p style={{ fontSize: '0.9em', color: '#718096', margin: 0 }}>
-            {format === 'SVG' ? 'SVG export is now functional!' : format === 'PNG' ? 'PNG export is functional!' : 'PDF export is functional!'}
-          </p>
         </div>
       </div>
     </div>
