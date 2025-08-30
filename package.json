@@ -1,6 +1,6 @@
 {
   "name": "sundial-generator",
-  "version": "1.11.1",
+  "version": "1.11.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -30,7 +30,10 @@
     "update-credentials": "node scripts/updateCredentials.js",
     "debug-logs": "node scripts/debugLogProcessing.js",
     "debug-logs-90d": "node scripts/debugLogProcessing.js 90",
-    "cron-update": "node scripts/cronUpdate.js"
+    "cron-update": "node scripts/cronUpdate.js",
+    "upload-php": "node uploadPHP.js",
+    "deploy-with-php": "node deployWithPHP.js",
+    "check-export-logger": "node scripts/checkExportLogger.js"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",

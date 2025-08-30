@@ -2,6 +2,9 @@ import ftp from 'ftp';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,48 +17,62 @@ const config = {
 };
 
 const localPath = path.join(__dirname, 'dist');
-const phpFiles = ['export-logger.php']; // PHP files to deploy alongside the app
+const phpFiles = [
+  'export-logger.php'
+];
 
 const c = new ftp();
 
 c.on('ready', () => {
   console.log('Connected to FTP server.');
+  
+  // First, clear the remote directory (except PHP files we want to keep)
   c.list(config.remotePath, (err, list) => {
     if (err) throw err;
-    const deletePromises = list.map(item => {
-      return new Promise((resolve, reject) => {
-        const remoteFile = `${config.remotePath}/${item.name}`;
-        if (item.type === 'd') {
-          c.rmdir(remoteFile, true, err => {
-            if (err) return reject(err);
-            console.log(`Deleted directory: ${remoteFile}`);
-            resolve();
-          });
-        } else {
-          c.delete(remoteFile, err => {
-            if (err) return reject(err);
-            console.log(`Deleted file: ${remoteFile}`);
-            resolve();
-          });
-        }
+    
+    const deletePromises = list
+      .filter(item => !phpFiles.includes(item.name)) // Don't delete PHP files
+      .map(item => {
+        return new Promise((resolve, reject) => {
+          const remoteFile = `${config.remotePath}/${item.name}`;
+          if (item.type === 'd') {
+            c.rmdir(remoteFile, true, err => {
+              if (err) return reject(err);
+              console.log(`Deleted directory: ${remoteFile}`);
+              resolve();
+            });
+          } else {
+            c.delete(remoteFile, err => {
+              if (err) return reject(err);
+              console.log(`Deleted file: ${remoteFile}`);
+              resolve();
+            });
+          }
+        });
       });
-    });
 
     Promise.all(deletePromises)
       .then(() => {
-        console.log('Cleared remote directory.');
-        return uploadDir(localPath, config.remotePath);
-      })
-      .then(() => {
-        console.log('Dist files uploaded. Now uploading PHP files...');
-        return uploadPHPFiles();
-      })
-      .then(() => {
-        console.log('✅ All files uploaded successfully (including PHP files).');
-        c.end();
+        console.log('Cleared remote directory (preserved PHP files).');
+        
+        // Upload dist files
+        uploadDir(localPath, config.remotePath)
+          .then(() => {
+            console.log('Dist files uploaded.');
+            // Upload PHP files
+            return uploadPHPFiles();
+          })
+          .then(() => {
+            console.log('All files uploaded successfully.');
+            c.end();
+          })
+          .catch(err => {
+            console.error('Error during upload:', err);
+            c.end();
+          });
       })
       .catch(err => {
-        console.error('Error during deployment:', err);
+        console.error('Error clearing remote directory:', err);
         c.end();
       });
   });
@@ -111,7 +128,7 @@ function uploadPHPFiles() {
 
         c.put(localFilePath, remoteFilePath, err => {
           if (err) return fileReject(err);
-          console.log(`✅ Uploaded PHP file: ${filename}`);
+          console.log(`✅ Uploaded PHP file: ${localFilePath} to ${remoteFilePath}`);
           fileResolve();
         });
       });
@@ -119,11 +136,20 @@ function uploadPHPFiles() {
 
     Promise.all(uploadPromises)
       .then(() => {
-        console.log('📄 All PHP files uploaded successfully.');
+        console.log('✅ All PHP files uploaded successfully.');
         resolve();
       })
       .catch(reject);
   });
 }
+
+c.on('error', (err) => {
+  console.error('FTP connection error:', err);
+});
+
+console.log('🚀 Starting deployment with PHP files...');
+console.log(`📁 Local dist path: ${localPath}`);
+console.log(`🌐 Remote path: ${config.remotePath}`);
+console.log(`📄 PHP files to upload: ${phpFiles.join(', ')}`);
 
 c.connect(config);

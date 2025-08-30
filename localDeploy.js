@@ -17,6 +17,7 @@ const config = {
 };
 
 const localPath = path.join(__dirname, 'dist');
+const phpFiles = ['export-logger.php']; // PHP files to deploy alongside the app
 
 const c = new ftp();
 
@@ -46,52 +47,85 @@ c.on('ready', () => {
     Promise.all(deletePromises)
       .then(() => {
         console.log('Cleared remote directory.');
-        uploadDir(localPath, config.remotePath);
+        return uploadDir(localPath, config.remotePath);
+      })
+      .then(() => {
+        console.log('Dist files uploaded. Now uploading PHP files...');
+        return uploadPHPFiles();
+      })
+      .then(() => {
+        console.log('✅ All files uploaded successfully (including PHP files).');
+        c.end();
       })
       .catch(err => {
-        console.error('Error clearing remote directory:', err);
+        console.error('Error during deployment:', err);
         c.end();
       });
   });
 });
 
 function uploadDir(localDir, remoteDir) {
-  fs.readdir(localDir, { withFileTypes: true }, (err, files) => {
-    if (err) throw err;
+  return new Promise((resolve, reject) => {
+    fs.readdir(localDir, { withFileTypes: true }, (err, files) => {
+      if (err) return reject(err);
 
-    const uploadPromises = files.map(file => {
-      return new Promise((resolve, reject) => {
-        const localFilePath = path.join(localDir, file.name);
-        const remoteFilePath = `${remoteDir}/${file.name}`;
+      const uploadPromises = files.map(file => {
+        return new Promise((fileResolve, fileReject) => {
+          const localFilePath = path.join(localDir, file.name);
+          const remoteFilePath = `${remoteDir}/${file.name}`;
 
-        if (file.isDirectory()) {
-          c.mkdir(remoteFilePath, true, err => {
-            if (err) return reject(err);
-            console.log(`Created directory: ${remoteFilePath}`);
-            uploadDir(localFilePath, remoteFilePath);
-            resolve();
-          });
-        } else {
-          c.put(localFilePath, remoteFilePath, err => {
-            if (err) return reject(err);
-            console.log(`Uploaded file: ${localFilePath} to ${remoteFilePath}`);
-            resolve();
-          });
+          if (file.isDirectory()) {
+            c.mkdir(remoteFilePath, true, err => {
+              if (err) return fileReject(err);
+              console.log(`Created directory: ${remoteFilePath}`);
+              uploadDir(localFilePath, remoteFilePath)
+                .then(fileResolve)
+                .catch(fileReject);
+            });
+          } else {
+            c.put(localFilePath, remoteFilePath, err => {
+              if (err) return fileReject(err);
+              console.log(`Uploaded file: ${localFilePath} to ${remoteFilePath}`);
+              fileResolve();
+            });
+          }
+        });
+      });
+
+      Promise.all(uploadPromises)
+        .then(resolve)
+        .catch(reject);
+    });
+  });
+}
+
+function uploadPHPFiles() {
+  return new Promise((resolve, reject) => {
+    const uploadPromises = phpFiles.map(filename => {
+      return new Promise((fileResolve, fileReject) => {
+        const localFilePath = path.join(__dirname, filename);
+        const remoteFilePath = `${config.remotePath}/${filename}`;
+
+        // Check if local file exists
+        if (!fs.existsSync(localFilePath)) {
+          console.warn(`⚠️  PHP file not found: ${localFilePath}`);
+          return fileResolve(); // Continue with other files
         }
+
+        c.put(localFilePath, remoteFilePath, err => {
+          if (err) return fileReject(err);
+          console.log(`✅ Uploaded PHP file: ${filename}`);
+          fileResolve();
+        });
       });
     });
 
     Promise.all(uploadPromises)
       .then(() => {
-        if (localDir === localPath) {
-          console.log('All files uploaded successfully.');
-          c.end();
-        }
+        console.log('📄 All PHP files uploaded successfully.');
+        resolve();
       })
-      .catch(err => {
-        console.error('Error uploading files:', err);
-        c.end();
-      });
+      .catch(reject);
   });
 }
 
