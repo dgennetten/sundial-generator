@@ -29,6 +29,11 @@ jobs:
 
     - name: Update visitor data
       run: npm run update-visitors
+      env:
+        SFTP_HOST: ${{ secrets.SFTP_HOST }}
+        SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+        SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+        SFTP_LOG_PATH: ${{ secrets.SFTP_LOG_PATH }}
 
     - name: Commit and push changes
       run: |

@@ -28,6 +28,11 @@ jobs:
 
       - name: Update Visitor Data
         run: npm run update-visitors-7d
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_LOG_PATH: ${{ secrets.SFTP_LOG_PATH }}
 
       - name: Commit visitor data changes
         run: |
