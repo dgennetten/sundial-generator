@@ -84,6 +84,8 @@ const VisitorMap: React.FC = () => {
 
       if (parseResult.success) {
         console.log('VisitorMap: Successfully loaded visitor data - Visitors:', parseResult.data.totalVisitors, 'Visits:', parseResult.data.totalVisits);
+        console.log('VisitorMap: ProcessedDate:', parseResult.data.processedDate);
+        console.log('VisitorMap: Last visitor IP:', parseResult.data.visitors[parseResult.data.visitors.length - 1]?.ip);
         setVisitorData(parseResult.data);
         setError(null);
       } else {
