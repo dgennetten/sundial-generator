@@ -84,9 +84,23 @@ function uploadDir(localDir, remoteDir) {
                 .catch(fileReject);
             });
           } else {
+            // Special logging for visitor-data.json
+            if (file.name === 'visitor-data.json') {
+              console.log(`🔍 About to upload visitor-data.json:`);
+              console.log(`   Local path: ${localFilePath}`);
+              console.log(`   Remote path: ${remoteFilePath}`);
+              console.log(`   File size: ${fs.statSync(localFilePath).size} bytes`);
+            }
+            
             c.put(localFilePath, remoteFilePath, err => {
               if (err) return fileReject(err);
               console.log(`Uploaded file: ${localFilePath} to ${remoteFilePath}`);
+              
+              // Extra confirmation for visitor-data.json
+              if (file.name === 'visitor-data.json') {
+                console.log(`✅ visitor-data.json upload completed successfully!`);
+              }
+              
               fileResolve();
             });
           }

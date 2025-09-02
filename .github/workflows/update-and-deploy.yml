@@ -37,6 +37,13 @@ jobs:
       - name: Build Project
         run: npm run build
 
+      - name: Verify built files
+        run: |
+          echo "Checking if visitor-data.json exists in dist folder:"
+          ls -la dist/visitor-data.json
+          echo "Last few lines of built visitor-data.json:"
+          tail -10 dist/visitor-data.json
+
       - name: Deploy to DreamHost
         run: npm run deploy
         env:
