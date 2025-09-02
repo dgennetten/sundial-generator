@@ -34,6 +34,16 @@ jobs:
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
           SFTP_LOG_PATH: ${{ secrets.SFTP_LOG_PATH }}
 
+      - name: Build Project
+        run: npm run build
+
+      - name: Deploy to DreamHost
+        run: npm run deploy
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+
       - name: Commit visitor data changes
         run: |
           git config --local user.email "action@github.com"
@@ -45,13 +55,3 @@ jobs:
           else
             echo "No visitor data changes to commit"
           fi
-
-      - name: Build Project
-        run: npm run build
-
-      - name: Deploy to DreamHost
-        run: npm run deploy
-        env:
-          FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USER: ${{ secrets.FTP_USER }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
