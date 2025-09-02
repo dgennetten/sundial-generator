@@ -63,7 +63,7 @@
       "timezone": "America/Los_Angeles",
       "firstVisit": "08/Aug/2025:05:11:44 -0700",
       "lastVisit": "02/Sep/2025:06:06:03 -0700",
-      "visitCount": 41
+      "visitCount": 42
     },
     {
       "ip": "172.59.227.198",
@@ -738,8 +738,8 @@
       "lon": -95.2787,
       "timezone": "America/Chicago",
       "firstVisit": "25/Aug/2025:07:58:38 -0700",
-      "lastVisit": "02/Sep/2025:13:00:31 -0700",
-      "visitCount": 476
+      "lastVisit": "02/Sep/2025:13:07:28 -0700",
+      "visitCount": 505
     },
     {
       "ip": "43.157.147.3",
@@ -1168,7 +1168,7 @@
       "timezone": "Europe/Paris",
       "firstVisit": "02/Sep/2025:05:07:21 -0700",
       "lastVisit": "02/Sep/2025:05:07:21 -0700",
-      "visitCount": 2
+      "visitCount": 3
     },
     {
       "ip": "172.56.2.245",
@@ -1181,7 +1181,7 @@
       "timezone": "America/New_York",
       "firstVisit": "02/Sep/2025:09:26:01 -0700",
       "lastVisit": "02/Sep/2025:09:30:00 -0700",
-      "visitCount": 5
+      "visitCount": 10
     },
     {
       "ip": "172.56.3.161",
@@ -1194,7 +1194,7 @@
       "timezone": "America/New_York",
       "firstVisit": "02/Sep/2025:09:30:38 -0700",
       "lastVisit": "02/Sep/2025:09:34:53 -0700",
-      "visitCount": 5
+      "visitCount": 10
     },
     {
       "ip": "34.34.253.78",
@@ -1207,7 +1207,7 @@
       "timezone": "America/Los_Angeles",
       "firstVisit": "02/Sep/2025:09:36:39 -0700",
       "lastVisit": "02/Sep/2025:09:36:39 -0700",
-      "visitCount": 1
+      "visitCount": 2
     },
     {
       "ip": "172.56.3.69",
@@ -1220,7 +1220,7 @@
       "timezone": "America/New_York",
       "firstVisit": "02/Sep/2025:09:36:51 -0700",
       "lastVisit": "02/Sep/2025:09:36:52 -0700",
-      "visitCount": 2
+      "visitCount": 4
     },
     {
       "ip": "34.96.52.47",
@@ -1233,7 +1233,7 @@
       "timezone": "America/Los_Angeles",
       "firstVisit": "02/Sep/2025:10:21:40 -0700",
       "lastVisit": "02/Sep/2025:10:21:40 -0700",
-      "visitCount": 1
+      "visitCount": 2
     },
     {
       "ip": "94.156.30.209",
@@ -1246,11 +1246,24 @@
       "timezone": "Asia/Kolkata",
       "firstVisit": "02/Sep/2025:12:55:21 -0700",
       "lastVisit": "02/Sep/2025:12:55:23 -0700",
-      "visitCount": 2
+      "visitCount": 4
+    },
+    {
+      "ip": "194.116.208.98",
+      "country": "Greece",
+      "countryCode": "GR",
+      "region": "Attica",
+      "city": "Athens",
+      "lat": 37.9842,
+      "lon": 23.7353,
+      "timezone": "Europe/Athens",
+      "firstVisit": "02/Sep/2025:13:12:29 -0700",
+      "lastVisit": "02/Sep/2025:13:12:57 -0700",
+      "visitCount": 4
     }
   ],
-  "totalVisitors": 96,
-  "totalVisits": 1335,
-  "processedDate": "2025-09-02T20:03:59.913Z",
+  "totalVisitors": 97,
+  "totalVisits": 1386,
+  "processedDate": "2025-09-02T20:13:38.077Z",
   "daysSince": 7
 }
