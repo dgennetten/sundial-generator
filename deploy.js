@@ -47,6 +47,12 @@ c.on('ready', () => {
     const deletePromises = list.map(item => {
       return new Promise((resolve, reject) => {
         const remoteFile = `${config.remotePath}/${item.name}`;
+        
+        // Delete visitor-data.json normally - we'll upload it last
+        if (item.name === 'visitor-data.json') {
+          console.log(`🗑️  Deleting visitor-data.json (will upload fresh copy last)`);
+        }
+        
         if (item.type === 'd') {
           c.rmdir(remoteFile, true, err => {
             if (err) return reject(err);
@@ -73,7 +79,11 @@ c.on('ready', () => {
         return uploadPHPFiles();
       })
       .then(() => {
-        console.log('✅ All files uploaded successfully (including PHP files).');
+        console.log('📄 All PHP files uploaded successfully. Now uploading visitor-data.json as final step...');
+        return uploadVisitorDataFinal();
+      })
+      .then(() => {
+        console.log('✅ All files uploaded successfully (including visitor-data.json).');
         c.end();
       })
       .catch(err => {
@@ -92,6 +102,13 @@ function uploadDir(localDir, remoteDir) {
         return new Promise((fileResolve, fileReject) => {
           const localFilePath = path.join(localDir, file.name);
           const remoteFilePath = `${remoteDir}/${file.name}`;
+
+          // Skip visitor-data.json in main upload - we'll upload it last
+          if (file.name === 'visitor-data.json') {
+            console.log(`⏭️  Skipping visitor-data.json in main upload (will upload last)`);
+            fileResolve();
+            return;
+          }
 
           if (file.isDirectory()) {
             c.mkdir(remoteFilePath, true, err => {
@@ -204,5 +221,55 @@ c.on('close', (hadError) => {
     console.log('📡 FTP connection closed successfully');
   }
 });
+
+function uploadVisitorDataFinal() {
+  return new Promise((resolve, reject) => {
+    const localFilePath = path.join(__dirname, 'dist', 'visitor-data.json');
+    const remoteFilePath = `${config.remotePath}/visitor-data.json`;
+    
+    console.log(`🎯 Final upload of visitor-data.json:`);
+    console.log(`   Local: ${localFilePath}`);
+    console.log(`   Remote: ${remoteFilePath}`);
+    
+    // Check if local file exists
+    if (!fs.existsSync(localFilePath)) {
+      return reject(new Error(`Local visitor-data.json not found: ${localFilePath}`));
+    }
+    
+    const stats = fs.statSync(localFilePath);
+    console.log(`   Size: ${stats.size} bytes`);
+    console.log(`   Modified: ${stats.mtime}`);
+    
+    c.put(localFilePath, remoteFilePath, (err) => {
+      if (err) {
+        console.error(`❌ Failed to upload visitor-data.json: ${err.message}`);
+        return reject(err);
+      }
+      
+      console.log(`✅ visitor-data.json uploaded successfully!`);
+      
+      // Verify the upload
+      c.list(config.remotePath, (listErr, list) => {
+        if (listErr) {
+          console.error(`⚠️  Could not verify visitor-data.json upload: ${listErr.message}`);
+          resolve(); // Don't fail the whole deployment for verification issues
+          return;
+        }
+        
+        const uploadedFile = list.find(item => item.name === 'visitor-data.json');
+        if (uploadedFile) {
+          console.log(`🔍 Final verification: visitor-data.json confirmed on server:`);
+          console.log(`   Remote size: ${uploadedFile.size} bytes`);
+          console.log(`   Remote date: ${uploadedFile.date}`);
+          console.log(`   Size match: ${uploadedFile.size === stats.size ? '✅' : '❌'}`);
+        } else {
+          console.error(`❌ Final verification failed: visitor-data.json NOT found on server!`);
+        }
+        
+        resolve();
+      });
+    });
+  });
+}
 
 c.connect(config);
