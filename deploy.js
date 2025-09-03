@@ -107,7 +107,16 @@ function uploadDir(localDir, remoteDir) {
               console.log(`🔍 About to upload visitor-data.json:`);
               console.log(`   Local path: ${localFilePath}`);
               console.log(`   Remote path: ${remoteFilePath}`);
-              console.log(`   File size: ${fs.statSync(localFilePath).size} bytes`);
+              
+              const stats = fs.statSync(localFilePath);
+              console.log(`   File size: ${stats.size} bytes`);
+              console.log(`   File modified: ${stats.mtime}`);
+              
+              // Read and show first few lines of the file
+              const content = fs.readFileSync(localFilePath, 'utf8');
+              const firstLines = content.split('\n').slice(0, 10).join('\n');
+              console.log(`   File content preview:`);
+              console.log(`   ${firstLines}...`);
             }
             
             c.put(localFilePath, remoteFilePath, err => {
@@ -117,6 +126,22 @@ function uploadDir(localDir, remoteDir) {
               // Extra confirmation for visitor-data.json
               if (file.name === 'visitor-data.json') {
                 console.log(`✅ visitor-data.json upload completed successfully!`);
+                
+                // Verify the file was uploaded by listing the directory again
+                c.list(config.remotePath, (listErr, newList) => {
+                  if (listErr) {
+                    console.error(`⚠️  Could not verify visitor-data.json upload: ${listErr.message}`);
+                  } else {
+                    const uploadedFile = newList.find(item => item.name === 'visitor-data.json');
+                    if (uploadedFile) {
+                      console.log(`🔍 Verification: visitor-data.json found on server:`);
+                      console.log(`   Size: ${uploadedFile.size} bytes`);
+                      console.log(`   Modified: ${uploadedFile.date}`);
+                    } else {
+                      console.error(`❌ Verification failed: visitor-data.json NOT found on server!`);
+                    }
+                  }
+                });
               }
               
               fileResolve();

@@ -41,8 +41,14 @@ jobs:
         run: |
           echo "Checking if visitor-data.json exists in dist folder:"
           ls -la dist/visitor-data.json
-          echo "Last few lines of built visitor-data.json:"
+          echo "File size and modification time:"
+          stat dist/visitor-data.json
+          echo "First 10 lines of built visitor-data.json:"
+          head -10 dist/visitor-data.json
+          echo "Last 10 lines of built visitor-data.json:"
           tail -10 dist/visitor-data.json
+          echo "Total number of lines:"
+          wc -l dist/visitor-data.json
 
       - name: Test FTP Connection
         run: npm run test-ftp
@@ -57,6 +63,13 @@ jobs:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+
+      - name: Verify deployment
+        run: |
+          echo "Checking if visitor-data.json is accessible on the server:"
+          curl -I https://sundial.gennetten.org/visitor-data.json || echo "File not accessible via HTTP"
+          echo "Attempting to download and check first few lines:"
+          curl -s https://sundial.gennetten.org/visitor-data.json | head -5 || echo "Could not download file content"
 
       - name: Commit visitor data changes
         run: |
