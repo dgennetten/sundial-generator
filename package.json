@@ -34,7 +34,8 @@
     "upload-php": "node uploadPHP.js",
     "deploy-with-php": "node deployWithPHP.js",
     "check-export-logger": "node scripts/checkExportLogger.js",
-    "test-ftp": "node test-ftp-connection.js"
+    "test-ftp": "node test-ftp-connection.js",
+    "test-visitor-upload": "node test-visitor-upload.js"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",
