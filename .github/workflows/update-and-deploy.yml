@@ -44,6 +44,13 @@ jobs:
           echo "Last few lines of built visitor-data.json:"
           tail -10 dist/visitor-data.json
 
+      - name: Test FTP Connection
+        run: npm run test-ftp
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+
       - name: Deploy to DreamHost
         run: npm run deploy
         env:

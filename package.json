@@ -33,7 +33,8 @@
     "cron-update": "node scripts/cronUpdate.js",
     "upload-php": "node uploadPHP.js",
     "deploy-with-php": "node deployWithPHP.js",
-    "check-export-logger": "node scripts/checkExportLogger.js"
+    "check-export-logger": "node scripts/checkExportLogger.js",
+    "test-ftp": "node test-ftp-connection.js"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",
