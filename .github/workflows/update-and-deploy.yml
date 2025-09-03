@@ -53,6 +53,19 @@ jobs:
           echo "Total number of lines:"
           wc -l dist/visitor-data.json
 
+      - name: Commit visitor data changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add public/visitor-data.json
+          if ! git diff --staged --quiet; then
+            git commit -m "Update visitor data [skip ci]"
+            git push
+            echo "✅ Visitor data changes committed and pushed"
+          else
+            echo "ℹ️ No visitor data changes to commit"
+          fi
+
       - name: Test FTP Connection
         run: npm run test-ftp
         env:
@@ -80,15 +93,3 @@ jobs:
           curl -I https://sundial.gennetten.org/visitor-data.json || echo "File not accessible via HTTP"
           echo "Attempting to download and check first few lines:"
           curl -s https://sundial.gennetten.org/visitor-data.json | head -5 || echo "Could not download file content"
-
-      - name: Commit visitor data changes
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add public/visitor-data.json
-          if ! git diff --staged --quiet; then
-            git commit -m "Update visitor data [skip ci]"
-            git push
-          else
-            echo "No visitor data changes to commit"
-          fi
