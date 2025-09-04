@@ -440,15 +440,6 @@ const App: React.FC = () => {
           }, [])}
           position={gnomonPosition}
         />
-        <React.Profiler id="LineSettings" onRender={(id, phase, actualDuration) => {
-          if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
-        }}>
-
-        <LineSettings
-          lineStyles={lineStyles}
-          setLineStyles={setLineStyles}
-        />
-        </React.Profiler>
         <React.Profiler id="HourlineSettings" onRender={(id, phase, actualDuration) => {
           if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
         }}>
@@ -512,6 +503,15 @@ const App: React.FC = () => {
            backgroundColor={backgroundColor}
            sundialNotesMode={sundialNotesMode}
          />
+        <React.Profiler id="LineSettings" onRender={(id, phase, actualDuration) => {
+          if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
+        }}>
+
+        <LineSettings
+          lineStyles={lineStyles}
+          setLineStyles={setLineStyles}
+        />
+        </React.Profiler>
         <VisitorMap />
         <AboutCard />
       </div>
