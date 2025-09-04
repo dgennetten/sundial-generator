@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
+// Load environment variables from .env file (if it exists)
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,21 +14,40 @@ const config = {
   host: process.env.FTP_HOST,
   user: process.env.FTP_USER,
   password: process.env.FTP_PASSWORD,
-  remotePath: 'sundial.gennetten.org' // Your remote directory on DreamHost
+  remotePath: process.env.FTP_REMOTE_PATH || 'your-domain.com' // Your remote directory
 };
+
+// Validate that all required environment variables are present
+if (!config.host || !config.user || !config.password) {
+  console.error('❌ Missing required FTP credentials:');
+  console.error(`   FTP_HOST: ${config.host ? '✅ Set' : '❌ Missing'}`);
+  console.error(`   FTP_USER: ${config.user ? '✅ Set' : '❌ Missing'}`);
+  console.error(`   FTP_PASSWORD: ${config.password ? '✅ Set' : '❌ Missing'}`);
+  console.error('Please ensure all FTP environment variables are properly configured.');
+  process.exit(1);
+}
 
 const localPath = path.join(__dirname, 'dist');
 const phpFiles = ['export-logger.php']; // PHP files to deploy alongside the app
 
+console.log('🚀 Starting deployment...');
+console.log(`📡 Connecting to FTP server: ${config.host}`);
+console.log(`👤 Using username: ${config.user}`);
+console.log(`📁 Target directory: ${config.remotePath}`);
+
 const c = new ftp();
 
 c.on('ready', () => {
-  console.log('Connected to FTP server.');
+  console.log('✅ Connected to FTP server successfully!');
   c.list(config.remotePath, (err, list) => {
-    if (err) throw err;
+    if (err) {
+      console.error('❌ Failed to list remote directory:', err.message);
+      throw err;
+    }
     const deletePromises = list.map(item => {
       return new Promise((resolve, reject) => {
         const remoteFile = `${config.remotePath}/${item.name}`;
+        
         if (item.type === 'd') {
           c.rmdir(remoteFile, true, err => {
             if (err) return reject(err);
@@ -54,7 +74,7 @@ c.on('ready', () => {
         return uploadPHPFiles();
       })
       .then(() => {
-        console.log('✅ All files uploaded successfully (including PHP files).');
+        console.log('✅ All files uploaded successfully.');
         c.end();
       })
       .catch(err => {
@@ -128,5 +148,23 @@ function uploadPHPFiles() {
       .catch(reject);
   });
 }
+
+c.on('error', (err) => {
+  console.error('❌ FTP connection error:', err.message);
+  console.error('This usually indicates:');
+  console.error('  - Incorrect FTP credentials');
+  console.error('  - Network connectivity issues');
+  console.error('  - FTP server is down or unreachable');
+  process.exit(1);
+});
+
+c.on('close', (hadError) => {
+  if (hadError) {
+    console.error('❌ FTP connection closed due to error');
+    process.exit(1);
+  } else {
+    console.log('📡 FTP connection closed successfully');
+  }
+});
 
 c.connect(config);

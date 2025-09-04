@@ -62,8 +62,8 @@
       "lon": -122.917,
       "timezone": "America/Los_Angeles",
       "firstVisit": "08/Aug/2025:05:11:44 -0700",
-      "lastVisit": "03/Sep/2025:04:36:33 -0700",
-      "visitCount": 44
+      "lastVisit": "04/Sep/2025:06:22:25 -0700",
+      "visitCount": 45
     },
     {
       "ip": "172.59.227.198",
@@ -738,8 +738,8 @@
       "lon": -95.2787,
       "timezone": "America/Chicago",
       "firstVisit": "25/Aug/2025:07:58:38 -0700",
-      "lastVisit": "03/Sep/2025:13:08:50 -0700",
-      "visitCount": 537
+      "lastVisit": "04/Sep/2025:07:16:38 -0700",
+      "visitCount": 543
     },
     {
       "ip": "43.157.147.3",
@@ -1390,10 +1390,62 @@
       "firstVisit": "03/Sep/2025:13:07:49 -0700",
       "lastVisit": "03/Sep/2025:13:07:49 -0700",
       "visitCount": 2
+    },
+    {
+      "ip": "109.202.99.41",
+      "country": "The Netherlands",
+      "countryCode": "NL",
+      "region": "North Holland",
+      "city": "Duivendrecht",
+      "lat": 52.3294,
+      "lon": 4.93964,
+      "timezone": "Europe/Amsterdam",
+      "firstVisit": "04/Sep/2025:02:31:25 -0700",
+      "lastVisit": "04/Sep/2025:02:31:26 -0700",
+      "visitCount": 38
+    },
+    {
+      "ip": "35.231.192.187",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "South Carolina",
+      "city": "North Charleston",
+      "lat": 32.8771,
+      "lon": -80.013,
+      "timezone": "America/New_York",
+      "firstVisit": "04/Sep/2025:03:01:43 -0700",
+      "lastVisit": "04/Sep/2025:03:01:43 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "15.235.96.118",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "New York",
+      "city": "New York",
+      "lat": 40.7128,
+      "lon": -74.006,
+      "timezone": "America/New_York",
+      "firstVisit": "04/Sep/2025:06:32:36 -0700",
+      "lastVisit": "04/Sep/2025:06:32:36 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "20.49.14.181",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Virginia",
+      "city": "Boydton",
+      "lat": 36.677696,
+      "lon": -78.37471,
+      "timezone": "America/New_York",
+      "firstVisit": "04/Sep/2025:07:14:22 -0700",
+      "lastVisit": "04/Sep/2025:07:14:22 -0700",
+      "visitCount": 2
     }
   ],
-  "totalVisitors": 107,
-  "totalVisits": 1447,
-  "processedDate": "2025-09-03T20:11:10.149Z",
+  "totalVisitors": 111,
+  "totalVisits": 1497,
+  "processedDate": "2025-09-04T15:44:28.322Z",
   "daysSince": 7
 }

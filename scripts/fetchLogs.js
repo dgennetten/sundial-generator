@@ -1,4 +1,4 @@
-// Script to fetch logs from Dreamhost via SFTP and process visitor data
+// Script to fetch logs via SFTP and process visitor data
 import { Client } from 'ssh2';
 import fs from 'fs';
 import path from 'path';
@@ -11,20 +11,24 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// SFTP configuration for Dreamhost - loaded from environment variables
+// SFTP configuration - loaded from environment variables
 const SFTP_CONFIG = {
-  host: process.env.SFTP_HOST || 'gennetten.org',
-  username: process.env.SFTP_USERNAME || 'dgennetten',
+  host: process.env.SFTP_HOST,
+  username: process.env.SFTP_USERNAME,
   password: process.env.SFTP_PASSWORD,
   port: parseInt(process.env.SFTP_PORT) || 22
 };
 
-const LOG_PATH = process.env.SFTP_LOG_PATH || '/home/_domain_logs/dgennetten/sundial.gennetten.org/https.54243421/';
+const LOG_PATH = process.env.SFTP_LOG_PATH;
 
 // Validate required environment variables
-if (!SFTP_CONFIG.password) {
-  console.error('❌ Error: SFTP_PASSWORD environment variable is required');
-  console.log('💡 Please check your .env file and ensure SFTP_PASSWORD is set');
+if (!SFTP_CONFIG.host || !SFTP_CONFIG.username || !SFTP_CONFIG.password || !LOG_PATH) {
+  console.error('❌ Error: Missing required SFTP environment variables:');
+  console.error(`   SFTP_HOST: ${SFTP_CONFIG.host ? '✅ Set' : '❌ Missing'}`);
+  console.error(`   SFTP_USERNAME: ${SFTP_CONFIG.username ? '✅ Set' : '❌ Missing'}`);
+  console.error(`   SFTP_PASSWORD: ${SFTP_CONFIG.password ? '✅ Set' : '❌ Missing'}`);
+  console.error(`   SFTP_LOG_PATH: ${LOG_PATH ? '✅ Set' : '❌ Missing'}`);
+  console.log('💡 Please check your .env file and ensure all SFTP variables are set');
   process.exit(1);
 }
 const LOCAL_LOG_DIR = path.join(__dirname, '..', 'logs');

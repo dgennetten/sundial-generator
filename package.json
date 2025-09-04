@@ -1,7 +1,6 @@
 {
   "name": "sundial-generator",
   "version": "1.11.3",
-  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -20,28 +19,13 @@
     "update-visitors-30d": "node scripts/updateVisitorData.js 30",
     "update-visitors-6m": "node scripts/updateVisitorData.js 180",
     "update-and-build": "node scripts/updateVisitorData.js 7 --build",
-    "update-and-deploy": "npm run update-and-build && npm run deploy",
-    "deploy": "node deploy.js",
-    "local-deploy": "node localDeploy.js",
-    "test-credentials": "node scripts/testCredentials.js",
-    "update-and-local-deploy": "npm run update-visitors-7d && npm run build && npm run local-deploy",
-    "test-connection": "node scripts/testConnection.js",
-    "verify-credentials": "node scripts/verifyCredentials.js",
-    "update-credentials": "node scripts/updateCredentials.js",
     "debug-logs": "node scripts/debugLogProcessing.js",
-    "debug-logs-90d": "node scripts/debugLogProcessing.js 90",
-    "cron-update": "node scripts/cronUpdate.js",
-    "upload-php": "node uploadPHP.js",
-    "deploy-with-php": "node deployWithPHP.js",
-    "check-export-logger": "node scripts/checkExportLogger.js",
-    "test-ftp": "node test-ftp-connection.js",
-    "test-visitor-upload": "node test-visitor-upload.js"
+    "debug-logs-90d": "node scripts/debugLogProcessing.js 90"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",
     "@types/leaflet": "^1.9.20",
     "dotenv": "^17.2.1",
-    "ftp": "^0.3.10",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.2",
     "leaflet": "^1.9.4",
