@@ -1,4 +1,18 @@
 <?php
+/**
+ * Sundial Export Logger
+ * 
+ * Required Environment Variables:
+ * - SMTP_HOST: Your SMTP server hostname
+ * - SMTP_USERNAME: Your SMTP username/email
+ * - SMTP_PASSWORD: Your SMTP password
+ * - SMTP_FROM_EMAIL: Email address to send from
+ * - NOTIFICATION_EMAIL: Email address to receive notifications
+ * 
+ * Required Dependencies:
+ * - PHPMailer library (configure paths below)
+ */
+
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -19,9 +33,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require '/home/dgennetten/PHPMailer/src/Exception.php';
-require '/home/dgennetten/PHPMailer/src/PHPMailer.php';
-require '/home/dgennetten/PHPMailer/src/SMTP.php';
+// Configure these paths for your server
+require_once 'path/to/PHPMailer/src/Exception.php';
+require_once 'path/to/PHPMailer/src/PHPMailer.php';
+require_once 'path/to/PHPMailer/src/SMTP.php';
 
 // Convert sundialNotesMode to readable format
 function formatSundialNotesMode($mode) {
@@ -80,11 +95,10 @@ $logSuccess = false;
 
 // Try multiple possible log directory locations
 $possibleLogDirs = [
-    '/home/dgennetten/sundial.gennetten.org/logs',
-    '/home/dgennetten/sundial-generator/logs',
     './logs',
     '../logs',
-    dirname(__FILE__) . '/logs'
+    dirname(__FILE__) . '/logs',
+    '/path/to/your/logs'  // Configure for your server
 ];
 
 foreach ($possibleLogDirs as $dir) {
@@ -140,16 +154,16 @@ $emailSent = false;
 try {
     $mail->SMTPDebug = 0;
     $mail->isSMTP();
-    $mail->Host = 'smtp.dreamhost.com';
+    $mail->Host = $_ENV['SMTP_HOST'] ?? 'your.smtp.server.com';
     $mail->SMTPAuth = true;
-    $mail->Username = 'support@directory.gennetten.org';
-    $mail->Password = 'td!stayAct1ve';
+    $mail->Username = $_ENV['SMTP_USERNAME'] ?? 'your-email@domain.com';
+    $mail->Password = $_ENV['SMTP_PASSWORD'] ?? 'your-password';
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
 
-    $mail->setFrom('support@directory.gennetten.org', 'Sundial Generator');
-    $mail->addAddress('douglas@gennetten.com');
-    $mail->addReplyTo('support@directory.gennetten.org', 'Sundial Generator');
+    $mail->setFrom($_ENV['SMTP_FROM_EMAIL'] ?? 'noreply@yourdomain.com', 'Sundial Generator');
+    $mail->addAddress($_ENV['NOTIFICATION_EMAIL'] ?? 'admin@yourdomain.com');
+    $mail->addReplyTo($_ENV['SMTP_FROM_EMAIL'] ?? 'noreply@yourdomain.com', 'Sundial Generator');
 
     $mail->isHTML(false);
     $mail->Subject = "Sundial Export: $exportFormat - $pageSize - $dateRange";
