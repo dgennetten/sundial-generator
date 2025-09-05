@@ -142,7 +142,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
                       onChange={e => handleChange(idx, 'styleId', e.target.value)}
                       style={{ fontSize: '0.9rem' }}
                     >
-                      {lineStyles.filter(s => s.name && s.name.trim()).map(style => (
+                      {lineStyles.filter(s => s.name && s.name.trim() && (!s.applicableToLines || s.applicableToLines.includes('hourline'))).map(style => (
                         <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
                       ))}
                     </select>

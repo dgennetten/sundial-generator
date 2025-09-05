@@ -62,8 +62,8 @@
       "lon": -122.917,
       "timezone": "America/Los_Angeles",
       "firstVisit": "08/Aug/2025:05:11:44 -0700",
-      "lastVisit": "04/Sep/2025:06:22:25 -0700",
-      "visitCount": 45
+      "lastVisit": "05/Sep/2025:04:47:50 -0700",
+      "visitCount": 58
     },
     {
       "ip": "172.59.227.198",
@@ -738,8 +738,8 @@
       "lon": -95.2787,
       "timezone": "America/Chicago",
       "firstVisit": "25/Aug/2025:07:58:38 -0700",
-      "lastVisit": "04/Sep/2025:07:16:38 -0700",
-      "visitCount": 543
+      "lastVisit": "05/Sep/2025:14:13:40 -0700",
+      "visitCount": 790
     },
     {
       "ip": "43.157.147.3",
@@ -1442,10 +1442,36 @@
       "firstVisit": "04/Sep/2025:07:14:22 -0700",
       "lastVisit": "04/Sep/2025:07:14:22 -0700",
       "visitCount": 2
+    },
+    {
+      "ip": "5.39.1.239",
+      "country": "France",
+      "countryCode": "FR",
+      "region": "Hauts-de-France",
+      "city": "Roubaix",
+      "lat": 50.6927,
+      "lon": 3.17785,
+      "timezone": "Europe/Paris",
+      "firstVisit": "05/Sep/2025:07:40:41 -0700",
+      "lastVisit": "05/Sep/2025:07:40:41 -0700",
+      "visitCount": 13
+    },
+    {
+      "ip": "54.186.12.147",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Oregon",
+      "city": "Portland",
+      "lat": 45.5235,
+      "lon": -122.676,
+      "timezone": "America/Los_Angeles",
+      "firstVisit": "05/Sep/2025:08:20:20 -0700",
+      "lastVisit": "05/Sep/2025:08:20:20 -0700",
+      "visitCount": 13
     }
   ],
-  "totalVisitors": 111,
-  "totalVisits": 1497,
-  "processedDate": "2025-09-04T15:44:28.322Z",
+  "totalVisitors": 113,
+  "totalVisits": 1783,
+  "processedDate": "2025-09-05T21:17:48.693Z",
   "daysSince": 7
 }

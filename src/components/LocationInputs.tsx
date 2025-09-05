@@ -129,8 +129,9 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
     // Check if API key is available
     console.log('API Key available:', !!apiKey, 'API Key value:', apiKey ? apiKey.substring(0, 10) + '...' : 'undefined');
     
-    if (!apiKey || apiKey === 'undefined') {
-      console.error('Google Maps API key is not set. Please add VITE_GOOGLE_MAPS_API_KEY to your .env.local file');
+    if (!apiKey || apiKey === 'undefined' || apiKey === 'your_api_key_here') {
+      console.log('Google Maps API key is not set. Using fallback timezone data.');
+      console.log('To enable timezone lookup, add VITE_GOOGLE_MAPS_API_KEY to your .env.local file');
       console.log('For testing, using fallback timezone data for Fort Collins coordinates');
       
       // Fallback for Fort Collins coordinates (40.5853, -105.0844)

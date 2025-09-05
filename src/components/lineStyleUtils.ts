@@ -39,6 +39,46 @@ export const DEFAULT_LINE_STYLES: LineStyle[] = [
     name: 'red dash hairline',
     id: 'red-dashed-hairline',
     fixed: true,
+  },
+  {
+    width: 'hairline',
+    color: 'black',
+    style: 'calculated',
+    name: 'D: 2min dot',
+    id: 'declination-2min-dot',
+    fixed: true,
+    calculatedType: 'declination-2min-dot',
+    applicableToLines: ['declination'],
+  },
+  {
+    width: 'hairline',
+    color: 'black',
+    style: 'calculated',
+    name: 'D: 5min dot',
+    id: 'declination-5min-dot',
+    fixed: true,
+    calculatedType: 'declination-5min-dot',
+    applicableToLines: ['declination'],
+  },
+  {
+    width: 'hairline',
+    color: 'black',
+    style: 'calculated',
+    name: 'D: 2min dash',
+    id: 'declination-2min-dash',
+    fixed: true,
+    calculatedType: 'declination-2min-dash',
+    applicableToLines: ['declination'],
+  },
+  {
+    width: 'hairline',
+    color: 'black',
+    style: 'calculated',
+    name: 'H: 5/2 day dash',
+    id: 'hourline-5-2-day-dash',
+    fixed: true,
+    calculatedType: 'hourline-5-2-day-dash',
+    applicableToLines: ['hourline'],
   }
 ];
 
@@ -80,4 +120,6 @@ export const emptyLine: LineStyle = {
   style: 'solid',
   name: '',
   id: '',
+  calculatedType: undefined,
+  applicableToLines: undefined,
 }; 

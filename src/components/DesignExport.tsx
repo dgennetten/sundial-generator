@@ -68,11 +68,25 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
     // Create and inject dynamic print styles
     const style = document.createElement('style');
     style.id = printStyleId;
+    
+    // Determine appropriate margin based on page size match
+    // If the dial page size matches the print page size, use minimal margins
+    // Otherwise, use larger margins for safety
+    let marginStr = '0.5in'; // Default margin for mismatched sizes
+    
+    // Check if dial size matches print paper size (assuming standard letter paper)
+    if (pageSize === 'Letter') {
+      marginStr = '0.1in'; // Minimal margin when sizes match
+    } else if (pageSize === 'A4') {
+      marginStr = '0.1in'; // Minimal margin for A4 as well
+    }
+    // For other sizes (11x17, postcard, custom), keep the larger margin
+    
     style.textContent = `
       @media print {
         @page {
           size: ${pageSizeStr} ${orientationStr};
-          margin: 0.5in;
+          margin: ${marginStr};
         }
       }
     `;

@@ -452,7 +452,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               onChange={(e) => handleBorderStyleChange(e.target.value)}
               style={{ width: isMobile ? '100%' : 'auto' }}
             >
-              {lineStyles.filter(s => s.name && s.name.trim()).map(style => (
+              {lineStyles.filter(s => s.name && s.name.trim() && (!s.applicableToLines || s.applicableToLines.includes('border'))).map(style => (
                 <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
               ))}
             </select>

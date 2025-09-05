@@ -1,6 +1,6 @@
 {
   "name": "sundial-generator",
-  "version": "1.11.3",
+  "version": "1.12.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -20,7 +20,13 @@
     "update-visitors-6m": "node scripts/updateVisitorData.js 180",
     "update-and-build": "node scripts/updateVisitorData.js 7 --build",
     "debug-logs": "node scripts/debugLogProcessing.js",
-    "debug-logs-90d": "node scripts/debugLogProcessing.js 90"
+    "debug-logs-90d": "node scripts/debugLogProcessing.js 90",
+    "secure-deploy": "powershell -ExecutionPolicy Bypass -File scripts/secure-deploy.ps1",
+    "secure-deploy-dry": "powershell -ExecutionPolicy Bypass -File scripts/secure-deploy.ps1 -DryRun",
+    "update-visitor-count": "node scripts/updateVisitorData.js 7",
+    "deploy": "node deploy.js",
+    "deploy-sftp": "node deploy-sftp.js",
+    "deploy-docs-force": "node deploy-docs-force.js"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",
@@ -34,6 +40,7 @@
     "react-dom": "^19.1.0",
     "react-leaflet": "^5.0.0",
     "ssh2": "^1.16.0",
+    "ssh2-sftp-client": "^12.0.1",
     "svg2pdf.js": "^2.5.0"
   },
   "devDependencies": {

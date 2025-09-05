@@ -5,10 +5,12 @@ import { saveLineStyles, emptyLine, isValidCssColor } from './lineStyleUtils';
 export type LineStyle = {
   width: string; // e.g. 'hairline', '0.5mm'
   color: string; // e.g. 'black', '#ff0000'
-  style: 'solid' | 'dashed' | 'dotted';
+  style: 'solid' | 'dashed' | 'dotted' | 'calculated';
   name: string;
   id: string; // unique id for each style
   fixed?: boolean; // true for the default, non-deletable
+  calculatedType?: 'declination-2min-dot' | 'declination-5min-dot' | 'hourline-5-2-day-dash' | 'declination-2min-dash'; // for calculated styles
+  applicableToLines?: ('hourline' | 'declination' | 'border')[]; // which line types this style can be applied to
 };
 
 const LineSettings: React.FC<{
@@ -159,11 +161,17 @@ const LineSettings: React.FC<{
                         className="form-select"
                         value={style.style}
                         onChange={e => handleChange(idx, 'style', e.target.value)}
-                        style={{ fontSize: '0.9rem' }}
+                        style={{ 
+                          fontSize: '0.9rem',
+                          backgroundColor: style.style === 'calculated' ? '#f5f5f5' : undefined,
+                          color: style.style === 'calculated' ? '#666' : undefined
+                        }}
+                        disabled={style.style === 'calculated'}
                       >
                         <option value="solid">Solid</option>
                         <option value="dashed">Dashed</option>
                         <option value="dotted">Dotted</option>
+                        <option value="calculated">Calculated</option>
                       </select>
                     </td>
                     <td style={{ padding: '0.3rem 0.3rem' }}>
@@ -193,6 +201,17 @@ const LineSettings: React.FC<{
               })}
             </tbody>
           </table>
+        </div>
+        <div style={{ 
+          marginTop: '0.75rem', 
+          padding: '0.5rem', 
+          backgroundColor: '#f8f9fa', 
+          borderRadius: '4px', 
+          fontSize: '0.85rem', 
+          color: '#6b7280',
+          fontStyle: 'italic'
+        }}>
+          Note: 'D' styles only apply to Declination lines; 'H' styles only apply to Hourlines
         </div>
       </div>
     </div>

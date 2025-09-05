@@ -23,20 +23,11 @@ const AboutCard: React.FC = () => {
           }}
         >
            <p>
-            <strong>PLEASE SHARE!</strong> I'm seeing lots of traffic from all over the Northern Hemisphere. Would love to hear from some of you!
-          
+            <strong>New Feature:</strong> New "Calculated" dash styles. The dashes contain date/time information in their position and length. (this is getting closer to my 1985 code - see '11x17 inch sundial' link below.)
+            <strong>There are bugs with this:</strong> i will  update it soon. Try the reset link in the About card. 
           </p>
            <p>
             <strong>New Feature:</strong> PRINT BUTTON!
-          </p>
-          <p>
-            <strong>New Feature:</strong> New 'Compass Rose' option in Sundial Notes.
-          </p>
-            <p>
-            <strong>New Feature:</strong> 'Season Guide' option in Sundial Notes. (Great for full-year dials)
-          </p>
-           <p>
-            <strong>New Feature:</strong> PDF Export!! .
           </p>
         </div>
         <div
@@ -44,7 +35,7 @@ const AboutCard: React.FC = () => {
             __html: `
 <p>
   This App traces its origins back to a gloriously nerdy gem—the 
-  <a href="http://sundial.gennetten.org/docs/1980-12-SundialArticle.pdf">Amateur Scientist column</a>
+  <a href="https://sundial.gennetten.org/docs/1980-12-SundialArticle.pdf">Amateur Scientist column</a>
   from the December 1980 issue of Scientific American. 
   Back then, my first sundial app was coded with love (and 
   <a href="https://www.hp9845.net/9845/software/basic/">Rocky Mountain Basic</a>
@@ -53,12 +44,12 @@ const AboutCard: React.FC = () => {
     desktop workstation, which was basically a space shuttle cockpit compared to the future IBM PC toddlers.
 
   Not content with digital wizardry alone, I whipped up an 
-  <a href="http://sundial.gennetten.org/docs/SolarClockAd.pdf">advertisement</a>
+  <a href="https://sundial.gennetten.org/docs/SolarClockAd.pdf">advertisement</a>
   and, like a caffinated Da Vinci, scribbled out hand-drawn 
-  <a href="http://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf">instructional</a>,
-  <a href="http://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf">illustrations</a>.
+  <a href="https://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf">instructional</a>,
+  <a href="https://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf">illustrations</a>.
    Here's an example 
-  <a href="http://sundial.gennetten.org/docs/Tabloid-sizeDial.pdf">11x17 inch sundial</a>,
+  <a href="https://sundial.gennetten.org/docs/Tabloid-sizeDial.pdf">11x17 inch sundial</a>,
  plotted using an 
   <a href="https://www.hpmuseum.net/display_item.php?hw=79">HP9872 plotter</a>.
 </p>

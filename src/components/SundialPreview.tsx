@@ -194,7 +194,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Check whether a date string (e.g., 'Today' or 'March 12') falls within selected dateRange
   function isDateStringInRange(dateStr: string): boolean {
     if (dateRange === 'FullYear') return true;
-    if (!dateStr || dateStr === 'Month Boundaries' || dateStr === 'Equinox' || dateStr === 'Summer Solstice' || dateStr === 'Winter Solstice') return true;
+    if (!dateStr || dateStr === '1st of the Month' || dateStr === '1st and 15th' || dateStr === 'Equinox' || dateStr === 'Summer Solstice' || dateStr === 'Winter Solstice') return true;
     if (dateStr === 'Today') {
       const today = new Date();
       const startOfYear = new Date(today.getFullYear(), 0, 1);
@@ -313,7 +313,225 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const gap = 4 * dotWidth;
       return { dasharray: `${dotWidth},${gap}`, linecap: 'round' };
     }
+    if (style.style === 'calculated') {
+      // Calculated styles are handled differently in rendering, not via dasharray
+      return { linecap: undefined };
+    }
     return { linecap: undefined };
+  }
+
+  // Helper to create 5/2 day dash segments for hourlines
+  function create5Day2GapSegments(points: { day: number; x: number; y: number }[]): { day: number; x: number; y: number }[][] {
+    if (points.length === 0) return [];
+    
+    // Sort points by day
+    const sortedPoints = [...points].sort((a, b) => a.day - b.day);
+    const segments: { day: number; x: number; y: number }[][] = [];
+    
+    // Create segments of 5 consecutive days with 2-day gaps
+    // This creates 26 segments from solstice to solstice (182 days / 7 = 26)
+    const startDay = sortedPoints[0].day;
+    const endDay = sortedPoints[sortedPoints.length - 1].day;
+    
+    // Start from the first day and create 7-day cycles (5 days + 2 gap)
+    for (let cycleStart = startDay; cycleStart <= endDay; cycleStart += 7) {
+      const segmentPoints: { day: number; x: number; y: number }[] = [];
+      
+      // Collect 5 consecutive days starting from cycleStart
+      for (let dayOffset = 0; dayOffset < 5; dayOffset++) {
+        const targetDay = cycleStart + dayOffset;
+        if (targetDay > endDay) break;
+        
+        // Find the point closest to this target day
+        const point = sortedPoints.find(p => Math.abs(p.day - targetDay) < 0.5);
+        if (point) {
+          segmentPoints.push(point);
+        }
+      }
+      
+      // Only add segments with at least 2 points to form a line
+      if (segmentPoints.length >= 2) {
+        segments.push(segmentPoints);
+      }
+    }
+    return segments;
+  }
+
+  // Helper to create dots at 2-minute intervals for declination lines
+  function create2MinuteDots(decl: number, style: LineStyle | undefined): JSX.Element[] {
+    if (!style) return [];
+    
+    const dots: JSX.Element[] = [];
+    const dotWidth = getStrokeWidth(style.width);
+    
+    // Account for the transform applied to the sundial content group (same as clipPathData)
+    const transformY = (gnomonPosition ?? 0) - (height / 2);
+    const left = -width / 2 + borderMarginMm;
+    const top = -height / 2 + borderMarginMm - transformY;
+    const right = width / 2 - borderMarginMm;
+    const bottom = height / 2 - borderMarginMm - transformY;
+    
+    // Generate dots every 2 minutes from startHour to stopHour
+    for (let h = startHour; h <= stopHour; h += 2/60) { // 2-minute intervals
+      const latRad = degreesToRadians(lat);
+      const declRad = degreesToRadians(decl);
+      const hourAngle = degreesToRadians(15 * (h - 12));
+      const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
+      const altitude = Math.asin(sinAlt);
+
+      // Same altitude filtering as dash segments
+      if (altitude > -15 * Math.PI / 180) {
+        let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
+        cosAz = Math.max(-1, Math.min(1, cosAz));
+        let azimuth = Math.acos(cosAz);
+        if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
+        const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, 'Horizontal', lat);
+        const x = scale * coords.x;
+        const y = scale * coords.y;
+
+        // Check if point is within the proper border bounds
+        if (x >= left && x <= right && y >= top && y <= bottom) {
+          dots.push(
+            <line
+              key={`declination-2min-dot-${decl}-${h}`}
+              x1={x}
+              y1={y}
+              x2={x}
+              y2={y}
+              stroke={style.color || 'black'}
+              strokeWidth={dotWidth}
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          );
+        }
+      }
+    }
+    
+    return dots;
+  }
+
+  // Helper to create 5-minute dots for declination lines
+  function create5MinuteDots(decl: number, style: LineStyle | undefined): JSX.Element[] {
+    if (!style) return [];
+    
+    const dots: JSX.Element[] = [];
+    const dotWidth = getStrokeWidth(style.width);
+    
+    // Account for the transform applied to the sundial content group (same as clipPathData)
+    const transformY = (gnomonPosition ?? 0) - (height / 2);
+    const left = -width / 2 + borderMarginMm;
+    const top = -height / 2 + borderMarginMm - transformY;
+    const right = width / 2 - borderMarginMm;
+    const bottom = height / 2 - borderMarginMm - transformY;
+    
+    // Generate dots every 5 minutes from startHour to stopHour
+    for (let h = startHour; h <= stopHour; h += 5/60) { // 5-minute intervals
+      const latRad = degreesToRadians(lat);
+      const declRad = degreesToRadians(decl);
+      const hourAngle = degreesToRadians(15 * (h - 12));
+      const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
+      const altitude = Math.asin(sinAlt);
+
+      // Same altitude filtering as other calculated styles
+      if (altitude > -15 * Math.PI / 180) {
+        let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
+        cosAz = Math.max(-1, Math.min(1, cosAz));
+        let azimuth = Math.acos(cosAz);
+        if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
+        const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, 'Horizontal', lat);
+        const x = scale * coords.x;
+        const y = scale * coords.y;
+
+        // Check if point is within the proper border bounds
+        if (x >= left && x <= right && y >= top && y <= bottom) {
+          dots.push(
+            <line
+              key={`declination-5min-dot-${decl}-${h}`}
+              x1={x}
+              y1={y}
+              x2={x}
+              y2={y}
+              stroke={style.color || 'black'}
+              strokeWidth={dotWidth}
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          );
+        }
+      }
+    }
+    
+    return dots;
+  }
+
+  // Helper to create 2/2 minute dash segments for declination lines
+  function create2MinuteDashSegments(decl: number, style: LineStyle | undefined): JSX.Element[] {
+    if (!style) return [];
+
+    const segments: JSX.Element[] = [];
+    const strokeWidth = getStrokeWidth(style.width);
+
+    // Create discrete 2-minute segments with 2-minute gaps (similar to 5/2 day dash approach)
+    let segmentIndex = 0;
+
+    // Use EXACTLY the same loop as dots but connect consecutive points
+    let previousPoint: { x: number; y: number } | null = null;
+    let pointIndex = 0;
+
+    for (let h = startHour; h <= stopHour; h += 2/60) { // Same 2-minute intervals as dots
+      const latRad = degreesToRadians(lat);
+      const declRad = degreesToRadians(decl);
+      const hourAngle = degreesToRadians(15 * (h - 12));
+      const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
+      const altitude = Math.asin(sinAlt);
+
+      // Same altitude filtering as dots
+      if (altitude > -15 * Math.PI / 180) {
+        let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
+        cosAz = Math.max(-1, Math.min(1, cosAz));
+        let azimuth = Math.acos(cosAz);
+        if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
+        const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, 'Horizontal', lat);
+
+        // Same scaling as dots
+        const currentPoint = { x: scale * coords.x, y: scale * coords.y };
+
+        // Same bounds checking as dots
+        const transformY = (gnomonPosition ?? 0) - (height / 2);
+        const left = -width / 2 + borderMarginMm;
+        const top = -height / 2 + borderMarginMm - transformY;
+        const right = width / 2 - borderMarginMm;
+        const bottom = height / 2 - borderMarginMm - transformY;
+
+        if (currentPoint.x >= left && currentPoint.x <= right && currentPoint.y >= top && currentPoint.y <= bottom) {
+          // Create dashes with 4-minute segments and 4-minute gaps
+          // Use modulo 4 to create pattern: draw for 2 points, skip for 2 points
+          const cyclePosition = pointIndex % 4;
+          if (previousPoint && (cyclePosition === 1 || cyclePosition === 2)) {
+            // Draw dash segments for positions 1 and 2 in each 4-point cycle
+            segments.push(
+              <line
+                key={`declination-2min-dash-${decl}-${segmentIndex}`}
+                x1={previousPoint.x}
+                y1={previousPoint.y}
+                x2={currentPoint.x}
+                y2={currentPoint.y}
+                stroke={style.color || 'black'}
+                strokeWidth={strokeWidth}
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+              />
+            );
+            segmentIndex++;
+          }
+          previousPoint = currentPoint;
+          pointIndex++;
+        }
+      }
+    }
+
+    return segments;
   }
 
   // Helper to compute normal at a point on the analemma
@@ -424,10 +642,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const p1 = points[i];
       const p2 = points[i + 1];
 
-      const x1 = scale * p1.x;
-      const y1 = scale * p1.y;
-      const x2 = scale * p2.x;
-      const y2 = scale * p2.y;
+      // Points are already scaled, so use them directly
+      const x1 = p1.x;
+      const y1 = p1.y;
+      const x2 = p2.x;
+      const y2 = p2.y;
 
       const clipped = clipLineToRectangle(x1, y1, x2, y2, left, top, right, bottom);
 
@@ -815,17 +1034,103 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             let sortedSegment = [...segment].sort((a, b) => a.day - b.day);
 
             // Optimize for performance: if segment has too many points, reduce them
-            if (sortedSegment.length > 100) {
+            // Skip optimization for calculated styles that need daily resolution
+            if (sortedSegment.length > 100 && 
+                !(style.style === 'calculated' && style.calculatedType === 'hourline-5-2-day-dash')) {
               const step = Math.ceil(sortedSegment.length / 50); // Keep ~50 points max
               sortedSegment = sortedSegment.filter((_, index) => index % step === 0);
             }
 
-            const pathData = clipPathData(sortedSegment);
+            // Handle calculated styles differently
+            if (style.style === 'calculated' && style.calculatedType === 'hourline-5-2-day-dash') {
+              // Create 5-day segments with 2-day gaps
+              const dashSegments = create5Day2GapSegments(sortedSegment);
+              dashSegments.forEach((segment, segIdx) => {
+                const pathData = clipPathData(segment);
+                if (pathData) {
+                  elements.push(
+                    <g key={`hourline-5-2-dash-${h}-${interval.id}-seg${idx}-dash-${segIdx}-${style.calculatedType}`}>
+                      <path
+                        d={pathData}
+                        stroke={style.color || 'black'}
+                        fill="none"
+                        strokeWidth={getStrokeWidth(style.width)}
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </g>
+                  );
+                }
+              });
+            } else {
+              // Regular rendering for non-calculated styles
+              const pathData = clipPathData(sortedSegment);
+              if (pathData) {
+                elements.push(
+                  <g key={`${h}-${interval.id}-seg${idx}`}>
+                    <path
+                      d={pathData}
+                      stroke={style.color || 'black'}
+                      fill="none"
+                      strokeWidth={getStrokeWidth(style.width)}
+                      strokeDasharray={getStrokeDashProps(style).dasharray}
+                      strokeLinecap={getStrokeDashProps(style).linecap}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  </g>
+                );
+              }
+            }
+          });
+        } else {
+          points = points.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
+          if (points.length === 0) continue;
+
+          // Optimize for performance only for half-year views; keep full-year at 1 point/day
+          // Skip optimization for calculated styles that need daily resolution
+          if (dateRange !== 'FullYear' && points.length > 100 && 
+              !(style.style === 'calculated' && style.calculatedType === 'hourline-5-2-day-dash')) {
+            const step = Math.ceil(points.length / 50); // Keep ~50 points max
+            points = points.filter((_, index) => index % step === 0);
+          }
+
+          // For full-year, sort strictly by day to ensure smooth loop and one vertex per day
+          if (dateRange === 'FullYear') {
+            points = [...points].sort((a, b) => (a.day ?? 0) - (b.day ?? 0));
+          }
+
+          // Handle calculated styles differently
+          if (style.style === 'calculated' && style.calculatedType === 'hourline-5-2-day-dash') {
+            // Create 5-day segments with 2-day gaps
+            const dashSegments = create5Day2GapSegments(points);
+            dashSegments.forEach((segment, segIdx) => {
+              const pathData = clipPathData(segment);
+              if (pathData) {
+                elements.push(
+                  <g key={`${h}-${interval.id}-dash-${segIdx}`}>
+                    <path
+                      d={pathData}
+                      stroke={style.color || 'black'}
+                      fill="none"
+                      strokeWidth={getStrokeWidth(style.width)}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  </g>
+                );
+              }
+            });
+          } else {
+            // Regular rendering for non-calculated styles
+            const pathData = clipPathData(points);
             if (pathData) {
+              let dOut = pathData;
+              if (dateRange === 'FullYear') {
+                const segments = pathData.split(/(?=M\s)/); // split on each 'M'
+                dOut = joinSegmentsForClosedLoop(segments.filter(Boolean));
+              }
               elements.push(
-                <g key={`${h}-${interval.id}-seg${idx}`}>
+                <g key={`${h}-${interval.id}`}>
                   <path
-                    d={pathData}
+                    d={dOut}
                     stroke={style.color || 'black'}
                     fill="none"
                     strokeWidth={getStrokeWidth(style.width)}
@@ -836,42 +1141,6 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 </g>
               );
             }
-          });
-        } else {
-          points = points.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
-          if (points.length === 0) continue;
-
-          // Optimize for performance only for half-year views; keep full-year at 1 point/day
-          if (dateRange !== 'FullYear' && points.length > 100) {
-            const step = Math.ceil(points.length / 50); // Keep ~50 points max
-            points = points.filter((_, index) => index % step === 0);
-          }
-
-          // For full-year, sort strictly by day to ensure smooth loop and one vertex per day
-          if (dateRange === 'FullYear') {
-            points = [...points].sort((a, b) => (a.day ?? 0) - (b.day ?? 0));
-          }
-
-          const pathData = clipPathData(points);
-          if (pathData) {
-            let dOut = pathData;
-            if (dateRange === 'FullYear') {
-              const segments = pathData.split(/(?=M\s)/); // split on each 'M'
-              dOut = joinSegmentsForClosedLoop(segments.filter(Boolean));
-            }
-            elements.push(
-              <g key={`${h}-${interval.id}`}>
-                <path
-                  d={dOut}
-                  stroke={style.color || 'black'}
-                  fill="none"
-                  strokeWidth={getStrokeWidth(style.width)}
-                  strokeDasharray={getStrokeDashProps(style).dasharray}
-                  strokeLinecap={getStrokeDashProps(style).linecap}
-                  vectorEffect="non-scaling-stroke"
-                />
-              </g>
-            );
           }
         }
       }
@@ -883,8 +1152,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     if (line.date === 'Equinox') return 0;
     if (line.date === 'Summer Solstice') return 23.44;
     if (line.date === 'Winter Solstice') return -23.44;
-    if (line.date === 'Month Boundaries') {
+    if (line.date === '1st of the Month') {
       // This is handled separately in getMonthBoundaryDeclinations
+      return null;
+    }
+    if (line.date === '1st and 15th') {
+      // This is handled separately in getFirstAndFifteenthDeclinations
       return null;
     }
     if (line.date === 'Today') {
@@ -971,6 +1244,80 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     return monthBoundaries;
   }
 
+  // Helper to get 1st and 15th declinations within the date range
+  // This function generates declination lines for the 1st and 15th day of each month
+  // that falls within the selected date range (FullYear, SummerToFall, or WinterToSpring)
+  function getFirstAndFifteenthDeclinations(): { day: number; decl: number; month: string; dayOfMonth: number }[] {
+    const firstAndFifteenthDays: { day: number; decl: number; month: string; dayOfMonth: number }[] = [];
+
+    // Month start days (approximate, for a non-leap year)
+    const monthStarts = [
+      { month: 'January', day: 1 },
+      { month: 'February', day: 32 },
+      { month: 'March', day: 60 },
+      { month: 'April', day: 91 },
+      { month: 'May', day: 121 },
+      { month: 'June', day: 152 },
+      { month: 'July', day: 182 },
+      { month: 'August', day: 213 },
+      { month: 'September', day: 244 },
+      { month: 'October', day: 274 },
+      { month: 'November', day: 305 },
+      { month: 'December', day: 335 }
+    ];
+
+    for (const monthStart of monthStarts) {
+      // 1st of the month
+      const firstDay = monthStart.day;
+      // 15th of the month (14 days later)
+      const fifteenthDay = monthStart.day + 14;
+
+      // Check if 1st is in range
+      if (dateRange === 'WinterToSpring') {
+        if ((firstDay >= 355 && firstDay <= 365) || (firstDay >= 1 && firstDay <= 172)) {
+          firstAndFifteenthDays.push({
+            day: firstDay,
+            decl: getSolarDeclination(firstDay),
+            month: monthStart.month,
+            dayOfMonth: 1
+          });
+        }
+      } else {
+        if (isDayInRange(firstDay, dateRange)) {
+          firstAndFifteenthDays.push({
+            day: firstDay,
+            decl: getSolarDeclination(firstDay),
+            month: monthStart.month,
+            dayOfMonth: 1
+          });
+        }
+      }
+
+      // Check if 15th is in range
+      if (dateRange === 'WinterToSpring') {
+        if ((fifteenthDay >= 355 && fifteenthDay <= 365) || (fifteenthDay >= 1 && fifteenthDay <= 172)) {
+          firstAndFifteenthDays.push({
+            day: fifteenthDay,
+            decl: getSolarDeclination(fifteenthDay),
+            month: monthStart.month,
+            dayOfMonth: 15
+          });
+        }
+      } else {
+        if (isDayInRange(fifteenthDay, dateRange)) {
+          firstAndFifteenthDays.push({
+            day: fifteenthDay,
+            decl: getSolarDeclination(fifteenthDay),
+            month: monthStart.month,
+            dayOfMonth: 15
+          });
+        }
+      }
+    }
+
+    return firstAndFifteenthDays;
+  }
+
   // Helper function to find the best intersection point of declination line with noon analemma
   function findDeclinationAnalemmaIntersection(decl: number): { x: number; y: number } | null {
     // Get the noon analemma points (hour = 12)
@@ -1023,6 +1370,21 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Helper function to render a single declination line
   function renderDeclinationLine(decl: number, style: LineStyle | undefined, key: string) {
     const maxRadius = Math.sqrt(width * width + height * height);
+
+    // Handle calculated 2-minute dot style
+    if (style?.style === 'calculated' && style?.calculatedType === 'declination-2min-dot') {
+      return create2MinuteDots(decl, style);
+    }
+
+    // Handle calculated 5-minute dot style
+    if (style?.style === 'calculated' && style?.calculatedType === 'declination-5min-dot') {
+      return create5MinuteDots(decl, style);
+    }
+
+    // Handle calculated 2-minute dash style
+    if (style?.style === 'calculated' && style?.calculatedType === 'declination-2min-dash') {
+      return create2MinuteDashSegments(decl, style);
+    }
 
     if (decl === 0) {
       // Equinox: draw a straight line for all hours, but clip to maxRadius
@@ -1122,13 +1484,23 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
 
-    // Handle Month Boundaries as a special case
-    if (line.date === 'Month Boundaries') {
+
+    // Handle 1st of the Month as a special case
+    if (line.date === '1st of the Month') {
       const monthBoundaries = getMonthBoundaryDeclinations();
   
-      console.log(`Month Boundaries for ${dateRange}:`, monthBoundaries.map(b => `${b.month} (day ${b.day}, decl ${b.decl.toFixed(2)}°)`));
       return monthBoundaries.flatMap((boundary, boundaryIdx) => {
         const elements = renderDeclinationLine(boundary.decl, style, `${line.id || line.date || idx}-${boundary.month}-${boundaryIdx}`);
+        return elements || [];
+      });
+    }
+
+    // Handle 1st and 15th as a special case
+    if (line.date === '1st and 15th') {
+      const firstAndFifteenthDays = getFirstAndFifteenthDeclinations();
+  
+      return firstAndFifteenthDays.flatMap((day, dayIdx) => {
+        const elements = renderDeclinationLine(day.decl, style, `${line.id || line.date || idx}-${day.month}-${day.dayOfMonth}-${dayIdx}`);
         return elements || [];
       });
     }
@@ -1181,8 +1553,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     // Circle diameter should be 2x the width of the hour line stroke width
     // So radius = stroke width (in mm, same coordinate system as the circle position)
-    // Make it a bit larger for visibility
-    const circleRadius = strokeWidthMm * 2;
+    const circleRadius = strokeWidthMm;
 
     // Debug logging for declination noonmarks
 
@@ -1192,8 +1563,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
 
 
-    // Handle Month Boundaries as a special case
-    if (line.date === 'Month Boundaries') {
+    // Handle 1st of the Month as a special case
+    if (line.date === '1st of the Month') {
       const monthBoundaries = getMonthBoundaryDeclinations();
   
       console.log(`Month boundaries for noonmarks:`, monthBoundaries.map(b => `${b.month} (decl ${b.decl.toFixed(2)}°)`));
@@ -1213,6 +1584,38 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         return [
           <circle
             key={`noonmark-${line.id || line.date || idx}-${boundary.month}-${boundaryIdx}`}
+            cx={scale * intersectionPoint.x}
+            cy={scale * intersectionPoint.y}
+            r={circleRadius}
+            fill={style.color || 'black'}
+            stroke="none"
+            vectorEffect="non-scaling-stroke"
+          />
+        ];
+      });
+    }
+
+    // Handle 1st and 15th as a special case
+    if (line.date === '1st and 15th') {
+      const firstAndFifteenthDays = getFirstAndFifteenthDeclinations();
+  
+      console.log(`1st and 15th days for noonmarks:`, firstAndFifteenthDays.map(d => `${d.month} ${d.dayOfMonth} (decl ${d.decl.toFixed(2)}°)`));
+      return firstAndFifteenthDays.flatMap((day, dayIdx) => {
+        // Find single intersection point with noon analemma for this declination
+        const intersectionPoint = findDeclinationAnalemmaIntersection(day.decl);
+        if (!intersectionPoint) {
+      
+          console.log(`No intersection found for ${day.month} ${day.dayOfMonth} (decl ${day.decl.toFixed(2)}°)`);
+          return [];
+        }
+
+    
+        console.log(`Found intersection for ${day.month} ${day.dayOfMonth}: (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
+        console.log(`Rendering circle for ${day.month} ${day.dayOfMonth} at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
+
+        return [
+          <circle
+            key={`noonmark-${line.id || line.date || idx}-${day.month}-${day.dayOfMonth}-${dayIdx}`}
             cx={scale * intersectionPoint.x}
             cy={scale * intersectionPoint.y}
             r={circleRadius}
@@ -1526,6 +1929,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const adjustedTextBlockX = textBlockX;
   const adjustedTextBlockY = textBlockY;
 
+  // Create a configuration hash to force re-render when styles change
+  const configHash = JSON.stringify({
+    hourlineIntervals: hourlineIntervals.map(h => ({ id: h.id, active: h.active, styleId: h.styleId })),
+    declinationLines: declinationLines.map(d => ({ id: d.id, active: d.active, styleId: d.styleId })),
+    lineStyles: lineStyles.map(s => ({ id: s.id, calculatedType: s.calculatedType }))
+  });
+
   return (
     <div className="card" style={{ width: '100%', margin: 0 }}>
       <div className="card-header">
@@ -1533,6 +1943,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       </div>
       <div style={{ width: '100%', minHeight: '400px', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible' }}>
         <svg
+          key={configHash}
           width="100%"
           height="100%"
           viewBox={`-${viewBoxWidth / 2} -${viewBoxHeight / 2} ${viewBoxWidth} ${viewBoxHeight}`}

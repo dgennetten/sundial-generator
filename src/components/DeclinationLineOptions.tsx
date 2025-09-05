@@ -35,7 +35,7 @@ const DeclinationLineOptions: React.FC<{
   };
 
   const isDateStringInRange = (dateStr: string): boolean => {
-    if (!dateStr || dateStr === 'Month Boundaries' || dateStr === 'Equinox' || dateStr === 'Summer Solstice' || dateStr === 'Winter Solstice') return true;
+    if (!dateStr || dateStr === '1st of the Month' || dateStr === '1st and 15th' || dateStr === 'Equinox' || dateStr === 'Summer Solstice' || dateStr === 'Winter Solstice') return true;
     if (dateStr === 'Today') {
       const today = new Date();
       const startOfYear = new Date(today.getFullYear(), 0, 1);
@@ -177,7 +177,7 @@ const DeclinationLineOptions: React.FC<{
                           onChange={e => handleChange(idx, 'date', e.target.value)}
                           disabled={!!isFixed}
                           placeholder="Month Day"
-                          style={{ width: '99px', fontSize: '0.9rem', paddingRight: '20px' }}
+                          style={{ width: '130px', fontSize: '0.9rem', paddingRight: '20px' }}
                           title={!isDateStringInRange(line.date) ? 'date not within selected date range' : undefined}
                         />
                         {!isDateStringInRange(line.date) && (
@@ -205,7 +205,7 @@ const DeclinationLineOptions: React.FC<{
                         onChange={e => handleChange(idx, 'styleId', e.target.value)}
                         style={{ fontSize: '0.9rem' }}
                       >
-                        {lineStyles.filter(s => s.name && s.name.trim()).map(style => (
+                        {lineStyles.filter(s => s.name && s.name.trim() && (!s.applicableToLines || s.applicableToLines.includes('declination'))).map(style => (
                           <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
                         ))}
                       </select>
