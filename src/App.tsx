@@ -112,7 +112,9 @@ const App: React.FC = () => {
   const [dialTextBlock, setDialTextBlock] = useState<string>(DEFAULT_DIAL_TEXTBLOCK);
   const [dialTextBlockFontSize, setDialTextBlockFontSize] = useState<number>(pageSize === '10x15cm Postcard' ? 8 : 14);
   const [dialTextBlockFontFamily, setDialTextBlockFontFamily] = useState<string>(fontFamily);
-  const [sundialNotesMode, setSundialNotesMode] = useState<string>('textBlock');
+  const [sundialNotesMode, setSundialNotesMode] = useState<string>('northPoint');
+  const [sundialNotesPositionMode, setSundialNotesPositionMode] = useState<'auto' | 'manual'>('auto');
+  const [sundialNotesOffset, setSundialNotesOffset] = useState<number>(0); // in mm
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
 
   // Calculate default dial facing based on hemisphere
@@ -320,6 +322,8 @@ const App: React.FC = () => {
     dialTextBlockFontSize,
     dialTextBlockFontFamily,
     sundialNotesMode,
+    sundialNotesPositionMode,
+    sundialNotesOffset,
     locationName,
     inclineType,
     tiltAngle,
@@ -357,6 +361,8 @@ const App: React.FC = () => {
     dialTextBlockFontSize,
     dialTextBlockFontFamily,
     sundialNotesMode,
+    sundialNotesPositionMode,
+    sundialNotesOffset,
     locationName,
     inclineType,
     tiltAngle,
@@ -457,6 +463,22 @@ const App: React.FC = () => {
           }, [])}
           position={gnomonPosition}
         />
+
+        <DialTextBlockSettings
+          dialTextBlock={dialTextBlock}
+          setDialTextBlock={setDialTextBlock}
+          dialTextBlockFontSize={dialTextBlockFontSize}
+          setDialTextBlockFontSize={setDialTextBlockFontSize}
+          dialTextBlockFontFamily={dialTextBlockFontFamily}
+          setDialTextBlockFontFamily={setDialTextBlockFontFamily}
+          sundialNotesMode={sundialNotesMode}
+          setSundialNotesMode={setSundialNotesMode}
+          sundialNotesPositionMode={sundialNotesPositionMode}
+          setSundialNotesPositionMode={setSundialNotesPositionMode}
+          sundialNotesOffset={sundialNotesOffset}
+          setSundialNotesOffset={setSundialNotesOffset}
+        />
+
         <React.Profiler id="HourlineSettings" onRender={(id, phase, actualDuration) => {
           if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
         }}>
@@ -498,16 +520,6 @@ const App: React.FC = () => {
           declinationNoonmarks={declinationNoonmarks}
         />
         </React.Profiler>
-        <DialTextBlockSettings
-          dialTextBlock={dialTextBlock}
-          setDialTextBlock={setDialTextBlock}
-          dialTextBlockFontSize={dialTextBlockFontSize}
-          setDialTextBlockFontSize={setDialTextBlockFontSize}
-          dialTextBlockFontFamily={dialTextBlockFontFamily}
-          setDialTextBlockFontFamily={setDialTextBlockFontFamily}
-          sundialNotesMode={sundialNotesMode}
-          setSundialNotesMode={setSundialNotesMode}
-        />
                  <DesignExport
            pageSize={pageSize}
            orientation={orientation}

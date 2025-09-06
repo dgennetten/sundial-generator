@@ -49,6 +49,8 @@ type Props = {
   dialTextBlockFontSize?: number;
   dialTextBlockFontFamily?: string;
   sundialNotesMode?: string;
+  sundialNotesPositionMode?: 'auto' | 'manual';
+  sundialNotesOffset?: number;
   locationName?: string;
   inclineType?: string;
   tiltAngle?: number;
@@ -96,7 +98,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     dialTextBlock = '',
     dialTextBlockFontSize = 14,
     dialTextBlockFontFamily = 'sans-serif',
-    sundialNotesMode = 'textBlock',
+    sundialNotesMode = 'northPoint',
+    sundialNotesPositionMode = 'auto',
+    sundialNotesOffset = 0,
     locationName = '',
     inclineType = 'Horizontal',
     tiltAngle = 0,
@@ -1628,7 +1632,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     // Circle diameter should be 2x the width of the hour line stroke width
     // So radius = stroke width (in mm, same coordinate system as the circle position)
-    const circleRadius = strokeWidthMm;
+    // Make noonmarks 50% bigger
+    const circleRadius = strokeWidthMm * 1.5;
 
     // Debug logging for declination noonmarks
 
@@ -2002,7 +2007,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // The text block position is already the centroid, so we use it directly
   // For North-facing dials, the entire SVG group is rotated 180°, so we don't need to adjust coordinates
   const adjustedTextBlockX = textBlockX;
-  const adjustedTextBlockY = textBlockY;
+  // Apply manual offset if in manual position mode (positive offset moves down)
+  const adjustedTextBlockY = sundialNotesPositionMode === 'manual' 
+    ? textBlockY + sundialNotesOffset 
+    : textBlockY;
 
   // Create a configuration hash to force re-render when styles change
   const configHash = JSON.stringify({

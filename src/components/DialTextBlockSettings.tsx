@@ -10,6 +10,10 @@ interface Props {
   setDialTextBlockFontFamily: (v: string) => void;
   sundialNotesMode: string;
   setSundialNotesMode: (v: string) => void;
+  sundialNotesPositionMode: 'auto' | 'manual';
+  setSundialNotesPositionMode: (v: 'auto' | 'manual') => void;
+  sundialNotesOffset: number;
+  setSundialNotesOffset: (v: number) => void;
 }
 
 const DialTextBlockSettings: React.FC<Props> = ({
@@ -21,6 +25,10 @@ const DialTextBlockSettings: React.FC<Props> = ({
   setDialTextBlockFontFamily,
   sundialNotesMode,
   setSundialNotesMode,
+  sundialNotesPositionMode,
+  setSundialNotesPositionMode,
+  sundialNotesOffset,
+  setSundialNotesOffset,
 }) => {
   return (
     <div className="card">
@@ -74,6 +82,39 @@ const DialTextBlockSettings: React.FC<Props> = ({
             </label>
           </div>
         </div>
+
+        {/* Position controls - shown for all modes except 'none' */}
+        {sundialNotesMode !== 'none' && (
+          <div className="form-group">
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end' }}>
+              <div className="form-group" style={{ flex: '0 0 auto' }}>
+                <label className="form-label">Position</label>
+                <select
+                  className="form-select"
+                  value={sundialNotesPositionMode}
+                  onChange={(e) => setSundialNotesPositionMode(e.target.value as 'auto' | 'manual')}
+                  style={{ width: '100px' }}
+                >
+                  <option value="auto">Auto</option>
+                  <option value="manual">Manual</option>
+                </select>
+              </div>
+              {sundialNotesPositionMode === 'manual' && (
+                <div className="form-group" style={{ flex: '0 0 auto' }}>
+                  <label className="form-label">Offset (mm)</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={sundialNotesOffset}
+                    onChange={(e) => setSundialNotesOffset(Number(e.target.value))}
+                    step={1}
+                    style={{ width: '80px' }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         
         {/* Conditional content based on selected mode */}
         
