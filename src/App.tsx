@@ -1,4 +1,21 @@
 // src/App.tsx
+//
+// Sundial Generator - A web-based sundial design application
+// Copyright (c) 2025 Sundial Generator
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike
+// 4.0 International License as published by Creative Commons.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+// License for more details.
+//
+// You should have received a copy of the Creative Commons
+// Attribution-NonCommercial-ShareAlike 4.0 International License
+// along with this program. If not, see <https://creativecommons.org/licenses/by-nc-sa/4.0/>.
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
