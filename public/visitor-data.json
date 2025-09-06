@@ -62,8 +62,8 @@
       "lon": -122.917,
       "timezone": "America/Los_Angeles",
       "firstVisit": "08/Aug/2025:05:11:44 -0700",
-      "lastVisit": "05/Sep/2025:04:47:50 -0700",
-      "visitCount": 58
+      "lastVisit": "06/Sep/2025:02:25:25 -0700",
+      "visitCount": 67
     },
     {
       "ip": "172.59.227.198",
@@ -738,8 +738,8 @@
       "lon": -95.2787,
       "timezone": "America/Chicago",
       "firstVisit": "25/Aug/2025:07:58:38 -0700",
-      "lastVisit": "05/Sep/2025:14:13:40 -0700",
-      "visitCount": 790
+      "lastVisit": "06/Sep/2025:14:20:51 -0700",
+      "visitCount": 1027
     },
     {
       "ip": "43.157.147.3",
@@ -1468,10 +1468,62 @@
       "firstVisit": "05/Sep/2025:08:20:20 -0700",
       "lastVisit": "05/Sep/2025:08:20:20 -0700",
       "visitCount": 13
+    },
+    {
+      "ip": "52.167.144.209",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Virginia",
+      "city": "Boydton",
+      "lat": 36.677696,
+      "lon": -78.37471,
+      "timezone": "America/New_York",
+      "firstVisit": "06/Sep/2025:06:07:25 -0700",
+      "lastVisit": "06/Sep/2025:06:07:25 -0700",
+      "visitCount": 9
+    },
+    {
+      "ip": "51.195.183.166",
+      "country": "United Kingdom",
+      "countryCode": "GB",
+      "region": "England",
+      "city": "London",
+      "lat": 51.5072,
+      "lon": -0.127586,
+      "timezone": "Europe/London",
+      "firstVisit": "06/Sep/2025:07:53:46 -0700",
+      "lastVisit": "06/Sep/2025:07:53:46 -0700",
+      "visitCount": 9
+    },
+    {
+      "ip": "164.92.148.220",
+      "country": "The Netherlands",
+      "countryCode": "NL",
+      "region": "North Holland",
+      "city": "Amsterdam",
+      "lat": 52.352,
+      "lon": 4.9392,
+      "timezone": "Europe/Amsterdam",
+      "firstVisit": "06/Sep/2025:11:41:21 -0700",
+      "lastVisit": "06/Sep/2025:11:41:21 -0700",
+      "visitCount": 9
+    },
+    {
+      "ip": "64.23.182.158",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "California",
+      "city": "Santa Clara",
+      "lat": 37.3931,
+      "lon": -121.962,
+      "timezone": "America/Los_Angeles",
+      "firstVisit": "06/Sep/2025:12:57:27 -0700",
+      "lastVisit": "06/Sep/2025:12:57:27 -0700",
+      "visitCount": 9
     }
   ],
-  "totalVisitors": 113,
-  "totalVisits": 1783,
-  "processedDate": "2025-09-05T21:17:48.693Z",
+  "totalVisitors": 117,
+  "totalVisits": 2065,
+  "processedDate": "2025-09-06T21:22:05.768Z",
   "daysSince": 7
 }

@@ -3,6 +3,7 @@ import { downloadLogFiles, processLogFile } from './fetchLogs.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,12 +56,24 @@ async function updateVisitorData(daysSince = 7) {
 // Main function
 async function main() {
   const daysSince = parseInt(process.argv[2]) || 7;
+  const shouldBuild = process.argv.includes('--build');
   
   try {
     // Update visitor data
     await updateVisitorData(daysSince);
     
     // Optionally build the project
+    if (shouldBuild) {
+      console.log('\n🔨 Building project with updated visitor data...');
+      try {
+        execSync('npm run build', { stdio: 'inherit', cwd: path.join(__dirname, '..') });
+        console.log('✅ Build completed successfully!');
+      } catch (buildError) {
+        console.error('❌ Build failed:', buildError.message);
+        throw buildError;
+      }
+    }
+    
     console.log('\n🎉 All done! Your visitor map should now show updated data.');
     
   } catch (error) {

@@ -125,8 +125,8 @@ export function isValidCssColor(str: string) {
 }
 
 export const emptyLine: LineStyle = {
-  width: '',
-  color: '',
+  width: 'hairline',
+  color: 'black',
   style: 'solid',
   name: '',
   id: '',

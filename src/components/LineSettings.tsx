@@ -1,6 +1,6 @@
-import React from 'react';
-import { PenLine } from 'lucide-react';
-import { saveLineStyles, emptyLine, isValidCssColor } from './lineStyleUtils';
+import React, { useState } from 'react';
+import { PenLine, X } from 'lucide-react';
+import { saveLineStyles, emptyLine, isValidCssColor, DEFAULT_LINE_STYLES } from './lineStyleUtils';
 
 export type LineStyle = {
   width: string; // e.g. 'hairline', '0.5mm'
@@ -17,8 +17,23 @@ const LineSettings: React.FC<{
   lineStyles: LineStyle[];
   setLineStyles: (styles: LineStyle[]) => void;
 }> = React.memo(({ lineStyles, setLineStyles }) => {
+  const [showCalculatedPopup, setShowCalculatedPopup] = useState(false);
+  const [pendingStyleIndex, setPendingStyleIndex] = useState<number | null>(null);
+  const [selectedCalculatedType, setSelectedCalculatedType] = useState<string>('');
+
+  // Get all calculated styles from defaults
+  const calculatedStyles = DEFAULT_LINE_STYLES.filter(s => s.style === 'calculated');
+
   // Handle editing
   const handleChange = (idx: number, field: keyof LineStyle, value: string) => {
+    // Special handling for when "calculated" is selected
+    if (field === 'style' && value === 'calculated') {
+      setPendingStyleIndex(idx);
+      setSelectedCalculatedType('');
+      setShowCalculatedPopup(true);
+      return;
+    }
+
     const updated = [...lineStyles];
     // For color, validate and normalize HTML color names and hex
     if (field === 'color') {
@@ -50,6 +65,66 @@ const LineSettings: React.FC<{
     saveLineStyles(updated.filter((s) => s.id));
   };
 
+  // Handle calculated style selection confirmation
+  const handleCalculatedConfirm = () => {
+    if (pendingStyleIndex === null || !selectedCalculatedType) {
+      return;
+    }
+
+    const selectedStyle = calculatedStyles.find(s => s.calculatedType === selectedCalculatedType);
+    if (!selectedStyle) {
+      return;
+    }
+
+    try {
+      // Generate a unique name with suffix
+      const baseName = selectedStyle.name;
+      const existingNames = lineStyles.map(s => s.name);
+      let suffix = 2;
+      let newName = `${baseName} (${suffix})`;
+      
+      while (existingNames.includes(newName)) {
+        suffix++;
+        newName = `${baseName} (${suffix})`;
+      }
+
+      const updated = [...lineStyles];
+      updated[pendingStyleIndex] = {
+        ...updated[pendingStyleIndex],
+        style: 'calculated',
+        name: newName,
+        calculatedType: selectedCalculatedType as LineStyle['calculatedType'],
+        applicableToLines: selectedStyle.applicableToLines
+      };
+
+      // If editing the blank row, add a new blank row
+      if (pendingStyleIndex === lineStyles.length - 1 && lineStyles[pendingStyleIndex].id === '') {
+        updated[pendingStyleIndex].id = `user-${Date.now()}`;
+        updated.push({ ...emptyLine });
+      }
+
+      setLineStyles(updated);
+      saveLineStyles(updated.filter((s) => s.id));
+      
+      // Close popup
+      setShowCalculatedPopup(false);
+      setPendingStyleIndex(null);
+      setSelectedCalculatedType('');
+    } catch (error) {
+      // Close popup even if there's an error
+      setShowCalculatedPopup(false);
+      setPendingStyleIndex(null);
+      setSelectedCalculatedType('');
+    }
+  };
+
+  // Handle calculated style selection cancellation
+  const handleCalculatedCancel = () => {
+    setShowCalculatedPopup(false);
+    setPendingStyleIndex(null);
+    setSelectedCalculatedType('');
+  };
+
   return (
     <div className="card">
       <div className="card-header">
@@ -72,14 +147,14 @@ const LineSettings: React.FC<{
             <tbody>
               {(lineStyles[lineStyles.length - 1]?.id === '' ? lineStyles : [...lineStyles, { ...emptyLine }]).map((style, idx) => {
                 // For color validation feedback
-                const colorValid = isValidCssColor(style.color) || style.color === '';
+                const colorValid = isValidCssColor(style.color || '') || (style.color || '') === '';
                 return (
                   <tr key={style.id || `blank-${idx}`}>
                     <td style={{ padding: '0.3rem 0.3rem', minWidth: '70px' }}>
                       <input
                         type="text"
                         className="form-input"
-                        value={style.name}
+                        value={style.name || ''}
                         onChange={e => handleChange(idx, 'name', e.target.value)}
                         disabled={!!style.fixed}
                         style={{ width: '100%', fontSize: '0.9rem' }}
@@ -90,7 +165,7 @@ const LineSettings: React.FC<{
                       <input
                         type="text"
                         className="form-input"
-                        value={style.width}
+                        value={style.width || ''}
                         onChange={e => handleChange(idx, 'width', e.target.value)}
                         style={{ width: '50px', fontSize: '0.9rem' }}
                       />
@@ -105,17 +180,17 @@ const LineSettings: React.FC<{
                             height: 24,
                             borderRadius: 4,
                             border: '1px solid #ccc',
-                            background: colorValid ? style.color : '#fff',
+                            background: colorValid ? (style.color || '#fff') : '#fff',
                             position: 'relative',
                             overflow: 'hidden',
                             verticalAlign: 'middle'
                           }}
-                          title={style.color}
+                          title={style.color || ''}
                         >
                           <input
                             type="color"
                             value={
-                              /^#([0-9a-f]{3}){1,2}$/i.test(style.color.trim())
+                              style.color && /^#([0-9a-f]{3}){1,2}$/i.test(style.color.trim())
                                 ? style.color
                                 : '#000000'
                             }
@@ -139,7 +214,7 @@ const LineSettings: React.FC<{
                         <input
                           type="text"
                           className="form-input"
-                          value={style.color}
+                          value={style.color || ''}
                           onChange={e => handleChange(idx, 'color', e.target.value)}
                           style={{
                             width: '35px', // was '70px'
@@ -159,7 +234,7 @@ const LineSettings: React.FC<{
                     <td style={{ padding: '0.3rem 0.3rem' }}>
                       <select
                         className="form-select"
-                        value={style.style}
+                        value={style.style || 'solid'}
                         onChange={e => handleChange(idx, 'style', e.target.value)}
                         style={{ 
                           fontSize: '0.9rem',
@@ -214,6 +289,115 @@ const LineSettings: React.FC<{
           Note: 'D' styles only apply to Declination lines; 'H' styles only apply to Hourlines
         </div>
       </div>
+
+      {/* Calculated Style Selection Popup */}
+      {showCalculatedPopup && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '1.5rem',
+            minWidth: '400px',
+            maxWidth: '500px',
+            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '1rem'
+            }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold' }}>
+                Choose desired calculated dash pattern
+              </h3>
+              <button
+                onClick={handleCalculatedCancel}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.25rem',
+                  borderRadius: '4px'
+                }}
+                title="Close"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              {calculatedStyles.map((style) => (
+                <label
+                  key={style.calculatedType}
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.75rem',
+                    cursor: 'pointer',
+                    padding: '0.5rem',
+                    borderRadius: '4px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: selectedCalculatedType === style.calculatedType ? '#f0f9ff' : 'white'
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="calculatedType"
+                    value={style.calculatedType}
+                    checked={selectedCalculatedType === style.calculatedType}
+                    onChange={(e) => setSelectedCalculatedType(e.target.value)}
+                    style={{ marginRight: '0.5rem' }}
+                  />
+                  <span style={{ fontWeight: 'medium' }}>{style.name}</span>
+                  <div style={{ 
+                    fontSize: '0.85rem', 
+                    color: '#6b7280', 
+                    marginLeft: '1.25rem',
+                    marginTop: '0.25rem'
+                  }}>
+                    Applicable to: {style.applicableToLines?.join(', ') || 'all line types'}
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            <div style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '0.75rem'
+            }}>
+              <button
+                onClick={handleCalculatedCancel}
+                className="btn btn-secondary"
+                style={{ padding: '0.5rem 1rem' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCalculatedConfirm}
+                className="btn btn-primary"
+                disabled={!selectedCalculatedType}
+                style={{ 
+                  padding: '0.5rem 1rem',
+                  opacity: selectedCalculatedType ? 1 : 0.5
+                }}
+              >
+                Create Style
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 });

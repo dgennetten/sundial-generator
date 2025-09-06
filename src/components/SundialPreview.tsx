@@ -542,11 +542,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         const bottom = height / 2 - borderMarginMm - transformY;
 
         if (currentPoint.x >= left && currentPoint.x <= right && currentPoint.y >= top && currentPoint.y <= bottom) {
-          // Create dashes with 4-minute segments and 4-minute gaps
-          // Use modulo 4 to create pattern: draw for 2 points, skip for 2 points
-          const cyclePosition = pointIndex % 4;
-          if (previousPoint && (cyclePosition === 1 || cyclePosition === 2)) {
-            // Draw dash segments for positions 1 and 2 in each 4-point cycle
+          // Create dashes with 2-minute segments and 2-minute gaps
+          // Use modulo 2 to create pattern: draw for 1 point, skip for 1 point
+          const cyclePosition = pointIndex % 2;
+          if (previousPoint && cyclePosition === 1) {
+            // Draw dash segments for every other point (creating 2-minute dashes with 2-minute gaps)
             segments.push(
               <line
                 key={`declination-2min-dash-${decl}-${segmentIndex}`}

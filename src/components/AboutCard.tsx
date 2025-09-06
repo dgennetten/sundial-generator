@@ -23,8 +23,9 @@ const AboutCard: React.FC = () => {
           }}
         >
            <p>
-            <strong>New Feature:</strong> New "Calculated" dash styles. The dashes contain date/time information in their position and length. (this is getting closer to my 1985 code - see '11x17 inch sundial' link below.)
-            <strong>There are bugs with this:</strong> i will  update it soon. Try the reset link in the About card. 
+            <strong>New Feature:</strong> New "Calculated" dash styles. The dashes contain date/time information in their position and length. 
+            (this is getting closer to my 1985 code - see '11x17 inch sundial' link below.) These caclulated dashes aid in interpolating between
+            hourlines and declination lines. 
           </p>
            <p>
             <strong>New Feature:</strong> PRINT BUTTON!
