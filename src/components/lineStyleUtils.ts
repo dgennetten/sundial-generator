@@ -79,6 +79,16 @@ export const DEFAULT_LINE_STYLES: LineStyle[] = [
     fixed: true,
     calculatedType: 'hourline-5-2-day-dash',
     applicableToLines: ['hourline'],
+  },
+  {
+    width: 'hairline',
+    color: 'black',
+    style: 'calculated',
+    name: 'H: 2/5 day dash',
+    id: 'hourline-2-5-day-dash',
+    fixed: true,
+    calculatedType: 'hourline-2-5-day-dash',
+    applicableToLines: ['hourline'],
   }
 ];
 

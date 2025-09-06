@@ -9,7 +9,7 @@ export type LineStyle = {
   name: string;
   id: string; // unique id for each style
   fixed?: boolean; // true for the default, non-deletable
-  calculatedType?: 'declination-2min-dot' | 'declination-5min-dot' | 'hourline-5-2-day-dash' | 'declination-2min-dash'; // for calculated styles
+  calculatedType?: 'declination-2min-dot' | 'declination-5min-dot' | 'hourline-5-2-day-dash' | 'declination-2min-dash' | 'hourline-2-5-day-dash'; // for calculated styles
   applicableToLines?: ('hourline' | 'declination' | 'border')[]; // which line types this style can be applied to
 };
 

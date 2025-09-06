@@ -8,11 +8,13 @@ describe('Calculated Line Styles', () => {
     const declination5minDotStyle = DEFAULT_LINE_STYLES.find(s => s.id === 'declination-5min-dot');
     const declinationDashStyle = DEFAULT_LINE_STYLES.find(s => s.id === 'declination-2min-dash');
     const hourlineDashStyle = DEFAULT_LINE_STYLES.find(s => s.id === 'hourline-5-2-day-dash');
+    const hourline25DashStyle = DEFAULT_LINE_STYLES.find(s => s.id === 'hourline-2-5-day-dash');
 
     expect(declinationDotStyle).toBeDefined();
     expect(declination5minDotStyle).toBeDefined();
     expect(declinationDashStyle).toBeDefined();
     expect(hourlineDashStyle).toBeDefined();
+    expect(hourline25DashStyle).toBeDefined();
 
     // Check declination dot style properties
     expect(declinationDotStyle?.name).toBe('D: 2min dot');
@@ -41,6 +43,13 @@ describe('Calculated Line Styles', () => {
     expect(hourlineDashStyle?.calculatedType).toBe('hourline-5-2-day-dash');
     expect(hourlineDashStyle?.applicableToLines).toEqual(['hourline']);
     expect(hourlineDashStyle?.fixed).toBe(true);
+
+    // Check hourline 2/5 dash style properties
+    expect(hourline25DashStyle?.name).toBe('H: 2/5 day dash');
+    expect(hourline25DashStyle?.style).toBe('calculated');
+    expect(hourline25DashStyle?.calculatedType).toBe('hourline-2-5-day-dash');
+    expect(hourline25DashStyle?.applicableToLines).toEqual(['hourline']);
+    expect(hourline25DashStyle?.fixed).toBe(true);
   });
 
   it('should filter line styles correctly for different line types', () => {
@@ -50,11 +59,13 @@ describe('Calculated Line Styles', () => {
     );
     
     const hourlineCalculatedStyle = hourlineStyles.find(s => s.id === 'hourline-5-2-day-dash');
+    const hourline25CalculatedStyle = hourlineStyles.find(s => s.id === 'hourline-2-5-day-dash');
     const declinationDotCalculatedStyle = hourlineStyles.find(s => s.id === 'declination-2min-dot');
     const declination5minDotCalculatedStyle = hourlineStyles.find(s => s.id === 'declination-5min-dot');
     const declinationDashCalculatedStyle = hourlineStyles.find(s => s.id === 'declination-2min-dash');
     
     expect(hourlineCalculatedStyle).toBeDefined();
+    expect(hourline25CalculatedStyle).toBeDefined();
     expect(declinationDotCalculatedStyle).toBeUndefined(); // Should not be available for hourlines
     expect(declination5minDotCalculatedStyle).toBeUndefined(); // Should not be available for hourlines
     expect(declinationDashCalculatedStyle).toBeUndefined(); // Should not be available for hourlines
@@ -68,11 +79,13 @@ describe('Calculated Line Styles', () => {
     const declination5minDotStyleFiltered = declinationStyles.find(s => s.id === 'declination-5min-dot');
     const declinationDashStyleFiltered = declinationStyles.find(s => s.id === 'declination-2min-dash');
     const hourlineCalculatedStyleFiltered = declinationStyles.find(s => s.id === 'hourline-5-2-day-dash');
+    const hourline25CalculatedStyleFiltered = declinationStyles.find(s => s.id === 'hourline-2-5-day-dash');
     
     expect(declinationDotStyleFiltered).toBeDefined();
     expect(declination5minDotStyleFiltered).toBeDefined();
     expect(declinationDashStyleFiltered).toBeDefined();
     expect(hourlineCalculatedStyleFiltered).toBeUndefined(); // Should not be available for declination lines
+    expect(hourline25CalculatedStyleFiltered).toBeUndefined(); // Should not be available for declination lines
 
     // Test border filtering (should exclude all calculated styles)
     const borderStyles = DEFAULT_LINE_STYLES.filter(s => 
@@ -83,11 +96,13 @@ describe('Calculated Line Styles', () => {
     const border5minDeclinationDotStyle = borderStyles.find(s => s.id === 'declination-5min-dot');
     const borderDeclinationDashStyle = borderStyles.find(s => s.id === 'declination-2min-dash');
     const borderHourlineStyle = borderStyles.find(s => s.id === 'hourline-5-2-day-dash');
+    const borderHourline25Style = borderStyles.find(s => s.id === 'hourline-2-5-day-dash');
     
     expect(borderDeclinationDotStyle).toBeUndefined(); // Should not be available for borders
     expect(border5minDeclinationDotStyle).toBeUndefined(); // Should not be available for borders
     expect(borderDeclinationDashStyle).toBeUndefined(); // Should not be available for borders
     expect(borderHourlineStyle).toBeUndefined(); // Should not be available for borders
+    expect(borderHourline25Style).toBeUndefined(); // Should not be available for borders
   });
 
   it('should include regular styles for all line types when applicableToLines is undefined', () => {
