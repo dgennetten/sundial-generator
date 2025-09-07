@@ -188,13 +188,19 @@ function parseLogLine(line) {
 // Download log files from SFTP
 function downloadLogFiles() {
   return new Promise((resolve, reject) => {
+    console.log('🔗 Establishing SFTP connection...');
+    console.log(`📡 Host: ${SFTP_CONFIG.host}`);
+    console.log(`👤 Username: ${SFTP_CONFIG.username}`);
+    console.log(`📁 Log path: ${LOG_PATH}`);
+
     const conn = new Client();
     
     conn.on('ready', () => {
-      console.log('SFTP connection established');
-      
+      console.log('✅ SFTP connection established successfully');
+
       conn.sftp((err, sftp) => {
         if (err) {
+          console.error('❌ SFTP session error:', err.message);
           reject(err);
           return;
         }
@@ -244,21 +250,38 @@ function downloadLogFiles() {
         });
       });
     });
-    
+
     conn.on('error', (err) => {
+      console.error('❌ SFTP connection error:', err.message);
       reject(err);
     });
-    
+
+    conn.on('close', () => {
+      console.log('🔌 SFTP connection closed');
+    });
+
+    console.log('🔌 Connecting to SFTP server...');
     conn.connect(SFTP_CONFIG);
   });
 }
 
 // Process log file and extract visitor data
 async function processLogFile(logFilePath, daysSince = 7) {
+  console.log(`🔍 Starting log file processing...`);
+  console.log(`📁 Log file path: ${logFilePath}`);
+  console.log(`📅 Processing last ${daysSince} days`);
+
   const visitors = new Map(); // Use IP as key to avoid duplicates
   const visitCounts = new Map(); // Track visit counts per location
   const failedIPs = new Set(); // Track IPs that failed geolocation
-  
+
+  // Check if log file exists
+  if (!fs.existsSync(logFilePath)) {
+    throw new Error(`Log file not found: ${logFilePath}`);
+  }
+
+  console.log(`📄 Log file size: ${fs.statSync(logFilePath).size} bytes`);
+
   // Load existing visitor data to merge with new data
   let existingData = null;
   try {
@@ -266,6 +289,9 @@ async function processLogFile(logFilePath, daysSince = 7) {
       const existingContent = fs.readFileSync(OUTPUT_FILE, 'utf8');
       existingData = JSON.parse(existingContent);
       console.log(`📚 Found existing visitor data with ${existingData.totalVisitors} visitors`);
+    } else {
+      console.log(`📝 No existing visitor data found, starting fresh`);
+    }
       
       // Load existing visitors into our maps
       existingData.visitors.forEach(visitor => {
