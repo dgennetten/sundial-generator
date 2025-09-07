@@ -28,6 +28,12 @@ jobs:
         echo "Checking fetchLogs.js content around line 302:"
         sed -n '300,305p' scripts/fetchLogs.js
 
+    - name: Force git pull to ensure latest version
+      run: |
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
+        git pull --rebase origin main || echo "Pull completed"
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
