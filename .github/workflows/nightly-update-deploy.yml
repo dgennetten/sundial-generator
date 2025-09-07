@@ -23,14 +23,34 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Update visitor data and build
-      run: npm run update-and-deploy
+    - name: Update visitor data
+      run: node scripts/updateVisitorData.js 7 --build
+      env:
+        # SFTP credentials for log fetching
+        SFTP_HOST: ${{ secrets.SFTP_HOST }}
+        SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+        SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+        SFTP_LOG_PATH: ${{ secrets.SFTP_LOG_PATH }}
+
+    - name: Verify build output
+      run: |
+        echo "Checking if dist directory exists..."
+        if [ ! -d "dist" ]; then
+          echo "❌ ERROR: dist directory not found!"
+          exit 1
+        fi
+        ls -la dist/
+        echo "Checking dist directory contents..."
+        ls -la dist/* | head -10
+        echo "✅ Build verification successful"
+
+    - name: Deploy to SFTP
+      run: node deploy-sftp.js
       env:
         # SFTP deployment credentials
         SFTP_HOST: ${{ secrets.SFTP_HOST }}
         SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
         SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-        SFTP_LOG_PATH: ${{ secrets.SFTP_LOG_PATH }}
         FTP_REMOTE_PATH: ${{ secrets.FTP_REMOTE_PATH }}
 
     - name: Notify on failure
