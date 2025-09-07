@@ -40,6 +40,46 @@ if (!fs.existsSync(LOCAL_LOG_DIR)) {
   fs.mkdirSync(LOCAL_LOG_DIR, { recursive: true });
 }
 
+// Manual corrections for known problematic IPs
+const MANUAL_IP_CORRECTIONS = {
+  '212.97.70.29': {
+    country: 'Portugal',
+    countryCode: 'PT',
+    region: 'Lisbon',
+    city: 'Lisbon',
+    lat: 38.7223,
+    lon: -9.1393,
+    timezone: 'Europe/Lisbon'
+  }
+  // Add more manual corrections here as needed
+};
+
+// Get manual correction if available
+function getManualCorrection(ip) {
+  return MANUAL_IP_CORRECTIONS[ip] || null;
+}
+
+// Check if geolocation data seems suspicious based on IP range knowledge
+function isSuspiciousGeolocation(ip, visitor) {
+  const ipParts = ip.split('.').map(Number);
+
+  // Check for known IP range mismatches
+  // Portugal range: 212.97.0.0 - 212.97.255.255 should be Portugal, not Liechtenstein
+  if (ipParts[0] === 212 && ipParts[1] === 97 && visitor.country === 'Liechtenstein') {
+    return true;
+  }
+
+  // Check if we have a manual correction for this IP
+  if (getManualCorrection(ip)) {
+    return true;
+  }
+
+  // Add more suspicious pattern checks here as needed
+  // For example, other known incorrect mappings
+
+  return false;
+}
+
 // Simple IP geolocation using a free service with retry logic
 async function getLocationFromIP(ip, retries = 3) {
   try {
@@ -114,12 +154,21 @@ async function getLocationFromIP(ip, retries = 3) {
   return null;
 }
 
+// Parse Apache log timestamp to Date object
+function parseApacheTimestamp(timestampStr) {
+  // Remove brackets if present
+  const cleanTimestamp = timestampStr.replace(/\[|\]/g, '');
+  // Convert [07/Sep/2025:10:24:40 -0700] to Sep 07, 2025 10:24:40 -0700
+  const formatted = cleanTimestamp.replace(/(\d{2})\/(\w{3})\/(\d{4}):(\d{2}):(\d{2}):(\d{2}) (.+)/, '$2 $1, $3 $4:$5:$6 $7');
+  return new Date(formatted);
+}
+
 // Parse Apache/Nginx access log line
 function parseLogLine(line) {
   // Common Log Format: IP - - [timestamp] "method path protocol" status size "referer" "user-agent"
   const logRegex = /^(\S+) \S+ \S+ \[([^\]]+)\] "(\S+) (\S+) (\S+)" (\d+) (\S+) "([^"]*)" "([^"]*)"/;
   const match = line.match(logRegex);
-  
+
   if (match) {
     return {
       ip: match[1],
@@ -256,8 +305,7 @@ async function processLogFile(logFilePath, daysSince = 7) {
       totalLogEntries++;
       
       // Parse timestamp and filter by date
-      const timestampStr = logEntry.timestamp.replace(/\[|\]/g, '');
-      const logDate = new Date(timestampStr.replace(/(\d{2})\/(\w{3})\/(\d{4}):(\d{2}):(\d{2}):(\d{2}) (.+)/, '$2 $1, $3 $4:$5:$6 $7'));
+      const logDate = parseApacheTimestamp(logEntry.timestamp);
       
       if (logDate < startDate) {
         skippedOldEntries++;
@@ -275,6 +323,36 @@ async function processLogFile(logFilePath, daysSince = 7) {
         const visitor = visitors.get(logEntry.ip);
         visitor.lastVisit = logEntry.timestamp;
         visitor.visitCount = (visitor.visitCount || 1) + 1;
+
+        // Refresh geolocation data if it's been more than 30 days since first visit
+        // This helps correct incorrect geolocation data from the past
+        const firstVisitDate = parseApacheTimestamp(visitor.firstVisit);
+        const daysSinceFirstVisit = (new Date() - firstVisitDate) / (1000 * 60 * 60 * 24);
+
+        // Also refresh if geolocation data seems suspicious
+        const isSuspiciousLocation = isSuspiciousGeolocation(logEntry.ip, visitor);
+
+        if (daysSinceFirstVisit > 30 || isSuspiciousLocation) {
+          const reason = daysSinceFirstVisit > 30 ? `${Math.round(daysSinceFirstVisit)} days old` : 'suspicious location data';
+          console.log(`Refreshing geolocation for existing IP: ${logEntry.ip} (${reason})`);
+
+          // Check for manual correction first
+          const manualCorrection = getManualCorrection(logEntry.ip);
+          let refreshedLocation = manualCorrection;
+
+          if (!manualCorrection) {
+            // Fall back to geolocation service
+            refreshedLocation = await getLocationFromIP(logEntry.ip);
+          }
+
+          if (refreshedLocation) {
+            // Update all location fields
+            Object.assign(visitor, refreshedLocation);
+            const source = manualCorrection ? 'manual correction' : 'geolocation service';
+            console.log(`✅ Updated geolocation for ${logEntry.ip}: ${refreshedLocation.city}, ${refreshedLocation.country} (${source})`);
+          }
+        }
+
         const locationKey = `${visitor.lat},${visitor.lon}`;
         visitCounts.set(locationKey, visitor.visitCount);
         skippedDuplicateIPs++;

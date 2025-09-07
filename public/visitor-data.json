@@ -63,7 +63,7 @@
       "timezone": "America/Los_Angeles",
       "firstVisit": "08/Aug/2025:05:11:44 -0700",
       "lastVisit": "07/Sep/2025:02:54:47 -0700",
-      "visitCount": 69
+      "visitCount": 75
     },
     {
       "ip": "172.59.227.198",
@@ -738,8 +738,8 @@
       "lon": -95.2787,
       "timezone": "America/Chicago",
       "firstVisit": "25/Aug/2025:07:58:38 -0700",
-      "lastVisit": "07/Sep/2025:09:17:18 -0700",
-      "visitCount": 1039
+      "lastVisit": "07/Sep/2025:10:40:13 -0700",
+      "visitCount": 1127
     },
     {
       "ip": "43.157.147.3",
@@ -1520,10 +1520,36 @@
       "firstVisit": "06/Sep/2025:12:57:27 -0700",
       "lastVisit": "06/Sep/2025:12:57:27 -0700",
       "visitCount": 9
+    },
+    {
+      "ip": "212.97.70.29",
+      "country": "Portugal",
+      "countryCode": "PT",
+      "region": "Lisbon",
+      "city": "Lisbon",
+      "lat": 38.7223,
+      "lon": -9.1393,
+      "timezone": "Europe/Lisbon",
+      "firstVisit": "07/Sep/2025:10:24:40 -0700",
+      "lastVisit": "07/Sep/2025:10:24:42 -0700",
+      "visitCount": 18
+    },
+    {
+      "ip": "91.205.230.219",
+      "country": "Portugal",
+      "countryCode": "PT",
+      "region": "Lisbon",
+      "city": "Lisbon",
+      "lat": 38.729,
+      "lon": -9.1551,
+      "timezone": "Europe/Lisbon",
+      "firstVisit": "07/Sep/2025:10:42:50 -0700",
+      "lastVisit": "07/Sep/2025:10:42:52 -0700",
+      "visitCount": 16
     }
   ],
-  "totalVisitors": 117,
-  "totalVisits": 2079,
-  "processedDate": "2025-09-07T16:19:14.864Z",
+  "totalVisitors": 119,
+  "totalVisits": 2207,
+  "processedDate": "2025-09-07T17:51:03.131Z",
   "daysSince": 7
 }
