@@ -24,7 +24,7 @@ jobs:
       run: npm ci
 
     - name: Update visitor data
-      run: node scripts/updateVisitorData.js 7 --build
+      run: node scripts/updateVisitorData.js 7
       env:
         # SFTP credentials for log fetching
         SFTP_HOST: ${{ secrets.SFTP_HOST }}
@@ -32,13 +32,25 @@ jobs:
         SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
         SFTP_LOG_PATH: ${{ secrets.SFTP_LOG_PATH }}
 
+    - name: Build project
+      run: |
+        echo "🔨 Starting build process..."
+        pwd
+        ls -la
+        echo "Running npm run build..."
+        npm run build
+        echo "✅ Build command completed"
+
     - name: Verify build output
       run: |
         echo "Checking if dist directory exists..."
         if [ ! -d "dist" ]; then
           echo "❌ ERROR: dist directory not found!"
+          echo "Current directory contents:"
+          ls -la
           exit 1
         fi
+        echo "dist directory found!"
         ls -la dist/
         echo "Checking dist directory contents..."
         ls -la dist/* | head -10
