@@ -30,6 +30,7 @@ jobs:
         SFTP_HOST: ${{ secrets.SFTP_HOST }}
         SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
         SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+        SFTP_LOG_PATH: ${{ secrets.SFTP_LOG_PATH }}
         FTP_REMOTE_PATH: ${{ secrets.FTP_REMOTE_PATH }}
 
     - name: Notify on failure
