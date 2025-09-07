@@ -13,6 +13,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        clean: true
+        fetch-depth: 0
 
     - name: Verify repository contents
       run: |
@@ -22,6 +25,8 @@ jobs:
         ls -la scripts/
         echo "Checking fetchLogs.js syntax:"
         node -c scripts/fetchLogs.js && echo "✅ Syntax check passed" || echo "❌ Syntax check failed"
+        echo "Checking fetchLogs.js content around line 302:"
+        sed -n '300,305p' scripts/fetchLogs.js
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
