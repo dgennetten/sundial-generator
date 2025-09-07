@@ -289,16 +289,15 @@ async function processLogFile(logFilePath, daysSince = 7) {
       const existingContent = fs.readFileSync(OUTPUT_FILE, 'utf8');
       existingData = JSON.parse(existingContent);
       console.log(`📚 Found existing visitor data with ${existingData.totalVisitors} visitors`);
-    } else {
-      console.log(`📝 No existing visitor data found, starting fresh`);
-    }
-      
+
       // Load existing visitors into our maps
       existingData.visitors.forEach(visitor => {
         visitors.set(visitor.ip, visitor);
         const locationKey = `${visitor.lat},${visitor.lon}`;
         visitCounts.set(locationKey, visitor.visitCount);
       });
+    } else {
+      console.log(`📝 No existing visitor data found, starting fresh`);
     }
   } catch (error) {
     console.log('⚠️  Could not load existing visitor data, starting fresh:', error.message);
