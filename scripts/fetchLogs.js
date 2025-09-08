@@ -1,9 +1,11 @@
-// Minimal fetchLogs.js to avoid syntax errors
+// Enhanced fetchLogs.js: download recent access logs (including rotated .gz) and combine them
 import { Client } from 'ssh2';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import zlib from 'zlib';
+import { promisify } from 'util';
 
 dotenv.config();
 dotenv.config({ path: '.env.local' });
@@ -34,7 +36,20 @@ if (!fs.existsSync(LOCAL_LOG_DIR)) {
   fs.mkdirSync(LOCAL_LOG_DIR, { recursive: true });
 }
 
-function downloadLogFiles() {
+const gunzipAsync = promisify(zlib.gunzip);
+
+async function decompressGzipFile(gzPath, outPath) {
+  const gzData = fs.readFileSync(gzPath);
+  const buf = await gunzipAsync(gzData);
+  fs.writeFileSync(outPath, buf);
+  return outPath;
+}
+
+/**
+ * Download recent log files from SFTP, including rotated .gz logs, and combine them.
+ * Returns path to a combined local log file containing last `daysSince` days of entries.
+ */
+function downloadLogFiles(daysSince = 7) {
   return new Promise((resolve, reject) => {
     console.log('Connecting to SFTP...');
 
@@ -43,21 +58,21 @@ function downloadLogFiles() {
     conn.on('ready', () => {
       console.log('SFTP connected');
 
-      conn.sftp((err, sftp) => {
+      conn.sftp(async (err, sftp) => {
         if (err) {
           reject(err);
           return;
         }
 
-        sftp.readdir(LOG_PATH, (err, list) => {
+        sftp.readdir(LOG_PATH, async (err, list) => {
           if (err) {
             reject(err);
             return;
           }
 
+          // Include access.log, access.log.N and .gz variants
           const accessLogs = list.filter(file =>
-            file.filename.includes('access.log') &&
-            !file.filename.includes('.gz')
+            file.filename.includes('access.log')
           );
 
           if (accessLogs.length === 0) {
@@ -65,24 +80,67 @@ function downloadLogFiles() {
             return;
           }
 
-          accessLogs.sort((a, b) => b.attrs.mtime - a.attrs.mtime);
-          const latestLog = accessLogs[0];
+          // Sort by modification time ascending (oldest first)
+          accessLogs.sort((a, b) => a.attrs.mtime - b.attrs.mtime);
 
-          const remotePath = path.posix.join(LOG_PATH, latestLog.filename);
-          const localPath = path.join(LOCAL_LOG_DIR, latestLog.filename);
+          const startDate = new Date();
+          startDate.setDate(startDate.getDate() - daysSince);
+          const startEpoch = Math.floor(startDate.getTime() / 1000);
 
-          console.log(`Downloading ${remotePath}...`);
+          // Select files that could contain entries >= startDate
+          // Pick any file whose mtime is >= (startDate - 1 day) and always include the latest file
+          const ONE_DAY = 24 * 60 * 60;
+          const selected = accessLogs.filter(f => f.attrs.mtime >= (startEpoch - ONE_DAY));
+          // Ensure the newest file is included
+          const newest = accessLogs[accessLogs.length - 1];
+          if (!selected.find(f => f.filename === newest.filename)) {
+            selected.push(newest);
+          }
 
-          sftp.fastGet(remotePath, localPath, (err) => {
-            if (err) {
-              reject(err);
-              return;
+          console.log('Candidate log files to download:');
+          selected.forEach(f => {
+            console.log(`  - ${f.filename} (mtime: ${new Date(f.attrs.mtime * 1000).toISOString()})`);
+          });
+
+          try {
+            // Download and prepare local files
+            const localFiles = [];
+            for (const file of selected) {
+              const remotePath = path.posix.join(LOG_PATH, file.filename);
+              const localPath = path.join(LOCAL_LOG_DIR, file.filename);
+              console.log(`Downloading ${remotePath} -> ${localPath}`);
+
+              // Download file
+              await new Promise((res, rej) => {
+                sftp.fastGet(remotePath, localPath, (e) => (e ? rej(e) : res()));
+              });
+
+              // If gz, decompress to .log alongside
+              if (file.filename.endsWith('.gz')) {
+                const outPath = localPath.replace(/\.gz$/, '');
+                console.log(`Decompressing ${localPath} -> ${outPath}`);
+                await decompressGzipFile(localPath, outPath);
+                localFiles.push(outPath);
+              } else {
+                localFiles.push(localPath);
+              }
             }
 
-            console.log('Download complete');
+            // Combine into a single file (keep chronological order)
+            const combinedPath = path.join(LOCAL_LOG_DIR, 'combined-access.log');
+            fs.writeFileSync(combinedPath, '');
+            for (const lf of localFiles) {
+              const content = fs.readFileSync(lf);
+              fs.appendFileSync(combinedPath, content);
+              if (!content.toString().endsWith('\n')) fs.appendFileSync(combinedPath, '\n');
+            }
+
+            console.log(`Combined log created: ${combinedPath}`);
             conn.end();
-            resolve(localPath);
-          });
+            resolve(combinedPath);
+          } catch (e) {
+            reject(e);
+          }
         });
       });
     });
@@ -119,8 +177,8 @@ async function main() {
   try {
     console.log('Starting...');
 
-    const logFilePath = await downloadLogFiles();
-    const visitorData = processLogFile(logFilePath, daysSince);
+    const logFilePath = await downloadLogFiles(daysSince);
+    const visitorData = await processLogFile(logFilePath, daysSince);
 
     console.log('Processing complete!');
     console.log(`Found ${visitorData.totalVisitors} visitors`);

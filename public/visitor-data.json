@@ -37,7 +37,7 @@
       "timezone": "America/Chicago",
       "firstVisit": "08/Sep/2025:05:20:50 -0700",
       "lastVisit": "08/Sep/2025:05:20:50 -0700",
-      "visitCount": 24
+      "visitCount": 35
     },
     {
       "ip": "73.34.29.26",
@@ -103,10 +103,36 @@
       "firstVisit": "08/Sep/2025:14:01:47 -0700",
       "lastVisit": "08/Sep/2025:14:01:47 -0700",
       "visitCount": 1
+    },
+    {
+      "ip": "195.88.86.214",
+      "country": "Türkiye",
+      "countryCode": "TR",
+      "region": "Istanbul",
+      "city": "Istanbul",
+      "lat": 41.0146,
+      "lon": 28.9532,
+      "timezone": "Europe/Istanbul",
+      "firstVisit": "08/Sep/2025:15:03:41 -0700",
+      "lastVisit": "08/Sep/2025:15:03:41 -0700",
+      "visitCount": 3
+    },
+    {
+      "ip": "84.39.151.93",
+      "country": "Canada",
+      "countryCode": "CA",
+      "region": "British Columbia",
+      "city": "Vancouver",
+      "lat": 49.2476,
+      "lon": -123.1234,
+      "timezone": "America/Vancouver",
+      "firstVisit": "08/Sep/2025:15:10:18 -0700",
+      "lastVisit": "08/Sep/2025:15:10:18 -0700",
+      "visitCount": 2
     }
   ],
-  "totalVisitors": 8,
-  "totalVisits": 49,
-  "processedDate": "2025-09-08T21:46:28.953Z",
+  "totalVisitors": 10,
+  "totalVisits": 65,
+  "processedDate": "2025-09-08T22:12:17.415Z",
   "daysSince": 7
 }

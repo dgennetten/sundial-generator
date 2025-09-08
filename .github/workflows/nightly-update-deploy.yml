@@ -46,7 +46,7 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Update visitor data
+    - name: Update visitor data (last 7 days)
       run: node scripts/updateVisitorData.js 7
       env:
         # SFTP credentials for log fetching

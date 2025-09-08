@@ -20,9 +20,9 @@ async function updateVisitorData(daysSince = 7) {
     console.log(`   SFTP_PASSWORD: ${process.env.SFTP_PASSWORD ? '✅ Set' : '❌ Missing'}`);
     console.log(`   SFTP_LOG_PATH: ${process.env.SFTP_LOG_PATH ? '✅ Set' : '❌ Missing'}`);
 
-    // Step 1: Download log files
+    // Step 1: Download log files (include rotated .gz and merge for the last N days)
     console.log('📥 Downloading log files from Dreamhost...');
-    const logFilePath = await downloadLogFiles();
+    const logFilePath = await downloadLogFiles(daysSince);
     
     // Step 2: Process the log file
     console.log('🔍 Processing log entries...');
