@@ -8,6 +8,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 dotenv.config({ path: '.env.local' });
 
+import logParser from '../src/utils/logParser.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -94,7 +96,7 @@ function downloadLogFiles() {
   });
 }
 
-function processLogFile(logFilePath, daysSince = 7) {
+async function processLogFile(logFilePath, daysSince = 7) {
   console.log('Processing logs...');
 
   if (!fs.existsSync(logFilePath)) {
@@ -104,18 +106,11 @@ function processLogFile(logFilePath, daysSince = 7) {
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - daysSince);
 
-  const logContent = fs.readFileSync(logFilePath, 'utf8');
-  const lines = logContent.split('\n');
+  // Delegate to the real parser (from src/utils/logParser.js)
+  const result = await logParser.processLogFile(logFilePath, startDate);
 
-  console.log(`Processing ${lines.length} lines...`);
-
-  return {
-    visitors: [],
-    totalVisitors: 0,
-    totalVisits: 0,
-    processedDate: new Date().toISOString(),
-    daysSince: daysSince
-  };
+  // Preserve daysSince in the output for downstream consumers
+  return { ...result, daysSince };
 }
 
 async function main() {
