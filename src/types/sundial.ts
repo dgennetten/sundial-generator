@@ -58,7 +58,7 @@ export type DialFacing = 'North' | 'South';
 /**
  * Gnomon types for sundial shadow casting
  */
-export type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north';
+export type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height';
 
 /**
  * Gnomon configuration

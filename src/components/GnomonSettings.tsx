@@ -4,7 +4,7 @@ import { getSolarPosition, projectShadowToSurface, getAnalemmaPointsProjected } 
 import { MoveUpRight } from 'lucide-react';
 
 type Mode = 'auto' | 'manual';
-type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north';
+type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height';
 type PositionMode = 'auto' | 'manual';
 
 interface Props {
@@ -146,6 +146,7 @@ const GnomonSettings: React.FC<Props> = ({
             >
               <option value="crosshair">Crosshair</option>
               <option value="crosshair-with-north">Crosshair + North Pt</option>
+              <option value="crosshair-with-height">Crosshair + Height</option>
               <option value="popup">Popup</option>
               <option value="popup-with-brace">Popup with Brace</option>
             </select>

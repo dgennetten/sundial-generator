@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Printer, Download } from 'lucide-react';
 import { exportSundial, logPrintActivity, type ExportFormat, type PageSize } from '../utils/exportUtils';
+import type { GnomonType } from '../types/sundial';
 
 
 
@@ -11,7 +12,7 @@ interface DesignExportProps {
   customWidth?: number;
   customHeight?: number;
   dateRange?: 'FullYear' | 'SummerToFall' | 'WinterToSpring';
-  gnomonType?: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north';
+  gnomonType?: GnomonType;
   locationName?: string;
   showBackground: boolean;
   backgroundColor: string;

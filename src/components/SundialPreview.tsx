@@ -21,7 +21,7 @@ type Props = {
   tzMeridian: number;
   scale: number;
   gnomonHeight: number;
-  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north';
+  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height';
   startHour: number;
   stopHour: number;
   use24Hour: boolean;
@@ -2045,6 +2045,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 gnomonHeight={gnomonHeight}
                 lat={lat}
                 inclineType={inclineType}
+                fontSize={fontSize}
+                dialFacing={dialFacing}
               />
 
               {hourlineElements.flat()}
