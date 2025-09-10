@@ -26,10 +26,44 @@ export async function getLocationFromIP(ip) {
       return null;
     }
 
+    // Skip other private IP ranges
+    if (ip.startsWith('172.')) {
+      const secondOctet = parseInt(ip.split('.')[1]);
+      if (secondOctet >= 16 && secondOctet <= 31) {
+        return null;
+      }
+    }
+
+    // Skip other reserved ranges
+    if (ip.startsWith('169.254.') || ip.startsWith('224.') || ip.startsWith('240.')) {
+      return null;
+    }
+
     const response = await fetch(
       `http://ip-api.com/json/${ip}?fields=status,country,countryCode,region,regionName,city,lat,lon,timezone,query`
     );
-    const data = await response.json();
+
+    // Check if response is ok before trying to parse JSON
+    if (!response.ok) {
+      console.log(`API returned ${response.status} for IP ${ip}`);
+      return null;
+    }
+
+    // Get response text first to check if it's empty
+    const responseText = await response.text();
+
+    if (!responseText || responseText.trim() === '') {
+      console.log(`Empty response from API for IP ${ip}`);
+      return null;
+    }
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (jsonError) {
+      console.error(`Invalid JSON response for IP ${ip}:`, responseText.substring(0, 100));
+      return null;
+    }
 
     if (data.status === 'success') {
       return {
@@ -42,9 +76,12 @@ export async function getLocationFromIP(ip) {
         lon: data.lon,
         timezone: data.timezone
       };
+    } else {
+      console.log(`API returned status "${data.status}" for IP ${ip}`);
+      return null;
     }
   } catch (error) {
-    console.error(`Error getting location for IP ${ip}:`, error);
+    console.error(`Error getting location for IP ${ip}:`, error.message);
   }
   return null;
 }
