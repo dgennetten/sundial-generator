@@ -13,7 +13,11 @@ function parseLogTimestamp(timestamp) {
   return new Date(normalized);
 }
 
-// Simple IP geolocation using a free service
+// Rate limiting for IP geolocation API
+let lastApiCall = 0;
+const API_RATE_LIMIT = 1000; // 1 second between requests (safe for free tier)
+
+// Simple IP geolocation using a free service with rate limiting
 export async function getLocationFromIP(ip) {
   try {
     // Skip local/private IPs
@@ -39,9 +43,69 @@ export async function getLocationFromIP(ip) {
       return null;
     }
 
+    // Rate limiting: wait if needed
+    const now = Date.now();
+    const timeSinceLastCall = now - lastApiCall;
+    if (timeSinceLastCall < API_RATE_LIMIT) {
+      const waitTime = API_RATE_LIMIT - timeSinceLastCall;
+      console.log(`Rate limiting: waiting ${waitTime}ms before API call for IP ${ip}`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+
+    lastApiCall = Date.now();
+
     const response = await fetch(
       `http://ip-api.com/json/${ip}?fields=status,country,countryCode,region,regionName,city,lat,lon,timezone,query`
     );
+
+    // Handle rate limiting (429) with exponential backoff
+    if (response.status === 429) {
+      console.log(`Rate limited (429) for IP ${ip}, waiting before retry...`);
+
+      // Exponential backoff: wait 5 seconds, then retry once
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+      lastApiCall = Date.now();
+      const retryResponse = await fetch(
+        `http://ip-api.com/json/${ip}?fields=status,country,countryCode,region,regionName,city,lat,lon,timezone,query`
+      );
+
+      if (!retryResponse.ok) {
+        console.log(`Retry failed with ${retryResponse.status} for IP ${ip}`);
+        return null;
+      }
+
+      // Use retry response for further processing
+      const responseText = await retryResponse.text();
+      if (!responseText || responseText.trim() === '') {
+        console.log(`Empty retry response for IP ${ip}`);
+        return null;
+      }
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (jsonError) {
+        console.error(`Invalid JSON in retry response for IP ${ip}:`, responseText.substring(0, 100));
+        return null;
+      }
+
+      if (data.status === 'success') {
+        return {
+          ip: data.query,
+          country: data.country,
+          countryCode: data.countryCode,
+          region: data.regionName,
+          city: data.city,
+          lat: data.lat,
+          lon: data.lon,
+          timezone: data.timezone
+        };
+      }
+
+      console.log(`Retry returned status "${data.status}" for IP ${ip}`);
+      return null;
+    }
 
     // Check if response is ok before trying to parse JSON
     if (!response.ok) {
@@ -118,6 +182,29 @@ export async function processLogFile(logFilePath, startDate = null) {
     const lines = logContent.split('\n');
 
     console.log(`Processing ${lines.length} log lines...`);
+    console.log(`Note: Rate limiting applied (1 second between API calls)`);
+
+    let processedIPs = 0;
+    const totalIPs = new Set();
+
+    // First pass: count unique IPs to estimate processing time
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const logEntry = parseLogLine(line);
+      if (!logEntry) continue;
+
+      if (startDate) {
+        const logDate = parseLogTimestamp(logEntry.timestamp);
+        if (isNaN(logDate.getTime()) || logDate < startDate) continue;
+      }
+
+      totalIPs.add(logEntry.ip);
+    }
+
+    console.log(`Found ${totalIPs.size} unique IPs to process`);
+    console.log(`Estimated processing time: ~${Math.ceil(totalIPs.size * 1.1)} seconds`);
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -150,6 +237,11 @@ export async function processLogFile(logFilePath, startDate = null) {
 
         const locationKey = `${location.lat},${location.lon}`;
         visitCounts.set(locationKey, (visitCounts.get(locationKey) || 0) + 1);
+
+        processedIPs++;
+        if (processedIPs % 5 === 0) {
+          console.log(`Progress: ${processedIPs}/${totalIPs.size} IPs processed (${Math.round(processedIPs/totalIPs.size*100)}%)`);
+        }
       }
 
       // Add tiny delay to respect rate limits
