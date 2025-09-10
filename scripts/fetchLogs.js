@@ -39,10 +39,28 @@ if (!fs.existsSync(LOCAL_LOG_DIR)) {
 const gunzipAsync = promisify(zlib.gunzip);
 
 async function decompressGzipFile(gzPath, outPath) {
-  const gzData = fs.readFileSync(gzPath);
-  const buf = await gunzipAsync(gzData);
-  fs.writeFileSync(outPath, buf);
-  return outPath;
+  try {
+    const gzData = fs.readFileSync(gzPath);
+
+    // Check if file is empty or too small (corrupted)
+    if (gzData.length === 0) {
+      console.log(`Skipping empty gzip file: ${gzPath}`);
+      return null;
+    }
+
+    if (gzData.length < 20) {
+      console.log(`Skipping corrupted gzip file (too small): ${gzPath}`);
+      return null;
+    }
+
+    const buf = await gunzipAsync(gzData);
+    fs.writeFileSync(outPath, buf);
+    return outPath;
+  } catch (error) {
+    console.error(`Error decompressing ${gzPath}:`, error.message);
+    console.log(`Skipping corrupted gzip file: ${gzPath}`);
+    return null;
+  }
 }
 
 /**
@@ -119,8 +137,12 @@ function downloadLogFiles(daysSince = 7) {
               if (file.filename.endsWith('.gz')) {
                 const outPath = localPath.replace(/\.gz$/, '');
                 console.log(`Decompressing ${localPath} -> ${outPath}`);
-                await decompressGzipFile(localPath, outPath);
-                localFiles.push(outPath);
+                const decompressedPath = await decompressGzipFile(localPath, outPath);
+                if (decompressedPath) {
+                  localFiles.push(decompressedPath);
+                } else {
+                  console.log(`Skipping ${file.filename} due to decompression failure`);
+                }
               } else {
                 localFiles.push(localPath);
               }
