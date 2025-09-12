@@ -49,10 +49,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Configure these paths for your server
-require_once 'path/to/PHPMailer/src/Exception.php';
-require_once 'path/to/PHPMailer/src/PHPMailer.php';
-require_once 'path/to/PHPMailer/src/SMTP.php';
+// Configure these paths for your server - using Composer autoload or manual paths
+if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+    // If using Composer
+    require_once __DIR__ . '/vendor/autoload.php';
+} elseif (file_exists(__DIR__ . '/PHPMailer/src/PHPMailer.php')) {
+    // If PHPMailer is in the same directory
+    require_once __DIR__ . '/PHPMailer/src/Exception.php';
+    require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
+    require_once __DIR__ . '/PHPMailer/src/SMTP.php';
+} else {
+    // Try common hosting locations
+    $phpmailerPaths = [
+        '/home/'.get_current_user().'/PHPMailer',
+        '/home/'.get_current_user().'/public_html/PHPMailer',
+        __DIR__ . '/../PHPMailer',
+        '/usr/share/php/PHPMailer'
+    ];
+    
+    $found = false;
+    foreach ($phpmailerPaths as $basePath) {
+        if (file_exists($basePath . '/src/PHPMailer.php')) {
+            require_once $basePath . '/src/Exception.php';
+            require_once $basePath . '/src/PHPMailer.php';
+            require_once $basePath . '/src/SMTP.php';
+            $found = true;
+            break;
+        }
+    }
+    
+    if (!$found) {
+        // Fallback error - log this issue
+        error_log("PHPMailer not found in common locations. Please install PHPMailer.");
+        echo json_encode([
+            'success' => false,
+            'emailSent' => false,
+            'emailError' => 'PHPMailer library not found. Please install PHPMailer.',
+            'debug' => ['phpmailerFound' => false]
+        ]);
+        exit;
+    }
+}
 
 // Convert sundialNotesMode to readable format
 function formatSundialNotesMode($mode) {
@@ -166,30 +203,84 @@ $emailBody .= "Sundial Notes: $sundialNotesDisplay\n";
 // Send email notification
 $mail = new PHPMailer(true);
 $emailSent = false;
+$emailError = '';
 
 try {
-    $mail->SMTPDebug = 0;
-    $mail->isSMTP();
-    $mail->Host = $_ENV['SMTP_HOST'] ?? 'your.smtp.server.com';
-    $mail->SMTPAuth = true;
-    $mail->Username = $_ENV['SMTP_USERNAME'] ?? 'your-email@domain.com';
-    $mail->Password = $_ENV['SMTP_PASSWORD'] ?? 'your-password';
-    $mail->SMTPSecure = 'tls';
-    $mail->Port = 587;
+    // Get SMTP settings - try multiple sources
+    $smtpHost = $_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?? 'smtp.dreamhost.com';
+    $smtpUsername = $_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'sundial@gennetten.com';
+    $smtpPassword = $_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? '';
+    $smtpFromEmail = $_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL') ?? 'sundial@gennetten.com';
+    $notificationEmail = $_ENV['NOTIFICATION_EMAIL'] ?? getenv('NOTIFICATION_EMAIL') ?? 'douglas@gennetten.com';
+    
+    // Skip email if no password is configured
+    if (empty($smtpPassword)) {
+        $emailSent = false;
+        $emailError = 'SMTP password not configured. Please set SMTP_PASSWORD environment variable.';
+        
+        // Add debug info
+        $debugInfo['smtpSettings'] = [
+            'host' => $smtpHost,
+            'username' => $smtpUsername,
+            'hasPassword' => !empty($smtpPassword),
+            'fromEmail' => $smtpFromEmail,
+            'notificationEmail' => $notificationEmail
+        ];
+    } else {
+        $mail->SMTPDebug = 0; // Set to 2 for debugging
+        $mail->isSMTP();
+        $mail->Host = $smtpHost;
+        $mail->SMTPAuth = true;
+        $mail->Username = $smtpUsername;
+        $mail->Password = $smtpPassword;
+        $mail->SMTPSecure = 'tls';
+        $mail->Port = 587;
+        
+        // Dreamhost-specific settings
+        if (strpos($smtpHost, 'dreamhost') !== false) {
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
+        }
 
-    $mail->setFrom($_ENV['SMTP_FROM_EMAIL'] ?? 'noreply@yourdomain.com', 'Sundial Generator');
-    $mail->addAddress($_ENV['NOTIFICATION_EMAIL'] ?? 'admin@yourdomain.com');
-    $mail->addReplyTo($_ENV['SMTP_FROM_EMAIL'] ?? 'noreply@yourdomain.com', 'Sundial Generator');
+        $mail->setFrom($smtpFromEmail, 'Sundial Generator');
+        $mail->addAddress($notificationEmail);
+        $mail->addReplyTo($smtpFromEmail, 'Sundial Generator');
 
-    $mail->isHTML(false);
-    $mail->Subject = "Sundial Export: $exportFormat - $pageSize - $dateRange";
-    $mail->Body = $emailBody;
+        $mail->isHTML(false);
+        $mail->Subject = "Sundial Export: $exportFormat - $pageSize - $dateRange - $locationName";
+        $mail->Body = $emailBody;
 
-    $mail->send();
-    $emailSent = true;
+        $mail->send();
+        $emailSent = true;
+        
+        // Add success debug info
+        $debugInfo['smtpSettings'] = [
+            'host' => $smtpHost,
+            'username' => $smtpUsername,
+            'hasPassword' => !empty($smtpPassword),
+            'fromEmail' => $smtpFromEmail,
+            'notificationEmail' => $notificationEmail,
+            'emailSent' => true
+        ];
+    }
 } catch (Exception $e) {
     $emailSent = false;
     $emailError = $mail->ErrorInfo . ' | Exception: ' . $e->getMessage();
+    
+    // Enhanced debug info for email failures
+    $debugInfo['smtpError'] = [
+        'phpmailerError' => $mail->ErrorInfo,
+        'exception' => $e->getMessage(),
+        'host' => $smtpHost ?? 'not set',
+        'username' => $smtpUsername ?? 'not set',
+        'hasPassword' => !empty($smtpPassword),
+        'port' => $mail->Port ?? 'not set'
+    ];
 }
 
 // Prepare response
