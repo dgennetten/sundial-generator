@@ -14,6 +14,8 @@ const pageSizeMap = {
   '10x15cm Postcard': { width: 100, height: 150 },
 };
 
+type DialShape = 'Rectangle' | 'Oval';
+
 type Props = {
   lat: number;
   lng: number;
@@ -39,9 +41,9 @@ type Props = {
   fontFamily?: string;
   fontSize?: number;
   useDST?: boolean;
-  showBorder?: boolean;
-  borderMargin?: number; // in inches
+  dialShape?: DialShape;
   borderStyle?: string;
+  borderMargin?: number; // in inches
   gnomonPosition?: number;
   showBackground?: boolean;
   backgroundColor?: string;
@@ -89,9 +91,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     fontFamily = 'sans-serif',
     fontSize = 20, // in pt
     useDST = true,
-    showBorder = true,
-    borderMargin = 0.25, // in inches
+    dialShape = 'Rectangle',
     borderStyle = 'default-hairline',
+    borderMargin = 0.25, // in inches
     gnomonPosition = 0,
     showBackground = true,
     backgroundColor = 'Cornsilk',
@@ -596,11 +598,18 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     return { nx: -dy / len, ny: dx / len };
   }
 
-  // Line clipping using Cohen-Sutherland algorithm
+  // Line clipping using Cohen-Sutherland algorithm with improved edge case handling
   function clipLineToRectangle(
     x1: number, y1: number, x2: number, y2: number,
     left: number, top: number, right: number, bottom: number
   ): { x1: number; y1: number; x2: number; y2: number } | null {
+    // Early rejection for extremely long lines that might cause artifacts
+    const maxReasonableDistance = Math.max(width, height) * 10;
+    const lineLength = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+    if (lineLength > maxReasonableDistance) {
+      return null;
+    }
+
     // Cohen-Sutherland region codes
     const INSIDE = 0;
     const LEFT = 1;
@@ -619,8 +628,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     let code1 = computeCode(x1, y1);
     let code2 = computeCode(x2, y2);
+    let iterations = 0;
+    const maxIterations = 10; // Prevent infinite loops
 
-    while (true) {
+    while (iterations < maxIterations) {
+      iterations++;
+      
       if ((code1 | code2) === 0) {
         // Both endpoints inside window
         return { x1, y1, x2, y2 };
@@ -636,18 +649,32 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         // slope = (y2 - y1) / (x2 - x1)
         // x = x1 + (1 / slope) * (ym - y1), where ym is clip edge
         // y = y1 + slope * (xm - x1), where xm is clip edge
+        
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        
+        // Handle vertical and horizontal lines specially to avoid division by zero
         if (codeOut & TOP) {
-          x = x1 + (x2 - x1) * (top - y1) / (y2 - y1);
+          if (Math.abs(dy) < 1e-10) return null; // Nearly horizontal line
+          x = x1 + dx * (top - y1) / dy;
           y = top;
         } else if (codeOut & BOTTOM) {
-          x = x1 + (x2 - x1) * (bottom - y1) / (y2 - y1);
+          if (Math.abs(dy) < 1e-10) return null; // Nearly horizontal line
+          x = x1 + dx * (bottom - y1) / dy;
           y = bottom;
         } else if (codeOut & RIGHT) {
-          y = y1 + (y2 - y1) * (right - x1) / (x2 - x1);
+          if (Math.abs(dx) < 1e-10) return null; // Nearly vertical line
+          y = y1 + dy * (right - x1) / dx;
           x = right;
         } else if (codeOut & LEFT) {
-          y = y1 + (y2 - y1) * (left - x1) / (x2 - x1);
+          if (Math.abs(dx) < 1e-10) return null; // Nearly vertical line
+          y = y1 + dy * (left - x1) / dx;
           x = left;
+        }
+
+        // Validate intersection point
+        if (!isFinite(x) || !isFinite(y)) {
+          return null;
         }
 
         // Replace point outside with intersection point
@@ -662,6 +689,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         }
       }
     }
+    
+    // If we hit max iterations, something went wrong
+    return null;
   }
 
   // Clip a series of points to the border rectangle
@@ -676,12 +706,44 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const right = width / 2 - borderMarginMm;
     const bottom = height / 2 - borderMarginMm - transformY;
 
+    // For extreme tilt angles (near vertical), be more aggressive about filtering
+    const isExtremeIncline = inclineType === 'Vertical' || Math.abs(tiltAngle - 90) < 5;
+    const maxDistanceFromCenter = isExtremeIncline ? Math.min(width, height) * 2 : Math.max(width, height) * 5;
+
+    // Pre-filter points that are extremely far from the dial center
+    const centeredPoints = points.filter(p => {
+      const distanceFromCenter = Math.sqrt(p.x * p.x + p.y * p.y);
+      return distanceFromCenter <= maxDistanceFromCenter;
+    });
+
+    if (centeredPoints.length < 2) return null;
+
     const clippedSegments: string[] = [];
     let currentSegment: { x: number; y: number }[] = [];
 
-    for (let i = 0; i < points.length - 1; i++) {
-      const p1 = points[i];
-      const p2 = points[i + 1];
+    for (let i = 0; i < centeredPoints.length - 1; i++) {
+      const p1 = centeredPoints[i];
+      const p2 = centeredPoints[i + 1];
+
+      // Additional check for extreme angles: reject segments with extreme slopes
+      if (isExtremeIncline) {
+        const dx = Math.abs(p2.x - p1.x);
+        const dy = Math.abs(p2.y - p1.y);
+        const segmentLength = Math.sqrt(dx * dx + dy * dy);
+        
+        // Reject extremely long segments
+        if (segmentLength > Math.min(width, height) * 3) {
+          // End current segment and start fresh
+          if (currentSegment.length > 0) {
+            const pathData = currentSegment
+              .map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`)
+              .join(' ');
+            clippedSegments.push(pathData);
+            currentSegment = [];
+          }
+          continue;
+        }
+      }
 
       // Points are already scaled, so use them directly
       const x1 = p1.x;
@@ -1747,41 +1809,74 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
 
 
-  // Create border rectangle if border is enabled
+  // Create border based on dial shape and border style
   // Scale border coordinates to match viewBox scaling
   const scaledWidth = width * viewBoxScaleFactor;
   const scaledHeight = height * viewBoxScaleFactor;
   const scaledBorderMargin = borderMarginMm * viewBoxScaleFactor;
+  
+  // Show border when borderStyle is not 'none'
+  const showBorder = borderStyle !== 'none';
 
   const borderRect = showBorder ? (
-    <rect
-      x={-scaledWidth / 2 + scaledBorderMargin}
-      y={-scaledHeight / 2 + scaledBorderMargin}
-      width={scaledWidth - 2 * scaledBorderMargin}
-      height={scaledHeight - 2 * scaledBorderMargin}
-      stroke={borderLineStyle?.color || 'black'}
-      fill="none"
-      strokeWidth={getStrokeWidth(borderLineStyle?.width)}
-      strokeDasharray={getStrokeDashProps(borderLineStyle).dasharray}
-      strokeLinecap={getStrokeDashProps(borderLineStyle).linecap}
-      vectorEffect="non-scaling-stroke"
-    />
+    dialShape === 'Oval' ? (
+      <ellipse
+        cx={0}
+        cy={0}
+        rx={(scaledWidth - 2 * scaledBorderMargin) / 2}
+        ry={(scaledHeight - 2 * scaledBorderMargin) / 2}
+        stroke={borderLineStyle?.color || 'black'}
+        fill="none"
+        strokeWidth={getStrokeWidth(borderLineStyle?.width)}
+        strokeDasharray={getStrokeDashProps(borderLineStyle).dasharray}
+        strokeLinecap={getStrokeDashProps(borderLineStyle).linecap}
+        vectorEffect="non-scaling-stroke"
+      />
+    ) : (
+      <rect
+        x={-scaledWidth / 2 + scaledBorderMargin}
+        y={-scaledHeight / 2 + scaledBorderMargin}
+        width={scaledWidth - 2 * scaledBorderMargin}
+        height={scaledHeight - 2 * scaledBorderMargin}
+        stroke={borderLineStyle?.color || 'black'}
+        fill="none"
+        strokeWidth={getStrokeWidth(borderLineStyle?.width)}
+        strokeDasharray={getStrokeDashProps(borderLineStyle).dasharray}
+        strokeLinecap={getStrokeDashProps(borderLineStyle).linecap}
+        vectorEffect="non-scaling-stroke"
+      />
+    )
   ) : null;
 
   // Show clipping boundary when border is not visible (for debugging)
   const clippingBoundary = !showBorder ? (
-    <rect
-      x={-scaledWidth / 2 + scaledBorderMargin}
-      y={-scaledHeight / 2 + scaledBorderMargin}
-      width={scaledWidth - 2 * scaledBorderMargin}
-      height={scaledHeight - 2 * scaledBorderMargin}
-      stroke="#ccc"
-      fill="none"
-      strokeWidth={1}
-      strokeDasharray="5,5"
-      vectorEffect="non-scaling-stroke"
-      opacity={0.5}
-    />
+    dialShape === 'Oval' ? (
+      <ellipse
+        cx={0}
+        cy={0}
+        rx={(scaledWidth - 2 * scaledBorderMargin) / 2}
+        ry={(scaledHeight - 2 * scaledBorderMargin) / 2}
+        stroke="#ccc"
+        fill="none"
+        strokeWidth={1}
+        strokeDasharray="5,5"
+        vectorEffect="non-scaling-stroke"
+        opacity={0.5}
+      />
+    ) : (
+      <rect
+        x={-scaledWidth / 2 + scaledBorderMargin}
+        y={-scaledHeight / 2 + scaledBorderMargin}
+        width={scaledWidth - 2 * scaledBorderMargin}
+        height={scaledHeight - 2 * scaledBorderMargin}
+        stroke="#ccc"
+        fill="none"
+        strokeWidth={1}
+        strokeDasharray="5,5"
+        vectorEffect="non-scaling-stroke"
+        opacity={0.5}
+      />
+    )
   ) : null;
 
   // --- Text Block Logic ---
@@ -2033,10 +2128,33 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           style={{ display: 'block', border: '1px solid #ccc', background: showBackground ? backgroundColor : '#fff', width: '100%', height: '100%', objectFit: 'contain' }}
           preserveAspectRatio="xMidYMid meet"
         >
+          {/* Define clipping paths for dial shapes */}
+          <defs>
+            <clipPath id={`dial-clip-${dialShape.toLowerCase()}`}>
+              {dialShape === 'Oval' ? (
+                <ellipse
+                  cx={0}
+                  cy={0}
+                  rx={(scaledWidth - 2 * scaledBorderMargin) / 2}
+                  ry={(scaledHeight - 2 * scaledBorderMargin) / 2}
+                />
+              ) : (
+                <rect
+                  x={-scaledWidth / 2 + scaledBorderMargin}
+                  y={-scaledHeight / 2 + scaledBorderMargin}
+                  width={scaledWidth - 2 * scaledBorderMargin}
+                  height={scaledHeight - 2 * scaledBorderMargin}
+                />
+              )}
+            </clipPath>
+          </defs>
           {borderRect}
           {clippingBoundary}
-          {/* Main content group - rotate entire page when North facing */}
-          <g transform={`scale(${viewBoxScaleFactor}) ${dialFacing === 'North' ? 'rotate(180)' : ''}`}>
+          {/* Main content group - rotate entire page when North facing, apply clipping here */}
+          <g 
+            transform={`scale(${viewBoxScaleFactor}) ${dialFacing === 'North' ? 'rotate(180)' : ''}`}
+            clipPath={`url(#dial-clip-${dialShape.toLowerCase()})`}
+          >
             {/* Content positioned relative to gnomon */}
             <g transform={`translate(0, ${(gnomonPosition ?? 0) - (height / 2)})`}>
               {/* Gnomon mark at (0,0) */}

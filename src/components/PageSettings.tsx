@@ -24,6 +24,8 @@ function colorToHex(color: string): string {
   return '#fff8dc';
 }
 
+export type DialShape = 'Rectangle' | 'Oval';
+
 interface PageSettingsProps {
   pageSize: PageSize;
   setPageSize: (size: PageSize) => void;
@@ -42,7 +44,7 @@ interface PageSettingsProps {
   setCustomHeight?: (height: number) => void;
   customUnits?: 'in' | 'cm';
   setCustomUnits?: (units: 'in' | 'cm') => void;
-  onBorderChange: (showBorder: boolean, margin: number, borderStyle: string) => void;
+  onBorderChange: (dialShape: DialShape, borderStyle: string, margin: number) => void;
   onBackgroundChange: (showBackground: boolean, backgroundColor: string) => void;
   lineStyles: LineStyle[];
 }
@@ -69,10 +71,10 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   onBackgroundChange,
   lineStyles,
 }) => {
-  // State for border and background controls
-  const [showBorder, setShowBorder] = useState<boolean>(true);
-  const [margin, setMargin] = useState<number>(6); // in mm
+  // State for dial shape, border and background controls
+  const [dialShape, setDialShape] = useState<DialShape>('Rectangle');
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
+  const [margin, setMargin] = useState<number>(6); // in mm
   const [showBackground, setShowBackground] = useState<boolean>(true);
   const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
 
@@ -130,20 +132,20 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     setDialFacing(dialFacing === 'North' ? 'South' : 'North');
   };
 
-  // Handler functions for border and background controls
-  const handleBorderChange = (checked: boolean) => {
-    setShowBorder(checked);
-    onBorderChange(checked, margin, borderStyle);
+  // Handler functions for dial shape and border controls
+  const handleDialShapeChange = (newShape: DialShape) => {
+    setDialShape(newShape);
+    onBorderChange(newShape, borderStyle, margin);
   };
 
   const handleMarginChange = (newMargin: number) => {
     setMargin(newMargin);
-    onBorderChange(showBorder, newMargin, borderStyle);
+    onBorderChange(dialShape, borderStyle, newMargin);
   };
 
   const handleBorderStyleChange = (newStyle: string) => {
     setBorderStyle(newStyle);
-    onBorderChange(showBorder, margin, newStyle);
+    onBorderChange(dialShape, newStyle, margin);
   };
 
   const handleBackgroundChange = (checked: boolean) => {
@@ -420,30 +422,29 @@ const PageSettings: React.FC<PageSettingsProps> = ({
           </div>
         </div>
 
-        {/* Page Border checkbox on its own row */}
-        <div className="form-row" style={{ marginTop: '0.5rem' }}>
-          <div className="form-group">
-            <label className="form-checkbox">
-              <input
-                type="checkbox"
-                checked={showBorder}
-                onChange={(e) => handleBorderChange(e.target.checked)}
-              />
-              Page Border
-            </label>
-          </div>
-        </div>
-        
-        {/* Border Style and Margin - responsive layout */}
+        {/* New combined row: Dial Shape, Border Style, and Margin */}
         <div 
           className="form-row" 
           style={{ 
             display: 'flex', 
-            alignItems: 'center', 
+            alignItems: 'end', 
             gap: isMobile ? '0.5rem' : '1rem',
-            flexDirection: 'row'
+            flexDirection: 'row',
+            marginTop: '0.5rem'
           }}
         >
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
+            <label className="form-label">Dial Shape</label>
+            <select
+              className="form-select"
+              value={dialShape}
+              onChange={(e) => handleDialShapeChange(e.target.value as DialShape)}
+              style={{ minWidth: isMobile ? '80px' : 'auto' }}
+            >
+              <option value="Rectangle">Rectangle</option>
+              <option value="Oval">Oval</option>
+            </select>
+          </div>
           <div className="form-group" style={{ flex: isMobile ? '1' : 'auto' }}>
             <label className="form-label">Border Style</label>
             <select
@@ -452,6 +453,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               onChange={(e) => handleBorderStyleChange(e.target.value)}
               style={{ width: isMobile ? '100%' : 'auto' }}
             >
+              <option value="none">None</option>
               {lineStyles.filter(s => s.name && s.name.trim() && (!s.applicableToLines || s.applicableToLines.includes('border'))).map(style => (
                 <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
               ))}

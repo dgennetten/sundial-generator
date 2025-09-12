@@ -22,6 +22,9 @@ const AboutCard: React.FC = () => {
             fontWeight: '500',
           }}
         >
+            <p>
+            <strong>New Feature:</strong> New 'Dial Shape' option!  Now you can create oval and circular dials.
+          </p>
            <p>
             <strong>New Feature:</strong> New "Calculated" dash styles. The dashes contain date/time information in their position and length. 
             (this is getting closer to my 1985 code - see '11x17 inch sundial' link below.) These caclulated dashes aid in interpolating between

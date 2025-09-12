@@ -19,7 +19,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
-import PageSettings, { type InclineType } from './components/PageSettings';
+import PageSettings, { type InclineType, type DialShape } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
 import DesignExport from './components/DesignExport';
@@ -101,9 +101,9 @@ const App: React.FC = () => {
   const [fontSize, setFontSize] = useState<number>(pageSize === '10x15cm Postcard' ? 12 : 20);
   const [useDST, setUseDST] = useState<boolean>(true);
   const [declinationNoonmarks, setDeclinationNoonmarks] = useState<boolean>(true);
-  const [showBorder, setShowBorder] = useState<boolean>(true);
-  const [borderMargin, setBorderMargin] = useState<number>(pageSize === '10x15cm Postcard' ? 0.1 : 0.236); // in inches (6mm default)
+  const [dialShape, setDialShape] = useState<DialShape>('Rectangle');
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
+  const [borderMargin, setBorderMargin] = useState<number>(pageSize === '10x15cm Postcard' ? 0.1 : 0.236); // in inches (6mm default)
   // Add state for gnomon position
   const [gnomonPosition, setGnomonPosition] = useState<number>(0);
   const [gnomonPositionMode, setGnomonPositionMode] = useState<'auto' | 'manual'>('auto');
@@ -312,9 +312,9 @@ const App: React.FC = () => {
     fontFamily,
     fontSize,
     useDST,
-    showBorder,
-    borderMargin,
+    dialShape,
     borderStyle,
+    borderMargin,
     gnomonPosition,
     showBackground,
     backgroundColor,
@@ -351,9 +351,9 @@ const App: React.FC = () => {
     fontFamily,
     fontSize,
     useDST,
-    showBorder,
-    borderMargin,
+    dialShape,
     borderStyle,
+    borderMargin,
     gnomonPosition,
     showBackground,
     backgroundColor,
@@ -433,10 +433,10 @@ const App: React.FC = () => {
           setCustomHeight={setCustomHeight}
           customUnits={customUnits}
           setCustomUnits={setCustomUnits}
-          onBorderChange={(showBorder, margin, style) => {
-            setShowBorder(showBorder);
-            setBorderMargin(margin / 25.4); // Convert mm to inches
+          onBorderChange={(shape, style, margin) => {
+            setDialShape(shape);
             setBorderStyle(style);
+            setBorderMargin(margin / 25.4); // Convert mm to inches
           }}
           onBackgroundChange={(showBackground, backgroundColor) => {
             setShowBackground(showBackground);
