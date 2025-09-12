@@ -79,6 +79,16 @@ jobs:
         ls -la dist/* | head -10
         echo "✅ Build verification successful"
 
+    - name: Create .htaccess from secrets
+      run: |
+        cat > .htaccess << 'EOF'
+        SetEnv SMTP_HOST "${{ secrets.SMTP_HOST }}"
+        SetEnv SMTP_USERNAME "${{ secrets.SMTP_USERNAME }}"
+        SetEnv SMTP_PASSWORD "${{ secrets.SMTP_PASSWORD }}"
+        SetEnv SMTP_FROM_EMAIL "${{ secrets.SMTP_FROM_EMAIL }}"
+        SetEnv NOTIFICATION_EMAIL "${{ secrets.NOTIFICATION_EMAIL }}"
+        EOF
+
     - name: Deploy to SFTP
       run: node deploy-sftp.js
       env:

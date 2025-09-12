@@ -8,6 +8,7 @@
 # Logs and sensitive data
 logs/
 *.log
+.htaccess
 
 # Personal/deployment files
 deploy.js

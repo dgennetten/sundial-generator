@@ -31,7 +31,7 @@ if (!config.host || !config.username || !config.password) {
 }
 
 const localPath = path.join(__dirname, 'dist');
-const phpFiles = ['export-logger.php']; // PHP files to deploy alongside the app
+const phpFiles = ['export-logger.php', '.htaccess']; // PHP and config files to deploy alongside the app
 const docsPath = path.join(__dirname, 'public', 'docs'); // Documents directory
 
 console.log('🚀 Starting SFTP deployment...');
