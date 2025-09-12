@@ -101,7 +101,7 @@ const App: React.FC = () => {
   const [fontSize, setFontSize] = useState<number>(pageSize === '10x15cm Postcard' ? 12 : 20);
   const [useDST, setUseDST] = useState<boolean>(true);
   const [declinationNoonmarks, setDeclinationNoonmarks] = useState<boolean>(true);
-  const [dialShape, setDialShape] = useState<DialShape>('Rectangle');
+  const [dialShape, setDialShape] = useState<DialShape>('Oval');
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
   const [borderMargin, setBorderMargin] = useState<number>(pageSize === '10x15cm Postcard' ? 0.1 : 0.236); // in inches (6mm default)
   // Add state for gnomon position

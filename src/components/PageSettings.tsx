@@ -72,7 +72,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   lineStyles,
 }) => {
   // State for dial shape, border and background controls
-  const [dialShape, setDialShape] = useState<DialShape>('Rectangle');
+  const [dialShape, setDialShape] = useState<DialShape>('Oval');
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
   const [margin, setMargin] = useState<number>(6); // in mm
   const [showBackground, setShowBackground] = useState<boolean>(true);

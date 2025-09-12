@@ -30,9 +30,6 @@ const AboutCard: React.FC = () => {
             (this is getting closer to my 1985 code - see '11x17 inch sundial' link below.) These caclulated dashes aid in interpolating between
             hourlines and declination lines. 
           </p>
-           <p>
-            <strong>New Feature:</strong> PRINT BUTTON!
-          </p>
         </div>
         <div
           dangerouslySetInnerHTML={{
