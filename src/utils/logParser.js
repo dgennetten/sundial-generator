@@ -1,7 +1,8 @@
-// Log parser for Dreamhost access logs (ESM)
+// Log parser for Dreamhost access logs (ESM) - Fast local geolocation
 // Parses access logs and extracts visitor geographic data
 
 import fs from 'fs';
+import { getLocationFromIP } from './geoipLocal.js';
 
 // Convert Apache log timestamp to a JS Date
 function parseLogTimestamp(timestamp) {
@@ -13,142 +14,8 @@ function parseLogTimestamp(timestamp) {
   return new Date(normalized);
 }
 
-// Rate limiting for IP geolocation API
-let lastApiCall = 0;
-const API_RATE_LIMIT = 1000; // 1 second between requests (safe for free tier)
-
-// Simple IP geolocation using a free service with rate limiting
-export async function getLocationFromIP(ip) {
-  try {
-    // Skip local/private IPs
-    if (
-      ip.startsWith('127.') ||
-      ip.startsWith('192.168.') ||
-      ip.startsWith('10.') ||
-      ip === '::1'
-    ) {
-      return null;
-    }
-
-    // Skip other private IP ranges
-    if (ip.startsWith('172.')) {
-      const secondOctet = parseInt(ip.split('.')[1]);
-      if (secondOctet >= 16 && secondOctet <= 31) {
-        return null;
-      }
-    }
-
-    // Skip other reserved ranges
-    if (ip.startsWith('169.254.') || ip.startsWith('224.') || ip.startsWith('240.')) {
-      return null;
-    }
-
-    // Rate limiting: wait if needed
-    const now = Date.now();
-    const timeSinceLastCall = now - lastApiCall;
-    if (timeSinceLastCall < API_RATE_LIMIT) {
-      const waitTime = API_RATE_LIMIT - timeSinceLastCall;
-      console.log(`Rate limiting: waiting ${waitTime}ms before API call for IP ${ip}`);
-      await new Promise(resolve => setTimeout(resolve, waitTime));
-    }
-
-    lastApiCall = Date.now();
-
-    const response = await fetch(
-      `http://ip-api.com/json/${ip}?fields=status,country,countryCode,region,regionName,city,lat,lon,timezone,query`
-    );
-
-    // Handle rate limiting (429) with exponential backoff
-    if (response.status === 429) {
-      console.log(`Rate limited (429) for IP ${ip}, waiting before retry...`);
-
-      // Exponential backoff: wait 5 seconds, then retry once
-      await new Promise(resolve => setTimeout(resolve, 5000));
-
-      lastApiCall = Date.now();
-      const retryResponse = await fetch(
-        `http://ip-api.com/json/${ip}?fields=status,country,countryCode,region,regionName,city,lat,lon,timezone,query`
-      );
-
-      if (!retryResponse.ok) {
-        console.log(`Retry failed with ${retryResponse.status} for IP ${ip}`);
-        return null;
-      }
-
-      // Use retry response for further processing
-      const responseText = await retryResponse.text();
-      if (!responseText || responseText.trim() === '') {
-        console.log(`Empty retry response for IP ${ip}`);
-        return null;
-      }
-
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (jsonError) {
-        console.error(`Invalid JSON in retry response for IP ${ip}:`, responseText.substring(0, 100));
-        return null;
-      }
-
-      if (data.status === 'success') {
-        return {
-          ip: data.query,
-          country: data.country,
-          countryCode: data.countryCode,
-          region: data.regionName,
-          city: data.city,
-          lat: data.lat,
-          lon: data.lon,
-          timezone: data.timezone
-        };
-      }
-
-      console.log(`Retry returned status "${data.status}" for IP ${ip}`);
-      return null;
-    }
-
-    // Check if response is ok before trying to parse JSON
-    if (!response.ok) {
-      console.log(`API returned ${response.status} for IP ${ip}`);
-      return null;
-    }
-
-    // Get response text first to check if it's empty
-    const responseText = await response.text();
-
-    if (!responseText || responseText.trim() === '') {
-      console.log(`Empty response from API for IP ${ip}`);
-      return null;
-    }
-
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (jsonError) {
-      console.error(`Invalid JSON response for IP ${ip}:`, responseText.substring(0, 100));
-      return null;
-    }
-
-    if (data.status === 'success') {
-      return {
-        ip: data.query,
-        country: data.country,
-        countryCode: data.countryCode,
-        region: data.regionName,
-        city: data.city,
-        lat: data.lat,
-        lon: data.lon,
-        timezone: data.timezone
-      };
-    } else {
-      console.log(`API returned status "${data.status}" for IP ${ip}`);
-      return null;
-    }
-  } catch (error) {
-    console.error(`Error getting location for IP ${ip}:`, error.message);
-  }
-  return null;
-}
+// Fast local IP geolocation (no API calls, no rate limiting needed)
+export { getLocationFromIP } from './geoipLocal.js';
 
 // Parse Apache/Nginx access log line
 export function parseLogLine(line) {
@@ -172,7 +39,7 @@ export function parseLogLine(line) {
   return null;
 }
 
-// Process log file and extract visitor data
+// Process log file and extract visitor data (fast local geolocation)
 export async function processLogFile(logFilePath, startDate = null) {
   const visitors = new Map(); // Use IP as key to avoid duplicates
   const visitCounts = new Map(); // Track visit counts per location
@@ -181,13 +48,12 @@ export async function processLogFile(logFilePath, startDate = null) {
     const logContent = fs.readFileSync(logFilePath, 'utf8');
     const lines = logContent.split('\n');
 
-    console.log(`Processing ${lines.length} log lines...`);
-    console.log(`Note: Rate limiting applied (1 second between API calls)`);
+    console.log(`Processing ${lines.length} log lines using fast local geolocation...`);
 
     let processedIPs = 0;
     const totalIPs = new Set();
 
-    // First pass: count unique IPs to estimate processing time
+    // First pass: count unique IPs
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
@@ -204,8 +70,9 @@ export async function processLogFile(logFilePath, startDate = null) {
     }
 
     console.log(`Found ${totalIPs.size} unique IPs to process`);
-    console.log(`Estimated processing time: ~${Math.ceil(totalIPs.size * 1.1)} seconds`);
+    console.log(`Estimated processing time: ~${Math.ceil(totalIPs.size * 0.01)} seconds (local lookup)`);
 
+    // Second pass: process all entries
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
@@ -221,13 +88,14 @@ export async function processLogFile(logFilePath, startDate = null) {
 
       // Skip if we already processed this IP
       if (visitors.has(logEntry.ip)) {
-        const locationKey = `${visitors.get(logEntry.ip).lat},${visitors.get(logEntry.ip).lon}`;
+        const visitor = visitors.get(logEntry.ip);
+        const locationKey = `${visitor.lat},${visitor.lon}`;
         visitCounts.set(locationKey, (visitCounts.get(locationKey) || 0) + 1);
         continue;
       }
 
-      // Get geolocation for new IP
-      const location = await getLocationFromIP(logEntry.ip);
+      // Get geolocation for new IP (fast local lookup)
+      const location = getLocationFromIP(logEntry.ip);
       if (location) {
         visitors.set(logEntry.ip, {
           ...location,
@@ -239,14 +107,9 @@ export async function processLogFile(logFilePath, startDate = null) {
         visitCounts.set(locationKey, (visitCounts.get(locationKey) || 0) + 1);
 
         processedIPs++;
-        if (processedIPs % 5 === 0) {
+        if (processedIPs % 100 === 0) {
           console.log(`Progress: ${processedIPs}/${totalIPs.size} IPs processed (${Math.round(processedIPs/totalIPs.size*100)}%)`);
         }
-      }
-
-      // Add tiny delay to respect rate limits
-      if (i % 10 === 0) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
 
@@ -258,6 +121,8 @@ export async function processLogFile(logFilePath, startDate = null) {
         visitCount: visitCounts.get(locationKey) || 1
       };
     });
+
+    console.log(`✅ Processing complete! Found ${visitorData.length} unique visitors with ${Array.from(visitCounts.values()).reduce((sum, count) => sum + count, 0)} total visits`);
 
     return {
       visitors: visitorData,
