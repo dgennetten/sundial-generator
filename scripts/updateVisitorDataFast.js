@@ -31,9 +31,16 @@ async function updateVisitorDataFast(daysSince = 7) {
     const visitorData = await processLogFile(logFilePath, daysSince);
     const processingTime = (Date.now() - processingStartTime) / 1000;
 
-    // Step 3: Save the data
+    // Step 3: Save the data with current timestamp
     console.log('💾 Saving visitor data...');
-    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(visitorData, null, 2));
+    
+    // Ensure the processedDate reflects the exact moment the file is saved
+    const finalData = {
+      ...visitorData,
+      processedDate: new Date().toISOString()
+    };
+    
+    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(finalData, null, 2));
 
     const totalTime = (Date.now() - startTime) / 1000;
 

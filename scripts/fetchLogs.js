@@ -205,7 +205,13 @@ async function main() {
     console.log('Processing complete!');
     console.log(`Found ${visitorData.totalVisitors} visitors`);
 
-    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(visitorData, null, 2));
+    // Ensure the processedDate reflects the exact moment the file is saved
+    const finalData = {
+      ...visitorData,
+      processedDate: new Date().toISOString()
+    };
+    
+    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(finalData, null, 2));
     console.log('Data saved');
 
   } catch (error) {
