@@ -42,7 +42,7 @@ export function parseLogLine(line) {
 // Process log file and extract visitor data (fast local geolocation)
 export async function processLogFile(logFilePath, startDate = null) {
   const visitors = new Map(); // Use IP as key to avoid duplicates
-  const visitCounts = new Map(); // Track visit counts per location
+  const ipVisitCounts = new Map(); // Track visit counts per IP
 
   try {
     const logContent = fs.readFileSync(logFilePath, 'utf8');
@@ -53,7 +53,7 @@ export async function processLogFile(logFilePath, startDate = null) {
     let processedIPs = 0;
     const totalIPs = new Set();
 
-    // First pass: count unique IPs
+    // First pass: count unique IPs and visits per IP
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
@@ -67,12 +67,14 @@ export async function processLogFile(logFilePath, startDate = null) {
       }
 
       totalIPs.add(logEntry.ip);
+      // Count actual visits per IP
+      ipVisitCounts.set(logEntry.ip, (ipVisitCounts.get(logEntry.ip) || 0) + 1);
     }
 
     console.log(`Found ${totalIPs.size} unique IPs to process`);
     console.log(`Estimated processing time: ~${Math.ceil(totalIPs.size * 0.01)} seconds (local lookup)`);
 
-    // Second pass: process all entries
+    // Second pass: process unique IPs and get their locations
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
@@ -88,9 +90,13 @@ export async function processLogFile(logFilePath, startDate = null) {
 
       // Skip if we already processed this IP
       if (visitors.has(logEntry.ip)) {
-        const visitor = visitors.get(logEntry.ip);
-        const locationKey = `${visitor.lat},${visitor.lon}`;
-        visitCounts.set(locationKey, (visitCounts.get(locationKey) || 0) + 1);
+        // Update last visit time if this is a later entry
+        const existingVisitor = visitors.get(logEntry.ip);
+        const currentLogDate = parseLogTimestamp(logEntry.timestamp);
+        const existingLogDate = parseLogTimestamp(existingVisitor.lastVisit);
+        if (currentLogDate > existingLogDate) {
+          existingVisitor.lastVisit = logEntry.timestamp;
+        }
         continue;
       }
 
@@ -100,11 +106,9 @@ export async function processLogFile(logFilePath, startDate = null) {
         visitors.set(logEntry.ip, {
           ...location,
           firstVisit: logEntry.timestamp,
-          lastVisit: logEntry.timestamp
+          lastVisit: logEntry.timestamp,
+          visitCount: ipVisitCounts.get(logEntry.ip) || 1
         });
-
-        const locationKey = `${location.lat},${location.lon}`;
-        visitCounts.set(locationKey, (visitCounts.get(locationKey) || 0) + 1);
 
         processedIPs++;
         if (processedIPs % 100 === 0) {
@@ -113,21 +117,17 @@ export async function processLogFile(logFilePath, startDate = null) {
       }
     }
 
-    // Convert to array and add visit counts
-    const visitorData = Array.from(visitors.values()).map((visitor) => {
-      const locationKey = `${visitor.lat},${visitor.lon}`;
-      return {
-        ...visitor,
-        visitCount: visitCounts.get(locationKey) || 1
-      };
-    });
+    // Convert to array
+    const visitorData = Array.from(visitors.values());
+    
+    const totalVisits = visitorData.reduce((sum, visitor) => sum + visitor.visitCount, 0);
 
-    console.log(`✅ Processing complete! Found ${visitorData.length} unique visitors with ${Array.from(visitCounts.values()).reduce((sum, count) => sum + count, 0)} total visits`);
+    console.log(`✅ Processing complete! Found ${visitorData.length} unique visitors with ${totalVisits} total visits`);
 
     return {
       visitors: visitorData,
       totalVisitors: visitorData.length,
-      totalVisits: Array.from(visitCounts.values()).reduce((sum, count) => sum + count, 0),
+      totalVisits: totalVisits,
       processedDate: new Date().toISOString()
     };
   } catch (error) {
