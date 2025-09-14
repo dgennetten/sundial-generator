@@ -56,3 +56,4 @@ test-visitor-upload.js
 *.njsproj
 *.sln
 *.sw?
+public/visitor-data.json
