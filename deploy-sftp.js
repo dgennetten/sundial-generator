@@ -215,6 +215,12 @@ async function uploadDirectory(sftp, localDir, remoteDir) {
     const remoteFilePath = `${remoteDir}/${file.name}`;
     
     if (file.isDirectory()) {
+      // Skip docs directory - it's handled separately by uploadDocsIfNeeded
+      if (file.name === 'docs') {
+        console.log(`⏭️  Skipped docs directory (handled separately with smart upload logic)`);
+        continue;
+      }
+      
       // Create remote directory
       try {
         await sftp.mkdir(remoteFilePath, true);
