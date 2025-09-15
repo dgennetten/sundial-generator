@@ -62,7 +62,9 @@ jobs:
           echo "✅ public/visitor-data.json exists"
           echo "📅 File timestamp: $(stat -c %y public/visitor-data.json)"
           echo "🔍 ProcessedDate in file:"
-          grep -o '"processedDate":"[^"]*"' public/visitor-data.json || echo "ProcessedDate not found"
+          grep -o '"processedDate"[[:space:]]*:[[:space:]]*"[^"]*"' public/visitor-data.json || echo "ProcessedDate not found"
+          echo "📊 File size: $(stat -c %s public/visitor-data.json) bytes"
+          echo "🔑 File hash: $(md5sum public/visitor-data.json | cut -d' ' -f1)"
         else
           echo "❌ public/visitor-data.json not found!"
           ls -la public/
@@ -96,10 +98,19 @@ jobs:
           echo "✅ dist/visitor-data.json exists"
           echo "📅 Dist file timestamp: $(stat -c %y dist/visitor-data.json)"
           echo "🔍 ProcessedDate in dist file:"
-          grep -o '"processedDate":"[^"]*"' dist/visitor-data.json || echo "ProcessedDate not found in dist"
-          echo "🆚 Comparing timestamps:"
-          echo "Public file: $(stat -c %y public/visitor-data.json 2>/dev/null || echo 'Not found')"
-          echo "Dist file:   $(stat -c %y dist/visitor-data.json)"
+          grep -o '"processedDate"[[:space:]]*:[[:space:]]*"[^"]*"' dist/visitor-data.json || echo "ProcessedDate not found in dist"
+          echo "📊 Dist file size: $(stat -c %s dist/visitor-data.json) bytes"
+          echo "🔑 Dist file hash: $(md5sum dist/visitor-data.json | cut -d' ' -f1)"
+          echo "🆚 Comparing files:"
+          echo "Public file: $(stat -c %y public/visitor-data.json 2>/dev/null || echo 'Not found') | $(stat -c %s public/visitor-data.json 2>/dev/null || echo 'N/A') bytes"
+          echo "Dist file:   $(stat -c %y dist/visitor-data.json) | $(stat -c %s dist/visitor-data.json) bytes"
+          
+          # Check if files are identical
+          if cmp -s "public/visitor-data.json" "dist/visitor-data.json"; then
+            echo "✅ Files are identical"
+          else
+            echo "⚠️  Files differ!"
+          fi
         else
           echo "❌ dist/visitor-data.json not found!"
           echo "Files in dist:"
@@ -125,6 +136,41 @@ jobs:
         SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
         SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
         FTP_REMOTE_PATH: ${{ secrets.FTP_REMOTE_PATH }}
+
+    - name: Verify deployment on server
+      run: |
+        echo "🔍 Verifying deployed visitor-data.json..."
+        # Wait a moment for deployment to propagate
+        sleep 5
+        
+        # Try to fetch the deployed file with curl
+        echo "📥 Fetching visitor-data.json from server..."
+        DEPLOYED_FILE=$(curl -s --max-time 30 "https://sundial.gennetten.org/visitor-data.json?t=$(date +%s)" || echo "FETCH_FAILED")
+        
+        if [ "$DEPLOYED_FILE" = "FETCH_FAILED" ]; then
+          echo "❌ Failed to fetch visitor-data.json from server"
+        else
+          echo "✅ Successfully fetched visitor-data.json from server"
+          echo "📊 Deployed file size: ${#DEPLOYED_FILE} characters"
+          
+          # Extract processedDate from deployed file
+          DEPLOYED_DATE=$(echo "$DEPLOYED_FILE" | grep -o '"processedDate"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1)
+          if [ -n "$DEPLOYED_DATE" ]; then
+            echo "✅ Found processedDate in deployed file: $DEPLOYED_DATE"
+          else
+            echo "❌ No processedDate found in deployed file"
+          fi
+          
+          # Compare with local file
+          LOCAL_DATE=$(grep -o '"processedDate"[[:space:]]*:[[:space:]]*"[^"]*"' dist/visitor-data.json | head -1)
+          if [ "$DEPLOYED_DATE" = "$LOCAL_DATE" ]; then
+            echo "✅ Deployed file matches local file timestamp!"
+          else
+            echo "⚠️  Timestamp mismatch:"
+            echo "   Local:    $LOCAL_DATE"
+            echo "   Deployed: $DEPLOYED_DATE"
+          fi
+        fi
 
     - name: Notify on failure
       if: failure()

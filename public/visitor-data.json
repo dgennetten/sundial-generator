@@ -829,8 +829,8 @@
       "lon": -95.3698,
       "timezone": "America/New_York",
       "firstVisit": "13/Sep/2025:06:29:30 -0700",
-      "lastVisit": "15/Sep/2025:05:58:45 -0700",
-      "visitCount": 64
+      "lastVisit": "15/Sep/2025:06:04:35 -0700",
+      "visitCount": 67
     },
     {
       "ip": "209.239.115.163",
@@ -1078,10 +1078,23 @@
       "firstVisit": "15/Sep/2025:04:35:49 -0700",
       "lastVisit": "15/Sep/2025:04:35:49 -0700",
       "visitCount": 1
+    },
+    {
+      "ip": "45.155.41.17",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "15/Sep/2025:06:11:24 -0700",
+      "lastVisit": "15/Sep/2025:06:11:28 -0700",
+      "visitCount": 5
     }
   ],
-  "totalVisitors": 83,
-  "totalVisits": 369,
-  "processedDate": "2025-09-15T13:03:56.144Z",
+  "totalVisitors": 84,
+  "totalVisits": 377,
+  "processedDate": "2025-09-15T13:18:42.900Z",
   "daysSince": 7
 }
