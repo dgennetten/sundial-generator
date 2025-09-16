@@ -206,11 +206,14 @@ async function main() {
     console.log(`Found ${visitorData.totalVisitors} visitors`);
 
     // Ensure the processedDate reflects the exact moment the file is saved
+    // Create a new object without processedDate from visitorData, then add our current timestamp
+    const { processedDate: _, ...cleanVisitorData } = visitorData;
     const finalData = {
-      ...visitorData,
+      ...cleanVisitorData,
       processedDate: new Date().toISOString()
     };
     
+    console.log(`📅 Setting processedDate to: ${finalData.processedDate}`);
     fs.writeFileSync(OUTPUT_FILE, JSON.stringify(finalData, null, 2));
     console.log('Data saved');
 
