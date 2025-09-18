@@ -129,12 +129,13 @@ export function getLocationFromIP(ip) {
       return null;
     }
 
-    // Skip private IP ranges (172.16.0.0 to 172.31.255.255)
+    // Skip only RFC 1918 private IP ranges, not all 172.x.x.x
     if (ip.startsWith('172.')) {
       const secondOctet = parseInt(ip.split('.')[1]);
       if (secondOctet >= 16 && secondOctet <= 31) {
-        return null;
+        return null; // RFC 1918 private range
       }
+      // 172.32-172.255 are public IPs, don't filter them
     }
 
     const ipInt = ipToInt(ip);
