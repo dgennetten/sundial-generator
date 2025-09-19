@@ -19,6 +19,7 @@ async function updateVisitorDataFast(daysSince = 7) {
     console.log(`   SFTP_USERNAME: ${process.env.SFTP_USERNAME ? '✅ Set' : '❌ Missing'}`);
     console.log(`   SFTP_PASSWORD: ${process.env.SFTP_PASSWORD ? '✅ Set' : '❌ Missing'}`);
     console.log(`   SFTP_LOG_PATH: ${process.env.SFTP_LOG_PATH ? '✅ Set' : '❌ Missing'}`);
+    console.log(`   IPV6_API_LOOKUP: ${String(process.env.IPV6_API_LOOKUP || '').toLowerCase() === 'true' ? '✅ Enabled' : '⛔ Disabled'}`);
 
     // Step 1: Download log files (include rotated .gz and merge for the last N days)
     console.log('📥 Downloading log files from Dreamhost...');

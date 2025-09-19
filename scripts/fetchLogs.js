@@ -82,19 +82,56 @@ function downloadLogFiles(daysSince = 7) {
           return;
         }
 
-        sftp.readdir(LOG_PATH, async (err, list) => {
-          if (err) {
-            reject(err);
+        // Read both HTTPS and HTTP log directories and merge
+        const readDir = (remotePath) => new Promise((res, rej) => {
+          sftp.readdir(remotePath, (e, list) => (e ? rej(e) : res(list)));
+        });
+
+        try {
+          const sources = [];
+
+          // Always try HTTPS (LOG_PATH)
+          try {
+            const httpsList = await readDir(LOG_PATH);
+            sources.push({ label: 'https', remoteDir: LOG_PATH, list: httpsList });
+          } catch (e) {
+            console.log(`⚠️  Could not read HTTPS logs at ${LOG_PATH}: ${e.message}`);
+          }
+
+          // Try sibling HTTP directory if it exists
+          let HTTP_LOG_PATH = null;
+          if (LOG_PATH.includes('/https/')) {
+            HTTP_LOG_PATH = LOG_PATH.replace('/https/', '/http/');
+          } else if (LOG_PATH.endsWith('/https')) {
+            HTTP_LOG_PATH = LOG_PATH.replace(/\/https$/, '/http');
+          }
+
+          if (HTTP_LOG_PATH && HTTP_LOG_PATH !== LOG_PATH) {
+            try {
+              const httpList = await readDir(HTTP_LOG_PATH);
+              sources.push({ label: 'http', remoteDir: HTTP_LOG_PATH, list: httpList });
+            } catch (e) {
+              console.log(`⚠️  Could not read HTTP logs at ${HTTP_LOG_PATH}: ${e.message}`);
+            }
+          }
+
+          if (sources.length === 0) {
+            reject(new Error('No log sources could be read (HTTP/HTTPS).'));
             return;
           }
 
+          // Flatten and tag files with their source
+          let allFiles = [];
+          for (const src of sources) {
+            const tagged = src.list.map(f => ({ ...f, __label: src.label, __remoteDir: src.remoteDir }));
+            allFiles = allFiles.concat(tagged);
+          }
+
           // Include access.log, access.log.N and .gz variants
-          const accessLogs = list.filter(file =>
-            file.filename.includes('access.log')
-          );
+          const accessLogs = allFiles.filter(file => file.filename.includes('access.log'));
 
           if (accessLogs.length === 0) {
-            reject(new Error('No access log files found'));
+            reject(new Error('No access log files found in HTTP/HTTPS paths'));
             return;
           }
 
@@ -105,65 +142,84 @@ function downloadLogFiles(daysSince = 7) {
           startDate.setDate(startDate.getDate() - daysSince);
           const startEpoch = Math.floor(startDate.getTime() / 1000);
 
-          // Select files that could contain entries >= startDate
-          // Pick any file whose mtime is >= (startDate - 1 day) and always include the latest file
+          // Select files that could contain entries >= startDate, with generous buffer
+          // Use a 2-day buffer for timezone/rotation variance and ensure we cover enough rotated files
           const ONE_DAY = 24 * 60 * 60;
-          const selected = accessLogs.filter(f => f.attrs.mtime >= (startEpoch - ONE_DAY));
-          // Ensure the newest file is included
-          const newest = accessLogs[accessLogs.length - 1];
-          if (!selected.find(f => f.filename === newest.filename)) {
-            selected.push(newest);
+          const cutoffEpoch = startEpoch - (2 * ONE_DAY);
+          let selected = accessLogs.filter(f => f.attrs.mtime >= cutoffEpoch);
+
+          // Always include the newest file per source
+          const newestBySource = selected.length ? {} : {};
+          for (const src of sources) {
+            const newest = accessLogs.filter(f => f.__label === src.label).slice(-1)[0];
+            if (newest && !selected.find(f => f.filename === newest.filename && f.__label === src.label)) {
+              selected.push(newest);
+            }
           }
+
+          // If selection is still small, include up to the last 20 files overall to be safe
+          if (selected.length < 20) {
+            const lastTwenty = accessLogs.slice(-20);
+            for (const f of lastTwenty) {
+              if (!selected.find(s => s.filename === f.filename && s.__label === f.__label)) {
+                selected.push(f);
+              }
+            }
+          }
+
+          // De-duplicate while preserving order across sources and filenames
+          selected = selected.filter((file, index, arr) =>
+            arr.findIndex(f => f.filename === file.filename && f.__label === file.__label) === index
+          );
 
           console.log('Candidate log files to download:');
           selected.forEach(f => {
-            console.log(`  - ${f.filename} (mtime: ${new Date(f.attrs.mtime * 1000).toISOString()})`);
+            console.log(`  - [${f.__label}] ${f.filename} (mtime: ${new Date(f.attrs.mtime * 1000).toISOString()})`);
           });
 
-          try {
-            // Download and prepare local files
-            const localFiles = [];
-            for (const file of selected) {
-              const remotePath = path.posix.join(LOG_PATH, file.filename);
-              const localPath = path.join(LOCAL_LOG_DIR, file.filename);
-              console.log(`Downloading ${remotePath} -> ${localPath}`);
+          // Download and prepare local files
+          const localFiles = [];
+          for (const file of selected) {
+            const remotePath = path.posix.join(file.__remoteDir, file.filename);
+            const localFileName = `${file.__label}-${file.filename}`; // avoid collisions
+            const localPath = path.join(LOCAL_LOG_DIR, localFileName);
+            console.log(`Downloading ${remotePath} -> ${localPath}`);
 
-              // Download file
-              await new Promise((res, rej) => {
-                sftp.fastGet(remotePath, localPath, (e) => (e ? rej(e) : res()));
-              });
+            // Download file
+            await new Promise((res, rej) => {
+              sftp.fastGet(remotePath, localPath, (e) => (e ? rej(e) : res()));
+            });
 
-              // If gz, decompress to .log alongside
-              if (file.filename.endsWith('.gz')) {
-                const outPath = localPath.replace(/\.gz$/, '');
-                console.log(`Decompressing ${localPath} -> ${outPath}`);
-                const decompressedPath = await decompressGzipFile(localPath, outPath);
-                if (decompressedPath) {
-                  localFiles.push(decompressedPath);
-                } else {
-                  console.log(`Skipping ${file.filename} due to decompression failure`);
-                }
+            // If gz, decompress to .log alongside
+            if (file.filename.endsWith('.gz')) {
+              const outPath = localPath.replace(/\.gz$/, '');
+              console.log(`Decompressing ${localPath} -> ${outPath}`);
+              const decompressedPath = await decompressGzipFile(localPath, outPath);
+              if (decompressedPath) {
+                localFiles.push(decompressedPath);
               } else {
-                localFiles.push(localPath);
+                console.log(`Skipping ${file.filename} due to decompression failure`);
               }
+            } else {
+              localFiles.push(localPath);
             }
-
-            // Combine into a single file (keep chronological order)
-            const combinedPath = path.join(LOCAL_LOG_DIR, 'combined-access.log');
-            fs.writeFileSync(combinedPath, '');
-            for (const lf of localFiles) {
-              const content = fs.readFileSync(lf);
-              fs.appendFileSync(combinedPath, content);
-              if (!content.toString().endsWith('\n')) fs.appendFileSync(combinedPath, '\n');
-            }
-
-            console.log(`Combined log created: ${combinedPath}`);
-            conn.end();
-            resolve(combinedPath);
-          } catch (e) {
-            reject(e);
           }
-        });
+
+          // Combine into a single file (keep chronological order)
+          const combinedPath = path.join(LOCAL_LOG_DIR, 'combined-access.log');
+          fs.writeFileSync(combinedPath, '');
+          for (const lf of localFiles) {
+            const content = fs.readFileSync(lf);
+            fs.appendFileSync(combinedPath, content);
+            if (!content.toString().endsWith('\n')) fs.appendFileSync(combinedPath, '\n');
+          }
+
+          console.log(`Combined log created: ${combinedPath}`);
+          conn.end();
+          resolve(combinedPath);
+        } catch (e) {
+          reject(e);
+        }
       });
     });
 

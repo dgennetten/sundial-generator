@@ -50,7 +50,7 @@ const IP_RANGES = [
 ];
 
 // Country-based fallback locations for better coverage
-const COUNTRY_LOCATIONS = {
+export const COUNTRY_LOCATIONS = {
   'US': { country: 'United States', countryCode: 'US', region: 'Colorado', city: 'Denver', lat: 39.7392, lon: -104.9903 },
   'CA': { country: 'Canada', countryCode: 'CA', region: 'Ontario', city: 'Toronto', lat: 43.6532, lon: -79.3832 },
   'GB': { country: 'United Kingdom', countryCode: 'GB', region: 'England', city: 'London', lat: 51.5074, lon: -0.1278 },

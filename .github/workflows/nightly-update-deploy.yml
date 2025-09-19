@@ -54,6 +54,8 @@ jobs:
         SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
         SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
         SFTP_LOG_PATH: ${{ secrets.SFTP_LOG_PATH }}
+        # Enable IPv6-only API fallback for geolocation
+        IPV6_API_LOOKUP: "true"
 
     - name: Verify visitor data update
       run: |

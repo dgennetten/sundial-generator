@@ -2,7 +2,7 @@
 // Parses access logs and extracts visitor geographic data
 
 import fs from 'fs';
-import { getLocationFromIP } from './geoipLocal.js';
+import { getLocationFromIP, COUNTRY_LOCATIONS } from './geoipLocal.js';
 
 // Convert Apache log timestamp to a JS Date
 function parseLogTimestamp(timestamp) {
@@ -16,6 +16,52 @@ function parseLogTimestamp(timestamp) {
 
 // Fast local IP geolocation (no API calls, no rate limiting needed)
 export { getLocationFromIP } from './geoipLocal.js';
+
+// Optional IPv6-only API fallback (enabled via env IPV6_API_LOOKUP=true)
+const IPV6_LOOKUP_ENABLED = String(process.env.IPV6_API_LOOKUP || '').toLowerCase() === 'true';
+const ipv6Cache = new Map(); // cache per-run to avoid duplicate lookups
+
+function isIPv6(ip) {
+  return typeof ip === 'string' && ip.includes(':');
+}
+
+async function fetchIPv6Geo(ip) {
+  try {
+    const url = `https://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,country,countryCode,region,regionName,city,lat,lon,timezone,message`;
+    const res = await fetch(url, { method: 'GET' });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.status !== 'success') return null;
+
+    const country = data.country || (data.countryCode && COUNTRY_LOCATIONS[data.countryCode]?.country) || 'Unknown';
+    const countryCode = data.countryCode || 'UN';
+    const region = data.regionName || data.region || COUNTRY_LOCATIONS[countryCode]?.region || '';
+    const city = data.city || COUNTRY_LOCATIONS[countryCode]?.city || '';
+    const lat = typeof data.lat === 'number' ? data.lat : (COUNTRY_LOCATIONS[countryCode]?.lat ?? 0);
+    const lon = typeof data.lon === 'number' ? data.lon : (COUNTRY_LOCATIONS[countryCode]?.lon ?? 0);
+    const timezone = data.timezone || 'UTC';
+
+    return { ip, country, countryCode, region, city, lat, lon, timezone };
+  } catch {
+    return null;
+  }
+}
+
+async function getLocationForIP(ip) {
+  // Try fast local (IPv4 only)
+  const local = getLocationFromIP(ip);
+  if (local) return local;
+
+  // IPv6 fallback via API if enabled
+  if (IPV6_LOOKUP_ENABLED && isIPv6(ip)) {
+    if (ipv6Cache.has(ip)) return ipv6Cache.get(ip);
+    const result = await fetchIPv6Geo(ip);
+    if (result) ipv6Cache.set(ip, result);
+    return result;
+  }
+
+  return null;
+}
 
 // Parse Apache/Nginx access log line
 export function parseLogLine(line) {
@@ -100,8 +146,8 @@ export async function processLogFile(logFilePath, startDate = null) {
         continue;
       }
 
-      // Get geolocation for new IP (fast local lookup)
-      const location = getLocationFromIP(logEntry.ip);
+      // Get geolocation for new IP (IPv4 local, IPv6 optional API fallback)
+      const location = await getLocationForIP(logEntry.ip);
       if (location) {
         visitors.set(logEntry.ip, {
           ...location,
