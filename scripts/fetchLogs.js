@@ -1,14 +1,14 @@
+import 'dotenv/config'; // Load env before any other imports
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' }); // Merge .env.local if present
+
 // Enhanced fetchLogs.js: download recent access logs (including rotated .gz) and combine them
 import { Client } from 'ssh2';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
 import zlib from 'zlib';
 import { promisify } from 'util';
-
-dotenv.config();
-dotenv.config({ path: '.env.local' });
 
 import logParser from '../src/utils/logParser.js';
 

@@ -18,7 +18,8 @@ function parseLogTimestamp(timestamp) {
 export { getLocationFromIP } from './geoipLocal.js';
 
 // Optional IPv6-only API fallback (enabled via env IPV6_API_LOOKUP=true)
-const IPV6_LOOKUP_ENABLED = String(process.env.IPV6_API_LOOKUP || '').toLowerCase() === 'true';
+// Read flag at call-time to avoid import-order issues (dotenv/.env)
+const isIPv6Enabled = () => String(process.env.IPV6_API_LOOKUP || '').toLowerCase() === 'true';
 const ipv6Cache = new Map(); // cache per-run to avoid duplicate lookups
 
 function isIPv6(ip) {
@@ -53,7 +54,7 @@ async function getLocationForIP(ip) {
   if (local) return local;
 
   // IPv6 fallback via API if enabled
-  if (IPV6_LOOKUP_ENABLED && isIPv6(ip)) {
+  if (isIPv6Enabled() && isIPv6(ip)) {
     if (ipv6Cache.has(ip)) return ipv6Cache.get(ip);
     const result = await fetchIPv6Geo(ip);
     if (result) ipv6Cache.set(ip, result);
