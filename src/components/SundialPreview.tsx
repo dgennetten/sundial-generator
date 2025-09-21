@@ -515,63 +515,77 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const segments: JSX.Element[] = [];
     const strokeWidth = getStrokeWidth(style.width);
 
-    // Create discrete 2-minute segments with 2-minute gaps (similar to 5/2 day dash approach)
+    // Discrete 2-minute segments with 2-minute gaps (avoid connecting across gaps/out-of-bounds)
     let segmentIndex = 0;
 
-    // Use EXACTLY the same loop as dots but connect consecutive points
+    // Maintain continuity only within valid, in-bounds neighbors
     let previousPoint: { x: number; y: number } | null = null;
-    let pointIndex = 0;
+    let pointIndex = 0; // counts only in-bounds points to keep the 2/2 cadence
 
-    for (let h = startHour; h <= stopHour; h += 2/60) { // Same 2-minute intervals as dots
+    const ALT_LIMIT = -15 * Math.PI / 180; // match dots altitude filtering
+
+    // Precompute bounds once (same logic as dots)
+    const transformY = (gnomonPosition ?? 0) - (height / 2);
+    const left = -width / 2 + borderMarginMm;
+    const top = -height / 2 + borderMarginMm - transformY;
+    const right = width / 2 - borderMarginMm;
+    const bottom = height / 2 - borderMarginMm - transformY;
+
+    // Use the same 2-minute sampling as dots
+    for (let h = startHour; h <= stopHour; h += 2/60) {
       const latRad = degreesToRadians(lat);
       const declRad = degreesToRadians(decl);
       const hourAngle = degreesToRadians(15 * (h - 12));
       const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
       const altitude = Math.asin(sinAlt);
 
-      // Same altitude filtering as dots
-      if (altitude > -15 * Math.PI / 180) {
-        let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
-        cosAz = Math.max(-1, Math.min(1, cosAz));
-        let azimuth = Math.acos(cosAz);
-        if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-        const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, 'Horizontal', lat);
+      // If altitude is below threshold, break continuity
+      if (altitude <= ALT_LIMIT) {
+        previousPoint = null;
+        continue;
+      }
 
-        // Same scaling as dots
-        const currentPoint = { x: scale * coords.x, y: scale * coords.y };
+      let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
+      cosAz = Math.max(-1, Math.min(1, cosAz));
+      let azimuth = Math.acos(cosAz);
+      if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
+      const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, 'Horizontal', lat);
 
-        // Same bounds checking as dots
-        const transformY = (gnomonPosition ?? 0) - (height / 2);
-        const left = -width / 2 + borderMarginMm;
-        const top = -height / 2 + borderMarginMm - transformY;
-        const right = width / 2 - borderMarginMm;
-        const bottom = height / 2 - borderMarginMm - transformY;
+      const currentPoint = { x: scale * coords.x, y: scale * coords.y };
 
-        if (currentPoint.x >= left && currentPoint.x <= right && currentPoint.y >= top && currentPoint.y <= bottom) {
-          // Create dashes with 2-minute segments and 2-minute gaps
-          // Use modulo 2 to create pattern: draw for 1 point, skip for 1 point
-          const cyclePosition = pointIndex % 2;
-          if (previousPoint && cyclePosition === 1) {
-            // Draw dash segments for every other point (creating 2-minute dashes with 2-minute gaps)
-            segments.push(
-              <line
-                key={`declination-2min-dash-${decl}-${segmentIndex}`}
-                x1={previousPoint.x}
-                y1={previousPoint.y}
-                x2={currentPoint.x}
-                y2={currentPoint.y}
-                stroke={style.color || 'black'}
-                strokeWidth={strokeWidth}
-                strokeLinecap="round"
-                vectorEffect="non-scaling-stroke"
-              />
-            );
-            segmentIndex++;
-          }
-          previousPoint = currentPoint;
-          pointIndex++;
+      // Out-of-bounds points break continuity to prevent stray long segments
+      if (!(currentPoint.x >= left && currentPoint.x <= right && currentPoint.y >= top && currentPoint.y <= bottom)) {
+        previousPoint = null;
+        continue;
+      }
+
+      // Create dashes with 2-minute segments and 2-minute gaps
+      const cyclePosition = pointIndex % 2;
+      if (previousPoint && cyclePosition === 1) {
+        // Guard against accidental long connections across numerical jumps
+        const dx = currentPoint.x - previousPoint.x;
+        const dy = currentPoint.y - previousPoint.y;
+        const maxSegLen = Math.hypot(width, height) * 0.2; // conservative cap
+        if ((dx * dx + dy * dy) <= (maxSegLen * maxSegLen)) {
+          segments.push(
+            <line
+              key={`declination-2min-dash-${decl}-${segmentIndex}`}
+              x1={previousPoint.x}
+              y1={previousPoint.y}
+              x2={currentPoint.x}
+              y2={currentPoint.y}
+              stroke={style.color || 'black'}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          );
+          segmentIndex++;
         }
       }
+
+      previousPoint = currentPoint;
+      pointIndex++;
     }
 
     return segments;
