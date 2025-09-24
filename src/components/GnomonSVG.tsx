@@ -123,6 +123,7 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
           stroke="red"
           strokeWidth={1}
           strokeDasharray="3,3"
+          fill="none"
           vectorEffect="non-scaling-stroke"
         />
       </g>
@@ -179,6 +180,7 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
           stroke="red"
           strokeWidth={1}
           strokeDasharray="3,3"
+          fill="none"
           vectorEffect="non-scaling-stroke"
         />
         <line
@@ -198,6 +200,7 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
           stroke="red"
           strokeWidth={1}
           strokeDasharray="3,3"
+          fill="none"
           vectorEffect="non-scaling-stroke"
         />
 
@@ -239,6 +242,7 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
           stroke="red"
           strokeWidth={1}
           strokeDasharray="3,3"
+          fill="none"
           vectorEffect="non-scaling-stroke"
         />
       </g>

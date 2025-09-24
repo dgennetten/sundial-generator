@@ -599,4 +599,23 @@
     color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+
+  /* Fix dashed line rendering in print - ensure gaps are transparent/white */
+  line[stroke-dasharray] {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    /* Ensure stroke color is preserved and gaps remain transparent */
+    stroke-opacity: 1 !important;
+  }
+
+  /* Specifically target gnomon dashed lines to ensure proper rendering */
+  svg line[stroke="red"][stroke-dasharray] {
+    stroke: red !important;
+    stroke-opacity: 1 !important;
+    fill: none !important;
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }
