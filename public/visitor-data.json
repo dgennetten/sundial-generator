@@ -1,149 +1,6 @@
 {
   "visitors": [
     {
-      "ip": "173.252.87.1",
-      "country": "United States",
-      "countryCode": "US",
-      "region": "Colorado",
-      "city": "Denver",
-      "lat": 39.7392,
-      "lon": -104.9903,
-      "timezone": "America/New_York",
-      "firstVisit": "17/Sep/2025:14:29:16 -0700",
-      "lastVisit": "17/Sep/2025:14:29:16 -0700",
-      "visitCount": 1
-    },
-    {
-      "ip": "173.252.87.2",
-      "country": "United States",
-      "countryCode": "US",
-      "region": "Colorado",
-      "city": "Denver",
-      "lat": 39.7392,
-      "lon": -104.9903,
-      "timezone": "America/New_York",
-      "firstVisit": "17/Sep/2025:14:29:16 -0700",
-      "lastVisit": "17/Sep/2025:14:29:16 -0700",
-      "visitCount": 1
-    },
-    {
-      "ip": "43.130.57.76",
-      "country": "United States",
-      "countryCode": "US",
-      "region": "Colorado",
-      "city": "Denver",
-      "lat": 39.7392,
-      "lon": -104.9903,
-      "timezone": "America/New_York",
-      "firstVisit": "17/Sep/2025:20:56:38 -0700",
-      "lastVisit": "17/Sep/2025:20:56:38 -0700",
-      "visitCount": 1
-    },
-    {
-      "ip": "85.190.239.35",
-      "country": "United States",
-      "countryCode": "US",
-      "region": "Colorado",
-      "city": "Denver",
-      "lat": 39.7392,
-      "lon": -104.9903,
-      "timezone": "America/New_York",
-      "firstVisit": "17/Sep/2025:13:09:28 -0700",
-      "lastVisit": "17/Sep/2025:13:10:00 -0700",
-      "visitCount": 4
-    },
-    {
-      "ip": "172.58.56.120",
-      "country": "United States",
-      "countryCode": "US",
-      "region": "Texas",
-      "city": "Houston",
-      "lat": 29.7604,
-      "lon": -95.3698,
-      "timezone": "America/New_York",
-      "firstVisit": "17/Sep/2025:13:10:17 -0700",
-      "lastVisit": "20/Sep/2025:15:30:55 -0700",
-      "visitCount": 44
-    },
-    {
-      "ip": "45.139.104.170",
-      "country": "United States",
-      "countryCode": "US",
-      "region": "Colorado",
-      "city": "Denver",
-      "lat": 39.7392,
-      "lon": -104.9903,
-      "timezone": "America/New_York",
-      "firstVisit": "17/Sep/2025:15:16:52 -0700",
-      "lastVisit": "17/Sep/2025:15:16:52 -0700",
-      "visitCount": 1
-    },
-    {
-      "ip": "192.42.116.197",
-      "country": "United States",
-      "countryCode": "US",
-      "region": "Colorado",
-      "city": "Denver",
-      "lat": 39.7392,
-      "lon": -104.9903,
-      "timezone": "America/New_York",
-      "firstVisit": "17/Sep/2025:18:20:21 -0700",
-      "lastVisit": "17/Sep/2025:18:20:21 -0700",
-      "visitCount": 1
-    },
-    {
-      "ip": "52.159.244.83",
-      "country": "United States",
-      "countryCode": "US",
-      "region": "Virginia",
-      "city": "Ashburn",
-      "lat": 39.0438,
-      "lon": -77.4874,
-      "timezone": "America/New_York",
-      "firstVisit": "17/Sep/2025:23:15:48 -0700",
-      "lastVisit": "17/Sep/2025:23:15:48 -0700",
-      "visitCount": 1
-    },
-    {
-      "ip": "176.31.139.27",
-      "country": "United States",
-      "countryCode": "US",
-      "region": "Colorado",
-      "city": "Denver",
-      "lat": 39.7392,
-      "lon": -104.9903,
-      "timezone": "America/New_York",
-      "firstVisit": "17/Sep/2025:23:18:41 -0700",
-      "lastVisit": "17/Sep/2025:23:18:41 -0700",
-      "visitCount": 1
-    },
-    {
-      "ip": "43.130.72.177",
-      "country": "United States",
-      "countryCode": "US",
-      "region": "Colorado",
-      "city": "Denver",
-      "lat": 39.7392,
-      "lon": -104.9903,
-      "timezone": "America/New_York",
-      "firstVisit": "18/Sep/2025:03:35:37 -0700",
-      "lastVisit": "24/Sep/2025:10:50:13 -0700",
-      "visitCount": 2
-    },
-    {
-      "ip": "66.33.200.4",
-      "country": "United States",
-      "countryCode": "US",
-      "region": "Colorado",
-      "city": "Denver",
-      "lat": 39.7392,
-      "lon": -104.9903,
-      "timezone": "America/New_York",
-      "firstVisit": "18/Sep/2025:05:02:07 -0700",
-      "lastVisit": "24/Sep/2025:04:30:25 -0700",
-      "visitCount": 11
-    },
-    {
       "ip": "43.153.76.247",
       "country": "United States",
       "countryCode": "US",
@@ -192,8 +49,8 @@
       "lon": -77.4874,
       "timezone": "America/New_York",
       "firstVisit": "18/Sep/2025:09:23:31 -0700",
-      "lastVisit": "24/Sep/2025:04:22:31 -0700",
-      "visitCount": 9
+      "lastVisit": "24/Sep/2025:20:16:19 -0700",
+      "visitCount": 14
     },
     {
       "ip": "40.77.167.65",
@@ -246,6 +103,32 @@
       "firstVisit": "18/Sep/2025:23:15:35 -0700",
       "lastVisit": "18/Sep/2025:23:15:35 -0700",
       "visitCount": 1
+    },
+    {
+      "ip": "172.58.56.120",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Texas",
+      "city": "Houston",
+      "lat": 29.7604,
+      "lon": -95.3698,
+      "timezone": "America/New_York",
+      "firstVisit": "19/Sep/2025:00:04:50 -0700",
+      "lastVisit": "20/Sep/2025:15:30:55 -0700",
+      "visitCount": 20
+    },
+    {
+      "ip": "66.33.200.4",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "19/Sep/2025:02:37:51 -0700",
+      "lastVisit": "25/Sep/2025:02:46:11 -0700",
+      "visitCount": 9
     },
     {
       "ip": "49.51.33.159",
@@ -751,8 +634,8 @@
       "lon": -95.3698,
       "timezone": "America/New_York",
       "firstVisit": "21/Sep/2025:04:25:44 -0700",
-      "lastVisit": "24/Sep/2025:12:19:42 -0700",
-      "visitCount": 18
+      "lastVisit": "25/Sep/2025:08:35:22 -0700",
+      "visitCount": 72
     },
     {
       "ip": "176.65.148.43",
@@ -895,7 +778,7 @@
       "timezone": "America/New_York",
       "firstVisit": "22/Sep/2025:00:25:54 -0700",
       "lastVisit": "24/Sep/2025:05:25:43 -0700",
-      "visitCount": 2
+      "visitCount": 3
     },
     {
       "ip": "170.106.72.178",
@@ -1064,7 +947,7 @@
       "timezone": "America/New_York",
       "firstVisit": "22/Sep/2025:23:37:10 -0700",
       "lastVisit": "23/Sep/2025:23:23:37 -0700",
-      "visitCount": 34
+      "visitCount": 23
     },
     {
       "ip": "43.166.136.202",
@@ -1077,7 +960,7 @@
       "timezone": "America/New_York",
       "firstVisit": "23/Sep/2025:02:50:36 -0700",
       "lastVisit": "23/Sep/2025:02:50:36 -0700",
-      "visitCount": 2
+      "visitCount": 1
     },
     {
       "ip": "49.51.52.250",
@@ -1090,7 +973,7 @@
       "timezone": "America/New_York",
       "firstVisit": "23/Sep/2025:08:27:24 -0700",
       "lastVisit": "23/Sep/2025:08:27:24 -0700",
-      "visitCount": 2
+      "visitCount": 1
     },
     {
       "ip": "207.46.13.102",
@@ -1103,7 +986,7 @@
       "timezone": "America/New_York",
       "firstVisit": "23/Sep/2025:10:42:36 -0700",
       "lastVisit": "23/Sep/2025:10:42:36 -0700",
-      "visitCount": 2
+      "visitCount": 1
     },
     {
       "ip": "185.177.72.23",
@@ -1116,7 +999,7 @@
       "timezone": "America/New_York",
       "firstVisit": "23/Sep/2025:16:34:42 -0700",
       "lastVisit": "23/Sep/2025:16:34:47 -0700",
-      "visitCount": 28
+      "visitCount": 14
     },
     {
       "ip": "43.158.91.71",
@@ -1129,7 +1012,7 @@
       "timezone": "America/New_York",
       "firstVisit": "23/Sep/2025:21:50:17 -0700",
       "lastVisit": "23/Sep/2025:21:50:17 -0700",
-      "visitCount": 2
+      "visitCount": 1
     },
     {
       "ip": "203.94.33.121",
@@ -1142,7 +1025,7 @@
       "timezone": "America/New_York",
       "firstVisit": "23/Sep/2025:08:19:06 -0700",
       "lastVisit": "23/Sep/2025:08:19:06 -0700",
-      "visitCount": 2
+      "visitCount": 1
     },
     {
       "ip": "4.227.36.50",
@@ -1154,7 +1037,7 @@
       "lon": -104.9903,
       "timezone": "America/New_York",
       "firstVisit": "23/Sep/2025:08:20:46 -0700",
-      "lastVisit": "23/Sep/2025:11:10:38 -0700",
+      "lastVisit": "24/Sep/2025:13:03:36 -0700",
       "visitCount": 4
     },
     {
@@ -1168,7 +1051,7 @@
       "timezone": "America/New_York",
       "firstVisit": "23/Sep/2025:14:35:52 -0700",
       "lastVisit": "24/Sep/2025:04:04:00 -0700",
-      "visitCount": 5
+      "visitCount": 4
     },
     {
       "ip": "54.39.89.43",
@@ -1181,7 +1064,7 @@
       "timezone": "America/New_York",
       "firstVisit": "23/Sep/2025:20:27:13 -0700",
       "lastVisit": "23/Sep/2025:20:27:13 -0700",
-      "visitCount": 2
+      "visitCount": 1
     },
     {
       "ip": "40.77.167.132",
@@ -1194,7 +1077,7 @@
       "timezone": "America/New_York",
       "firstVisit": "23/Sep/2025:21:48:49 -0700",
       "lastVisit": "23/Sep/2025:21:48:49 -0700",
-      "visitCount": 2
+      "visitCount": 1
     },
     {
       "ip": "172.182.212.50",
@@ -1207,7 +1090,7 @@
       "timezone": "America/New_York",
       "firstVisit": "23/Sep/2025:23:15:45 -0700",
       "lastVisit": "23/Sep/2025:23:15:45 -0700",
-      "visitCount": 2
+      "visitCount": 1
     },
     {
       "ip": "170.106.73.216",
@@ -1220,7 +1103,7 @@
       "timezone": "America/New_York",
       "firstVisit": "24/Sep/2025:04:37:03 -0700",
       "lastVisit": "24/Sep/2025:04:37:03 -0700",
-      "visitCount": 1
+      "visitCount": 2
     },
     {
       "ip": "192.241.152.116",
@@ -1233,7 +1116,7 @@
       "timezone": "America/New_York",
       "firstVisit": "24/Sep/2025:05:05:32 -0700",
       "lastVisit": "24/Sep/2025:05:05:33 -0700",
-      "visitCount": 4
+      "visitCount": 8
     },
     {
       "ip": "66.249.69.106",
@@ -1246,7 +1129,7 @@
       "timezone": "America/New_York",
       "firstVisit": "24/Sep/2025:05:25:40 -0700",
       "lastVisit": "24/Sep/2025:05:26:01 -0700",
-      "visitCount": 9
+      "visitCount": 18
     },
     {
       "ip": "66.249.69.107",
@@ -1259,7 +1142,7 @@
       "timezone": "America/New_York",
       "firstVisit": "24/Sep/2025:05:25:45 -0700",
       "lastVisit": "24/Sep/2025:05:25:47 -0700",
-      "visitCount": 2
+      "visitCount": 4
     },
     {
       "ip": "185.247.137.229",
@@ -1272,7 +1155,7 @@
       "timezone": "America/New_York",
       "firstVisit": "24/Sep/2025:08:26:09 -0700",
       "lastVisit": "24/Sep/2025:08:26:09 -0700",
-      "visitCount": 1
+      "visitCount": 2
     },
     {
       "ip": "185.247.137.139",
@@ -1285,7 +1168,7 @@
       "timezone": "America/New_York",
       "firstVisit": "24/Sep/2025:08:26:09 -0700",
       "lastVisit": "24/Sep/2025:08:26:09 -0700",
-      "visitCount": 1
+      "visitCount": 2
     },
     {
       "ip": "87.236.176.242",
@@ -1298,7 +1181,7 @@
       "timezone": "America/New_York",
       "firstVisit": "24/Sep/2025:08:46:01 -0700",
       "lastVisit": "24/Sep/2025:08:46:01 -0700",
-      "visitCount": 1
+      "visitCount": 2
     },
     {
       "ip": "185.247.137.154",
@@ -1311,7 +1194,20 @@
       "timezone": "America/New_York",
       "firstVisit": "24/Sep/2025:08:53:38 -0700",
       "lastVisit": "24/Sep/2025:08:53:38 -0700",
-      "visitCount": 1
+      "visitCount": 2
+    },
+    {
+      "ip": "43.130.72.177",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "24/Sep/2025:10:50:13 -0700",
+      "lastVisit": "24/Sep/2025:10:50:13 -0700",
+      "visitCount": 2
     },
     {
       "ip": "185.247.137.204",
@@ -1324,7 +1220,7 @@
       "timezone": "America/New_York",
       "firstVisit": "24/Sep/2025:03:48:36 -0700",
       "lastVisit": "24/Sep/2025:03:48:36 -0700",
-      "visitCount": 1
+      "visitCount": 2
     },
     {
       "ip": "52.167.144.171",
@@ -1337,7 +1233,7 @@
       "timezone": "America/New_York",
       "firstVisit": "24/Sep/2025:04:22:37 -0700",
       "lastVisit": "24/Sep/2025:04:22:37 -0700",
-      "visitCount": 1
+      "visitCount": 2
     },
     {
       "ip": "8.217.174.156",
@@ -1350,7 +1246,7 @@
       "timezone": "America/New_York",
       "firstVisit": "24/Sep/2025:05:16:35 -0700",
       "lastVisit": "24/Sep/2025:05:16:35 -0700",
-      "visitCount": 1
+      "visitCount": 2
     },
     {
       "ip": "8.217.211.3",
@@ -1363,7 +1259,7 @@
       "timezone": "America/New_York",
       "firstVisit": "24/Sep/2025:05:16:36 -0700",
       "lastVisit": "24/Sep/2025:05:16:36 -0700",
-      "visitCount": 1
+      "visitCount": 2
     },
     {
       "ip": "119.28.89.249",
@@ -1376,7 +1272,7 @@
       "timezone": "Asia/Singapore",
       "firstVisit": "24/Sep/2025:10:31:46 -0700",
       "lastVisit": "24/Sep/2025:10:31:46 -0700",
-      "visitCount": 1
+      "visitCount": 2
     },
     {
       "ip": "71.200.129.74",
@@ -1388,12 +1284,363 @@
       "lon": -104.9903,
       "timezone": "America/New_York",
       "firstVisit": "24/Sep/2025:12:13:08 -0700",
-      "lastVisit": "24/Sep/2025:12:13:08 -0700",
-      "visitCount": 7
+      "lastVisit": "24/Sep/2025:13:08:52 -0700",
+      "visitCount": 24
+    },
+    {
+      "ip": "52.167.144.21",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Virginia",
+      "city": "Ashburn",
+      "lat": 39.0438,
+      "lon": -77.4874,
+      "timezone": "America/New_York",
+      "firstVisit": "24/Sep/2025:14:29:55 -0700",
+      "lastVisit": "24/Sep/2025:14:29:55 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "52.167.144.198",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Virginia",
+      "city": "Ashburn",
+      "lat": 39.0438,
+      "lon": -77.4874,
+      "timezone": "America/New_York",
+      "firstVisit": "24/Sep/2025:20:00:11 -0700",
+      "lastVisit": "24/Sep/2025:20:00:21 -0700",
+      "visitCount": 8
+    },
+    {
+      "ip": "40.77.167.4",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Virginia",
+      "city": "Boydton",
+      "lat": 36.6777,
+      "lon": -78.3747,
+      "timezone": "America/New_York",
+      "firstVisit": "24/Sep/2025:20:00:28 -0700",
+      "lastVisit": "24/Sep/2025:20:00:28 -0700",
+      "visitCount": 4
+    },
+    {
+      "ip": "40.77.179.45",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Virginia",
+      "city": "Boydton",
+      "lat": 36.6777,
+      "lon": -78.3747,
+      "timezone": "America/New_York",
+      "firstVisit": "24/Sep/2025:20:16:19 -0700",
+      "lastVisit": "24/Sep/2025:20:16:19 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "40.77.177.31",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Virginia",
+      "city": "Boydton",
+      "lat": 36.6777,
+      "lon": -78.3747,
+      "timezone": "America/New_York",
+      "firstVisit": "24/Sep/2025:20:16:19 -0700",
+      "lastVisit": "24/Sep/2025:20:16:19 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "65.55.210.75",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Washington",
+      "city": "Quincy",
+      "lat": 47.233,
+      "lon": -119.852,
+      "timezone": "America/New_York",
+      "firstVisit": "24/Sep/2025:20:16:20 -0700",
+      "lastVisit": "24/Sep/2025:20:16:20 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "40.77.179.111",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Virginia",
+      "city": "Boydton",
+      "lat": 36.6777,
+      "lon": -78.3747,
+      "timezone": "America/New_York",
+      "firstVisit": "24/Sep/2025:20:16:20 -0700",
+      "lastVisit": "24/Sep/2025:20:16:20 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "40.77.179.166",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Virginia",
+      "city": "Boydton",
+      "lat": 36.6777,
+      "lon": -78.3747,
+      "timezone": "America/New_York",
+      "firstVisit": "24/Sep/2025:20:16:20 -0700",
+      "lastVisit": "24/Sep/2025:20:16:20 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "35.211.215.109",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Oregon",
+      "city": "The Dalles",
+      "lat": 45.5945,
+      "lon": -121.1786,
+      "timezone": "America/New_York",
+      "firstVisit": "24/Sep/2025:22:48:37 -0700",
+      "lastVisit": "24/Sep/2025:22:48:37 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "172.171.254.151",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Texas",
+      "city": "Houston",
+      "lat": 29.7604,
+      "lon": -95.3698,
+      "timezone": "America/New_York",
+      "firstVisit": "24/Sep/2025:23:15:51 -0700",
+      "lastVisit": "24/Sep/2025:23:15:51 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "4.227.36.120",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "24/Sep/2025:23:29:48 -0700",
+      "lastVisit": "25/Sep/2025:08:01:46 -0700",
+      "visitCount": 8
+    },
+    {
+      "ip": "4.227.36.62",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "24/Sep/2025:23:57:11 -0700",
+      "lastVisit": "25/Sep/2025:05:17:38 -0700",
+      "visitCount": 3
+    },
+    {
+      "ip": "51.68.247.209",
+      "country": "France",
+      "countryCode": "FR",
+      "region": "Hauts-de-France",
+      "city": "Roubaix",
+      "lat": 50.6927,
+      "lon": 3.17785,
+      "timezone": "Europe/Paris",
+      "firstVisit": "25/Sep/2025:00:09:17 -0700",
+      "lastVisit": "25/Sep/2025:00:09:17 -0700",
+      "visitCount": 2
+    },
+    {
+      "ip": "43.130.106.18",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "25/Sep/2025:02:43:40 -0700",
+      "lastVisit": "25/Sep/2025:02:43:40 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "69.171.231.18",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "25/Sep/2025:05:44:32 -0700",
+      "lastVisit": "25/Sep/2025:05:44:32 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "69.171.231.15",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "25/Sep/2025:05:44:33 -0700",
+      "lastVisit": "25/Sep/2025:05:44:33 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "69.171.231.31",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "25/Sep/2025:05:44:42 -0700",
+      "lastVisit": "25/Sep/2025:05:44:42 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "69.171.231.37",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "25/Sep/2025:05:44:43 -0700",
+      "lastVisit": "25/Sep/2025:05:44:43 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "173.252.95.6",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "25/Sep/2025:05:45:33 -0700",
+      "lastVisit": "25/Sep/2025:05:45:34 -0700",
+      "visitCount": 6
+    },
+    {
+      "ip": "173.252.95.5",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "25/Sep/2025:05:45:33 -0700",
+      "lastVisit": "25/Sep/2025:05:45:34 -0700",
+      "visitCount": 3
+    },
+    {
+      "ip": "173.252.95.31",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "25/Sep/2025:05:45:33 -0700",
+      "lastVisit": "25/Sep/2025:05:45:34 -0700",
+      "visitCount": 3
+    },
+    {
+      "ip": "66.220.149.29",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "25/Sep/2025:05:46:27 -0700",
+      "lastVisit": "25/Sep/2025:05:46:27 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "173.252.95.15",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "25/Sep/2025:05:46:40 -0700",
+      "lastVisit": "25/Sep/2025:05:46:40 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "69.171.231.4",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "25/Sep/2025:05:47:15 -0700",
+      "lastVisit": "25/Sep/2025:05:47:15 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "205.169.39.19",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "25/Sep/2025:05:52:15 -0700",
+      "lastVisit": "25/Sep/2025:05:52:16 -0700",
+      "visitCount": 11
+    },
+    {
+      "ip": "69.171.231.112",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "25/Sep/2025:05:59:38 -0700",
+      "lastVisit": "25/Sep/2025:05:59:38 -0700",
+      "visitCount": 1
+    },
+    {
+      "ip": "216.45.61.243",
+      "country": "United States",
+      "countryCode": "US",
+      "region": "Colorado",
+      "city": "Denver",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "timezone": "America/New_York",
+      "firstVisit": "25/Sep/2025:03:22:00 -0700",
+      "lastVisit": "25/Sep/2025:04:52:38 -0700",
+      "visitCount": 2
     }
   ],
-  "totalVisitors": 107,
-  "totalVisits": 367,
-  "daysSince": 7,
-  "processedDate": "2025-09-24T19:21:10.390Z"
+  "totalVisitors": 126,
+  "totalVisits": 473,
+  "processedDate": "2025-09-25T15:36:26.767Z",
+  "daysSince": 7
 }

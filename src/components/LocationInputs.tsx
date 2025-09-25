@@ -127,7 +127,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     
     // Check if API key is available
-    console.log('API Key available:', !!apiKey, 'API Key value:', apiKey ? apiKey.substring(0, 10) + '...' : 'undefined');
+    console.log('API Key available:', !!apiKey);
     
     if (!apiKey || apiKey === 'undefined' || apiKey === 'your_api_key_here') {
       console.log('Google Maps API key is not set. Using fallback timezone data.');
