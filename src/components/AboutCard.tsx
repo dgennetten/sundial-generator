@@ -35,6 +35,11 @@ const AboutCard: React.FC = () => {
           dangerouslySetInnerHTML={{
             __html: `
 <p>
+  The quickest way to learn how to use this app is to pick your location via the Use Map button; Choose a paper size available on your printer; 'Half-year' hourlines;  
+  'Popup with brace' gnomon; Print; Carefully cut the gnomon's solid red lines; lightly score the red dashed lines; gently fold and flatten each of the two parts of the gnomon; 
+  fold up the brace to 90 degrees and then fold up the trangular part, sliding it into the slot of the brace; hold the dial level as you rotate 1) to point true north, 
+  or 2) till the shadow tip intersects the current time, or 3) till the shadow tip intersects the current date (by default, a red dashed line).
+<p>
   This App traces its origins back to a gloriously nerdy gem—the 
   <a href="https://sundial.gennetten.org/docs/1980-12-SundialArticle.pdf">Amateur Scientist column</a>
   from the December 1980 issue of Scientific American. 

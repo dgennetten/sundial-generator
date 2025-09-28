@@ -91,7 +91,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     fontFamily = 'sans-serif',
     fontSize = 20, // in pt
     useDST = true,
-    dialShape = 'Rectangle',
+    dialShape = 'Oval',
     borderStyle = 'default-hairline',
     borderMargin = 0.25, // in inches
     gnomonPosition = 0,
