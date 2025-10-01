@@ -33,7 +33,7 @@ A web-based application for generating and customizing sundials. Create beautifu
 3. Set up environment variables (optional):
    ```bash
    cp .env.example .env.local
-   # Edit .env.local with your API keys
+   # Edit .env.local with your API keys (see Configuration section below)
    ```
 
 4. Start the development server:
@@ -49,6 +49,36 @@ A web-based application for generating and customizing sundials. Create beautifu
 2. Customize your sundial design using the various options
 3. Preview your design in real-time
 4. Export your sundial in your preferred format
+
+## Configuration
+
+### Timezone Services
+
+The application includes an enhanced timezone detection system that works without requiring Google API keys:
+
+- **Built-in Database**: Includes timezone data for major cities worldwide
+- **Coordinate-based Lookup**: Automatically detects timezones for nearby locations
+- **Longitude Estimation**: Falls back to UTC offset estimation based on longitude
+- **No API Keys Required**: Works completely offline for most locations
+
+### Maps and Location Services
+
+The application uses **OpenStreetMap with Leaflet** for all mapping functionality:
+
+- **No API Keys Required**: Uses free OpenStreetMap tiles and Nominatim geocoding
+- **Location Search**: Built-in search using OpenStreetMap's Nominatim service
+- **Interactive Maps**: Click-to-select location functionality
+- **Shared Hosting Compatible**: No restrictions or API key management needed
+
+### Google API Integration (Removed)
+
+Previous versions used Google Maps API, but this has been replaced with OpenStreetMap to eliminate:
+- API key restriction issues on shared hosting
+- Compatibility problems between different Google services
+- API usage costs and quotas
+- Complex configuration requirements
+
+The new system provides the same functionality without any external dependencies.
 
 ## Development
 

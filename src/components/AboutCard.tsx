@@ -23,6 +23,12 @@ const AboutCard: React.FC = () => {
           }}
         >
             <p>
+              <strong>
+              DROPPING Google Maps API for now: with my 'shared hosting' I cannot apropriately restrict the API to an IP address. For now,
+              (see COFFEE CUP icon:) I will switch to Leaflet.
+              </strong>
+              </p>
+            <p>
             <strong>New Feature:</strong> New 'Dial Shape' option!  Now you can create oval and circular dials.
           </p>
            <p>

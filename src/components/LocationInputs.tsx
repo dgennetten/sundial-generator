@@ -121,51 +121,140 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
     initializeTimezone();
   }, [latitude, longitude]);
 
-  // Helper to fetch time zone from Google Time Zone API
+  // Enhanced timezone lookup with comprehensive fallback system
   const fetchTimeZone = async (lat: number, lng: number): Promise<{ timeZoneId: string | null; dstOffset: number | null; rawOffset: number | null; timeZoneName: string | null }> => {
+    // First, try to get timezone from our enhanced fallback system
+    const fallbackResult = getTimezoneFromCoordinates(lat, lng);
+    if (fallbackResult) {
+      console.log('Using enhanced fallback timezone data for coordinates:', lat, lng);
+      return fallbackResult;
+    }
+
+    // If no fallback match, try Google API (though it will likely fail with website restrictions)
     const timestamp = Math.floor(Date.now() / 1000);
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     
-    // Check if API key is available
-    console.log('API Key available:', !!apiKey);
-    
-    if (!apiKey || apiKey === 'undefined' || apiKey === 'your_api_key_here') {
-      console.log('Google Maps API key is not set. Using fallback timezone data.');
-      console.log('To enable timezone lookup, add VITE_GOOGLE_MAPS_API_KEY to your .env.local file');
-      console.log('For testing, using fallback timezone data for Fort Collins coordinates');
+    if (apiKey && apiKey !== 'undefined' && apiKey !== 'your_api_key_here') {
+      const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${timestamp}&key=${apiKey}`;
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.status === 'OK') {
+          console.log('Successfully used Google Timezone API');
+          return {
+            timeZoneId: data.timeZoneId,
+            dstOffset: data.dstOffset,
+            rawOffset: data.rawOffset,
+            timeZoneName: data.timeZoneName
+          };
+        } else {
+          console.log('Google Timezone API failed:', data.status, data.errorMessage);
+          console.log('Falling back to coordinate-based timezone estimation');
+        }
+      } catch (e) {
+        console.log('Google Timezone API request failed:', e);
+        console.log('Falling back to coordinate-based timezone estimation');
+      }
+    }
+
+    // Final fallback: estimate timezone from longitude
+    return estimateTimezoneFromLongitude(lat, lng);
+  };
+
+  // Enhanced fallback system with timezone data for common locations
+  const getTimezoneFromCoordinates = (lat: number, lng: number) => {
+    const timezoneData = [
+      // North America
+      { lat: 40.5853, lng: -105.0844, timeZoneId: 'America/Denver', name: 'Mountain Time', offset: -7, dstOffset: 1 }, // Fort Collins
+      { lat: 34.9496, lng: -81.9321, timeZoneId: 'America/New_York', name: 'Eastern Time', offset: -5, dstOffset: 1 }, // Spartanburg
+      { lat: 32.2226, lng: -110.9747, timeZoneId: 'America/Phoenix', name: 'Mountain Standard Time', offset: -7, dstOffset: 0 }, // Tucson (no DST)
+      { lat: 40.7128, lng: -74.0060, timeZoneId: 'America/New_York', name: 'Eastern Time', offset: -5, dstOffset: 1 }, // New York
+      { lat: 34.0522, lng: -118.2437, timeZoneId: 'America/Los_Angeles', name: 'Pacific Time', offset: -8, dstOffset: 1 }, // Los Angeles
+      { lat: 41.8781, lng: -87.6298, timeZoneId: 'America/Chicago', name: 'Central Time', offset: -6, dstOffset: 1 }, // Chicago
       
-      // Fallback for Fort Collins coordinates (40.5853, -105.0844)
-      if (Math.abs(lat - 40.5853) < 0.1 && Math.abs(lng - (-105.0844)) < 0.1) {
+      // South America
+      { lat: -8.0476, lng: -34.8770, timeZoneId: 'America/Recife', name: 'Brasilia Time', offset: -3, dstOffset: 0 }, // Recife
+      { lat: -23.5505, lng: -46.6333, timeZoneId: 'America/Sao_Paulo', name: 'Brasilia Time', offset: -3, dstOffset: 0 }, // São Paulo
+      
+      // Europe
+      { lat: 50.4777, lng: 12.3649, timeZoneId: 'Europe/Berlin', name: 'Central European Time', offset: 1, dstOffset: 1 }, // Falkenstein
+      { lat: 49.6116, lng: 6.1319, timeZoneId: 'Europe/Luxembourg', name: 'Central European Time', offset: 1, dstOffset: 1 }, // Luxembourg
+      { lat: 51.5074, lng: -0.1278, timeZoneId: 'Europe/London', name: 'Greenwich Mean Time', offset: 0, dstOffset: 1 }, // London
+      { lat: 48.8566, lng: 2.3522, timeZoneId: 'Europe/Paris', name: 'Central European Time', offset: 1, dstOffset: 1 }, // Paris
+      
+      // Asia/Russia
+      { lat: 59.8761, lng: 30.4339, timeZoneId: 'Europe/Moscow', name: 'Moscow Standard Time', offset: 3, dstOffset: 0 }, // St Petersburg
+      { lat: 35.6762, lng: 139.6503, timeZoneId: 'Asia/Tokyo', name: 'Japan Standard Time', offset: 9, dstOffset: 0 }, // Tokyo
+      
+      // Australia/Oceania
+      { lat: -33.8688, lng: 151.2093, timeZoneId: 'Australia/Sydney', name: 'Australian Eastern Time', offset: 10, dstOffset: 1 }, // Sydney
+      { lat: -37.8136, lng: 144.9631, timeZoneId: 'Australia/Melbourne', name: 'Australian Eastern Time', offset: 10, dstOffset: 1 }, // Melbourne
+    ];
+
+    // Find closest match within reasonable distance (about 100km)
+    for (const tz of timezoneData) {
+      const distance = Math.sqrt(Math.pow(lat - tz.lat, 2) + Math.pow(lng - tz.lng, 2));
+      if (distance < 1.0) { // Roughly 100km
+        const now = new Date();
+        const isDST = isDaylightSavingTime(now, tz.timeZoneId);
+        
         return {
-          timeZoneId: 'America/Denver',
-          dstOffset: 3600, // Currently in DST
-          rawOffset: -25200,
-          timeZoneName: 'Mountain Daylight Time'
+          timeZoneId: tz.timeZoneId,
+          dstOffset: isDST && tz.dstOffset > 0 ? tz.dstOffset * 3600 : 0,
+          rawOffset: tz.offset * 3600,
+          timeZoneName: isDST && tz.dstOffset > 0 ? tz.name.replace('Standard', 'Daylight').replace('Time', 'Daylight Time') : tz.name
         };
       }
-      
-      return { timeZoneId: null, dstOffset: null, rawOffset: null, timeZoneName: null };
     }
     
-    const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${timestamp}&key=${apiKey}`;
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      console.log('Google Timezone API response:', data); // Debug log
-      if (data.status === 'OK') {
-        return {
-          timeZoneId: data.timeZoneId,
-          dstOffset: data.dstOffset,
-          rawOffset: data.rawOffset,
-          timeZoneName: data.timeZoneName
-        };
-      } else {
-        console.error('Google Timezone API error:', data.status, data.errorMessage);
-      }
-    } catch (e) {
-      console.error('Error fetching timezone:', e);
+    return null;
+  };
+
+  // Estimate timezone from longitude as final fallback
+  const estimateTimezoneFromLongitude = (_lat: number, lng: number) => {
+    // Basic timezone estimation: 15 degrees longitude ≈ 1 hour
+    const estimatedOffset = Math.round(lng / 15);
+    const offsetHours = Math.max(-12, Math.min(12, estimatedOffset));
+    
+    // Generate a reasonable timezone name
+    let timezoneName = 'UTC';
+    if (offsetHours !== 0) {
+      const sign = offsetHours > 0 ? '+' : '';
+      timezoneName = `UTC${sign}${offsetHours}`;
     }
-    return { timeZoneId: null, dstOffset: null, rawOffset: null, timeZoneName: null };
+    
+    console.log(`Estimated timezone from longitude ${lng}: ${timezoneName} (${offsetHours} hours)`);
+    
+    return {
+      timeZoneId: null,
+      dstOffset: 0,
+      rawOffset: offsetHours * 3600,
+      timeZoneName: timezoneName
+    };
+  };
+
+  // Simple DST detection for common timezones
+  const isDaylightSavingTime = (date: Date, timeZoneId: string): boolean => {
+    const month = date.getMonth() + 1; // 1-12
+    
+    // North American DST (March to November)
+    if (timeZoneId?.includes('America/') && !timeZoneId.includes('Phoenix')) {
+      return month > 3 && month < 11;
+    }
+    
+    // European DST (March to October)
+    if (timeZoneId?.includes('Europe/')) {
+      return month > 3 && month < 11;
+    }
+    
+    // Australian DST (October to March) - Southern Hemisphere
+    if (timeZoneId?.includes('Australia/')) {
+      return month > 9 || month < 4;
+    }
+    
+    // Default: no DST
+    return false;
   };
 
   // Helper to determine if location is currently in DST

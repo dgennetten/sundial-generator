@@ -30,7 +30,6 @@ export default defineConfig({
         manualChunks: {
           // Separate vendor libraries
           'react-vendor': ['react', 'react-dom'],
-          'maps-vendor': ['@react-google-maps/api'],
           'leaflet-vendor': ['leaflet', 'react-leaflet'],
           'icons-vendor': ['lucide-react'],
           'utils-vendor': ['html2canvas']
@@ -49,8 +48,6 @@ export default defineConfig({
       'react-dom',
       'lucide-react'
     ],
-    exclude: [
-      '@react-google-maps/api' // This will be lazy loaded
-    ]
+    exclude: []
   }
 })
