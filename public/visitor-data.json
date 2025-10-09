@@ -62,8 +62,8 @@
       "lon": -95.3698,
       "timezone": "America/New_York",
       "firstVisit": "02/Oct/2025:14:10:22 -0700",
-      "lastVisit": "09/Oct/2025:06:21:07 -0700",
-      "visitCount": 67
+      "lastVisit": "09/Oct/2025:08:12:43 -0700",
+      "visitCount": 72
     },
     {
       "ip": "4.227.36.117",
@@ -1185,7 +1185,7 @@
     }
   ],
   "totalVisitors": 91,
-  "totalVisits": 303,
-  "daysSince": 7,
-  "processedDate": "2025-10-09T15:12:15.430Z"
+  "totalVisits": 308,
+  "processedDate": "2025-10-09T15:18:30.878Z",
+  "daysSince": 7
 }
