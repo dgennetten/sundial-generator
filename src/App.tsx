@@ -19,7 +19,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
-import PageSettings, { type InclineType, type DialShape } from './components/PageSettings';
+import PageSettings, { type InclineType, type DeclinationType, type DialShape } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
 import DesignExport from './components/DesignExport';
@@ -41,21 +41,23 @@ import DialTextBlockSettings from './components/DialTextBlockSettings';
 const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n{half-year}\n*{gnomon}*\n*{incline}*\n*{today}*`;
 
 const App: React.FC = () => {
-  const [latitude, setLatitude] = useState(40.5853);
-  const [longitude, setLongitude] = useState(-105.0844);
-  const [tzMeridian, setTzMeridian] = useState(-105);
+  const [latitude, setLatitude] = useState(41.8781);
+  const [longitude, setLongitude] = useState(-87.6298);
+  const [tzMeridian, setTzMeridian] = useState(-90);
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
-  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height'>('popup-with-brace');
+  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height'>('crosshair');
   const [pageSize, setPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom'>('Letter');
   const [customWidth, setCustomWidth] = useState<number>(8.5 * 25.4); // Store in mm
   const [customHeight, setCustomHeight] = useState<number>(11 * 25.4); // Store in mm
   const [customUnits, setCustomUnits] = useState<'in' | 'cm'>('in');
   const [previousPageSize, setPreviousPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom'>('Letter');
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
-  const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
-  const [tiltAngle, setTiltAngle] = useState<number>(0);
-  const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToFall' | 'WinterToSpring'>('SummerToFall');
+  const [inclineType, setInclineType] = useState<InclineType>('Vertical');
+  const [tiltAngle, setTiltAngle] = useState<number>(90);
+  const [declinationType, setDeclinationType] = useState<DeclinationType>('North');
+  const [declinationDegrees, setDeclinationDegrees] = useState<number>(0);
+  const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToFall' | 'WinterToSpring'>('FullYear');
   const [lineStyles, setLineStyles] = useState<LineStyle[]>(() => {
     return loadLineStyles();
   });
@@ -101,7 +103,7 @@ const App: React.FC = () => {
   const [fontSize, setFontSize] = useState<number>(pageSize === '10x15cm Postcard' ? 12 : 20);
   const [useDST, setUseDST] = useState<boolean>(true);
   const [declinationNoonmarks, setDeclinationNoonmarks] = useState<boolean>(true);
-  const [dialShape, setDialShape] = useState<DialShape>('Oval');
+  const [dialShape, setDialShape] = useState<DialShape>('Rectangle');
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
   const [borderMargin, setBorderMargin] = useState<number>(pageSize === '10x15cm Postcard' ? 0.1 : 0.236); // in inches (6mm default)
   // Add state for gnomon position
@@ -115,7 +117,7 @@ const App: React.FC = () => {
   const [sundialNotesMode, setSundialNotesMode] = useState<string>('textBlock');
   const [sundialNotesPositionMode, setSundialNotesPositionMode] = useState<'auto' | 'manual'>('auto');
   const [sundialNotesOffset, setSundialNotesOffset] = useState<number>(0); // in mm
-  const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
+  const [locationName, setLocationName] = useState<string>('Chicago, IL USA');
 
   // Calculate default dial facing based on hemisphere
   const getDefaultDialFacing = (lat: number): 'North' | 'South' => {
@@ -424,6 +426,10 @@ const App: React.FC = () => {
           setInclineType={setInclineType}
           tiltAngle={tiltAngle}
           setTiltAngle={setTiltAngle}
+          declinationType={declinationType}
+          setDeclinationType={setDeclinationType}
+          declinationDegrees={declinationDegrees}
+          setDeclinationDegrees={setDeclinationDegrees}
           latitude={latitude}
           dialFacing={dialFacing}
           setDialFacing={setDialFacing}

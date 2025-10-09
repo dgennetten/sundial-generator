@@ -6,6 +6,7 @@ const MapPicker = lazy(() => import('./MapPicker'));
 
 // Location data
 const locations: { [key: string]: { lat: number; lng: number } } = {
+  'Chicago, IL USA': { lat: 41.8781, lng: -87.6298 },
   'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
   'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321 },
   'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747 },

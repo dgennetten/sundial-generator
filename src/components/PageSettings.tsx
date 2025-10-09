@@ -6,6 +6,7 @@ import type { LineStyle } from './LineSettings';
 type PageSize = 'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom';
 type Orientation = 'Landscape' | 'Portrait';
 export type InclineType = 'Horizontal' | 'Cancer' | 'Equatorial' | 'Capricorn' | 'Vertical' | 'Manual';
+export type DeclinationType = 'North' | 'Northeast' | 'Northwest' | 'East' | 'West' | 'Southeast' | 'Southwest' | 'South' | 'Manual';
 type DialFacing = 'North' | 'South';
 
 // Utility to convert named color to hex
@@ -35,6 +36,10 @@ interface PageSettingsProps {
   setInclineType: (type: InclineType) => void;
   tiltAngle: number;
   setTiltAngle: (angle: number) => void;
+  declinationType: DeclinationType;
+  setDeclinationType: (type: DeclinationType) => void;
+  declinationDegrees: number;
+  setDeclinationDegrees: (degrees: number) => void;
   latitude: number;
   dialFacing: DialFacing;
   setDialFacing: (facing: DialFacing) => void;
@@ -58,6 +63,10 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   setInclineType,
   tiltAngle,
   setTiltAngle,
+  declinationType,
+  setDeclinationType,
+  declinationDegrees,
+  setDeclinationDegrees,
   latitude,
   dialFacing,
   setDialFacing,
@@ -72,11 +81,15 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   lineStyles,
 }) => {
   // State for dial shape, border and background controls
-  const [dialShape, setDialShape] = useState<DialShape>('Oval');
+  const [dialShape, setDialShape] = useState<DialShape>('Rectangle');
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
   const [margin, setMargin] = useState<number>(6); // in mm
   const [showBackground, setShowBackground] = useState<boolean>(true);
   const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
+  
+  // State for increment/decrement step values
+  const [inclinationStep, setInclinationStep] = useState<number>(1.0);
+  const [declinationStep, setDeclinationStep] = useState<number>(1.0);
 
   // Responsive: detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
@@ -375,19 +388,19 @@ const PageSettings: React.FC<PageSettingsProps> = ({
           </div>
         )}
 
-        {/* Second row: Incline and Degrees */}
+        {/* Second row: Inclination and Degrees */}
         <div 
           className="form-row" 
           style={{ 
             display: 'flex', 
-            alignItems: 'end', 
+            alignItems: 'flex-start', 
             gap: isMobile ? '0.5rem' : '1rem',
             flexDirection: 'row',
             marginTop: isMobile ? '8px' : '0'
           }}
         >
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-            <label className="form-label">Incline</label>
+            <label className="form-label">Inclination</label>
             <select
               className="form-select"
               value={inclineType}
@@ -412,13 +425,117 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               disabled={inclineType !== 'Manual'}
               min={0}
               max={90}
-              step={1.0}
+              step={inclinationStep}
               style={{ 
                 width: isMobile ? '70px' : '80px',
                 backgroundColor: inclineType !== 'Manual' ? '#f7fafc' : undefined,
                 color: inclineType !== 'Manual' ? '#a0aec0' : undefined
               }}
             />
+          </div>
+          <div className="form-group" style={{ flex: '0 0 auto' }}>
+            <label className="form-label" style={{ marginBottom: '0.5rem' }}>Inc/Dec</label>
+            <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <input
+                  type="radio"
+                  name="inclinationStep"
+                  value="1.0"
+                  checked={inclinationStep === 1.0}
+                  onChange={() => setInclinationStep(1.0)}
+                  style={{ cursor: 'pointer' }}
+                />
+                1.0
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <input
+                  type="radio"
+                  name="inclinationStep"
+                  value="0.1"
+                  checked={inclinationStep === 0.1}
+                  onChange={() => setInclinationStep(0.1)}
+                  style={{ cursor: 'pointer' }}
+                />
+                0.1
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Third row: Declination and Degrees */}
+        <div 
+          className="form-row" 
+          style={{ 
+            display: 'flex', 
+            alignItems: 'flex-start', 
+            gap: isMobile ? '0.5rem' : '1rem',
+            flexDirection: 'row',
+            marginTop: isMobile ? '8px' : '0'
+          }}
+        >
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
+            <label className="form-label">Declination</label>
+            <select
+              className="form-select"
+              value={declinationType}
+              onChange={(e) => setDeclinationType(e.target.value as DeclinationType)}
+              style={{ minWidth: isMobile ? '80px' : 'auto' }}
+            >
+              <option value="North">North</option>
+              <option value="Northeast">Northeast</option>
+              <option value="Northwest">Northwest</option>
+              <option value="East">East</option>
+              <option value="West">West</option>
+              <option value="Southeast">Southeast</option>
+              <option value="Southwest">Southwest</option>
+              <option value="South">South</option>
+              <option value="Manual">Manual</option>
+            </select>
+          </div>
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
+            <label className="form-label">Degrees</label>
+            <input
+              type="number"
+              className="form-input"
+              value={declinationDegrees.toFixed(1)}
+              onChange={(e) => setDeclinationDegrees(parseFloat(e.target.value) || 0)}
+              disabled={declinationType !== 'Manual'}
+              min={0}
+              max={90}
+              step={declinationStep}
+              style={{ 
+                width: isMobile ? '70px' : '80px',
+                backgroundColor: declinationType !== 'Manual' ? '#f7fafc' : undefined,
+                color: declinationType !== 'Manual' ? '#a0aec0' : undefined
+              }}
+            />
+          </div>
+          <div className="form-group" style={{ flex: '0 0 auto' }}>
+            <label className="form-label" style={{ marginBottom: '0.5rem' }}>Inc/Dec</label>
+            <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <input
+                  type="radio"
+                  name="declinationStep"
+                  value="1.0"
+                  checked={declinationStep === 1.0}
+                  onChange={() => setDeclinationStep(1.0)}
+                  style={{ cursor: 'pointer' }}
+                />
+                1.0
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                <input
+                  type="radio"
+                  name="declinationStep"
+                  value="0.1"
+                  checked={declinationStep === 0.1}
+                  onChange={() => setDeclinationStep(0.1)}
+                  style={{ cursor: 'pointer' }}
+                />
+                0.1
+              </label>
+            </div>
           </div>
         </div>
 
@@ -542,7 +659,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
                    }}
                  >
                    <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
-                     <label className="form-label">Dial Facing</label>
+                     <label className="form-label">Dial Facing (NOTE: will be removed when Declination is implemented above!)</label>
                      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '8px' }}>
                <span style={{ 
                  fontSize: '14px', 

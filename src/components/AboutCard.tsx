@@ -22,6 +22,11 @@ const AboutCard: React.FC = () => {
             fontWeight: '500',
           }}
         >
+             <p>
+              <strong>
+              COMING SOON: Declined (vertically rotated) dials! And this is in combination with Inclination! (a 'pay-extra' feature on Shadows Pro)
+              </strong>
+            </p>
             <p>
               <strong>
               DROPPING Google Maps API for now: with my 'shared hosting' I cannot apropriately restrict the API to an IP address. For now,
