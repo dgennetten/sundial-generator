@@ -6,7 +6,7 @@ const MapPicker = lazy(() => import('./MapPicker'));
 
 // Location data
 const locations: { [key: string]: { lat: number; lng: number } } = {
-  'Chicago, IL USA': { lat: 41.85003, lng: -87.65005 },
+  'Chicago, IL USA': { lat: 41.8781, lng: -87.6298 },
   'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
   'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321 },
   'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747 },
@@ -172,7 +172,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
       { lat: 32.2226, lng: -110.9747, timeZoneId: 'America/Phoenix', name: 'Mountain Standard Time', offset: -7, dstOffset: 0 }, // Tucson (no DST)
       { lat: 40.7128, lng: -74.0060, timeZoneId: 'America/New_York', name: 'Eastern Time', offset: -5, dstOffset: 1 }, // New York
       { lat: 34.0522, lng: -118.2437, timeZoneId: 'America/Los_Angeles', name: 'Pacific Time', offset: -8, dstOffset: 1 }, // Los Angeles
-      { lat: 41.85003, lng: -87.65005, timeZoneId: 'America/Chicago', name: 'Central Time', offset: -6, dstOffset: 1 }, // Chicago
+      { lat: 41.8781, lng: -87.6298, timeZoneId: 'America/Chicago', name: 'Central Time', offset: -6, dstOffset: 1 }, // Chicago
       
       // South America
       { lat: -8.0476, lng: -34.8770, timeZoneId: 'America/Recife', name: 'Brasilia Time', offset: -3, dstOffset: 0 }, // Recife
