@@ -120,8 +120,10 @@ const App: React.FC = () => {
   const [locationName, setLocationName] = useState<string>('Chicago, IL USA');
 
   // Calculate default dial facing based on hemisphere
+  // Northern hemisphere: sun is in southern sky, so dial faces South
+  // Southern hemisphere: sun is in northern sky, so dial faces North
   const getDefaultDialFacing = (lat: number): 'North' | 'South' => {
-    return lat >= 0 ? 'North' : 'South';
+    return lat >= 0 ? 'South' : 'North';
   };
 
   const [dialFacing, setDialFacing] = useState<'North' | 'South'>(getDefaultDialFacing(latitude));

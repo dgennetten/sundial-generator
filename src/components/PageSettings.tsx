@@ -240,7 +240,9 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     if (isOutsideTropics && isNotHorizontal) {
       return {
         isLocked: true,
-        requiredDirection: latitude > 0 ? 'North' : 'South',
+        // Northern hemisphere: sun is in southern sky, so dial must face South
+        // Southern hemisphere: sun is in northern sky, so dial must face North
+        requiredDirection: latitude > 0 ? 'South' : 'North',
         showNotice: true
       };
     }
@@ -260,7 +262,9 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     const isNotHorizontal = inclineType !== 'Horizontal';
     
     if (isOutsideTropics && isNotHorizontal) {
-      const requiredDirection = latitude > 0 ? 'North' : 'South';
+      // Northern hemisphere: sun is in southern sky, so dial must face South
+      // Southern hemisphere: sun is in northern sky, so dial must face North
+      const requiredDirection = latitude > 0 ? 'South' : 'North';
       if (dialFacing !== requiredDirection) {
         setDialFacing(requiredDirection);
       }
