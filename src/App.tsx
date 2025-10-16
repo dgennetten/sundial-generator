@@ -41,8 +41,8 @@ import DialTextBlockSettings from './components/DialTextBlockSettings';
 const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n{half-year}\n*{gnomon}*\n*{incline}*\n*{today}*`;
 
 const App: React.FC = () => {
-  const [latitude, setLatitude] = useState(41.8781);
-  const [longitude, setLongitude] = useState(-87.6298);
+  const [latitude, setLatitude] = useState(40.5853);
+  const [longitude, setLongitude] = useState(-105.0844);
   const [tzMeridian, setTzMeridian] = useState(-90);
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
@@ -53,7 +53,7 @@ const App: React.FC = () => {
   const [customUnits, setCustomUnits] = useState<'in' | 'cm'>('in');
   const [previousPageSize, setPreviousPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom'>('Letter');
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
-  const [inclineType, setInclineType] = useState<InclineType>('Vertical');
+  const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
   const [tiltAngle, setTiltAngle] = useState<number>(90);
   const [declinationType, setDeclinationType] = useState<DeclinationType>('North');
   const [declinationDegrees, setDeclinationDegrees] = useState<number>(0);
@@ -117,7 +117,7 @@ const App: React.FC = () => {
   const [sundialNotesMode, setSundialNotesMode] = useState<string>('textBlock');
   const [sundialNotesPositionMode, setSundialNotesPositionMode] = useState<'auto' | 'manual'>('auto');
   const [sundialNotesOffset, setSundialNotesOffset] = useState<number>(0); // in mm
-  const [locationName, setLocationName] = useState<string>('Chicago, IL USA');
+  const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
 
   // Calculate default dial facing based on hemisphere
   // Northern hemisphere: sun is in southern sky, so dial faces South
@@ -549,7 +549,7 @@ const App: React.FC = () => {
           setLineStyles={setLineStyles}
         />
         </React.Profiler>
-        <VisitorMap />
+        {/* <VisitorMap /> */}
         <AboutCard />
       </div>
 
