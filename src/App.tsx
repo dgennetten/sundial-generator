@@ -34,7 +34,7 @@ import { loadDeclinationLines } from './components/declinationLineUtils';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
 import { getSolarPosition, projectShadowToSurface } from './utils/analemmaGenerator';
 import AboutCard from './components/AboutCard';
-import VisitorMap from './components/VisitorMap';
+// import VisitorMap from './components/VisitorMap';
 import DialTextBlockSettings from './components/DialTextBlockSettings';
 
 
@@ -167,10 +167,10 @@ const App: React.FC = () => {
   useEffect(() => {
     if (inclineType !== 'Manual') {
       const newAngle = inclineType === 'Horizontal' ? 0 :
-                      inclineType === 'Cancer' ? getCancerIncline(latitude) :
-                      inclineType === 'Equatorial' ? latitude :
-                      inclineType === 'Capricorn' ? getCapricornIncline(latitude) :
-                      inclineType === 'Vertical' ? 90 : 0;
+        inclineType === 'Cancer' ? getCancerIncline(latitude) :
+          inclineType === 'Equatorial' ? latitude :
+            inclineType === 'Capricorn' ? getCapricornIncline(latitude) :
+              inclineType === 'Vertical' ? 90 : 0;
       setTiltAngle(newAngle);
     }
   }, [inclineType, latitude]);
@@ -233,10 +233,10 @@ const App: React.FC = () => {
   // Calculate effective latitude based on incline
   const effectiveLatitude = useMemo(() => {
     const tilt = inclineType === 'Horizontal' ? 0 :
-                 inclineType === 'Cancer' ? getCancerIncline(latitude) :
-                 inclineType === 'Equatorial' ? latitude :
-                 inclineType === 'Capricorn' ? getCapricornIncline(latitude) :
-                 inclineType === 'Vertical' ? 90 : tiltAngle;
+      inclineType === 'Cancer' ? getCancerIncline(latitude) :
+        inclineType === 'Equatorial' ? latitude :
+          inclineType === 'Capricorn' ? getCapricornIncline(latitude) :
+            inclineType === 'Vertical' ? 90 : tiltAngle;
     return latitude - tilt;
   }, [inclineType, latitude, tiltAngle]);
 
@@ -268,7 +268,7 @@ const App: React.FC = () => {
     const targetDistance = pageHeight * 0.4;
     const requiredGnomonHeight = targetDistance / shadowDistance;
     // Reduce to 66% of previous value, then increase by factor of 55/40
-    return Math.round(requiredGnomonHeight * 0.66 * (55/40));
+    return Math.round(requiredGnomonHeight * 0.66 * (55 / 40));
   }, [longitude, tzMeridian]);
 
   const effectiveGnomonHeight = useMemo(() => (
@@ -491,63 +491,63 @@ const App: React.FC = () => {
           if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
         }}>
 
-        <DeclinationLineOptions
-          lineStyles={lineStyles}
-          declinationLines={declinationLines}
-          setDeclinationLines={setDeclinationLines}
-          dateRange={hourlineDateRange}
-          lat={effectiveLatitude}
-        />
-        <HourlineSettings
-          dateRange={hourlineDateRange}
-          setDateRange={handleDateRangeChange}
-          lineStyles={lineStyles}
-          hourlineIntervals={hourlineIntervals}
-          setHourlineIntervals={setHourlineIntervals}
-          startHour={startHour}
-          stopHour={stopHour}
-          use24Hour={use24Hour}
-          onUpdate={useCallback((start, stop, use24, winter, summer, offset, fontFam, fontSz, dst, declNoonmarks) => {
-            setStartHour(start);
-            setStopHour(stop);
-            setUse24Hour(use24);
-            setLabelWinterSide(winter);
-            setLabelSummerSide(summer);
-            setLabelOffset(offset);
-            setFontFamily(fontFam);
-            setFontSize(fontSz);
-            setUseDST(dst);
-            setDeclinationNoonmarks(declNoonmarks);
-          }, [])}
-          labelWinterSide={labelWinterSide}
-          labelSummerSide={labelSummerSide}
-          labelOffset={labelOffset}
-          fontFamily={fontFamily}
-          fontSize={fontSize}
-          useDST={useDST}
-          declinationNoonmarks={declinationNoonmarks}
-        />
+          <DeclinationLineOptions
+            lineStyles={lineStyles}
+            declinationLines={declinationLines}
+            setDeclinationLines={setDeclinationLines}
+            dateRange={hourlineDateRange}
+            lat={effectiveLatitude}
+          />
+          <HourlineSettings
+            dateRange={hourlineDateRange}
+            setDateRange={handleDateRangeChange}
+            lineStyles={lineStyles}
+            hourlineIntervals={hourlineIntervals}
+            setHourlineIntervals={setHourlineIntervals}
+            startHour={startHour}
+            stopHour={stopHour}
+            use24Hour={use24Hour}
+            onUpdate={useCallback((start, stop, use24, winter, summer, offset, fontFam, fontSz, dst, declNoonmarks) => {
+              setStartHour(start);
+              setStopHour(stop);
+              setUse24Hour(use24);
+              setLabelWinterSide(winter);
+              setLabelSummerSide(summer);
+              setLabelOffset(offset);
+              setFontFamily(fontFam);
+              setFontSize(fontSz);
+              setUseDST(dst);
+              setDeclinationNoonmarks(declNoonmarks);
+            }, [])}
+            labelWinterSide={labelWinterSide}
+            labelSummerSide={labelSummerSide}
+            labelOffset={labelOffset}
+            fontFamily={fontFamily}
+            fontSize={fontSize}
+            useDST={useDST}
+            declinationNoonmarks={declinationNoonmarks}
+          />
         </React.Profiler>
-                 <DesignExport
-           pageSize={pageSize}
-           orientation={orientation}
-           customWidth={customWidth}
-           customHeight={customHeight}
-           dateRange={hourlineDateRange}
-           gnomonType={gnomonType}
-           locationName={locationName}
-           showBackground={showBackground}
-           backgroundColor={backgroundColor}
-           sundialNotesMode={sundialNotesMode}
-         />
+        <DesignExport
+          pageSize={pageSize}
+          orientation={orientation}
+          customWidth={customWidth}
+          customHeight={customHeight}
+          dateRange={hourlineDateRange}
+          gnomonType={gnomonType}
+          locationName={locationName}
+          showBackground={showBackground}
+          backgroundColor={backgroundColor}
+          sundialNotesMode={sundialNotesMode}
+        />
         <React.Profiler id="LineSettings" onRender={(id, phase, actualDuration) => {
           if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
         }}>
 
-        <LineSettings
-          lineStyles={lineStyles}
-          setLineStyles={setLineStyles}
-        />
+          <LineSettings
+            lineStyles={lineStyles}
+            setLineStyles={setLineStyles}
+          />
         </React.Profiler>
         {/* <VisitorMap /> */}
         <AboutCard />
