@@ -129,6 +129,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Convert border margin from inches to mm (moved up to avoid initialization error)
   const borderMarginMm = borderMargin * 25.4;
 
+  // Calculate standard time meridian (no DST adjustment) for seasons guide
+  // The seasons guide should remain fixed regardless of DST changes
+  // Standard meridian is based on longitude: round to nearest 15° (1 hour)
+  const standardTzMeridian = Math.round(lng / 15) * 15;
+
   // Calculate normalized viewBox for consistent preview scaling
   // Use a minimum viewBox size to prevent tiny pages from appearing too zoomed in
   const minViewBoxSize = 200; // mm
@@ -2237,10 +2242,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
               {sundialNotesMode === 'seasonsGuide' && (() => {
                 // Generate noon analemma using the EXACT same logic as the main sundial hourlines
+                // Use standardTzMeridian (no DST) to keep seasons guide fixed throughout the year
                 const seasonsNoonPoints = getAnalemmaPointsProjected({
                   lat,
                   lng,
-                  tzMeridian,
+                  tzMeridian: standardTzMeridian,
                   hour: 12, // Noon hour
                   gnomonHeight,
                   orientation: 'Horizontal',
@@ -2342,7 +2348,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       const equinoxNoonPoint = getAnalemmaPointsProjected({
                         lat,
                         lng,
-                        tzMeridian,
+                        tzMeridian: standardTzMeridian,
                         hour: 12,
                         gnomonHeight,
                         orientation: getOrientation(inclineType),
@@ -2362,7 +2368,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       const leftHourPoint = getAnalemmaPointsProjected({
                         lat,
                         lng,
-                        tzMeridian,
+                        tzMeridian: standardTzMeridian,
                         hour: 11.5, // 11:30
                         gnomonHeight,
                         orientation: getOrientation(inclineType),
@@ -2371,7 +2377,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       const rightHourPoint = getAnalemmaPointsProjected({
                         lat,
                         lng,
-                        tzMeridian,
+                        tzMeridian: standardTzMeridian,
                         hour: 12.5, // 12:30
                         gnomonHeight,
                         orientation: getOrientation(inclineType),
@@ -2476,7 +2482,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       const equinoxNoonPoint = getAnalemmaPointsProjected({
                         lat,
                         lng,
-                        tzMeridian,
+                        tzMeridian: standardTzMeridian,
                         hour: 12,
                         gnomonHeight,
                         orientation: getOrientation(inclineType),
@@ -2496,7 +2502,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       const leftHourPoint = getAnalemmaPointsProjected({
                         lat,
                         lng,
-                        tzMeridian,
+                        tzMeridian: standardTzMeridian,
                         hour: 11.5, // 11:30
                         gnomonHeight,
                         orientation: getOrientation(inclineType),
@@ -2505,7 +2511,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       const rightHourPoint = getAnalemmaPointsProjected({
                         lat,
                         lng,
-                        tzMeridian,
+                        tzMeridian: standardTzMeridian,
                         hour: 12.5, // 12:30
                         gnomonHeight,
                         orientation: getOrientation(inclineType),
