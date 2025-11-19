@@ -251,8 +251,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       case 'Hour': return 1;
       case 'Half-hour': return 0.5;
       case 'Quarter-hour': return 0.25;
-      case '5-minute': return 1/12; // 5 minutes = 1/12 hour
-      case '2-minute': return 1/30; // 2 minutes = 1/30 hour
+      case '5-minute': return 1 / 12; // 5 minutes = 1/12 hour
+      case '2-minute': return 1 / 30; // 2 minutes = 1/30 hour
       default: return 1;
     }
   }
@@ -329,32 +329,32 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Helper to create 5/2 day dash segments for hourlines
   function create5Day2GapSegments(points: { day: number; x: number; y: number }[]): { day: number; x: number; y: number }[][] {
     if (points.length === 0) return [];
-    
+
     // Sort points by day
     const sortedPoints = [...points].sort((a, b) => a.day - b.day);
     const segments: { day: number; x: number; y: number }[][] = [];
-    
+
     // Create segments with 6 day-points (enclosing 5 days) followed by 2-day gaps
     // This creates 26 segments from solstice to solstice (182 days / 7 = 26)
     const startDay = sortedPoints[0].day;
     const endDay = sortedPoints[sortedPoints.length - 1].day;
-    
+
     // Start from the first day and create 7-day cycles (6 day-points + 1 gap day, then 1 more gap day)
     for (let cycleStart = startDay; cycleStart <= endDay; cycleStart += 7) {
       const segmentPoints: { day: number; x: number; y: number }[] = [];
-      
+
       // Collect 6 consecutive day-points starting from cycleStart (enclosing 5 days)
       for (let dayOffset = 0; dayOffset < 6; dayOffset++) {
         const targetDay = cycleStart + dayOffset;
         if (targetDay > endDay) break;
-        
+
         // Find the point closest to this target day
         const point = sortedPoints.find(p => Math.abs(p.day - targetDay) < 0.5);
         if (point) {
           segmentPoints.push(point);
         }
       }
-      
+
       // Only add segments with at least 2 points to form a line
       if (segmentPoints.length >= 2) {
         segments.push(segmentPoints);
@@ -366,32 +366,32 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Helper to create 2/5 day dash segments for hourlines
   function create2Day5GapSegments(points: { day: number; x: number; y: number }[]): { day: number; x: number; y: number }[][] {
     if (points.length === 0) return [];
-    
+
     // Sort points by day
     const sortedPoints = [...points].sort((a, b) => a.day - b.day);
     const segments: { day: number; x: number; y: number }[][] = [];
-    
+
     // Create segments with 3 day-points (enclosing 2 days) followed by 5-day gaps
     // This creates 26 segments from solstice to solstice (182 days / 7 = 26)
     const startDay = sortedPoints[0].day;
     const endDay = sortedPoints[sortedPoints.length - 1].day;
-    
+
     // Start from the first day and create 7-day cycles (3 day-points + 4 gap days)
     for (let cycleStart = startDay; cycleStart <= endDay; cycleStart += 7) {
       const segmentPoints: { day: number; x: number; y: number }[] = [];
-      
+
       // Collect 3 consecutive day-points starting from cycleStart (enclosing 2 days)
       for (let dayOffset = 0; dayOffset < 3; dayOffset++) {
         const targetDay = cycleStart + dayOffset;
         if (targetDay > endDay) break;
-        
+
         // Find the point closest to this target day
         const point = sortedPoints.find(p => Math.abs(p.day - targetDay) < 0.5);
         if (point) {
           segmentPoints.push(point);
         }
       }
-      
+
       // Only add segments with at least 2 points to form a line
       if (segmentPoints.length >= 2) {
         segments.push(segmentPoints);
@@ -403,19 +403,19 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Helper to create dots at 2-minute intervals for declination lines
   function create2MinuteDots(decl: number, style: LineStyle | undefined): JSX.Element[] {
     if (!style) return [];
-    
+
     const dots: JSX.Element[] = [];
     const dotWidth = getStrokeWidth(style.width);
-    
+
     // Account for the transform applied to the sundial content group (same as clipPathData)
     const transformY = (gnomonPosition ?? 0) - (height / 2);
     const left = -width / 2 + borderMarginMm;
     const top = -height / 2 + borderMarginMm - transformY;
     const right = width / 2 - borderMarginMm;
     const bottom = height / 2 - borderMarginMm - transformY;
-    
+
     // Generate dots every 2 minutes from startHour to stopHour
-    for (let h = startHour; h <= stopHour; h += 2/60) { // 2-minute intervals
+    for (let h = startHour; h <= stopHour; h += 2 / 60) { // 2-minute intervals
       const latRad = degreesToRadians(lat);
       const declRad = degreesToRadians(decl);
       const hourAngle = degreesToRadians(15 * (h - 12));
@@ -450,26 +450,26 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         }
       }
     }
-    
+
     return dots;
   }
 
   // Helper to create 5-minute dots for declination lines
   function create5MinuteDots(decl: number, style: LineStyle | undefined): JSX.Element[] {
     if (!style) return [];
-    
+
     const dots: JSX.Element[] = [];
     const dotWidth = getStrokeWidth(style.width);
-    
+
     // Account for the transform applied to the sundial content group (same as clipPathData)
     const transformY = (gnomonPosition ?? 0) - (height / 2);
     const left = -width / 2 + borderMarginMm;
     const top = -height / 2 + borderMarginMm - transformY;
     const right = width / 2 - borderMarginMm;
     const bottom = height / 2 - borderMarginMm - transformY;
-    
+
     // Generate dots every 5 minutes from startHour to stopHour
-    for (let h = startHour; h <= stopHour; h += 5/60) { // 5-minute intervals
+    for (let h = startHour; h <= stopHour; h += 5 / 60) { // 5-minute intervals
       const latRad = degreesToRadians(lat);
       const declRad = degreesToRadians(decl);
       const hourAngle = degreesToRadians(15 * (h - 12));
@@ -504,7 +504,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         }
       }
     }
-    
+
     return dots;
   }
 
@@ -532,7 +532,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const bottom = height / 2 - borderMarginMm - transformY;
 
     // Use the same 2-minute sampling as dots
-    for (let h = startHour; h <= stopHour; h += 2/60) {
+    for (let h = startHour; h <= stopHour; h += 2 / 60) {
       const latRad = degreesToRadians(lat);
       const declRad = degreesToRadians(decl);
       const hourAngle = degreesToRadians(15 * (h - 12));
@@ -647,7 +647,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     while (iterations < maxIterations) {
       iterations++;
-      
+
       if ((code1 | code2) === 0) {
         // Both endpoints inside window
         return { x1, y1, x2, y2 };
@@ -663,10 +663,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         // slope = (y2 - y1) / (x2 - x1)
         // x = x1 + (1 / slope) * (ym - y1), where ym is clip edge
         // y = y1 + slope * (xm - x1), where xm is clip edge
-        
+
         const dx = x2 - x1;
         const dy = y2 - y1;
-        
+
         // Handle vertical and horizontal lines specially to avoid division by zero
         if (codeOut & TOP) {
           if (Math.abs(dy) < 1e-10) return null; // Nearly horizontal line
@@ -703,7 +703,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         }
       }
     }
-    
+
     // If we hit max iterations, something went wrong
     return null;
   }
@@ -744,7 +744,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         const dx = Math.abs(p2.x - p1.x);
         const dy = Math.abs(p2.y - p1.y);
         const segmentLength = Math.sqrt(dx * dx + dy * dy);
-        
+
         // Reject extremely long segments
         if (segmentLength > Math.min(width, height) * 3) {
           // End current segment and start fresh
@@ -828,19 +828,19 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   function isTextWithinBounds(x: number, y: number): boolean {
     // Account for the transform applied to the sundial content group
     const transformY = (gnomonPosition ?? 0) - (height / 2);
-    
+
     const left = -width / 2 + borderMarginMm;
     const top = -height / 2 + borderMarginMm - transformY;
     const right = width / 2 - borderMarginMm;
     const bottom = height / 2 - borderMarginMm - transformY;
-    
+
     // Add some padding for text size (approximate text bounds)
     const textPadding = fontSizeMm / 2;
-    
-    return x >= (left + textPadding) && 
-           x <= (right - textPadding) && 
-           y >= (top + textPadding) && 
-           y <= (bottom - textPadding);
+
+    return x >= (left + textPadding) &&
+      x <= (right - textPadding) &&
+      y >= (top + textPadding) &&
+      y <= (bottom - textPadding);
   }
 
   // Improved hour label placement
@@ -865,7 +865,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         // Filter points by date range
         const isNorthernHemisphere = lat >= 0;
         const needsSplitting = (dateRange === 'WinterToSpring') ||
-                              (dateRange === 'SummerToFall' && !isNorthernHemisphere);
+          (dateRange === 'SummerToFall' && !isNorthernHemisphere);
 
         if (needsSplitting) {
           let segments: [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]];
@@ -1132,7 +1132,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         // Filter points by date range
         const isNorthernHemisphere = lat >= 0;
         const needsSplitting = (dateRange === 'WinterToSpring') ||
-                              (dateRange === 'SummerToFall' && !isNorthernHemisphere);
+          (dateRange === 'SummerToFall' && !isNorthernHemisphere);
 
         if (needsSplitting) {
           let segments: [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]];
@@ -1152,8 +1152,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
             // Optimize for performance: if segment has too many points, reduce them
             // Skip optimization for calculated styles that need daily resolution
-            if (sortedSegment.length > 100 && 
-                !(style.style === 'calculated' && (style.calculatedType === 'hourline-5-2-day-dash' || style.calculatedType === 'hourline-2-5-day-dash'))) {
+            if (sortedSegment.length > 100 &&
+              !(style.style === 'calculated' && (style.calculatedType === 'hourline-5-2-day-dash' || style.calculatedType === 'hourline-2-5-day-dash'))) {
               const step = Math.ceil(sortedSegment.length / 50); // Keep ~50 points max
               sortedSegment = sortedSegment.filter((_, index) => index % step === 0);
             }
@@ -1223,8 +1223,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
           // Optimize for performance only for half-year views; keep full-year at 1 point/day
           // Skip optimization for calculated styles that need daily resolution
-          if (dateRange !== 'FullYear' && points.length > 100 && 
-              !(style.style === 'calculated' && (style.calculatedType === 'hourline-5-2-day-dash' || style.calculatedType === 'hourline-2-5-day-dash'))) {
+          if (dateRange !== 'FullYear' && points.length > 100 &&
+            !(style.style === 'calculated' && (style.calculatedType === 'hourline-5-2-day-dash' || style.calculatedType === 'hourline-2-5-day-dash'))) {
             const step = Math.ceil(points.length / 50); // Keep ~50 points max
             points = points.filter((_, index) => index % step === 0);
           }
@@ -1544,7 +1544,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     if (decl === 0) {
       // Equinox: draw a straight line for all hours, but clip to maxRadius
       const points = [];
-      for (let h = startHour; h <= stopHour; h += 1/60) {
+      for (let h = startHour; h <= stopHour; h += 1 / 60) {
         const latRad = degreesToRadians(lat);
         const declRad = degreesToRadians(decl);
         const hourAngle = degreesToRadians(15 * (h - 12));
@@ -1580,7 +1580,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // For each hour, compute the shadow tip for this declination
     const segments: { x: number; y: number }[][] = [];
     let currentSegment: { x: number; y: number }[] = [];
-    for (let h = startHour; h <= stopHour; h += 1/60) { // one-minute increments for smooth, complete arcs
+    for (let h = startHour; h <= stopHour; h += 1 / 60) { // one-minute increments for smooth, complete arcs
       const latRad = degreesToRadians(lat);
       const declRad = degreesToRadians(decl);
       const hourAngle = degreesToRadians(15 * (h - 12));
@@ -1630,7 +1630,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Draw declination lines
   if (declinationLines.length > 0) {
 
-    console.log('Declination lines to render:', declinationLines.map(l => ({date: l.date, active: l.active, styleId: l.styleId, id: l.id, decl: getDeclinationForLine(l)})));
+    console.log('Declination lines to render:', declinationLines.map(l => ({ date: l.date, active: l.active, styleId: l.styleId, id: l.id, decl: getDeclinationForLine(l) })));
   }
 
   const declinationLineElements = declinationLines.flatMap((line, idx) => {
@@ -1643,7 +1643,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Handle 1st of the Month as a special case
     if (line.date === '1st of the Month') {
       const monthBoundaries = getMonthBoundaryDeclinations();
-  
+
       return monthBoundaries.flatMap((boundary, boundaryIdx) => {
         const elements = renderDeclinationLine(boundary.decl, style, `${line.id || line.date || idx}-${boundary.month}-${boundaryIdx}`);
         return elements || [];
@@ -1653,7 +1653,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Handle 1st and 15th as a special case
     if (line.date === '1st and 15th') {
       const firstAndFifteenthDays = getFirstAndFifteenthDeclinations();
-  
+
       return firstAndFifteenthDays.flatMap((day, dayIdx) => {
         const elements = renderDeclinationLine(day.decl, style, `${line.id || line.date || idx}-${day.month}-${day.dayOfMonth}-${dayIdx}`);
         return elements || [];
@@ -1680,7 +1680,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
     if (!style) {
-  
+
       console.log(`No style found for line ${line.date}, styleId: ${line.styleId}`);
       return [];
     }
@@ -1722,18 +1722,18 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Handle 1st of the Month as a special case
     if (line.date === '1st of the Month') {
       const monthBoundaries = getMonthBoundaryDeclinations();
-  
+
       console.log(`Month boundaries for noonmarks:`, monthBoundaries.map(b => `${b.month} (decl ${b.decl.toFixed(2)}°)`));
       return monthBoundaries.flatMap((boundary, boundaryIdx) => {
         // Find single intersection point with noon analemma for this declination
         const intersectionPoint = findDeclinationAnalemmaIntersection(boundary.decl);
         if (!intersectionPoint) {
-      
+
           console.log(`No intersection found for month boundary ${boundary.month} (decl ${boundary.decl.toFixed(2)}°)`);
           return [];
         }
 
-    
+
         console.log(`Found intersection for ${boundary.month}: (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
         console.log(`Rendering circle for ${boundary.month} at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
 
@@ -1754,18 +1754,18 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Handle 1st and 15th as a special case
     if (line.date === '1st and 15th') {
       const firstAndFifteenthDays = getFirstAndFifteenthDeclinations();
-  
+
       console.log(`1st and 15th days for noonmarks:`, firstAndFifteenthDays.map(d => `${d.month} ${d.dayOfMonth} (decl ${d.decl.toFixed(2)}°)`));
       return firstAndFifteenthDays.flatMap((day, dayIdx) => {
         // Find single intersection point with noon analemma for this declination
         const intersectionPoint = findDeclinationAnalemmaIntersection(day.decl);
         if (!intersectionPoint) {
-      
+
           console.log(`No intersection found for ${day.month} ${day.dayOfMonth} (decl ${day.decl.toFixed(2)}°)`);
           return [];
         }
 
-    
+
         console.log(`Found intersection for ${day.month} ${day.dayOfMonth}: (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
         console.log(`Rendering circle for ${day.month} ${day.dayOfMonth} at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
 
@@ -1786,7 +1786,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Handle regular declination lines
     const decl = getDeclinationForLine(line);
     if (decl === null) {
-  
+
       console.log(`No declination found for line: ${line.date}`);
       return [];
     }
@@ -1794,7 +1794,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Find single intersection point with noon analemma for this declination
     const intersectionPoint = findDeclinationAnalemmaIntersection(decl);
     if (!intersectionPoint) {
-  
+
       console.log(`No intersection found for declination ${decl.toFixed(2)}° (line: ${line.date})`);
       return [];
     }
@@ -1828,7 +1828,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const scaledWidth = width * viewBoxScaleFactor;
   const scaledHeight = height * viewBoxScaleFactor;
   const scaledBorderMargin = borderMarginMm * viewBoxScaleFactor;
-  
+
   // Show border when borderStyle is not 'none'
   const showBorder = borderStyle !== 'none';
 
@@ -1920,13 +1920,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       return Math.abs(lat - (-23.4367));
     };
 
-      // Create incline string - show for all incline types except Horizontal
-  const effectiveTiltAngle = inclineType === 'Horizontal' ? 0 :
-                            inclineType === 'Cancer' ? getCancerIncline(originalLatitude || lat || 0) :
-                            inclineType === 'Equatorial' ? (originalLatitude || lat || 0) :
-                            inclineType === 'Capricorn' ? getCapricornIncline(originalLatitude || lat || 0) :
-                            inclineType === 'Vertical' ? 90 : tiltAngle;
-  const inclineString = inclineType !== 'Horizontal' ? `incline: ${effectiveTiltAngle.toFixed(1)}°` : '';
+    // Create incline string - show for all incline types except Horizontal
+    const effectiveTiltAngle = inclineType === 'Horizontal' ? 0 :
+      inclineType === 'Cancer' ? getCancerIncline(originalLatitude || lat || 0) :
+        inclineType === 'Equatorial' ? (originalLatitude || lat || 0) :
+          inclineType === 'Capricorn' ? getCapricornIncline(originalLatitude || lat || 0) :
+            inclineType === 'Vertical' ? 90 : tiltAngle;
+    const inclineString = inclineType !== 'Horizontal' ? `incline: ${effectiveTiltAngle.toFixed(1)}°` : '';
 
     // Check if "Today" declination line is active
     const todayLineActive = declinationLines.some(line => line.active && line.date === 'Today' && isDateStringInRange('Today'));
@@ -1935,7 +1935,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const getTodayDateString = (): string => {
       const today = new Date();
       const months = ['January', 'February', 'March', 'April', 'May', 'June',
-                     'July', 'August', 'September', 'October', 'November', 'December'];
+        'July', 'August', 'September', 'October', 'November', 'December'];
       return `${months[today.getMonth()]} ${today.getDate()}`;
     };
 
@@ -2117,8 +2117,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // For North-facing dials, the entire SVG group is rotated 180°, so we don't need to adjust coordinates
   const adjustedTextBlockX = textBlockX;
   // Apply manual offset if in manual position mode (positive offset moves down)
-  const adjustedTextBlockY = sundialNotesPositionMode === 'manual' 
-    ? textBlockY + sundialNotesOffset 
+  const adjustedTextBlockY = sundialNotesPositionMode === 'manual'
+    ? textBlockY + sundialNotesOffset
     : textBlockY;
 
   // Create a configuration hash to force re-render when styles change
@@ -2131,7 +2131,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   return (
     <div className="card" style={{ width: '100%', margin: 0 }}>
       <div className="card-header">
-        <h3 className="card-title"><Sun color="#2563eb" size={20} style={{marginRight: 6}} /> Sundial Preview ({orientation}, {pageSize})</h3>
+        <h3 className="card-title"><Sun color="#2563eb" size={20} style={{ marginRight: 6 }} /> Sundial Preview ({orientation}, {pageSize})</h3>
       </div>
       <div style={{ width: '100%', minHeight: '400px', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible' }}>
         <svg
@@ -2164,9 +2164,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           </defs>
           {borderRect}
           {clippingBoundary}
-          {/* Main content group - rotate entire page when North facing, apply clipping here */}
-          <g 
-            transform={`scale(${viewBoxScaleFactor}) ${dialFacing === 'North' ? 'rotate(180)' : ''}`}
+          {/* Main content group - rotate entire page to fix orientation (South facing rotated 180°), apply clipping here */}
+          <g
+            transform={`${dialFacing === 'North' ? '' : 'rotate(180)'} scale(${viewBoxScaleFactor})`}
             clipPath={`url(#dial-clip-${dialShape.toLowerCase()})`}
           >
             {/* Content positioned relative to gnomon */}
@@ -2193,7 +2193,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 const { x, y } = label.props;
                 return React.cloneElement(label, {
                   key: `label-${index}`,
-                  transform: dialFacing === 'North' ? `rotate(180 ${x} ${y})` : undefined
+                  transform: dialFacing === 'North' ? undefined : `rotate(180 ${x} ${y})`
                 });
               })}
 
@@ -2201,36 +2201,36 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
               {sundialNotesMode === 'textBlock' && textBlockLines.length > 0 && (
                 <text
-                    x={adjustedTextBlockX}
-                    y={adjustedTextBlockY}
-                    fontSize={dialTextBlockFontSizeMm}
-                    fill="#222"
-                    textAnchor="middle"
-                    fontFamily={dialTextBlockFontFamily}
-                    style={{ userSelect: 'none', pointerEvents: 'none' }}
-                    transform={dialFacing === 'North' ? `rotate(180 ${adjustedTextBlockX} ${adjustedTextBlockY})` : undefined}
-                  >
-                    {textBlockLines.map((line, lineIndex) => (
-                      <tspan
-                        key={lineIndex}
-                        x={adjustedTextBlockX}
-                        dy={lineIndex === 0 ? -((lineCount - 1) * lineHeight) / 2 : dialTextBlockFontSizeMm * 1.2}
-                      >
-                        {line.map((part, partIndex) => {
-                          return (
-                            <tspan
-                              key={partIndex}
-                              fontWeight={part.bold ? 'bold' : 'normal'}
-                              fontStyle={part.italic ? 'italic' : 'normal'}
-                              fill={part.color || '#222'}
-                            >
-                              {part.text}
-                            </tspan>
-                          );
-                        })}
-                      </tspan>
-                    ))}
-                  </text>
+                  x={adjustedTextBlockX}
+                  y={adjustedTextBlockY}
+                  fontSize={dialTextBlockFontSizeMm}
+                  fill="#222"
+                  textAnchor="middle"
+                  fontFamily={dialTextBlockFontFamily}
+                  style={{ userSelect: 'none', pointerEvents: 'none' }}
+                  transform={dialFacing === 'North' ? undefined : `rotate(180 ${adjustedTextBlockX} ${adjustedTextBlockY})`}
+                >
+                  {textBlockLines.map((line, lineIndex) => (
+                    <tspan
+                      key={lineIndex}
+                      x={adjustedTextBlockX}
+                      dy={lineIndex === 0 ? -((lineCount - 1) * lineHeight) / 2 : dialTextBlockFontSizeMm * 1.2}
+                    >
+                      {line.map((part, partIndex) => {
+                        return (
+                          <tspan
+                            key={partIndex}
+                            fontWeight={part.bold ? 'bold' : 'normal'}
+                            fontStyle={part.italic ? 'italic' : 'normal'}
+                            fill={part.color || '#222'}
+                          >
+                            {part.text}
+                          </tspan>
+                        );
+                      })}
+                    </tspan>
+                  ))}
+                </text>
               )}
 
               {/* --- Seasons Guide --- */}
@@ -2249,12 +2249,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 // Calculate the bounding box of the original analemma for proper centering
                 const calculateBoundingBox = (points: { x: number; y: number }[]) => {
                   if (points.length === 0) return { minX: 0, maxX: 0, minY: 0, maxY: 0, centerX: 0, centerY: 0 };
-                  
+
                   const minX = Math.min(...points.map(p => p.x));
                   const maxX = Math.max(...points.map(p => p.x));
                   const minY = Math.min(...points.map(p => p.y));
                   const maxY = Math.max(...points.map(p => p.y));
-                  
+
                   return {
                     minX, maxX, minY, maxY,
                     centerX: (minX + maxX) / 2,
@@ -2271,7 +2271,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
                   // Calculate bounding box for centering
                   const bbox = calculateBoundingBox(points);
-                  
+
                   const transformedPoints = points.map(p => ({
                     x: adjustedTextBlockX + (scale * seasonsGuideScale * (p.x - bbox.centerX)),
                     y: adjustedTextBlockY + (scale * seasonsGuideScale * (p.y - bbox.centerY))
@@ -2287,7 +2287,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   const bottom = height / 2 + margin - transformY;
 
                   // Filter points that are reasonably within the extended bounds
-                  const visiblePoints = transformedPoints.filter(p => 
+                  const visiblePoints = transformedPoints.filter(p =>
                     p.x >= left && p.x <= right && p.y >= top && p.y <= bottom
                   );
 
@@ -2303,7 +2303,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
                 // Always show full-year replica for seasons guide, regardless of hourline date range
                 const needsSplitting = false; // Force full-year display for seasons guide
-                
+
                 // Convert InclineType to Orientation for analemma generation
                 const getOrientation = (inclineType: string): 'Horizontal' | 'Vertical' | 'Equatorial' => {
                   switch (inclineType) {
@@ -2331,13 +2331,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   }
 
                   const [seg1, seg2] = segments;
-                  
+
                   // Calculate equinox line for segmented case too
                   const calculateEquinoxLine = () => {
                     try {
                       // Spring equinox is around day 80 (March 21)
                       const equinoxDay = 80;
-                      
+
                       // Get equinox position at noon (hour 12) - use same orientation as main dial
                       const equinoxNoonPoint = getAnalemmaPointsProjected({
                         lat,
@@ -2353,7 +2353,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       // Calculate the equinox Y position in the replica coordinate system
                       const bbox = calculateBoundingBox(seasonsNoonPoints);
                       if (!bbox || isNaN(bbox.centerY)) return null;
-                      
+
                       const equinoxY = adjustedTextBlockY + (scale * seasonsGuideScale * (equinoxNoonPoint.y - bbox.centerY));
                       if (isNaN(equinoxY)) return null;
 
@@ -2382,7 +2382,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       // Transform the hour points to replica coordinate system
                       const leftX = adjustedTextBlockX + (scale * seasonsGuideScale * (leftHourPoint.x - bbox.centerX));
                       const rightX = adjustedTextBlockX + (scale * seasonsGuideScale * (rightHourPoint.x - bbox.centerX));
-                      
+
                       // Center the line horizontally over the replica analemma
                       const replicaCenterX = adjustedTextBlockX; // The replica is centered at the text block position
                       const halfWidth = Math.abs(rightX - leftX) / 2;
@@ -2397,7 +2397,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                         x2: centeredRightX,
                         y2: equinoxY
                       };
-                      
+
                       console.log('Equinox line calculated:', result);
                       return result;
                     } catch (error) {
@@ -2413,17 +2413,17 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       {[seg1, seg2].map((segment, idx) => {
                         if (segment.length === 0) return null;
                         const sortedSegment = [...segment].sort((a, b) => a.day - b.day);
-                        
+
                         // Optimize for performance: if segment has too many points, reduce them
                         let optimizedSegment = sortedSegment;
                         if (optimizedSegment.length > 100) {
                           const step = Math.ceil(optimizedSegment.length / 50);
                           optimizedSegment = optimizedSegment.filter((_, index) => index % step === 0);
                         }
-                        
+
                         const pathData = generateSeasonsGuidePath(optimizedSegment);
                         if (!pathData) return null;
-                        
+
                         return (
                           <path
                             key={`seasons-guide-seg${idx}`}
@@ -2471,7 +2471,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                     try {
                       // Spring equinox is around day 80 (March 21)
                       const equinoxDay = 80;
-                      
+
                       // Get equinox position at noon (hour 12) - use same orientation as main dial
                       const equinoxNoonPoint = getAnalemmaPointsProjected({
                         lat,
@@ -2487,7 +2487,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       // Calculate the equinox Y position in the replica coordinate system
                       const bbox = calculateBoundingBox(optimizedPoints);
                       if (!bbox || isNaN(bbox.centerY)) return null;
-                      
+
                       const equinoxY = adjustedTextBlockY + (scale * seasonsGuideScale * (equinoxNoonPoint.y - bbox.centerY));
                       if (isNaN(equinoxY)) return null;
 
@@ -2516,7 +2516,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       // Transform the hour points to replica coordinate system
                       const leftX = adjustedTextBlockX + (scale * seasonsGuideScale * (leftHourPoint.x - bbox.centerX));
                       const rightX = adjustedTextBlockX + (scale * seasonsGuideScale * (rightHourPoint.x - bbox.centerX));
-                      
+
                       // Center the line horizontally over the replica analemma
                       const replicaCenterX = adjustedTextBlockX; // The replica is centered at the text block position
                       const halfWidth = Math.abs(rightX - leftX) / 2;
@@ -2531,7 +2531,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                         x2: centeredRightX,
                         y2: equinoxY
                       };
-                      
+
                       console.log('Equinox line calculated:', result);
                       return result;
                     } catch (error) {
@@ -2546,7 +2546,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   const getSeasonQuarterPoint = (dayOfYear: number) => {
                     const point = optimizedPoints.find(p => Math.abs(p.day - dayOfYear) < 5);
                     if (!point) return null;
-                    
+
                     const replicaBbox = calculateBoundingBox(optimizedPoints);
                     return {
                       x: adjustedTextBlockX + (scale * seasonsGuideScale * (point.x - replicaBbox.centerX)),
@@ -2580,7 +2580,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                           vectorEffect="non-scaling-stroke"
                         />
                       )}
-                      
+
                       {/* Seasonal Labels positioned relative to equinox line */}
                       {equinoxLine && (
                         <>
@@ -2594,12 +2594,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={dialFacing === 'North' ? `rotate(180 ${summerQuarter.x - 10} ${equinoxLine.y1 - 8})` : undefined}
+                              transform={dialFacing === 'North' ? undefined : `rotate(180 ${summerQuarter.x - 10} ${equinoxLine.y1 - 8})`}
                             >
                               Spring
                             </text>
                           )}
-                          
+
                           {/* Summer - above equinox line, right of analemma */}
                           {fallQuarter && (
                             <text
@@ -2610,12 +2610,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={dialFacing === 'North' ? `rotate(180 ${fallQuarter.x + 12} ${equinoxLine.y1 - 8})` : undefined}
+                              transform={dialFacing === 'North' ? undefined : `rotate(180 ${fallQuarter.x + 12} ${equinoxLine.y1 - 8})`}
                             >
                               Summer
                             </text>
                           )}
-                          
+
                           {/* Fall - below equinox line, left of analemma */}
                           {winterQuarter && (
                             <text
@@ -2626,12 +2626,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={dialFacing === 'North' ? `rotate(180 ${winterQuarter.x - 5} ${equinoxLine.y1 + 8})` : undefined}
+                              transform={dialFacing === 'North' ? undefined : `rotate(180 ${winterQuarter.x - 5} ${equinoxLine.y1 + 8})`}
                             >
                               Fall
                             </text>
                           )}
-                          
+
                           {/* Winter - below equinox line, right of analemma */}
                           {springQuarter && (
                             <text
@@ -2642,7 +2642,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={dialFacing === 'North' ? `rotate(180 ${springQuarter.x + 10} ${equinoxLine.y1 + 8})` : undefined}
+                              transform={dialFacing === 'North' ? undefined : `rotate(180 ${springQuarter.x + 10} ${equinoxLine.y1 + 8})`}
                             >
                               Winter
                             </text>
@@ -2670,12 +2670,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 // Calculate the bounding box of the analemma
                 const calculateBoundingBox = (points: { x: number; y: number }[]) => {
                   if (points.length === 0) return { minX: 0, maxX: 0, minY: 0, maxY: 0, height: 0 };
-                  
+
                   const minX = Math.min(...points.map(p => p.x));
                   const maxX = Math.max(...points.map(p => p.x));
                   const minY = Math.min(...points.map(p => p.y));
                   const maxY = Math.max(...points.map(p => p.y));
-                  
+
                   return {
                     minX, maxX, minY, maxY,
                     height: maxY - minY
@@ -2683,54 +2683,54 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 };
 
                 const bbox = calculateBoundingBox(noonPoints);
-                
+
                 // Calculate the replica analemma height (same scaling as seasons guide)
                 const seasonsGuideScale = 0.55;
                 const replicaAnalemmaHeight = bbox.height * scale * seasonsGuideScale;
-                
+
                 // Scale North Point SVG to 82.5% of replica analemma height (75% * 1.1 for 10% larger)
                 const northPointScale = replicaAnalemmaHeight * 0.825;
-                
+
                 // North Point SVG viewBox is "0 0 920.07 1200", so original height is 1200
                 const svgOriginalHeight = 1200;
                 const scaleFactor = northPointScale / svgOriginalHeight;
 
                 return (
                   <g
-                    transform={`translate(${adjustedTextBlockX}, ${adjustedTextBlockY}) scale(${scaleFactor}) translate(-460.035, -600) ${dialFacing === 'North' ? 'rotate(180 460.035 600)' : ''}`}
+                    transform={`translate(${adjustedTextBlockX}, ${adjustedTextBlockY}) scale(${scaleFactor}) translate(-460.035, -600) ${dialFacing === 'North' ? '' : 'rotate(180 460.035 600)'}`}
                   >
                     {/* North Point SVG content */}
                     <g>
-                      <path 
-                        d="M920.07,600l-365.24-59.95,88.65-123.49-123.49,88.65-59.95-365.24-59.95,365.24-123.49-88.65,88.65,123.49L0,600l365.24,59.95-88.65,123.49,123.49-88.65,59.95,365.24,59.95-365.24,123.49,88.65-88.65-123.49,365.24-59.95ZM460.04,668.63c-37.83,0-68.6-30.8-68.6-68.63s30.77-68.63,68.6-68.63,68.6,30.8,68.6,68.63-30.77,68.63-68.6,68.63ZM460.04,280.44v228.18c-13.91,0-27.08,3.1-38.88,8.67l38.88-236.86ZM140.47,600h228.21c0,13.91,3.1,27.08,8.67,38.88l-236.89-38.88ZM460.04,919.56v-228.18c13.91,0,27.08-3.1,38.88-8.67l-38.88,236.86ZM542.71,561.12l236.89,38.88h-228.21c0-13.91-3.1-27.08-8.67-38.88Z" 
+                      <path
+                        d="M920.07,600l-365.24-59.95,88.65-123.49-123.49,88.65-59.95-365.24-59.95,365.24-123.49-88.65,88.65,123.49L0,600l365.24,59.95-88.65,123.49,123.49-88.65,59.95,365.24,59.95-365.24,123.49,88.65-88.65-123.49,365.24-59.95ZM460.04,668.63c-37.83,0-68.6-30.8-68.6-68.63s30.77-68.63,68.6-68.63,68.6,30.8,68.6,68.63-30.77,68.63-68.6,68.63ZM460.04,280.44v228.18c-13.91,0-27.08,3.1-38.88,8.67l38.88-236.86ZM140.47,600h228.21c0,13.91,3.1,27.08,8.67,38.88l-236.89-38.88ZM460.04,919.56v-228.18c13.91,0,27.08-3.1,38.88-8.67l-38.88,236.86ZM542.71,561.12l236.89,38.88h-228.21c0-13.91-3.1-27.08-8.67-38.88Z"
                         fill="#2563eb"
                       />
-                      <path 
-                        d="M460.04,552.22c-7.28,0-14.16,1.62-20.34,4.55-16.21,7.62-27.42,24.12-27.42,43.23,0,7.28,1.62,14.16,4.52,20.34,7.62,16.21,24.12,27.45,43.23,27.45,7.28,0,14.16-1.62,20.34-4.55,16.21-7.62,27.42-24.12,27.42-43.23,0-7.28-1.62-14.16-4.52-20.34-7.62-16.21-24.12-27.45-43.23-27.45Z" 
+                      <path
+                        d="M460.04,552.22c-7.28,0-14.16,1.62-20.34,4.55-16.21,7.62-27.42,24.12-27.42,43.23,0,7.28,1.62,14.16,4.52,20.34,7.62,16.21,24.12,27.45,43.23,27.45,7.28,0,14.16-1.62,20.34-4.55,16.21-7.62,27.42-24.12,27.42-43.23,0-7.28-1.62-14.16-4.52-20.34-7.62-16.21-24.12-27.45-43.23-27.45Z"
                         fill="#2563eb"
                       />
-                      <path 
-                        d="M523.03,313.01c111.53,24.46,199.53,112.46,223.99,223.99l45.44,7.46c-23.55-141.43-135.46-253.34-276.89-276.89l7.46,45.44Z" 
+                      <path
+                        d="M523.03,313.01c111.53,24.46,199.53,112.46,223.99,223.99l45.44,7.46c-23.55-141.43-135.46-253.34-276.89-276.89l7.46,45.44Z"
                         fill="#2563eb"
                       />
-                      <path 
-                        d="M173.05,537.01c24.46-111.53,112.46-199.53,223.99-223.99l7.46-45.44c-141.43,23.55-253.34,135.46-276.89,276.89l45.44-7.46Z" 
+                      <path
+                        d="M173.05,537.01c24.46-111.53,112.46-199.53,223.99-223.99l7.46-45.44c-141.43,23.55-253.34,135.46-276.89,276.89l45.44-7.46Z"
                         fill="#2563eb"
                       />
-                      <path 
-                        d="M397.04,886.99c-111.53-24.46-199.53-112.46-223.99-223.99l-45.44-7.46c23.55,141.43,135.46,253.34,276.89,276.89l-7.46-45.44Z" 
+                      <path
+                        d="M397.04,886.99c-111.53-24.46-199.53-112.46-223.99-223.99l-45.44-7.46c23.55,141.43,135.46,253.34,276.89,276.89l-7.46-45.44Z"
                         fill="#2563eb"
                       />
-                      <path 
-                        d="M747.02,662.99c-24.46,111.53-112.46,199.53-223.99,223.99l-7.46,45.44c141.43-23.55,253.34-135.46,276.89-276.89l-45.44,7.46Z" 
+                      <path
+                        d="M747.02,662.99c-24.46,111.53-112.46,199.53-223.99,223.99l-7.46,45.44c141.43-23.55,253.34-135.46,276.89-276.89l-45.44,7.46Z"
                         fill="#2563eb"
                       />
-                      <path 
-                        d="M502.22,95.1h-25.63l-41.37-71.94h-.59c.82,12.71,1.24,21.77,1.24,27.19v44.75h-18.02V0h25.43l41.3,71.23h.46c-.65-12.36-.98-21.1-.98-26.21V0h18.15v95.1Z" 
+                      <path
+                        d="M502.22,95.1h-25.63l-41.37-71.94h-.59c.82,12.71,1.24,21.77,1.24,27.19v44.75h-18.02V0h25.43l41.3,71.23h.46c-.65-12.36-.98-21.1-.98-26.21V0h18.15v95.1Z"
                         fill="#2563eb"
                       />
-                      <path 
-                        d="M491.03,1172.29c0,8.59-3.09,15.35-9.27,20.29-6.18,4.94-14.78,7.42-25.79,7.42-10.15,0-19.12-1.91-26.93-5.72v-18.73c6.42,2.86,11.85,4.88,16.29,6.05,4.44,1.17,8.51,1.76,12.2,1.76,4.42,0,7.82-.85,10.18-2.54,2.36-1.69,3.55-4.21,3.55-7.55,0-1.86-.52-3.52-1.56-4.98-1.04-1.45-2.57-2.85-4.59-4.2-2.02-1.34-6.13-3.49-12.33-6.44-5.81-2.73-10.17-5.36-13.07-7.87-2.91-2.51-5.23-5.44-6.96-8.78-1.73-3.34-2.6-7.24-2.6-11.71,0-8.41,2.85-15.03,8.55-19.84,5.7-4.81,13.58-7.22,23.64-7.22,4.94,0,9.66.59,14.15,1.76,4.49,1.17,9.18,2.82,14.08,4.94l-6.5,15.68c-5.07-2.08-9.27-3.53-12.59-4.36-3.32-.82-6.58-1.24-9.79-1.24-3.82,0-6.74.89-8.78,2.67-2.04,1.78-3.06,4.1-3.06,6.96,0,1.78.41,3.33,1.24,4.65.82,1.32,2.14,2.6,3.94,3.84,1.8,1.24,6.06,3.46,12.78,6.67,8.89,4.25,14.98,8.51,18.28,12.78,3.3,4.27,4.94,9.51,4.94,15.71Z" 
+                      <path
+                        d="M491.03,1172.29c0,8.59-3.09,15.35-9.27,20.29-6.18,4.94-14.78,7.42-25.79,7.42-10.15,0-19.12-1.91-26.93-5.72v-18.73c6.42,2.86,11.85,4.88,16.29,6.05,4.44,1.17,8.51,1.76,12.2,1.76,4.42,0,7.82-.85,10.18-2.54,2.36-1.69,3.55-4.21,3.55-7.55,0-1.86-.52-3.52-1.56-4.98-1.04-1.45-2.57-2.85-4.59-4.2-2.02-1.34-6.13-3.49-12.33-6.44-5.81-2.73-10.17-5.36-13.07-7.87-2.91-2.51-5.23-5.44-6.96-8.78-1.73-3.34-2.6-7.24-2.6-11.71,0-8.41,2.85-15.03,8.55-19.84,5.7-4.81,13.58-7.22,23.64-7.22,4.94,0,9.66.59,14.15,1.76,4.49,1.17,9.18,2.82,14.08,4.94l-6.5,15.68c-5.07-2.08-9.27-3.53-12.59-4.36-3.32-.82-6.58-1.24-9.79-1.24-3.82,0-6.74.89-8.78,2.67-2.04,1.78-3.06,4.1-3.06,6.96,0,1.78.41,3.33,1.24,4.65.82,1.32,2.14,2.6,3.94,3.84,1.8,1.24,6.06,3.46,12.78,6.67,8.89,4.25,14.98,8.51,18.28,12.78,3.3,4.27,4.94,9.51,4.94,15.71Z"
                         fill="#2563eb"
                       />
                     </g>
