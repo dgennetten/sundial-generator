@@ -1,5 +1,6 @@
 // src/components/LocationInputs.tsx
 import React, { useState, lazy, Suspense } from 'react';
+import ReactDOM from 'react-dom';
 import { MapPin } from 'lucide-react';
 // Remove: import MapPicker from './MapPicker';
 const MapPicker = lazy(() => import('./MapPicker'));
@@ -21,14 +22,16 @@ interface Props {
   latitude: number;
   longitude: number;
   tzMeridian: number;
+  sundialNotesMode: string;
   onChange: (values: { lat: number; lng: number; tz: number; useDST?: boolean; timezoneName?: string; locationName?: string }) => void;
 }
 
-const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onChange }) => {
+const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sundialNotesMode, onChange }) => {
   const [timezoneName, setTimezoneName] = useState<string>('Mountain Time Zone');
   const [mapOpen, setMapOpen] = useState(false);
   const [loadingTz, setLoadingTz] = useState(false);
   const [foundLocationName, setFoundLocationName] = useState<string | null>(null);
+  const [showTip, setShowTip] = useState(false);
 
   // Responsive: detect layout mode using media query
   const [layoutMode, setLayoutMode] = useState<'desktop' | 'mobile-portrait' | 'mobile-landscape'>('desktop');
@@ -612,11 +615,73 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                   locationName: locationName
                 });
               }
+              
+              if (sundialNotesMode === 'textBlock') {
+                setTimeout(() => setShowTip(true), 100);
+              }
            }}
            initialLat={latitude}
            initialLng={longitude}
          />
       </Suspense>
+      
+      {showTip && ReactDOM.createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0,0,0,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+          }}
+          onClick={() => setShowTip(false)}
+        >
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: 12,
+              padding: 32,
+              maxWidth: 500,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+              position: 'relative',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ marginBottom: 16 }}>
+              <h3 style={{ margin: '0 0 12px 0', fontSize: '1.25rem', fontWeight: '600', color: '#1f2937', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: '1.5rem' }}>💡</span>
+                Tip
+              </h3>
+            </div>
+            <p style={{ margin: '0 0 20px 0', fontSize: '0.95rem', color: '#4b5563', lineHeight: '1.6' }}>
+              Replace <strong>'Custom Lat/Long'</strong> in the Text Block by replacing <strong>'{'{location}'}'</strong> in the Text Block editor.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowTip(false)}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#2563eb',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                }}
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };

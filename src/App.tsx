@@ -389,6 +389,7 @@ const App: React.FC = () => {
           latitude={latitude}
           longitude={longitude}
           tzMeridian={tzMeridian}
+          sundialNotesMode={sundialNotesMode}
           onChange={useCallback(({ lat, lng, tz, useDST, locationName }) => {
             setLatitude(lat);
             setLongitude(lng);
