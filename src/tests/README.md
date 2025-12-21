@@ -69,7 +69,7 @@ The shadow calculations use this coordinate system:
 ### Adding New Test Cases
 1. **Different Locations**: Test various latitudes and longitudes
 2. **Different Times**: Test different hours, seasons, dates  
-3. **Different Orientations**: Test vertical and equatorial sundials
+3. **Different Orientations**: Test vertical and polar sundials
 4. **Boundary Conditions**: Test extreme latitudes, winter/summer solstices
 
 ### Validation Methods
@@ -92,7 +92,7 @@ The shadow calculations use this coordinate system:
 4. **Algorithm Implementation**: Compare against reference implementations
 
 ## Future Enhancements
-- Add tests for different sundial orientations (vertical, equatorial)
+- Add tests for different sundial orientations (vertical, polar)
 - Test seasonal variations (solstices, equinoxes)  
 - Add performance benchmarks
 - Test extreme latitude locations (Arctic, Antarctic)

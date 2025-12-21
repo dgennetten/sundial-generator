@@ -1,6 +1,6 @@
 // src/utils/analemmaGenerator.ts
 
-export type Orientation = 'Horizontal' | 'Vertical' | 'Equatorial';
+export type Orientation = 'Horizontal' | 'Vertical' | 'Polar';
 
 export function degreesToRadians(deg: number): number {
   return (deg * Math.PI) / 180;
@@ -20,24 +20,24 @@ function getAstronomicalParameters(dayOfYear: number, year: number) {
   const jan1_2000 = new Date(2000, 0, 1);
   const daysSinceJ2000_Jan1 = (jan1Year.getTime() - jan1_2000.getTime()) / (1000 * 60 * 60 * 24);
   const daysSinceEpoch = daysSinceJ2000_Jan1 + (dayOfYear - 1);
-  
+
   // Mean longitude of the Sun (degrees)
   let meanLongSun = (280.46 + 0.9856474 * daysSinceEpoch) % 360;
   if (meanLongSun < 0) meanLongSun += 360;
-  
+
   // Mean anomaly of the Sun (degrees)
   let meanAnomaly = (357.528 + 0.9856003 * daysSinceEpoch) % 360;
   if (meanAnomaly < 0) meanAnomaly += 360;
   const meanAnomalyRad = degreesToRadians(meanAnomaly);
-  
+
   // Ecliptic longitude of the Sun (degrees)
   const eclipticLong = meanLongSun + 1.915 * Math.sin(meanAnomalyRad) + 0.02 * Math.sin(2 * meanAnomalyRad);
   const eclipticLongRad = degreesToRadians(eclipticLong);
-  
+
   // Obliquity of the ecliptic (degrees)
   const obliquity = 23.439 - 4e-7 * daysSinceEpoch;
   const obliquityRad = degreesToRadians(obliquity);
-  
+
   return {
     daysSinceEpoch,
     meanLongSun,
@@ -59,7 +59,7 @@ function getAstronomicalParameters(dayOfYear: number, year: number) {
  */
 export function getEquationOfTime(dayOfYear: number, year: number = new Date().getFullYear()): number {
   const params = getAstronomicalParameters(dayOfYear, year);
-  
+
   // Right ascension of the Sun (radians, then degrees)
   const rightAscensionRad = Math.atan2(
     Math.cos(params.obliquityRad) * Math.sin(params.eclipticLongRad),
@@ -67,17 +67,17 @@ export function getEquationOfTime(dayOfYear: number, year: number = new Date().g
   );
   let rightAscensionDeg = (rightAscensionRad * 180) / Math.PI;
   if (rightAscensionDeg < 0) rightAscensionDeg += 360;
-  
+
   // Equation of Time calculation
   let eotDeg = params.meanLongSun - rightAscensionDeg;
-  
+
   // Handle the discontinuity around the year boundaries
   if (eotDeg > 180) eotDeg -= 360;
   if (eotDeg < -180) eotDeg += 360;
-  
+
   // Convert to minutes (4 minutes per degree)
   const eotMinutes = eotDeg * 4;
-  
+
   // Return the astronomical EoT (positive when sun is fast)
   return eotMinutes;
 }
@@ -91,7 +91,7 @@ export function getEquationOfTime(dayOfYear: number, year: number = new Date().g
  */
 export function getSolarDeclination(dayOfYear: number, year: number = new Date().getFullYear()): number {
   const params = getAstronomicalParameters(dayOfYear, year);
-  
+
   // Solar declination (degrees)
   const declinationRad = Math.asin(Math.sin(params.obliquityRad) * Math.sin(params.eclipticLongRad));
   return (declinationRad * 180) / Math.PI;
@@ -155,7 +155,7 @@ export function projectShadowToSurface(
     return { x: sx, y: sz };
   }
 
-  if (orientation === 'Equatorial') {
+  if (orientation === 'Polar') {
     const tilt = degreesToRadians(latitude);
     const x = sx;
     const y = sz * Math.cos(tilt) - sy * Math.sin(tilt);

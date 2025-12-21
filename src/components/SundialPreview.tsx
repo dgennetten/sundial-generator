@@ -920,7 +920,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
             const pt = winterSegment[bestIdx];
             const { nx, ny } = getNormalAtPoint(winterSegment, bestIdx);
-            // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
+            // When effective latitude is negative (beyond polar tilt), the geometry is inverted
             const isInvertedGeometry = lat < 0;
             const offset = isInvertedGeometry ? -labelOffsetPx : labelOffsetPx;
             const x = scale * pt.x + nx * offset;
@@ -959,7 +959,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
             const pt = summerSegment[bestIdx];
             const { nx, ny } = getNormalAtPoint(summerSegment, bestIdx);
-            // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
+            // When effective latitude is negative (beyond polar tilt), the geometry is inverted
             const isInvertedGeometry = lat < 0;
             const offset = isInvertedGeometry ? labelOffsetPx : -labelOffsetPx;
             const x = scale * pt.x + nx * offset;
@@ -998,7 +998,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           if (labelSummerSide) {
             const pt = sortedPoints[0];
             const { nx, ny } = getNormalAtPoint(sortedPoints, 0);
-            // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
+            // When effective latitude is negative (beyond polar tilt), the geometry is inverted
             const isInvertedGeometry = lat < 0;
             const offset = isInvertedGeometry ? labelOffsetPx : -labelOffsetPx;
             const x = scale * pt.x + nx * offset;
@@ -1026,7 +1026,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             const lastIdx = sortedPoints.length - 1;
             const pt = sortedPoints[lastIdx];
             const { nx, ny } = getNormalAtPoint(sortedPoints, lastIdx);
-            // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
+            // When effective latitude is negative (beyond polar tilt), the geometry is inverted
             const isInvertedGeometry = lat < 0;
             const offset = isInvertedGeometry ? -labelOffsetPx : labelOffsetPx;
             const x = scale * pt.x + nx * offset;
@@ -1079,7 +1079,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             // The direction depends on both the solstice type and the effective latitude
             const isSummer = solsticeDay === summerSolsticeDay;
 
-            // When effective latitude is negative (beyond equatorial tilt), the geometry is inverted
+            // When effective latitude is negative (beyond polar tilt), the geometry is inverted
             // We need to reverse the offset direction to keep labels outside the curves
             const isInvertedGeometry = lat < 0;
             let offset;
@@ -1901,13 +1901,14 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
   // --- Text Block Logic ---
   let locationString = locationName || '';
-  if (!locationString && typeof lat === 'number' && typeof lng === 'number') {
+  const displayLat = typeof originalLatitude === 'number' ? originalLatitude : lat;
+  if (!locationString && typeof displayLat === 'number' && typeof lng === 'number') {
     // Fallback if no location name is provided
-    locationString = 'Lat: ' + lat.toFixed(4) + ', Lon: ' + lng.toFixed(4);
+    locationString = 'Lat: ' + displayLat.toFixed(4) + ', Lon: ' + lng.toFixed(4);
   }
   let coordinatesString = '';
-  if (typeof lat === 'number' && typeof lng === 'number') {
-    coordinatesString = `Latitude: ${lat.toFixed(4)}, Longitude: ${lng.toFixed(4)}`;
+  if (typeof displayLat === 'number' && typeof lng === 'number') {
+    coordinatesString = `Latitude: ${displayLat.toFixed(4)}, Longitude: ${lng.toFixed(4)}`;
   }
 
 
@@ -1929,7 +1930,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Create incline string - show for all incline types except Horizontal
     const effectiveTiltAngle = inclineType === 'Horizontal' ? 0 :
       inclineType === 'Cancer' ? getCancerIncline(originalLatitude || lat || 0) :
-        inclineType === 'Equatorial' ? (originalLatitude || lat || 0) :
+        inclineType === 'Polar' ? (originalLatitude || lat || 0) :
           inclineType === 'Capricorn' ? getCapricornIncline(originalLatitude || lat || 0) :
             inclineType === 'Vertical' ? 90 : tiltAngle;
     const inclineString = inclineType !== 'Horizontal' ? `incline: ${effectiveTiltAngle.toFixed(1)}°` : '';
@@ -2312,7 +2313,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 const needsSplitting = false; // Force full-year display for seasons guide
 
                 // Convert InclineType to Orientation for analemma generation
-                const getOrientation = (inclineType: string): 'Horizontal' | 'Vertical' | 'Equatorial' => {
+                const getOrientation = (inclineType: string): 'Horizontal' | 'Vertical' | 'Polar' => {
                   switch (inclineType) {
                     case 'Horizontal':
                     case 'Cancer':
@@ -2321,8 +2322,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       return 'Horizontal';
                     case 'Vertical':
                       return 'Vertical';
-                    case 'Equatorial':
-                      return 'Equatorial';
+                    case 'Polar':
+                      return 'Polar';
                     default:
                       return 'Horizontal';
                   }

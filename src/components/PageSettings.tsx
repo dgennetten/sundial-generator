@@ -5,7 +5,7 @@ import type { LineStyle } from './LineSettings';
 
 type PageSize = 'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom';
 type Orientation = 'Landscape' | 'Portrait';
-export type InclineType = 'Horizontal' | 'Cancer' | 'Equatorial' | 'Capricorn' | 'Vertical' | 'Manual';
+export type InclineType = 'Horizontal' | 'Cancer' | 'Polar' | 'Capricorn' | 'Vertical' | 'Manual';
 export type DeclinationType = 'North' | 'Northeast' | 'Northwest' | 'East' | 'West' | 'Southeast' | 'Southwest' | 'South' | 'Manual';
 type DialFacing = 'North' | 'South';
 
@@ -86,7 +86,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   const [margin, setMargin] = useState<number>(6); // in mm
   const [showBackground, setShowBackground] = useState<boolean>(true);
   const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
-  
+
   // State for increment/decrement step values
   const [inclinationStep, setInclinationStep] = useState<number>(1.0);
   const [declinationStep, setDeclinationStep] = useState<number>(1.0);
@@ -116,14 +116,14 @@ const PageSettings: React.FC<PageSettingsProps> = ({
       switch (inclineType) {
         case 'Horizontal': return 0;
         case 'Cancer': return getCancerIncline(latitude);
-        case 'Equatorial': return Math.abs(latitude);
+        case 'Polar': return Math.abs(latitude);
         case 'Capricorn': return getCapricornIncline(latitude);
         case 'Vertical': return 90;
         case 'Manual': return tiltAngle;
         default: return 0;
       }
     })();
-    
+
     // Ensure we return a valid number
     return isNaN(result) ? 0 : result;
   };
@@ -132,11 +132,11 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     setInclineType(newType);
     // Update tilt angle when changing from Manual to another type
     if (newType !== 'Manual') {
-      const newAngle = newType === 'Horizontal' ? 0 : 
-                      newType === 'Cancer' ? getCancerIncline(latitude) :
-                      newType === 'Equatorial' ? latitude :
-                      newType === 'Capricorn' ? getCapricornIncline(latitude) :
-                      newType === 'Vertical' ? 90 : tiltAngle;
+      const newAngle = newType === 'Horizontal' ? 0 :
+        newType === 'Cancer' ? getCancerIncline(latitude) :
+          newType === 'Polar' ? latitude :
+            newType === 'Capricorn' ? getCapricornIncline(latitude) :
+              newType === 'Vertical' ? 90 : tiltAngle;
       setTiltAngle(newAngle);
     }
   };
@@ -176,7 +176,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   // Handle width change with unit conversion
   const handleWidthChange = (value: number) => {
     if (!setCustomWidth) return;
-    
+
     // Convert the input value to millimeters (internal storage)
     let widthInMm: number;
     if (customUnits === 'in') {
@@ -184,7 +184,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     } else {
       widthInMm = value * 10; // cm to mm
     }
-    
+
     // Store the value in mm internally, but display in the current units
     setCustomWidth(widthInMm);
   };
@@ -192,7 +192,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   // Handle height change with unit conversion
   const handleHeightChange = (value: number) => {
     if (!setCustomHeight) return;
-    
+
     // Convert the input value to millimeters (internal storage)
     let heightInMm: number;
     if (customUnits === 'in') {
@@ -200,7 +200,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     } else {
       heightInMm = value * 10; // cm to mm
     }
-    
+
     // Store the value in mm internally, but display in the current units
     setCustomHeight(heightInMm);
   };
@@ -208,7 +208,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   // Handle units toggle with conversion
   const handleUnitsToggle = (newUnits: 'in' | 'cm') => {
     if (!setCustomUnits || customUnits === newUnits) return;
-    
+
     // Only change the display units, don't modify the stored millimeter values
     setCustomUnits(newUnits);
   };
@@ -236,7 +236,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   const getDialFacingLockInfo = () => {
     const isOutsideTropics = !isInTropics(latitude);
     const isNotHorizontal = inclineType !== 'Horizontal';
-    
+
     if (isOutsideTropics && isNotHorizontal) {
       return {
         isLocked: true,
@@ -246,7 +246,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
         showNotice: true
       };
     }
-    
+
     return {
       isLocked: false,
       requiredDirection: dialFacing,
@@ -260,7 +260,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   useEffect(() => {
     const isOutsideTropics = !isInTropics(latitude);
     const isNotHorizontal = inclineType !== 'Horizontal';
-    
+
     if (isOutsideTropics && isNotHorizontal) {
       // Northern hemisphere: sun is in southern sky, so dial must face South
       // Southern hemisphere: sun is in northern sky, so dial must face North
@@ -274,15 +274,15 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title"><StickyNote color="#2563eb" size={20} style={{marginRight: 6}} /> Page Settings</h3>
+        <h3 className="card-title"><StickyNote color="#2563eb" size={20} style={{ marginRight: 6 }} /> Page Settings</h3>
       </div>
       <div className="card-content">
         {/* First row: Page Size and Orientation */}
-        <div 
-          className="form-row" 
-          style={{ 
-            display: 'flex', 
-            alignItems: 'end', 
+        <div
+          className="form-row"
+          style={{
+            display: 'flex',
+            alignItems: 'end',
             gap: isMobile ? '0.5rem' : '1rem',
             flexDirection: 'row'
           }}
@@ -318,11 +318,11 @@ const PageSettings: React.FC<PageSettingsProps> = ({
 
         {/* Custom size controls - only show when Custom is selected */}
         {pageSize === 'Custom' && (
-          <div 
-            className="form-row" 
-            style={{ 
-              display: 'flex', 
-              alignItems: 'end', 
+          <div
+            className="form-row"
+            style={{
+              display: 'flex',
+              alignItems: 'end',
               gap: isMobile ? '0.5rem' : '1rem',
               flexDirection: 'row',
               marginTop: isMobile ? '8px' : '0'
@@ -393,11 +393,11 @@ const PageSettings: React.FC<PageSettingsProps> = ({
         )}
 
         {/* Second row: Inclination and Degrees */}
-        <div 
-          className="form-row" 
-          style={{ 
-            display: 'flex', 
-            alignItems: 'flex-start', 
+        <div
+          className="form-row"
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
             gap: isMobile ? '0.5rem' : '1rem',
             flexDirection: 'row',
             marginTop: isMobile ? '8px' : '0'
@@ -413,7 +413,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             >
               <option value="Horizontal">Horizontal</option>
               <option value="Cancer">Cancer</option>
-              <option value="Equatorial">Equatorial</option>
+              <option value="Polar">Polar</option>
               <option value="Capricorn">Capricorn</option>
               <option value="Vertical">Vertical</option>
               <option value="Manual">Manual</option>
@@ -430,7 +430,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               min={0}
               max={90}
               step={inclinationStep}
-              style={{ 
+              style={{
                 width: isMobile ? '70px' : '80px',
                 backgroundColor: inclineType !== 'Manual' ? '#f7fafc' : undefined,
                 color: inclineType !== 'Manual' ? '#a0aec0' : undefined
@@ -467,11 +467,11 @@ const PageSettings: React.FC<PageSettingsProps> = ({
         </div>
 
         {/* Third row: Declination and Degrees */}
-        <div 
-          className="form-row" 
-          style={{ 
-            display: 'flex', 
-            alignItems: 'flex-start', 
+        <div
+          className="form-row"
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
             gap: isMobile ? '0.5rem' : '1rem',
             flexDirection: 'row',
             marginTop: isMobile ? '8px' : '0'
@@ -507,7 +507,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               min={0}
               max={90}
               step={declinationStep}
-              style={{ 
+              style={{
                 width: isMobile ? '70px' : '80px',
                 backgroundColor: declinationType !== 'Manual' ? '#f7fafc' : undefined,
                 color: declinationType !== 'Manual' ? '#a0aec0' : undefined
@@ -544,11 +544,11 @@ const PageSettings: React.FC<PageSettingsProps> = ({
         </div>
 
         {/* New combined row: Dial Shape, Border Style, and Margin */}
-        <div 
-          className="form-row" 
-          style={{ 
-            display: 'flex', 
-            alignItems: 'end', 
+        <div
+          className="form-row"
+          style={{
+            display: 'flex',
+            alignItems: 'end',
             gap: isMobile ? '0.5rem' : '1rem',
             flexDirection: 'row',
             marginTop: '0.5rem'
@@ -598,8 +598,8 @@ const PageSettings: React.FC<PageSettingsProps> = ({
         {/* Page Background row - responsive layout */}
         <div className="form-row">
           <div className="form-group">
-            <label className="form-checkbox" style={{ 
-              display: 'flex', 
+            <label className="form-checkbox" style={{
+              display: 'flex',
               gap: '0.5rem',
               flexDirection: isMobile ? 'column' : 'row',
               alignItems: isMobile ? 'flex-start' : 'center'
@@ -613,9 +613,9 @@ const PageSettings: React.FC<PageSettingsProps> = ({
                 <span>Page Background</span>
               </div>
               {showBackground && (
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
                   gap: '0.5rem',
                   marginTop: isMobile ? '0.5rem' : '0',
                   width: isMobile ? '100%' : 'auto'
@@ -625,8 +625,8 @@ const PageSettings: React.FC<PageSettingsProps> = ({
                     className="form-input"
                     value={backgroundColor}
                     onChange={(e) => handleBackgroundColorChange(e.target.value)}
-                    style={{ 
-                      width: isMobile ? '100%' : '80px', 
+                    style={{
+                      width: isMobile ? '100%' : '80px',
                       fontSize: '0.9rem',
                       flex: isMobile ? 1 : 'auto'
                     }}
@@ -653,64 +653,64 @@ const PageSettings: React.FC<PageSettingsProps> = ({
           </div>
         </div>
 
-                 <div 
-                   className="form-row" 
-                   style={{ 
-                     marginTop: '12px',
-                     display: 'flex',
-                     alignItems: 'center',
-                     gap: isMobile ? '0.5rem' : '1rem'
-                   }}
-                 >
-                   <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
-                     <label className="form-label">Dial Facing (NOTE: will be removed when Declination is implemented above!)</label>
-                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '8px' }}>
-               <span style={{ 
-                 fontSize: '14px', 
-                 color: dialFacingLockInfo.showNotice ? '#9ca3af' : (dialFacingLockInfo.requiredDirection === 'North' ? '#2563eb' : '#6b7280') 
-               }}>North</span>
-               <button
-                 type="button"
-                 onClick={handleDialFacingToggle}
-                 disabled={dialFacingLockInfo.isLocked}
-                 style={{
-                   width: '44px',
-                   height: '24px',
-                   borderRadius: '12px',
-                   border: 'none',
-                   backgroundColor: dialFacingLockInfo.showNotice ? '#e5e7eb' : (dialFacingLockInfo.requiredDirection === 'South' ? '#2563eb' : '#d1d5db'),
-                   cursor: dialFacingLockInfo.isLocked ? 'not-allowed' : 'pointer',
-                   position: 'relative',
-                   transition: 'background-color 0.2s',
-                   opacity: dialFacingLockInfo.isLocked ? 0.6 : 1
-                 }}
-               >
-                 <div
-                   style={{
-                     width: '18px',
-                     height: '18px',
-                     borderRadius: '50%',
-                     backgroundColor: 'white',
-                     position: 'absolute',
-                     top: '3px',
-                     left: dialFacingLockInfo.requiredDirection === 'South' ? '23px' : '3px',
-                     transition: 'left 0.2s',
-                     boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                   }}
-                 />
-               </button>
-               <span style={{ 
-                 fontSize: '14px', 
-                 color: dialFacingLockInfo.showNotice ? '#9ca3af' : (dialFacingLockInfo.requiredDirection === 'South' ? '#2563eb' : '#6b7280') 
-               }}>South</span>
-                               {dialFacingLockInfo.showNotice && (
-                  <span style={{ fontSize: '12px', color: '#dc2626', marginLeft: '8px' }}>
-                    Inclined dials must face toward solar path.
-                  </span>
-                )}
-             </div>
-           </div>
-         </div>
+        <div
+          className="form-row"
+          style={{
+            marginTop: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: isMobile ? '0.5rem' : '1rem'
+          }}
+        >
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
+            <label className="form-label">Dial Facing (NOTE: will be removed when Declination is implemented above!)</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '8px' }}>
+              <span style={{
+                fontSize: '14px',
+                color: dialFacingLockInfo.showNotice ? '#9ca3af' : (dialFacingLockInfo.requiredDirection === 'North' ? '#2563eb' : '#6b7280')
+              }}>North</span>
+              <button
+                type="button"
+                onClick={handleDialFacingToggle}
+                disabled={dialFacingLockInfo.isLocked}
+                style={{
+                  width: '44px',
+                  height: '24px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  backgroundColor: dialFacingLockInfo.showNotice ? '#e5e7eb' : (dialFacingLockInfo.requiredDirection === 'South' ? '#2563eb' : '#d1d5db'),
+                  cursor: dialFacingLockInfo.isLocked ? 'not-allowed' : 'pointer',
+                  position: 'relative',
+                  transition: 'background-color 0.2s',
+                  opacity: dialFacingLockInfo.isLocked ? 0.6 : 1
+                }}
+              >
+                <div
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    backgroundColor: 'white',
+                    position: 'absolute',
+                    top: '3px',
+                    left: dialFacingLockInfo.requiredDirection === 'South' ? '23px' : '3px',
+                    transition: 'left 0.2s',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                  }}
+                />
+              </button>
+              <span style={{
+                fontSize: '14px',
+                color: dialFacingLockInfo.showNotice ? '#9ca3af' : (dialFacingLockInfo.requiredDirection === 'South' ? '#2563eb' : '#6b7280')
+              }}>South</span>
+              {dialFacingLockInfo.showNotice && (
+                <span style={{ fontSize: '12px', color: '#dc2626', marginLeft: '8px' }}>
+                  Inclined dials must face toward solar path.
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

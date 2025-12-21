@@ -26,9 +26,9 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
     // This represents the latitude of the dial's plane.
     const dialPlaneLatitude = lat; // Use the effectiveLatitude directly
 
-    // Special case for Equatorial: The effective latitude is 0, so it's at the equinox.
+    // Special case for Polar: The effective latitude is 0, so it's at the equinox.
     // The user's rule implies "at equinox" should point DOWN.
-    if (inclineType === 'Equatorial') {
+    if (inclineType === 'Polar') {
       return 'down';
     }
 
@@ -90,7 +90,7 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
   if (gnomonType === 'popup') {
     // For popup orientation, we need to flip the triangle if pointing up
     const flipTransform = popupOrientation === 'up' ? 'scale(1, -1)' : '';
-    
+
     return (
       <g transform={flipTransform}>
         {/* Popup: right triangle pointing down with dashed left side */}
@@ -135,8 +135,8 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
     const leftMidY = -gnomonHeight / (2 * Math.SQRT2);
     const arcRadius = gnomonHeight * 0.2;
     const len = Math.sqrt(leftMidX * leftMidX + leftMidY * leftMidY);
-    const shiftX = (leftMidX + (-leftMidX / len) * arcRadius) *1.5;
-    const shiftY = (leftMidY + (-leftMidY / len) * arcRadius) *1.5;
+    const shiftX = (leftMidX + (-leftMidX / len) * arcRadius) * 1.5;
+    const shiftY = (leftMidY + (-leftMidY / len) * arcRadius) * 1.5;
     const theta = -Math.PI / 4;
     const arcStartX = shiftX - arcRadius;
     const rotatedStartX = shiftX + (arcStartX - shiftX) * Math.cos(theta);
@@ -144,10 +144,10 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
     const arcEndX = shiftX + arcRadius;
     const rotatedEndX = shiftX + (arcEndX - shiftX) * Math.cos(theta);
     const rotatedEndY = shiftY + (arcEndX - shiftX) * Math.sin(theta);
-    
+
     // For popup orientation, we need to flip the triangle if pointing up
     const flipTransform = popupOrientation === 'up' ? 'scale(1, -1)' : '';
-    
+
     return (
       <g transform={flipTransform}>
         {/* Main triangle - same as popup */}
@@ -161,7 +161,7 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
           strokeWidth={1}
           vectorEffect="non-scaling-stroke"
         />
-       {/* Base side (solid) */}
+        {/* Base side (solid) */}
         <line
           x1={-gnomonHeight / Math.SQRT2}
           y1={-gnomonHeight / Math.SQRT2}
@@ -173,8 +173,8 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
         />
         {/* Left side (third dashed, eighth solid, eighth dashed)  */}
         <line
-          x1={-gnomonHeight / Math.SQRT2 * 2/3}
-          y1={-gnomonHeight / Math.SQRT2 * 2/3}
+          x1={-gnomonHeight / Math.SQRT2 * 2 / 3}
+          y1={-gnomonHeight / Math.SQRT2 * 2 / 3}
           x2={-gnomonHeight / Math.SQRT2}
           y2={-gnomonHeight / Math.SQRT2}
           stroke="red"
@@ -184,10 +184,10 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
           vectorEffect="non-scaling-stroke"
         />
         <line
-          x1={-gnomonHeight / Math.SQRT2 * 9/16}
-          y1={-gnomonHeight / Math.SQRT2 * 9/16}
-          x2={-gnomonHeight / Math.SQRT2 * 2/3}
-          y2={-gnomonHeight / Math.SQRT2 * 2/3}
+          x1={-gnomonHeight / Math.SQRT2 * 9 / 16}
+          y1={-gnomonHeight / Math.SQRT2 * 9 / 16}
+          x2={-gnomonHeight / Math.SQRT2 * 2 / 3}
+          y2={-gnomonHeight / Math.SQRT2 * 2 / 3}
           stroke="red"
           strokeWidth={1}
           vectorEffect="non-scaling-stroke"

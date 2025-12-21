@@ -168,7 +168,7 @@ const App: React.FC = () => {
     if (inclineType !== 'Manual') {
       const newAngle = inclineType === 'Horizontal' ? 0 :
         inclineType === 'Cancer' ? getCancerIncline(latitude) :
-          inclineType === 'Equatorial' ? latitude :
+          inclineType === 'Polar' ? latitude :
             inclineType === 'Capricorn' ? getCapricornIncline(latitude) :
               inclineType === 'Vertical' ? 90 : 0;
       setTiltAngle(newAngle);
@@ -234,7 +234,7 @@ const App: React.FC = () => {
   const effectiveLatitude = useMemo(() => {
     const tilt = inclineType === 'Horizontal' ? 0 :
       inclineType === 'Cancer' ? getCancerIncline(latitude) :
-        inclineType === 'Equatorial' ? latitude :
+        inclineType === 'Polar' ? latitude :
           inclineType === 'Capricorn' ? getCapricornIncline(latitude) :
             inclineType === 'Vertical' ? 90 : tiltAngle;
     return latitude - tilt;
