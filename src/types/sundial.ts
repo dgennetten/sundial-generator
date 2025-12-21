@@ -154,6 +154,8 @@ export interface ExportOptions {
   locationName?: string;
   /** Sundial notes mode for logging */
   sundialNotesMode?: string;
+  /** Sundial notes text content (when mode is 'textBlock') */
+  dialTextBlock?: string;
 }
 
 /**

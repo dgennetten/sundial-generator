@@ -540,6 +540,7 @@ const App: React.FC = () => {
           showBackground={showBackground}
           backgroundColor={backgroundColor}
           sundialNotesMode={sundialNotesMode}
+          dialTextBlock={dialTextBlock}
         />
         <React.Profiler id="LineSettings" onRender={(id, phase, actualDuration) => {
           if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);

@@ -123,6 +123,7 @@ $dateRange = $data['dateRange'] ?? 'Unknown';
 $gnomonType = $data['gnomonType'] ?? 'Unknown';
 $locationName = $data['locationName'] ?? 'Unknown';
 $sundialNotesMode = $data['sundialNotesMode'] ?? 'Unknown';
+$dialTextBlock = $data['dialTextBlock'] ?? '';
 
 $sundialNotesDisplay = formatSundialNotesMode($sundialNotesMode);
 
@@ -199,6 +200,15 @@ $emailBody .= "Page Size: $pageSize\n";
 $emailBody .= "Date Range: $dateRange\n";
 $emailBody .= "Gnomon Type: $gnomonType\n";
 $emailBody .= "Sundial Notes: $sundialNotesDisplay\n";
+
+// Append dial text block content if it exists
+if (!empty($dialTextBlock)) {
+    $emailBody .= "\n";
+    $emailBody .= "Sundial Notes Text:\n";
+    $emailBody .= str_repeat('-', 50) . "\n";
+    $emailBody .= $dialTextBlock . "\n";
+    $emailBody .= str_repeat('-', 50) . "\n";
+}
 
 // Send email notification
 $mail = new PHPMailer(true);

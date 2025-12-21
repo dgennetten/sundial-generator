@@ -113,7 +113,8 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
       dateRange: options.dateRange || 'Unknown',
       gnomonType: options.gnomonType || 'Unknown',
       locationName: options.locationName || 'Unknown',
-      sundialNotesMode: options.sundialNotesMode || 'Unknown'
+      sundialNotesMode: options.sundialNotesMode || 'Unknown',
+      dialTextBlock: options.dialTextBlock || ''
     };
 
     console.log('Sending log data to server:', logData);
@@ -204,6 +205,7 @@ export async function logPrintActivity(options: {
   gnomonType?: string;
   locationName?: string;
   sundialNotesMode?: string;
+  dialTextBlock?: string;
 }): Promise<void> {
   try {
     const logData = {
@@ -212,7 +214,8 @@ export async function logPrintActivity(options: {
       dateRange: options.dateRange || 'Unknown',
       gnomonType: options.gnomonType || 'Unknown',
       locationName: options.locationName || 'Unknown',
-      sundialNotesMode: options.sundialNotesMode || 'Unknown'
+      sundialNotesMode: options.sundialNotesMode || 'Unknown',
+      dialTextBlock: options.dialTextBlock || ''
     };
 
     console.log('Sending print log data to server:', logData);

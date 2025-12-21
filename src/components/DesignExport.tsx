@@ -17,11 +17,12 @@ interface DesignExportProps {
   showBackground: boolean;
   backgroundColor: string;
   sundialNotesMode?: string;
+  dialTextBlock?: string;
 }
 
 
 
-const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orientation, customWidth, customHeight, dateRange, gnomonType, locationName, showBackground, backgroundColor, sundialNotesMode }) => {
+const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orientation, customWidth, customHeight, dateRange, gnomonType, locationName, showBackground, backgroundColor, sundialNotesMode, dialTextBlock }) => {
   const [format, setFormat] = useState<ExportFormat>('PNG');
   const [dpi, setDpi] = useState<number>(600);
   const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -108,6 +109,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
         gnomonType,
         locationName,
         sundialNotesMode,
+        dialTextBlock,
       });
       console.log('Print activity logged successfully');
     } catch (error) {
@@ -146,6 +148,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
         gnomonType,
         locationName,
         sundialNotesMode,
+        dialTextBlock,
       });
       console.log('Export completed successfully');
     } catch (error) {
