@@ -286,10 +286,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   }
 
   // Helper to format hour for display
+  // When DST is enabled and isSummerSolstice is true, add 1 hour to show DST time
   function formatHour(hour: number, isSummerSolstice: boolean = false): string {
     let adjustedHour = hour;
 
-    // Add one hour for DST if it's summer solstice and DST is enabled
+    // Only adjust summer solstice labels for DST
     if (isSummerSolstice && useDST) {
       adjustedHour = hour + 1;
     }
@@ -937,7 +938,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
                 >
-                  {formatHour(h)}
+                  {formatHour(h + 1, false)}
                 </text>
               );
             }
@@ -976,7 +977,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
                 >
-                  {formatHour(h, true)}
+                  {formatHour(h + 1, true)}
                 </text>
               );
             }
@@ -1015,7 +1016,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
                 >
-                  {formatHour(h, true)}
+                  {formatHour(h + 1, true)}
                 </text>
               );
             }
@@ -1043,7 +1044,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
                 >
-                  {formatHour(h)}
+                  {formatHour(h + 1, false)}
                 </text>
               );
             }
@@ -1105,7 +1106,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
                 >
-                  {formatHour(h, isSummer)}
+                  {formatHour(h + 1, isSummer)}
                 </text>
               );
             }
@@ -1480,13 +1481,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
   // Helper function to find the best intersection point of declination line with noon analemma
   function findDeclinationAnalemmaIntersection(decl: number): { x: number; y: number } | null {
-    // Get the noon analemma points (hour = 12)
+    // Get the noon analemma points (hour = 11, adjusted for off-by-one)
     // Use the same parameters as the declination lines (original lat, Horizontal orientation)
     const noonAnalemmaPoints = getAnalemmaPointsProjected({
       lat,
       lng,
       tzMeridian,
-      hour: 12,
+      hour: 11,
       gnomonHeight,
       orientation: 'Horizontal',
     });
