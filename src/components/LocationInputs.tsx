@@ -1,7 +1,7 @@
 // src/components/LocationInputs.tsx
 import React, { useState, lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom';
-import { MapPin } from 'lucide-react';
+import { MapPin, Mail } from 'lucide-react';
 // Remove: import MapPicker from './MapPicker';
 const MapPicker = lazy(() => import('./MapPicker'));
 
@@ -35,13 +35,13 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
 
   // Responsive: detect layout mode using media query
   const [layoutMode, setLayoutMode] = useState<'desktop' | 'mobile-portrait' | 'mobile-landscape'>('desktop');
-  
+
   React.useEffect(() => {
     const checkLayoutMode = () => {
       const width = window.innerWidth;
       const height = window.innerHeight;
       const isLandscape = width > height;
-      
+
       if (width <= 900 && isLandscape && height >= 500) {
         setLayoutMode('mobile-landscape');
       } else if (width <= 900) {
@@ -50,10 +50,10 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
         setLayoutMode('desktop');
       }
     };
-    
+
     checkLayoutMode();
     window.addEventListener('resize', checkLayoutMode);
-    
+
     return () => window.removeEventListener('resize', checkLayoutMode);
   }, []);
 
@@ -79,32 +79,32 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
       setLoadingTz(true);
       const timeZoneData = await fetchTimeZone(locationData.lat, locationData.lng);
       setLoadingTz(false);
-      
-             if (timeZoneData.timeZoneId) {
-         const isDST = timeZoneData.dstOffset !== null && 
-                      isCurrentlyInDST(timeZoneData.dstOffset);
-         const tzName = timeZoneData.timeZoneName || 'Time Zone';
-         const newMeridian = calculateTzMeridian(locationData.lng);
-         
-         setTimezoneName(tzName);
-         
-                   onChange({ 
-            lat: locationData.lat, 
-            lng: locationData.lng, 
-            tz: newMeridian,
-            useDST: isDST,
-            timezoneName: tzName,
-            locationName: locationName
-          });
-               } else {
-           // Fallback if API call fails
-           onChange({ 
-             lat: locationData.lat, 
-             lng: locationData.lng, 
-             tz: tzMeridian,
-             locationName: locationName
-           });
-         }
+
+      if (timeZoneData.timeZoneId) {
+        const isDST = timeZoneData.dstOffset !== null &&
+          isCurrentlyInDST(timeZoneData.dstOffset);
+        const tzName = timeZoneData.timeZoneName || 'Time Zone';
+        const newMeridian = calculateTzMeridian(locationData.lng);
+
+        setTimezoneName(tzName);
+
+        onChange({
+          lat: locationData.lat,
+          lng: locationData.lng,
+          tz: newMeridian,
+          useDST: isDST,
+          timezoneName: tzName,
+          locationName: locationName
+        });
+      } else {
+        // Fallback if API call fails
+        onChange({
+          lat: locationData.lat,
+          lng: locationData.lng,
+          tz: tzMeridian,
+          locationName: locationName
+        });
+      }
     }
   };
 
@@ -114,14 +114,14 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
       setLoadingTz(true);
       const timeZoneData = await fetchTimeZone(latitude, longitude);
       setLoadingTz(false);
-      
+
       if (timeZoneData.timeZoneId) {
         const tzName = timeZoneData.timeZoneName || 'Time Zone';
         console.log('Setting timezone name:', tzName, 'from API response:', timeZoneData); // Debug log
         setTimezoneName(tzName);
       }
     };
-    
+
     initializeTimezone();
   }, [latitude, longitude]);
 
@@ -137,13 +137,13 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
     // If no fallback match, try Google API (though it will likely fail with website restrictions)
     const timestamp = Math.floor(Date.now() / 1000);
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    
+
     if (apiKey && apiKey !== 'undefined' && apiKey !== 'your_api_key_here') {
       const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${timestamp}&key=${apiKey}`;
       try {
         const response = await fetch(url);
         const data = await response.json();
-        
+
         if (data.status === 'OK') {
           console.log('Successfully used Google Timezone API');
           return {
@@ -176,21 +176,21 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
       { lat: 40.7128, lng: -74.0060, timeZoneId: 'America/New_York', name: 'Eastern Time', offset: -5, dstOffset: 1 }, // New York
       { lat: 34.0522, lng: -118.2437, timeZoneId: 'America/Los_Angeles', name: 'Pacific Time', offset: -8, dstOffset: 1 }, // Los Angeles
       { lat: 41.8781, lng: -87.6298, timeZoneId: 'America/Chicago', name: 'Central Time', offset: -6, dstOffset: 1 }, // Chicago
-      
+
       // South America
       { lat: -8.0476, lng: -34.8770, timeZoneId: 'America/Recife', name: 'Brasilia Time', offset: -3, dstOffset: 0 }, // Recife
       { lat: -23.5505, lng: -46.6333, timeZoneId: 'America/Sao_Paulo', name: 'Brasilia Time', offset: -3, dstOffset: 0 }, // São Paulo
-      
+
       // Europe
       { lat: 50.4777, lng: 12.3649, timeZoneId: 'Europe/Berlin', name: 'Central European Time', offset: 1, dstOffset: 1 }, // Falkenstein
       { lat: 49.6116, lng: 6.1319, timeZoneId: 'Europe/Luxembourg', name: 'Central European Time', offset: 1, dstOffset: 1 }, // Luxembourg
       { lat: 51.5074, lng: -0.1278, timeZoneId: 'Europe/London', name: 'Greenwich Mean Time', offset: 0, dstOffset: 1 }, // London
       { lat: 48.8566, lng: 2.3522, timeZoneId: 'Europe/Paris', name: 'Central European Time', offset: 1, dstOffset: 1 }, // Paris
-      
+
       // Asia/Russia
       { lat: 59.8761, lng: 30.4339, timeZoneId: 'Europe/Moscow', name: 'Moscow Standard Time', offset: 3, dstOffset: 0 }, // St Petersburg
       { lat: 35.6762, lng: 139.6503, timeZoneId: 'Asia/Tokyo', name: 'Japan Standard Time', offset: 9, dstOffset: 0 }, // Tokyo
-      
+
       // Australia/Oceania
       { lat: -33.8688, lng: 151.2093, timeZoneId: 'Australia/Sydney', name: 'Australian Eastern Time', offset: 10, dstOffset: 1 }, // Sydney
       { lat: -37.8136, lng: 144.9631, timeZoneId: 'Australia/Melbourne', name: 'Australian Eastern Time', offset: 10, dstOffset: 1 }, // Melbourne
@@ -202,7 +202,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
       if (distance < 1.0) { // Roughly 100km
         const now = new Date();
         const isDST = isDaylightSavingTime(now, tz.timeZoneId);
-        
+
         return {
           timeZoneId: tz.timeZoneId,
           dstOffset: isDST && tz.dstOffset > 0 ? tz.dstOffset * 3600 : 0,
@@ -211,7 +211,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
         };
       }
     }
-    
+
     return null;
   };
 
@@ -220,16 +220,16 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
     // Basic timezone estimation: 15 degrees longitude ≈ 1 hour
     const estimatedOffset = Math.round(lng / 15);
     const offsetHours = Math.max(-12, Math.min(12, estimatedOffset));
-    
+
     // Generate a reasonable timezone name
     let timezoneName = 'UTC';
     if (offsetHours !== 0) {
       const sign = offsetHours > 0 ? '+' : '';
       timezoneName = `UTC${sign}${offsetHours}`;
     }
-    
+
     console.log(`Estimated timezone from longitude ${lng}: ${timezoneName} (${offsetHours} hours)`);
-    
+
     return {
       timeZoneId: null,
       dstOffset: 0,
@@ -241,22 +241,22 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
   // Simple DST detection for common timezones
   const isDaylightSavingTime = (date: Date, timeZoneId: string): boolean => {
     const month = date.getMonth() + 1; // 1-12
-    
+
     // North American DST (March to November)
     if (timeZoneId?.includes('America/') && !timeZoneId.includes('Phoenix')) {
       return month > 3 && month < 11;
     }
-    
+
     // European DST (March to October)
     if (timeZoneId?.includes('Europe/')) {
       return month > 3 && month < 11;
     }
-    
+
     // Australian DST (October to March) - Southern Hemisphere
     if (timeZoneId?.includes('Australia/')) {
       return month > 9 || month < 4;
     }
-    
+
     // Default: no DST
     return false;
   };
@@ -279,7 +279,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title"><MapPin color="#2563eb" size={20} style={{marginRight: 6}} /> Location</h3>
+        <h3 className="card-title"><MapPin color="#2563eb" size={20} style={{ marginRight: 6 }} /> Location</h3>
       </div>
       <div className="card-content">
         <div
@@ -287,24 +287,24 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
           style={
             layoutMode === 'mobile-portrait'
               ? { display: 'flex', flexDirection: 'column', width: '100%', gap: '0.5rem' }
-              : { 
-                  display: 'flex', 
-                  flexDirection: 'row', 
-                  alignItems: 'end', 
-                  gap: layoutMode === 'mobile-landscape' ? '0.5rem' : '0.75rem',
-                  flexWrap: 'nowrap'
-                }
+              : {
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'end',
+                gap: layoutMode === 'mobile-landscape' ? '0.5rem' : '0.75rem',
+                flexWrap: 'nowrap'
+              }
           }
         >
           <div
             className="form-group"
             style={
               layoutMode === 'mobile-portrait'
-                ? { width: '100%' } 
-                : { 
-                    flex: '1',
-                    minWidth: layoutMode === 'mobile-landscape' ? '120px' : '150px'
-                  }
+                ? { width: '100%' }
+                : {
+                  flex: '1',
+                  minWidth: layoutMode === 'mobile-landscape' ? '120px' : '150px'
+                }
             }
           >
             <label className="form-label">Location</label>
@@ -313,7 +313,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
                 className="form-select"
                 value={getCurrentLocation()}
                 onChange={(e) => handleLocationChange(e.target.value)}
-                style={{ 
+                style={{
                   visibility: foundLocationName ? 'hidden' : 'visible',
                   width: '100%',
                   minWidth: 0,
@@ -381,18 +381,18 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
             className="form-group"
             style={
               layoutMode === 'mobile-portrait'
-                ? { width: '100%' } 
-                : { 
-                    flex: layoutMode === 'mobile-landscape' ? '0 0 120px' : '0 0 140px',
-                    minWidth: layoutMode === 'mobile-landscape' ? '100px' : '120px'
-                  }
+                ? { width: '100%' }
+                : {
+                  flex: layoutMode === 'mobile-landscape' ? '0 0 120px' : '0 0 140px',
+                  minWidth: layoutMode === 'mobile-landscape' ? '100px' : '120px'
+                }
             }
           >
             <label className="form-label">Time Zone</label>
             <div
               className="form-input location-timezone-field"
-              style={{ 
-                backgroundColor: '#f1f3f4', 
+              style={{
+                backgroundColor: '#f1f3f4',
                 cursor: 'not-allowed',
                 color: '#6b7280',
                 borderColor: '#d1d5db',
@@ -419,23 +419,23 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
             layoutMode === 'mobile-portrait'
               ? { display: 'flex', flexDirection: 'column', width: '100%', gap: '0.5rem' }
               : {
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'end',
-                  gap: layoutMode === 'mobile-landscape' ? '0.5rem' : '0.75rem',
-                  flexWrap: 'nowrap'
-                }
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'end',
+                gap: layoutMode === 'mobile-landscape' ? '0.5rem' : '0.75rem',
+                flexWrap: 'nowrap'
+              }
           }
         >
           <div
             className="form-group"
             style={
               layoutMode === 'mobile-portrait'
-                ? { width: '100%' } 
-                : { 
-                    flex: '1',
-                    minWidth: layoutMode === 'mobile-landscape' ? '70px' : '80px'
-                  }
+                ? { width: '100%' }
+                : {
+                  flex: '1',
+                  minWidth: layoutMode === 'mobile-landscape' ? '70px' : '80px'
+                }
             }
           >
             <label className="form-label">Latitude</label>
@@ -446,7 +446,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
               min={-90}
               max={90}
               value={latitude}
-                            onChange={async (e) => {
+              onChange={async (e) => {
                 const newLat = parseFloat(e.target.value);
 
                 // Validate latitude range
@@ -457,31 +457,31 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
                 // Clear found location name when manually changing coordinates
                 setFoundLocationName(null);
                 onChange({ lat: newLat, lng: longitude, tz: tzMeridian, locationName: 'Custom Lat/Long' });
-                
+
                 // Fetch timezone data for the new coordinates
                 setLoadingTz(true);
                 const timeZoneData = await fetchTimeZone(newLat, longitude);
                 setLoadingTz(false);
-                
-                                 if (timeZoneData.timeZoneId) {
-                   const isDST = timeZoneData.dstOffset !== null && 
-                                isCurrentlyInDST(timeZoneData.dstOffset);
-                   const tzName = timeZoneData.timeZoneName || 'Time Zone';
-                   const newMeridian = calculateTzMeridian(longitude);
-                   
-                   setTimezoneName(tzName);
-                   
-                   onChange({ 
-                     lat: newLat, 
-                     lng: longitude, 
-                     tz: newMeridian,
-                     useDST: isDST,
-                     timezoneName: tzName,
-                     locationName: 'Custom Lat/Long'
-                   });
-                 }
-               }}
-              style={{ 
+
+                if (timeZoneData.timeZoneId) {
+                  const isDST = timeZoneData.dstOffset !== null &&
+                    isCurrentlyInDST(timeZoneData.dstOffset);
+                  const tzName = timeZoneData.timeZoneName || 'Time Zone';
+                  const newMeridian = calculateTzMeridian(longitude);
+
+                  setTimezoneName(tzName);
+
+                  onChange({
+                    lat: newLat,
+                    lng: longitude,
+                    tz: newMeridian,
+                    useDST: isDST,
+                    timezoneName: tzName,
+                    locationName: 'Custom Lat/Long'
+                  });
+                }
+              }}
+              style={{
                 width: '100%',
                 minWidth: 0,
                 fontSize: layoutMode === 'mobile-landscape' ? '0.85rem' : '0.9rem'
@@ -492,11 +492,11 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
             className="form-group"
             style={
               layoutMode === 'mobile-portrait'
-                ? { width: '100%' } 
-                : { 
-                    flex: '1',
-                    minWidth: layoutMode === 'mobile-landscape' ? '70px' : '80px'
-                  }
+                ? { width: '100%' }
+                : {
+                  flex: '1',
+                  minWidth: layoutMode === 'mobile-landscape' ? '70px' : '80px'
+                }
             }
           >
             <label className="form-label">Longitude</label>
@@ -507,7 +507,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
               min={-180}
               max={180}
               value={longitude}
-                            onChange={async (e) => {
+              onChange={async (e) => {
                 const newLng = parseFloat(e.target.value);
 
                 // Validate longitude range
@@ -518,31 +518,31 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
                 // Clear found location name when manually changing coordinates
                 setFoundLocationName(null);
                 onChange({ lat: latitude, lng: newLng, tz: tzMeridian, locationName: 'Custom Lat/Long' });
-                
+
                 // Fetch timezone data for the new coordinates
                 setLoadingTz(true);
                 const timeZoneData = await fetchTimeZone(latitude, newLng);
                 setLoadingTz(false);
-                
-                                 if (timeZoneData.timeZoneId) {
-                   const isDST = timeZoneData.dstOffset !== null && 
-                                isCurrentlyInDST(timeZoneData.dstOffset);
-                   const tzName = timeZoneData.timeZoneName || 'Time Zone';
-                   const newMeridian = calculateTzMeridian(newLng);
-                   
-                   setTimezoneName(tzName);
-                   
-                   onChange({ 
-                     lat: latitude, 
-                     lng: newLng, 
-                     tz: newMeridian,
-                     useDST: isDST,
-                     timezoneName: tzName,
-                     locationName: 'Custom Lat/Long'
-                   });
-                 }
-               }}
-              style={{ 
+
+                if (timeZoneData.timeZoneId) {
+                  const isDST = timeZoneData.dstOffset !== null &&
+                    isCurrentlyInDST(timeZoneData.dstOffset);
+                  const tzName = timeZoneData.timeZoneName || 'Time Zone';
+                  const newMeridian = calculateTzMeridian(newLng);
+
+                  setTimezoneName(tzName);
+
+                  onChange({
+                    lat: latitude,
+                    lng: newLng,
+                    tz: newMeridian,
+                    useDST: isDST,
+                    timezoneName: tzName,
+                    locationName: 'Custom Lat/Long'
+                  });
+                }
+              }}
+              style={{
                 width: '100%',
                 minWidth: 0,
                 fontSize: layoutMode === 'mobile-landscape' ? '0.85rem' : '0.9rem'
@@ -553,18 +553,18 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
             className="form-group"
             style={
               layoutMode === 'mobile-portrait'
-                ? { width: '100%' } 
-                : { 
-                    flex: '0 0 auto'
-                  }
+                ? { width: '100%' }
+                : {
+                  flex: '0 0 auto'
+                }
             }
           >
             <button
               type="button"
               className="form-input"
-              style={{ 
-                height: 36, 
-                cursor: 'pointer', 
+              style={{
+                height: 36,
+                cursor: 'pointer',
                 padding: layoutMode === 'mobile-portrait' ? '0 8px' : layoutMode === 'mobile-landscape' ? '0 6px' : '0 12px',
                 width: layoutMode === 'mobile-portrait' ? '100%' : 'auto',
                 minWidth: layoutMode === 'mobile-portrait' ? 0 : layoutMode === 'mobile-landscape' ? '60px' : '80px',
@@ -579,52 +579,52 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
         </div>
         {loadingTz && <div style={{ color: '#f59e42', marginTop: 8 }}>Detecting time zone...</div>}
       </div>
-      <Suspense fallback={<div style={{textAlign: 'center', padding: 32}}>Loading map…</div>}>
-                 <MapPicker
-           open={mapOpen}
-           onClose={() => setMapOpen(false)}
-           onSelect={async (lat, lng, locationName) => {
-             setLoadingTz(true);
-             const timeZoneData = await fetchTimeZone(lat, lng);
-             setLoadingTz(false);
-             
-                           // Set the found location name to show in the overlay
-              setFoundLocationName(locationName || null);
-             
-                          if (timeZoneData.timeZoneId) {
-                const isDST = timeZoneData.dstOffset !== null && 
-                             isCurrentlyInDST(timeZoneData.dstOffset);
-                const tzName = timeZoneData.timeZoneName || 'Time Zone';
-                const newMeridian = calculateTzMeridian(lng);
-                
-                setTimezoneName(tzName);
-                
-                onChange({ 
-                  lat, 
-                  lng, 
-                  tz: newMeridian,
-                  useDST: isDST,
-                  timezoneName: tzName,
-                  locationName: locationName
-                });
-              } else {
-                onChange({ 
-                  lat, 
-                  lng, 
-                  tz: tzMeridian,
-                  locationName: locationName
-                });
-              }
-              
-              if (sundialNotesMode === 'textBlock') {
-                setTimeout(() => setShowTip(true), 100);
-              }
-           }}
-           initialLat={latitude}
-           initialLng={longitude}
-         />
+      <Suspense fallback={<div style={{ textAlign: 'center', padding: 32 }}>Loading map…</div>}>
+        <MapPicker
+          open={mapOpen}
+          onClose={() => setMapOpen(false)}
+          onSelect={async (lat, lng, locationName) => {
+            setLoadingTz(true);
+            const timeZoneData = await fetchTimeZone(lat, lng);
+            setLoadingTz(false);
+
+            // Set the found location name to show in the overlay
+            setFoundLocationName(locationName || null);
+
+            if (timeZoneData.timeZoneId) {
+              const isDST = timeZoneData.dstOffset !== null &&
+                isCurrentlyInDST(timeZoneData.dstOffset);
+              const tzName = timeZoneData.timeZoneName || 'Time Zone';
+              const newMeridian = calculateTzMeridian(lng);
+
+              setTimezoneName(tzName);
+
+              onChange({
+                lat,
+                lng,
+                tz: newMeridian,
+                useDST: isDST,
+                timezoneName: tzName,
+                locationName: locationName
+              });
+            } else {
+              onChange({
+                lat,
+                lng,
+                tz: tzMeridian,
+                locationName: locationName
+              });
+            }
+
+            if (sundialNotesMode === 'textBlock') {
+              setTimeout(() => setShowTip(true), 100);
+            }
+          }}
+          initialLat={latitude}
+          initialLng={longitude}
+        />
       </Suspense>
-      
+
       {showTip && ReactDOM.createPortal(
         <div
           style={{
@@ -661,7 +661,30 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
             <p style={{ margin: '0 0 20px 0', fontSize: '0.95rem', color: '#4b5563', lineHeight: '1.6' }}>
               Replace <strong>'Custom Lat/Long'</strong> in the Text Block by replacing <strong>'{'{location}'}'</strong> in the Text Block editor.
             </p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{
+              marginTop: '1.5rem',
+              paddingTop: '1rem',
+              borderTop: '1px solid #e5e7eb',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '0.9rem', color: '#4b5563', fontWeight: '500' }}>Please send feedback and photos!</span>
+                <a
+                  href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
+                  title="eMail the Author"
+                  style={{
+                    color: '#2563eb',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Mail size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
+                </a>
+              </div>
               <button
                 onClick={() => setShowTip(false)}
                 style={{
