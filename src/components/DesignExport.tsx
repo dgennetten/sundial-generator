@@ -170,18 +170,21 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
           className="form-row" 
           style={{ 
             display: 'flex', 
-            alignItems: 'center', 
-            gap: isMobile ? '0.5rem' : '1rem',
-            flexDirection: 'row'
+            alignItems: 'stretch', 
+            gap: isMobile ? '0.5rem' : '0.25rem',
+            flexDirection: 'column'
           }}
         >
-          {/* Print button first */}
-          <div className="form-group" style={{ alignSelf: 'end', flex: isMobile ? '0 0 auto' : 'auto' }}>
+          {/* Print button above, aligned with Export button */}
+          <div className="form-group" style={{ alignSelf: 'end' }}>
             <button 
               className="btn btn-primary"
               onClick={handlePrint}
               style={{ 
-                width: isMobile ? '100%' : 'auto',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: isMobile ? '100%' : '140px',
                 minWidth: isMobile ? 'auto' : '70px'
               }}
             >
@@ -189,68 +192,78 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
               Print
             </button>
           </div>
-          
-          {/* Separator */}
-          <div style={{ 
-            width: isMobile ? '100%' : '1px', 
-            height: isMobile ? '1px' : '20px', 
-            backgroundColor: '#e5e7eb',
-            margin: isMobile ? '0' : '0 0.5rem'
-          }} />
-          
-          {/* Export Format */}
-          <div className="form-group" style={{ flex: isMobile ? '1' : 'auto' }}>
-            <label className="form-label">Export Format</label>
-            <select 
-              className="form-select"
-              value={format} 
-              onChange={(e) => {
-                console.log('Format change:', e.target.value);
-                setFormat(e.target.value as ExportFormat);
-              }}
-              style={{ width: isMobile ? '100%' : 'auto' }}
-            >
-              <option value="SVG">SVG</option>
-              <option value="PNG">PNG</option>
-              <option value="PDF">PDF</option>
-            </select>
-          </div>
-          
-          {/* DPI input, only show for PNG */}
-          {format === 'PNG' && (
-            <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
-              <label className="form-label">DPI</label>
-              <input
-                type="number"
-                className="form-input"
-                min={72}
-                max={2400}
-                step={1}
-                value={dpi}
-                onChange={e => setDpi(parseInt(e.target.value) || 600)}
-                style={{ width: isMobile ? '60px' : '70px' }}
-              />
+
+          {/* Export controls row */}
+          <div 
+            className="form-row" 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              gap: '0.5rem',
+              flexDirection: isMobile ? 'column' : 'row'
+            }}
+          >
+            {/* Left: Export options */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.5rem' : '0.5rem', flex: '1 1 auto', minWidth: 0 }}>
+              {/* Export Format */}
+              <div className="form-group" style={{ flex: isMobile ? '1' : 'auto' }}>
+                <label className="form-label">Export Format</label>
+                <select 
+                  className="form-select"
+                  value={format} 
+                  onChange={(e) => {
+                    console.log('Format change:', e.target.value);
+                    setFormat(e.target.value as ExportFormat);
+                  }}
+                  style={{ width: isMobile ? '100%' : 'auto' }}
+                >
+                  <option value="SVG">SVG</option>
+                  <option value="PNG">PNG</option>
+                  <option value="PDF">PDF</option>
+                </select>
+              </div>
+              
+              {/* DPI input, only show for PNG */}
+              {format === 'PNG' && (
+                <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
+                  <label className="form-label">DPI</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    min={72}
+                    max={2400}
+                    step={1}
+                    value={dpi}
+                    onChange={e => setDpi(parseInt(e.target.value) || 600)}
+                    style={{ width: isMobile ? '60px' : '70px' }}
+                  />
+                </div>
+              )}
             </div>
-          )}
-          
-          {/* Export button */}
-          <div className="form-group" style={{ alignSelf: 'end', flex: isMobile ? '0 0 auto' : 'auto' }}>
-            <button 
-              className="btn btn-primary"
-              onClick={handleExport}
-              disabled={isExporting}
-              style={{ 
-                width: isMobile ? '100%' : 'auto',
-                minWidth: isMobile ? 'auto' : '70px',
-                opacity: isExporting ? 0.7 : 1,
-                cursor: isExporting ? 'not-allowed' : 'pointer',
-                transform: isExporting ? 'scale(0.98)' : 'scale(1)',
-                transition: 'all 0.1s ease'
-              }}
-            >
-              <Download size={16} style={{ marginRight: '4px' }} />
-              {isExporting ? 'Exporting...' : 'Export'}
-            </button>
+
+            {/* Right: Export button (aligned with Print above) */}
+            <div className="form-group" style={{ alignSelf: isMobile ? 'stretch' : 'end', marginLeft: isMobile ? 0 : 'auto', flex: '0 0 auto' }}>
+              <button 
+                className="btn btn-primary"
+                onClick={handleExport}
+                disabled={isExporting}
+                style={{ 
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: isMobile ? '100%' : '140px',
+                  minWidth: isMobile ? 'auto' : '70px',
+                  opacity: isExporting ? 0.7 : 1,
+                  cursor: isExporting ? 'not-allowed' : 'pointer',
+                  transform: isExporting ? 'scale(0.98)' : 'scale(1)',
+                  transition: 'all 0.1s ease'
+                }}
+              >
+                <Download size={18} style={{ marginRight: '6px' }} stroke="#fff" strokeWidth={2} />
+                {isExporting ? 'Exporting...' : 'Export'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
