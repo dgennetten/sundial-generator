@@ -124,6 +124,7 @@ $gnomonType = $data['gnomonType'] ?? 'Unknown';
 $locationName = $data['locationName'] ?? 'Unknown';
 $sundialNotesMode = $data['sundialNotesMode'] ?? 'Unknown';
 $dialTextBlock = $data['dialTextBlock'] ?? '';
+$dialTextBlockInterpreted = $data['dialTextBlockInterpreted'] ?? '';
 
 $sundialNotesDisplay = formatSundialNotesMode($sundialNotesMode);
 
@@ -202,11 +203,12 @@ $emailBody .= "Gnomon Type: $gnomonType\n";
 $emailBody .= "Sundial Notes: $sundialNotesDisplay\n";
 
 // Append dial text block content if it exists
-if (!empty($dialTextBlock)) {
+if (!empty($dialTextBlockInterpreted) || !empty($dialTextBlock)) {
     $emailBody .= "\n";
     $emailBody .= "Sundial Notes Text:\n";
     $emailBody .= str_repeat('-', 50) . "\n";
-    $emailBody .= $dialTextBlock . "\n";
+    // Prefer interpreted text (placeholders expanded) if provided by the client
+    $emailBody .= (!empty($dialTextBlockInterpreted) ? $dialTextBlockInterpreted : $dialTextBlock) . "\n";
     $emailBody .= str_repeat('-', 50) . "\n";
 }
 

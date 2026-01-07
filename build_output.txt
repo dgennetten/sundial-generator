@@ -1,0 +1,7 @@
+
+> sundial-generator@1.15.8 build
+> tsc -b && vite build
+
+src/App.tsx(547,11): error TS2322: Type 'InclineType' is not assignable to type 'InclineType | undefined'.
+  Type '"Polar"' is not assignable to type 'InclineType | undefined'.
+src/utils/dialTextBlockInterpreter.ts(31,7): error TS2367: This comparison appears to be unintentional because the types '"Cancer" | "Capricorn"' and '"Polar"' have no overlap.

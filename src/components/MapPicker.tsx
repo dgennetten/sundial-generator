@@ -6,7 +6,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers in react-leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
@@ -62,19 +62,19 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
   // Simple geocoding using Nominatim (OpenStreetMap)
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) return;
-    
+
     setIsSearching(true);
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`
       );
       const results = await response.json();
-      
+
       if (results && results.length > 0) {
         const result = results[0];
         const lat = parseFloat(result.lat);
         const lng = parseFloat(result.lon);
-        
+
         setSelected({ lat, lng });
         setSelectedPlaceName(result.display_name);
         setMapCenter([lat, lng]);
@@ -132,9 +132,9 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
         onClick={e => e.stopPropagation()}
       >
         <h3 style={{ marginTop: 0, marginBottom: 16, fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>
-          <MapPin color="#2563eb" size={20} style={{marginRight: 6}} /> Location
+          <MapPin color="#2563eb" size={20} style={{ marginRight: 6 }} /> Location
         </h3>
-        
+
         {/* Search Box */}
         <div style={{ marginBottom: 16, display: 'flex', gap: 8 }}>
           <input
@@ -172,7 +172,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
             {isSearching ? 'Searching...' : 'Search'}
           </button>
         </div>
-        
+
         {/* Map */}
         <div style={{ height: '400px', width: '100%', marginBottom: 16, border: '1px solid #d1d5db', borderRadius: '6px', overflow: 'hidden' }}>
           <MapContainer
@@ -196,13 +196,13 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
             <strong>Selected:</strong> {selectedPlaceName || `${selected.lat.toFixed(6)}, ${selected.lng.toFixed(6)}`}
           </div>
         )}
-        
+
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="form-input"
-            style={{ 
-              padding: '8px 16px', 
+            style={{
+              padding: '8px 16px',
               backgroundColor: '#f3f4f6',
               border: '1px solid #d1d5db',
               color: '#374151',
@@ -214,7 +214,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
           <button
             onClick={handleConfirm}
             className="form-input"
-            style={{ 
+            style={{
               padding: '8px 16px',
               backgroundColor: selected ? '#2563eb' : '#f3f4f6',
               border: '1px solid #d1d5db',

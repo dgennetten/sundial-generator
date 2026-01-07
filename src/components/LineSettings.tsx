@@ -82,7 +82,7 @@ const LineSettings: React.FC<{
       const existingNames = lineStyles.map(s => s.name);
       let suffix = 2;
       let newName = `${baseName} (${suffix})`;
-      
+
       while (existingNames.includes(newName)) {
         suffix++;
         newName = `${baseName} (${suffix})`;
@@ -105,12 +105,12 @@ const LineSettings: React.FC<{
 
       setLineStyles(updated);
       saveLineStyles(updated.filter((s) => s.id));
-      
+
       // Close popup
       setShowCalculatedPopup(false);
       setPendingStyleIndex(null);
       setSelectedCalculatedType('');
-    } catch (error) {
+    } catch {
       // Close popup even if there's an error
       setShowCalculatedPopup(false);
       setPendingStyleIndex(null);
@@ -236,7 +236,7 @@ const LineSettings: React.FC<{
                         className="form-select"
                         value={style.style || 'solid'}
                         onChange={e => handleChange(idx, 'style', e.target.value)}
-                        style={{ 
+                        style={{
                           fontSize: '0.9rem',
                           backgroundColor: style.style === 'calculated' ? '#f5f5f5' : undefined,
                           color: style.style === 'calculated' ? '#666' : undefined
@@ -277,12 +277,12 @@ const LineSettings: React.FC<{
             </tbody>
           </table>
         </div>
-        <div style={{ 
-          marginTop: '0.75rem', 
-          padding: '0.5rem', 
-          backgroundColor: '#f8f9fa', 
-          borderRadius: '4px', 
-          fontSize: '0.85rem', 
+        <div style={{
+          marginTop: '0.75rem',
+          padding: '0.5rem',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '4px',
+          fontSize: '0.85rem',
           color: '#6b7280',
           fontStyle: 'italic'
         }}>
@@ -359,9 +359,9 @@ const LineSettings: React.FC<{
                     style={{ marginRight: '0.5rem' }}
                   />
                   <span style={{ fontWeight: 'medium' }}>{style.name}</span>
-                  <div style={{ 
-                    fontSize: '0.85rem', 
-                    color: '#6b7280', 
+                  <div style={{
+                    fontSize: '0.85rem',
+                    color: '#6b7280',
                     marginLeft: '1.25rem',
                     marginTop: '0.25rem'
                   }}>
@@ -387,7 +387,7 @@ const LineSettings: React.FC<{
                 onClick={handleCalculatedConfirm}
                 className="btn btn-primary"
                 disabled={!selectedCalculatedType}
-                style={{ 
+                style={{
                   padding: '0.5rem 1rem',
                   opacity: selectedCalculatedType ? 1 : 0.5
                 }}

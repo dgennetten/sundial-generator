@@ -1,6 +1,7 @@
 // src/utils/exportUtils.ts
 import { createSVGExport, downloadSVG } from './svgExportUtils';
 import type { ExportOptions, PageSize } from '../types';
+import { interpretDialTextBlockForEmail } from './dialTextBlockInterpreter';
 
 // Re-export types for backward compatibility
 export type { ExportFormat, PageSize } from '../types';
@@ -107,6 +108,16 @@ function findPreviewContainer(): HTMLElement | null {
  */
 async function logExportActivity(options: ExportOptions): Promise<void> {
   try {
+    const dialTextBlockInterpreted = interpretDialTextBlockForEmail(options.dialTextBlock || '', {
+      locationName: options.locationName,
+      latitude: options.latitude,
+      longitude: options.longitude,
+      dateRange: options.dateRange,
+      gnomonHeightMm: options.gnomonHeight,
+      inclineType: options.inclineType,
+      tiltAngle: options.tiltAngle,
+    });
+
     const logData = {
       exportFormat: options.format,
       pageSize: options.pageSize,
@@ -114,7 +125,8 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
       gnomonType: options.gnomonType || 'Unknown',
       locationName: options.locationName || 'Unknown',
       sundialNotesMode: options.sundialNotesMode || 'Unknown',
-      dialTextBlock: options.dialTextBlock || ''
+      dialTextBlock: options.dialTextBlock || '',
+      dialTextBlockInterpreted,
     };
 
     console.log('Sending log data to server:', logData);
@@ -206,8 +218,23 @@ export async function logPrintActivity(options: {
   locationName?: string;
   sundialNotesMode?: string;
   dialTextBlock?: string;
+  latitude?: number;
+  longitude?: number;
+  gnomonHeight?: number;
+  inclineType?: import('../types').InclineType;
+  tiltAngle?: number;
 }): Promise<void> {
   try {
+    const dialTextBlockInterpreted = interpretDialTextBlockForEmail(options.dialTextBlock || '', {
+      locationName: options.locationName,
+      latitude: options.latitude,
+      longitude: options.longitude,
+      dateRange: options.dateRange as import('../types').DateRange | undefined,
+      gnomonHeightMm: options.gnomonHeight,
+      inclineType: options.inclineType,
+      tiltAngle: options.tiltAngle,
+    });
+
     const logData = {
       exportFormat: 'PRINT', // Use 'PRINT' to distinguish from file exports
       pageSize: options.pageSize,
@@ -215,7 +242,8 @@ export async function logPrintActivity(options: {
       gnomonType: options.gnomonType || 'Unknown',
       locationName: options.locationName || 'Unknown',
       sundialNotesMode: options.sundialNotesMode || 'Unknown',
-      dialTextBlock: options.dialTextBlock || ''
+      dialTextBlock: options.dialTextBlock || '',
+      dialTextBlockInterpreted,
     };
 
     console.log('Sending print log data to server:', logData);

@@ -1,0 +1,23 @@
+
+> sundial-generator@1.15.8 build
+> tsc -b && vite build
+
+[36mvite v7.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m✓[39m 1995 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                         [39m[1m[2m  0.74 kB[22m[1m[22m[2m │ gzip:   0.39 kB[22m
+[2mdist/[22m[35massets/index-AlyFLbrG.css          [39m[1m[2m  7.50 kB[22m[1m[22m[2m │ gzip:   2.02 kB[22m
+[2mdist/[22m[35massets/MapPicker-CIGW-MKW.css      [39m[1m[2m 15.61 kB[22m[1m[22m[2m │ gzip:   6.46 kB[22m
+[2mdist/[22m[36massets/MapPicker-B18WcZ3J.js       [39m[1m[2m  4.02 kB[22m[1m[22m[2m │ gzip:   1.82 kB[22m
+[2mdist/[22m[36massets/icons-vendor-2L_VEDcb.js    [39m[1m[2m  4.91 kB[22m[1m[22m[2m │ gzip:   2.22 kB[22m
+[2mdist/[22m[36massets/react-vendor-BZoW56qi.js    [39m[1m[2m 11.48 kB[22m[1m[22m[2m │ gzip:   4.11 kB[22m
+[2mdist/[22m[36massets/purify.es-SQuBl5wZ.js       [39m[1m[2m 21.63 kB[22m[1m[22m[2m │ gzip:   8.46 kB[22m
+[2mdist/[22m[36massets/svg2pdf.es.min-C9XkOFJ2.js  [39m[1m[2m 86.99 kB[22m[1m[22m[2m │ gzip:  25.61 kB[22m
+[2mdist/[22m[36massets/leaflet-vendor-DUyXwRjC.js  [39m[1m[2m153.17 kB[22m[1m[22m[2m │ gzip:  44.67 kB[22m
+[2mdist/[22m[36massets/index.es-CV7e7Pbl.js        [39m[1m[2m158.67 kB[22m[1m[22m[2m │ gzip:  52.95 kB[22m
+[2mdist/[22m[36massets/utils-vendor-DXEQVQnt.js    [39m[1m[2m201.04 kB[22m[1m[22m[2m │ gzip:  47.43 kB[22m
+[2mdist/[22m[36massets/index-kQix_lnO.js           [39m[1m[2m311.81 kB[22m[1m[22m[2m │ gzip:  92.93 kB[22m
+[2mdist/[22m[36massets/jspdf.es.min-C7YhEcn0.js    [39m[1m[2m384.57 kB[22m[1m[22m[2m │ gzip: 125.61 kB[22m
+[32m✓ built in 8.23s[39m

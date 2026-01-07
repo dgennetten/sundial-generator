@@ -48,7 +48,7 @@ export type PageOrientation = 'Portrait' | 'Landscape';
 /**
  * Incline types for sundial dials
  */
-export type InclineType = 'Horizontal' | 'Vertical' | 'Cancer' | 'Capricorn';
+export type InclineType = 'Horizontal' | 'Vertical' | 'Cancer' | 'Capricorn' | 'Polar' | 'Manual';
 
 /**
  * Dial facing direction
@@ -156,6 +156,16 @@ export interface ExportOptions {
   sundialNotesMode?: string;
   /** Sundial notes text content (when mode is 'textBlock') */
   dialTextBlock?: string;
+
+  /**
+   * Extra fields used for richer export/print activity logging (e.g., interpreting dialTextBlock for email).
+   * These are optional and do not affect the exported file content.
+   */
+  latitude?: number;
+  longitude?: number;
+  gnomonHeight?: number;
+  inclineType?: InclineType;
+  tiltAngle?: number;
 }
 
 /**

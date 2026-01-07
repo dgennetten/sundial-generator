@@ -3,11 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { StickyNote } from 'lucide-react';
 import type { LineStyle } from './LineSettings';
 
-type PageSize = 'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom';
-type Orientation = 'Landscape' | 'Portrait';
-export type InclineType = 'Horizontal' | 'Cancer' | 'Polar' | 'Capricorn' | 'Vertical' | 'Manual';
+import type { PageSize, PageOrientation as Orientation, InclineType, DialFacing } from '../types';
+export type { InclineType };
 export type DeclinationType = 'North' | 'Northeast' | 'Northwest' | 'East' | 'West' | 'Southeast' | 'Southwest' | 'South' | 'Manual';
-type DialFacing = 'North' | 'South';
 
 // Utility to convert named color to hex
 function colorToHex(color: string): string {

@@ -541,6 +541,11 @@ const App: React.FC = () => {
           backgroundColor={backgroundColor}
           sundialNotesMode={sundialNotesMode}
           dialTextBlock={dialTextBlock}
+          latitude={latitude}
+          longitude={longitude}
+          gnomonHeight={effectiveGnomonHeight}
+          inclineType={inclineType}
+          tiltAngle={tiltAngle}
         />
         <React.Profiler id="LineSettings" onRender={(id, phase, actualDuration) => {
           if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
