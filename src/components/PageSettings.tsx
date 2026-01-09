@@ -661,7 +661,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
           }}
         >
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
-            <label className="form-label">Dial Facing (NOTE: will be removed when Declination is implemented above!)</label>
+            <label className="form-label">Dial Facing</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '8px' }}>
               <span style={{
                 fontSize: '14px',
@@ -703,7 +703,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               }}>South</span>
               {dialFacingLockInfo.showNotice && (
                 <span style={{ fontSize: '12px', color: '#dc2626', marginLeft: '8px' }}>
-                  Inclined dials must face toward solar path.
+                  Horizontal dials only.
                 </span>
               )}
             </div>

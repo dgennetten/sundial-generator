@@ -385,6 +385,25 @@ const App: React.FC = () => {
           <p className="app-subtitle">Create beautiful, accurate sundials for any location</p>
         </div>
 
+        <DesignExport
+          pageSize={pageSize}
+          orientation={orientation}
+          customWidth={customWidth}
+          customHeight={customHeight}
+          dateRange={hourlineDateRange}
+          gnomonType={gnomonType}
+          locationName={locationName}
+          showBackground={showBackground}
+          backgroundColor={backgroundColor}
+          sundialNotesMode={sundialNotesMode}
+          dialTextBlock={dialTextBlock}
+          latitude={latitude}
+          longitude={longitude}
+          gnomonHeight={effectiveGnomonHeight}
+          inclineType={inclineType}
+          tiltAngle={tiltAngle}
+        />
+
         <LocationInputs
           latitude={latitude}
           longitude={longitude}
@@ -529,24 +548,6 @@ const App: React.FC = () => {
             declinationNoonmarks={declinationNoonmarks}
           />
         </React.Profiler>
-        <DesignExport
-          pageSize={pageSize}
-          orientation={orientation}
-          customWidth={customWidth}
-          customHeight={customHeight}
-          dateRange={hourlineDateRange}
-          gnomonType={gnomonType}
-          locationName={locationName}
-          showBackground={showBackground}
-          backgroundColor={backgroundColor}
-          sundialNotesMode={sundialNotesMode}
-          dialTextBlock={dialTextBlock}
-          latitude={latitude}
-          longitude={longitude}
-          gnomonHeight={effectiveGnomonHeight}
-          inclineType={inclineType}
-          tiltAngle={tiltAngle}
-        />
         <React.Profiler id="LineSettings" onRender={(id, phase, actualDuration) => {
           if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
         }}>
