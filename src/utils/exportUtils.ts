@@ -127,6 +127,8 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
       sundialNotesMode: options.sundialNotesMode || 'Unknown',
       dialTextBlock: options.dialTextBlock || '',
       dialTextBlockInterpreted,
+      latitude: options.latitude,
+      longitude: options.longitude,
     };
 
     console.log('Sending log data to server:', logData);
@@ -244,6 +246,8 @@ export async function logPrintActivity(options: {
       sundialNotesMode: options.sundialNotesMode || 'Unknown',
       dialTextBlock: options.dialTextBlock || '',
       dialTextBlockInterpreted,
+      latitude: options.latitude,
+      longitude: options.longitude,
     };
 
     console.log('Sending print log data to server:', logData);
