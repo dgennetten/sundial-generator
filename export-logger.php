@@ -125,8 +125,81 @@ $locationName = $data['locationName'] ?? 'Unknown';
 $sundialNotesMode = $data['sundialNotesMode'] ?? 'Unknown';
 $dialTextBlock = $data['dialTextBlock'] ?? '';
 $dialTextBlockInterpreted = $data['dialTextBlockInterpreted'] ?? '';
+$latitude = isset($data['latitude']) && is_numeric($data['latitude']) ? floatval($data['latitude']) : null;
+$longitude = isset($data['longitude']) && is_numeric($data['longitude']) ? floatval($data['longitude']) : null;
 
 $sundialNotesDisplay = formatSundialNotesMode($sundialNotesMode);
+
+// Function to get approximate location from coordinates using reverse geocoding
+function getApproximateLocation($lat, $lon) {
+    if ($lat === null || $lon === null) {
+        return null;
+    }
+    
+    // Use OpenStreetMap Nominatim API for reverse geocoding (free, no API key required)
+    $url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon&zoom=10&addressdetails=1";
+    
+    // Set a user agent (required by Nominatim usage policy)
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'GET',
+            'header' => [
+                'User-Agent: SundialGenerator/1.0 (contact: sundial@gennetten.com)'
+            ],
+            'timeout' => 5 // 5 second timeout
+        ]
+    ]);
+    
+    $response = @file_get_contents($url, false, $context);
+    if ($response === false) {
+        return null;
+    }
+    
+    $data = json_decode($response, true);
+    if (!$data || !isset($data['address'])) {
+        return null;
+    }
+    
+    $address = $data['address'];
+    $parts = [];
+    
+    // Build location string from most specific to least specific
+    if (isset($address['city'])) {
+        $parts[] = $address['city'];
+    } elseif (isset($address['town'])) {
+        $parts[] = $address['town'];
+    } elseif (isset($address['village'])) {
+        $parts[] = $address['village'];
+    }
+    
+    if (isset($address['state'])) {
+        $parts[] = $address['state'];
+    } elseif (isset($address['region'])) {
+        $parts[] = $address['region'];
+    }
+    
+    if (isset($address['country'])) {
+        $parts[] = $address['country'];
+    }
+    
+    // If we have at least one part, return the location
+    if (!empty($parts)) {
+        return implode(', ', $parts);
+    }
+    
+    // Fallback: return display name if available
+    if (isset($data['display_name'])) {
+        return $data['display_name'];
+    }
+    
+    return null;
+}
+
+// Get approximate location from coordinates
+$approximateLocation = null;
+if ($latitude !== null && $longitude !== null) {
+    $approximateLocation = getApproximateLocation($latitude, $longitude);
+}
 
 // Get current date and time
 $date = date('Y-m-d');
@@ -201,6 +274,11 @@ $emailBody .= "Page Size: $pageSize\n";
 $emailBody .= "Date Range: $dateRange\n";
 $emailBody .= "Gnomon Type: $gnomonType\n";
 $emailBody .= "Sundial Notes: $sundialNotesDisplay\n";
+
+// Append approximate location if available
+if ($approximateLocation !== null) {
+    $emailBody .= "Approximate Location (from coordinates): $approximateLocation\n";
+}
 
 // Append dial text block content if it exists
 if (!empty($dialTextBlockInterpreted) || !empty($dialTextBlock)) {
