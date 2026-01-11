@@ -72,7 +72,7 @@ const AboutCard: React.FC = () => {
 </p>
 <p>The sundial generator now uses the professional-grade 
 <a href="https://academic.oup.com/mnras/article/238/4/1529/1037665">Hughes, Yallop & Hohenkerk</a>
-algorithm with ±3.5 seconds accuracy. 
+algorithm which "enables it to be calculated for any epock within 30 centuries of the present day, to a precision of about 3 s of time." 
 </p>
 `,
           }}

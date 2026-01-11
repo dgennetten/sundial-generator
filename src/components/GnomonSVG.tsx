@@ -7,6 +7,7 @@ interface GnomonSVGProps {
   inclineType?: string;
   fontSize?: number;
   dialFacing?: 'North' | 'South';
+  originalLatitude?: number;
 }
 
 const GnomonSVG: React.FC<GnomonSVGProps> = ({
@@ -15,7 +16,8 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
   lat = 0,
   inclineType = 'Horizontal',
   fontSize = 20,
-  dialFacing = 'South'
+  dialFacing = 'South',
+  originalLatitude
 }) => {
   // Convert fontSize from pt to mm for SVG (1 pt = 25.4/72 mm = 0.3528 mm)
   const fontSizeMm = fontSize * 0.3528;
@@ -52,14 +54,36 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
   }
 
   if (gnomonType === 'crosshair-with-north') {
+    // Determine hemisphere based on original geographic latitude
+    // Northern hemisphere (lat >= 0): N above the crosshair (negative y)
+    // Southern hemisphere (lat < 0): N below the crosshair (positive y)
+    const isNorthernHemisphere = (originalLatitude ?? lat) >= 0;
+    const northPointY = isNorthernHemisphere ? -12 : 12;
+    const arrowBaseY = isNorthernHemisphere ? -10 : 10;
+    const letterY1 = isNorthernHemisphere ? -20 : 20;
+    const letterY2 = isNorthernHemisphere ? -15 : 15;
+    
+    // For southern hemisphere, flip horizontally to keep "N" readable
+    const flipTransform = isNorthernHemisphere ? undefined : 'scale(-1, 1)';
+    
+    // Arrow should point toward north
+    // Northern hemisphere: arrow points up (toward negative y, toward crosshair)
+    // Southern hemisphere: arrow points down (toward positive y, away from crosshair)
+    // For northern: tip at arrowBaseY (closer to crosshair), base at northPointY (further)
+    // For southern: tip at northPointY (further from crosshair), base at arrowBaseY (closer)
+    const arrowTipY = isNorthernHemisphere ? arrowBaseY : northPointY;
+    const arrowBaseEdgeY = isNorthernHemisphere ? northPointY : arrowBaseY;
+    
     return (
       <>
         {/* Crosshair gnomon: a "+" at (0,0), 6px long arms */}
         <line x1={-3} y1={0} x2={3} y2={0} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
         <line x1={0} y1={-3} x2={0} y2={3} stroke="red" strokeWidth={1} vectorEffect="non-scaling-stroke" />
-        {/* North Point*/}
-        <path d="M 2 -12 L 0 -10 L -2 -12 Z" stroke="black" strokeWidth={2} fill="black" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
-        <path d="M 2 -20 L 2 -15 L -2 -20 L -2 -15" stroke="black" strokeWidth={2} fill="none" vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
+        {/* North Point - positioned above for northern hemisphere, below for southern hemisphere */}
+        <g transform={flipTransform}>
+          <path d={`M 2 ${arrowBaseEdgeY} L 0 ${arrowTipY} L -2 ${arrowBaseEdgeY} Z`} stroke="black" strokeWidth={2} fill="black" vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+          <path d={`M 2 ${letterY1} L 2 ${letterY2} L -2 ${letterY1} L -2 ${letterY2}`} stroke="black" strokeWidth={2} fill="none" vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
+        </g>
       </>
     );
   }

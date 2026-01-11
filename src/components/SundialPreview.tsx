@@ -2186,6 +2186,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 inclineType={inclineType}
                 fontSize={fontSize}
                 dialFacing={dialFacing}
+                originalLatitude={originalLatitude}
               />
 
               {hourlineElements.flat()}

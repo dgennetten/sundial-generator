@@ -1,6 +1,6 @@
 {
   "name": "sundial-generator",
-  "version": "1.15.8",
+  "version": "1.15.9",
   "license": "CC-BY-NC-SA-4.0",
   "type": "module",
   "scripts": {
@@ -12,18 +12,12 @@
     "test:ui": "vitest --ui",
     "lint": "eslint .",
     "preview": "vite preview",
-    "fetch-logs": "node scripts/fetchLogs.js",
-    "fetch-logs-7d": "node scripts/fetchLogs.js 7",
-    "fetch-logs-30d": "node scripts/fetchLogs.js 30",
-    "update-visitors": "node scripts/updateVisitorData.js",
-    "update-visitors-7d": "node scripts/updateVisitorData.js 7",
-    "update-and-build": "node scripts/updateVisitorData.js 7 --build",
-    "update-and-deploy": "node scripts/updateVisitorData.js 7 --build && node deploy-sftp.js",
     "debug-logs": "node scripts/debugLogProcessing.js",
     "debug-logs-90d": "node scripts/debugLogProcessing.js 90",
     "secure-deploy": "powershell -ExecutionPolicy Bypass -File scripts/secure-deploy.ps1",
     "secure-deploy-dry": "powershell -ExecutionPolicy Bypass -File scripts/secure-deploy.ps1 -DryRun",
-    "update-visitor-count": "node scripts/updateVisitorData.js 7",
+    "build-and-deploy": "powershell -ExecutionPolicy Bypass -File scripts/build-and-deploy.ps1",
+    "build-and-deploy-dry": "powershell -ExecutionPolicy Bypass -File scripts/build-and-deploy.ps1 -DryRun",
     "deploy": "node deploy.js",
     "deploy-sftp": "node deploy-sftp.js",
     "deploy-docs-force": "node deploy-docs-force.js"
