@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { StickyNote } from 'lucide-react';
 import type { LineStyle } from './LineSettings';
 
-import type { PageSize, PageOrientation as Orientation, InclineType, DialFacing } from '../types';
+import type { PageSize, PageOrientation as Orientation, InclineType, DialOrientation } from '../types';
 export type { InclineType };
 export type DeclinationType = 'North' | 'Northeast' | 'Northwest' | 'East' | 'West' | 'Southeast' | 'Southwest' | 'South' | 'Manual';
 
@@ -39,8 +39,8 @@ interface PageSettingsProps {
   declinationDegrees: number;
   setDeclinationDegrees: (degrees: number) => void;
   latitude: number;
-  dialFacing: DialFacing;
-  setDialFacing: (facing: DialFacing) => void;
+  dialOrientation: DialOrientation;
+  setDialOrientation: (orientation: DialOrientation) => void;
   customWidth?: number;
   setCustomWidth?: (width: number) => void;
   customHeight?: number;
@@ -66,8 +66,8 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   declinationDegrees,
   setDeclinationDegrees,
   latitude,
-  dialFacing,
-  setDialFacing,
+  dialOrientation,
+  setDialOrientation,
   customWidth,
   setCustomWidth,
   customHeight,
@@ -139,8 +139,8 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     }
   };
 
-  const handleDialFacingToggle = () => {
-    setDialFacing(dialFacing === 'North' ? 'South' : 'North');
+  const handleDialOrientationToggle = () => {
+    setDialOrientation(dialOrientation === 'North' ? 'South' : 'North');
   };
 
   // Handler functions for dial shape and border controls
@@ -230,44 +230,44 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     }
   };
 
-  // Determine if dial facing should be locked and what direction it should be
-  const getDialFacingLockInfo = () => {
+  // Determine if dial orientation should be locked and what direction it should be
+  const getDialOrientationLockInfo = () => {
     const isOutsideTropics = !isInTropics(latitude);
     const isNotHorizontal = inclineType !== 'Horizontal';
 
     if (isOutsideTropics && isNotHorizontal) {
       return {
         isLocked: true,
-        // Northern hemisphere: sun is in southern sky, so dial must face South
-        // Southern hemisphere: sun is in northern sky, so dial must face North
-        requiredDirection: latitude > 0 ? 'South' : 'North',
+        // Northern hemisphere: forced dial orientation is North
+        // Southern hemisphere: forced dial orientation is South
+        requiredDirection: latitude > 0 ? 'North' : 'South',
         showNotice: true
       };
     }
 
     return {
       isLocked: false,
-      requiredDirection: dialFacing,
+      requiredDirection: dialOrientation,
       showNotice: false
     };
   };
 
-  const dialFacingLockInfo = getDialFacingLockInfo();
+  const dialOrientationLockInfo = getDialOrientationLockInfo();
 
-  // Auto-set dial facing when outside tropics and not horizontal
+  // Auto-set dial orientation when outside tropics and not horizontal
   useEffect(() => {
     const isOutsideTropics = !isInTropics(latitude);
     const isNotHorizontal = inclineType !== 'Horizontal';
 
     if (isOutsideTropics && isNotHorizontal) {
-      // Northern hemisphere: sun is in southern sky, so dial must face South
-      // Southern hemisphere: sun is in northern sky, so dial must face North
-      const requiredDirection = latitude > 0 ? 'South' : 'North';
-      if (dialFacing !== requiredDirection) {
-        setDialFacing(requiredDirection);
+      // Northern hemisphere: forced dial orientation is North
+      // Southern hemisphere: forced dial orientation is South
+      const requiredDirection = latitude > 0 ? 'North' : 'South';
+      if (dialOrientation !== requiredDirection) {
+        setDialOrientation(requiredDirection);
       }
     }
-  }, [latitude, inclineType, dialFacing, setDialFacing]);
+  }, [latitude, inclineType, dialOrientation, setDialOrientation]);
 
   return (
     <div className="card">
@@ -661,26 +661,26 @@ const PageSettings: React.FC<PageSettingsProps> = ({
           }}
         >
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
-            <label className="form-label">Dial Facing</label>
+            <label className="form-label">Dial Orientation</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '8px' }}>
               <span style={{
                 fontSize: '14px',
-                color: dialFacingLockInfo.showNotice ? '#9ca3af' : (dialFacingLockInfo.requiredDirection === 'North' ? '#2563eb' : '#6b7280')
+                color: dialOrientationLockInfo.showNotice ? '#9ca3af' : (dialOrientation === 'North' ? '#2563eb' : '#6b7280')
               }}>North</span>
               <button
                 type="button"
-                onClick={handleDialFacingToggle}
-                disabled={dialFacingLockInfo.isLocked}
+                onClick={handleDialOrientationToggle}
+                disabled={dialOrientationLockInfo.isLocked}
                 style={{
                   width: '44px',
                   height: '24px',
                   borderRadius: '12px',
                   border: 'none',
-                  backgroundColor: dialFacingLockInfo.showNotice ? '#e5e7eb' : (dialFacingLockInfo.requiredDirection === 'South' ? '#2563eb' : '#d1d5db'),
-                  cursor: dialFacingLockInfo.isLocked ? 'not-allowed' : 'pointer',
+                  backgroundColor: dialOrientationLockInfo.showNotice ? '#e5e7eb' : (dialOrientation === 'South' ? '#2563eb' : '#d1d5db'),
+                  cursor: dialOrientationLockInfo.isLocked ? 'not-allowed' : 'pointer',
                   position: 'relative',
                   transition: 'background-color 0.2s',
-                  opacity: dialFacingLockInfo.isLocked ? 0.6 : 1
+                  opacity: dialOrientationLockInfo.isLocked ? 0.6 : 1
                 }}
               >
                 <div
@@ -691,7 +691,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
                     backgroundColor: 'white',
                     position: 'absolute',
                     top: '3px',
-                    left: dialFacingLockInfo.requiredDirection === 'South' ? '23px' : '3px',
+                    left: dialOrientation === 'South' ? '23px' : '3px',
                     transition: 'left 0.2s',
                     boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
                   }}
@@ -699,9 +699,9 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               </button>
               <span style={{
                 fontSize: '14px',
-                color: dialFacingLockInfo.showNotice ? '#9ca3af' : (dialFacingLockInfo.requiredDirection === 'South' ? '#2563eb' : '#6b7280')
+                color: dialOrientationLockInfo.showNotice ? '#9ca3af' : (dialOrientation === 'South' ? '#2563eb' : '#6b7280')
               }}>South</span>
-              {dialFacingLockInfo.showNotice && (
+              {dialOrientationLockInfo.showNotice && (
                 <span style={{ fontSize: '12px', color: '#dc2626', marginLeft: '8px' }}>
                   Horizontal dials only.
                 </span>

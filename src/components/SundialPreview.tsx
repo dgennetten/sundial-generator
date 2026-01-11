@@ -57,7 +57,7 @@ type Props = {
   inclineType?: string;
   tiltAngle?: number;
   declinationNoonmarks?: boolean;
-  dialFacing?: 'North' | 'South';
+  dialOrientation?: 'North' | 'South';
   originalLatitude?: number;
 };
 // Note: App now prefers passing a single `config` prop. To keep JSX happy where only `config` is provided,
@@ -107,7 +107,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     inclineType = 'Horizontal',
     tiltAngle = 0,
     declinationNoonmarks = true,
-    dialFacing = 'South',
+    dialOrientation = 'South',
     originalLatitude,
   } = p;
   // Calculate custom page size in mm
@@ -2062,7 +2062,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
 
   }
-  // Calculate y position for the text block based on dial facing and incline
+  // Calculate y position for the text block based on dial orientation and incline
   const calculateTextBlockPosition = (): { x: number; y: number } => {
     // Use the same black circle positioning logic as the debug circles
     const latRad = degreesToRadians(lat);
@@ -2121,7 +2121,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const lineHeight = dialTextBlockFontSizeMm * 1.2;
 
   // The text block position is already the centroid, so we use it directly
-  // For North-facing dials, the entire SVG group is rotated 180°, so we don't need to adjust coordinates
+  // For North-oriented dials, the entire SVG group is rotated 180°, so we don't need to adjust coordinates
   const adjustedTextBlockX = textBlockX;
   // Apply manual offset if in manual position mode (positive offset moves down)
   const adjustedTextBlockY = sundialNotesPositionMode === 'manual'
@@ -2171,9 +2171,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           </defs>
           {borderRect}
           {clippingBoundary}
-          {/* Main content group - rotate entire page to fix orientation (South facing rotated 180°), apply clipping here */}
+          {/* Main content group - rotate entire page to fix orientation (South oriented rotated 180°), apply clipping here */}
           <g
-            transform={`${dialFacing === 'North' ? '' : 'rotate(180)'} scale(${viewBoxScaleFactor})`}
+            transform={`${dialOrientation === 'South' ? '' : 'rotate(180)'} scale(${viewBoxScaleFactor})`}
             clipPath={`url(#dial-clip-${dialShape.toLowerCase()})`}
           >
             {/* Content positioned relative to gnomon */}
@@ -2185,7 +2185,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 lat={lat}
                 inclineType={inclineType}
                 fontSize={fontSize}
-                dialFacing={dialFacing}
+                dialOrientation={dialOrientation}
                 originalLatitude={originalLatitude}
               />
 
@@ -2201,7 +2201,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 const { x, y } = label.props;
                 return React.cloneElement(label, {
                   key: `label-${index}`,
-                  transform: dialFacing === 'North' ? undefined : `rotate(180 ${x} ${y})`
+                  transform: dialOrientation === 'South' ? undefined : `rotate(180 ${x} ${y})`
                 });
               })}
 
@@ -2216,7 +2216,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   textAnchor="middle"
                   fontFamily={dialTextBlockFontFamily}
                   style={{ userSelect: 'none', pointerEvents: 'none' }}
-                  transform={dialFacing === 'North' ? undefined : `rotate(180 ${adjustedTextBlockX} ${adjustedTextBlockY})`}
+                  transform={dialOrientation === 'South' ? undefined : `rotate(180 ${adjustedTextBlockX} ${adjustedTextBlockY})`}
                 >
                   {textBlockLines.map((line, lineIndex) => (
                     <tspan
@@ -2603,7 +2603,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={dialFacing === 'North' ? undefined : `rotate(180 ${summerQuarter.x - 10} ${equinoxLine.y1 - 8})`}
+                              transform={dialOrientation === 'South' ? undefined : `rotate(180 ${summerQuarter.x - 10} ${equinoxLine.y1 - 8})`}
                             >
                               Spring
                             </text>
@@ -2619,7 +2619,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={dialFacing === 'North' ? undefined : `rotate(180 ${fallQuarter.x + 12} ${equinoxLine.y1 - 8})`}
+                              transform={dialOrientation === 'South' ? undefined : `rotate(180 ${fallQuarter.x + 12} ${equinoxLine.y1 - 8})`}
                             >
                               Summer
                             </text>
@@ -2635,7 +2635,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={dialFacing === 'North' ? undefined : `rotate(180 ${winterQuarter.x - 5} ${equinoxLine.y1 + 8})`}
+                              transform={dialOrientation === 'South' ? undefined : `rotate(180 ${winterQuarter.x - 5} ${equinoxLine.y1 + 8})`}
                             >
                               Fall
                             </text>
@@ -2651,7 +2651,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={dialFacing === 'North' ? undefined : `rotate(180 ${springQuarter.x + 10} ${equinoxLine.y1 + 8})`}
+                              transform={dialOrientation === 'South' ? undefined : `rotate(180 ${springQuarter.x + 10} ${equinoxLine.y1 + 8})`}
                             >
                               Winter
                             </text>
@@ -2704,9 +2704,19 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 const svgOriginalHeight = 1200;
                 const scaleFactor = northPointScale / svgOriginalHeight;
 
+                // Rotate Compass Rose to match dial orientation
+                // The main content group rotates when dialOrientation === 'North' (180°)
+                // When dialOrientation === 'North': main group rotates 180°, Rose should rotate 180° relative to main group
+                //   (net effect: Rose counter-rotates to keep "N" at top)
+                // When dialOrientation === 'South': main group doesn't rotate, Rose should rotate 180°
+                //   (to flip from "N" to "S" at top)
+                // For Northern Hemisphere: always rotate 180° relative to the main group
+                // For Southern Hemisphere: always rotate 180° (same as Northern Hemisphere)
+                const rotationTransform = 'rotate(180 460.035 600)';
+
                 return (
                   <g
-                    transform={`translate(${adjustedTextBlockX}, ${adjustedTextBlockY}) scale(${scaleFactor}) translate(-460.035, -600) ${dialFacing === 'North' ? '' : 'rotate(180 460.035 600)'}`}
+                    transform={`translate(${adjustedTextBlockX}, ${adjustedTextBlockY}) scale(${scaleFactor}) translate(-460.035, -600) ${rotationTransform}`}
                   >
                     {/* North Point SVG content */}
                     <g>

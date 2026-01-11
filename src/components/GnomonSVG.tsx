@@ -6,7 +6,7 @@ interface GnomonSVGProps {
   lat?: number;
   inclineType?: string;
   fontSize?: number;
-  dialFacing?: 'North' | 'South';
+  dialOrientation?: 'North' | 'South';
   originalLatitude?: number;
 }
 
@@ -16,7 +16,7 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
   lat = 0,
   inclineType = 'Horizontal',
   fontSize = 20,
-  dialFacing = 'South',
+  dialOrientation = 'South',
   originalLatitude
 }) => {
   // Convert fontSize from pt to mm for SVG (1 pt = 25.4/72 mm = 0.3528 mm)
@@ -102,7 +102,7 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
           fill="black"
           textAnchor="middle"
           alignmentBaseline="middle"
-          transform={dialFacing === 'North' ? `rotate(180 0 -15)` : undefined}
+          transform={dialOrientation === 'South' ? `rotate(180 0 -15)` : undefined}
           style={{ pointerEvents: 'none', userSelect: 'none' }}
         >
           {gnomonHeight}mm

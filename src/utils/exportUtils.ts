@@ -742,7 +742,7 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
     const transform = textEl.getAttribute('transform');
     if (transform && transform.includes('rotate')) {
       // Only remove very complex transforms, but preserve simple rotations like "rotate(180 x y)"
-      // which are used for dial facing
+      // which are used for dial orientation
       if (transform.includes('matrix') || transform.split(' ').length > 4) {
         textEl.removeAttribute('transform');
       }
@@ -799,9 +799,9 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
       }
       // Handle other complex transforms
       else if (transform.includes('scale') && transform.includes('rotate')) {
-        // Check if this is a dial facing transform (scale + rotate(180))
+        // Check if this is a dial orientation transform (scale + rotate(180))
         if (transform.includes('rotate(180)')) {
-          // Keep the dial facing transform as-is
+          // Keep the dial orientation transform as-is
         } else if (transform.includes('matrix') || transform.split(' ').length > 6) {
           // Only simplify very complex transforms
           const scaleMatch = transform.match(/scale\([^)]+\)/);

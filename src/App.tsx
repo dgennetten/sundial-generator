@@ -119,14 +119,13 @@ const App: React.FC = () => {
   const [sundialNotesOffset, setSundialNotesOffset] = useState<number>(0); // in mm
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
 
-  // Calculate default dial facing based on hemisphere
-  // Northern hemisphere: sun is in southern sky, so dial faces South
-  // Southern hemisphere: sun is in northern sky, so dial faces North
-  const getDefaultDialFacing = (lat: number): 'North' | 'South' => {
-    return lat >= 0 ? 'South' : 'North';
+  // Calculate default dial orientation
+  // Default orientation is North (North at top)
+  const getDefaultDialOrientation = (): 'North' | 'South' => {
+    return 'North';
   };
 
-  const [dialFacing, setDialFacing] = useState<'North' | 'South'>(getDefaultDialFacing(latitude));
+  const [dialOrientation, setDialOrientation] = useState<'North' | 'South'>(getDefaultDialOrientation());
 
   // Page size map (mm)
   const pageSizeMap = useMemo(() => ({
@@ -332,7 +331,7 @@ const App: React.FC = () => {
     inclineType,
     tiltAngle,
     declinationNoonmarks,
-    dialFacing,
+    dialOrientation,
     originalLatitude: latitude,
   }), [
     effectiveLatitude,
@@ -371,7 +370,7 @@ const App: React.FC = () => {
     inclineType,
     tiltAngle,
     declinationNoonmarks,
-    dialFacing,
+    dialOrientation,
     latitude,
     activeHourlineIntervals,
     normalizedDeclinationLines,
@@ -453,8 +452,8 @@ const App: React.FC = () => {
           declinationDegrees={declinationDegrees}
           setDeclinationDegrees={setDeclinationDegrees}
           latitude={latitude}
-          dialFacing={dialFacing}
-          setDialFacing={setDialFacing}
+          dialOrientation={dialOrientation}
+          setDialOrientation={setDialOrientation}
           customWidth={customWidth}
           setCustomWidth={setCustomWidth}
           customHeight={customHeight}

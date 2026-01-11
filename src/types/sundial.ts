@@ -51,9 +51,9 @@ export type PageOrientation = 'Portrait' | 'Landscape';
 export type InclineType = 'Horizontal' | 'Vertical' | 'Cancer' | 'Capricorn' | 'Polar' | 'Manual';
 
 /**
- * Dial facing direction
+ * Dial orientation
  */
-export type DialFacing = 'North' | 'South';
+export type DialOrientation = 'North' | 'South';
 
 /**
  * Gnomon types for sundial shadow casting
@@ -238,7 +238,7 @@ export interface SundialConfig {
   };
   /** Dial settings */
   dial: {
-    facing: DialFacing;
+    orientation: DialOrientation;
     inclineType: InclineType;
     labelWinterSide: boolean;
     labelSummerSide: boolean;
