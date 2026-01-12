@@ -472,16 +472,19 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             alignItems: 'flex-start',
             gap: isMobile ? '0.5rem' : '1rem',
             flexDirection: 'row',
-            marginTop: isMobile ? '8px' : '0'
+            marginTop: isMobile ? '8px' : '0',
+            opacity: 0.5,
+            pointerEvents: 'none'
           }}
         >
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-            <label className="form-label">Declination</label>
+            <label className="form-label" style={{ color: '#9ca3af' }}>Declination*</label>
             <select
               className="form-select"
               value={declinationType}
               onChange={(e) => setDeclinationType(e.target.value as DeclinationType)}
-              style={{ minWidth: isMobile ? '80px' : 'auto' }}
+              disabled
+              style={{ minWidth: isMobile ? '80px' : 'auto', backgroundColor: '#f7fafc', color: '#a0aec0' }}
             >
               <option value="North">North</option>
               <option value="Northeast">Northeast</option>
@@ -495,45 +498,47 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             </select>
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-            <label className="form-label">Degrees</label>
+            <label className="form-label" style={{ color: '#9ca3af' }}>Degrees</label>
             <input
               type="number"
               className="form-input"
               value={declinationDegrees.toFixed(1)}
               onChange={(e) => setDeclinationDegrees(parseFloat(e.target.value) || 0)}
-              disabled={declinationType !== 'Manual'}
+              disabled
               min={0}
               max={90}
               step={declinationStep}
               style={{
                 width: isMobile ? '70px' : '80px',
-                backgroundColor: declinationType !== 'Manual' ? '#f7fafc' : undefined,
-                color: declinationType !== 'Manual' ? '#a0aec0' : undefined
+                backgroundColor: '#f7fafc',
+                color: '#a0aec0'
               }}
             />
           </div>
           <div className="form-group" style={{ flex: '0 0 auto' }}>
-            <label className="form-label" style={{ marginBottom: '0.5rem' }}>Inc/Dec</label>
+            <label className="form-label" style={{ marginBottom: '0.5rem', color: '#9ca3af' }}>Inc/Dec</label>
             <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'not-allowed', whiteSpace: 'nowrap', color: '#9ca3af' }}>
                 <input
                   type="radio"
                   name="declinationStep"
                   value="1.0"
                   checked={declinationStep === 1.0}
                   onChange={() => setDeclinationStep(1.0)}
-                  style={{ cursor: 'pointer' }}
+                  disabled
+                  style={{ cursor: 'not-allowed' }}
                 />
                 1.0
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'not-allowed', whiteSpace: 'nowrap', color: '#9ca3af' }}>
                 <input
                   type="radio"
                   name="declinationStep"
                   value="0.1"
                   checked={declinationStep === 0.1}
                   onChange={() => setDeclinationStep(0.1)}
-                  style={{ cursor: 'pointer' }}
+                  disabled
+                  style={{ cursor: 'not-allowed' }}
                 />
                 0.1
               </label>
