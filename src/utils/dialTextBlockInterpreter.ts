@@ -55,12 +55,12 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
 
   let locationString = ctx.locationName || '';
   if (!locationString && typeof displayLat === 'number' && typeof displayLng === 'number') {
-    locationString = `Lat: ${displayLat.toFixed(4)}, Lon: ${displayLng.toFixed(4)}`;
+    locationString = `Lat: ${displayLat.toFixed(3)}, Lon: ${displayLng.toFixed(3)}`;
   }
 
   const coordinatesString =
     typeof displayLat === 'number' && typeof displayLng === 'number'
-      ? `Latitude: ${displayLat.toFixed(4)}, Longitude: ${displayLng.toFixed(4)}`
+      ? `Latitude: ${displayLat.toFixed(3)}, Longitude: ${displayLng.toFixed(3)}`
       : '';
 
   const halfYearString =

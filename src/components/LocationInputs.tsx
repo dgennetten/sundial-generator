@@ -442,10 +442,10 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
             <input
               type="number"
               className="form-input"
-              step={0.0001}
+              step={0.001}
               min={-90}
               max={90}
-              value={latitude}
+              value={latitude.toFixed(3)}
               onChange={async (e) => {
                 const newLat = parseFloat(e.target.value);
 
@@ -503,10 +503,10 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
             <input
               type="number"
               className="form-input"
-              step={0.0001}
+              step={0.001}
               min={-180}
               max={180}
-              value={longitude}
+              value={longitude.toFixed(3)}
               onChange={async (e) => {
                 const newLng = parseFloat(e.target.value);
 

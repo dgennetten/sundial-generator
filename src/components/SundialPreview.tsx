@@ -1904,11 +1904,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const displayLat = typeof originalLatitude === 'number' ? originalLatitude : lat;
   if (!locationString && typeof displayLat === 'number' && typeof lng === 'number') {
     // Fallback if no location name is provided
-    locationString = 'Lat: ' + displayLat.toFixed(4) + ', Lon: ' + lng.toFixed(4);
+    locationString = 'Lat: ' + displayLat.toFixed(3) + ', Lon: ' + lng.toFixed(3);
   }
   let coordinatesString = '';
   if (typeof displayLat === 'number' && typeof lng === 'number') {
-    coordinatesString = `Latitude: ${displayLat.toFixed(4)}, Longitude: ${lng.toFixed(4)}`;
+    coordinatesString = `Latitude: ${displayLat.toFixed(3)}, Longitude: ${lng.toFixed(3)}`;
   }
 
 
