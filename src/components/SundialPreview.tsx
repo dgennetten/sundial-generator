@@ -162,8 +162,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   });
   // Filter noonPoints by date range
   // WinterToSpring (UI: Winter - Spring), SummerToFall (UI: Summer - Fall)
-  if (dateRange === 'WinterToSpring') {
-    // Split into two segments and combine for y-centering
+  const isNorthernHemisphere = lat >= 0;
+  if (dateRange === 'WinterToSpring' && isNorthernHemisphere) {
+    // Split into two segments and combine for y-centering (only for Northern Hemisphere wrap-around)
     const [seg1, seg2] = splitWinterToSpring(noonPoints);
     noonPoints = [...seg1, ...seg2];
   } else {
@@ -870,7 +871,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         });
         // Filter points by date range
         const isNorthernHemisphere = lat >= 0;
-        const needsSplitting = (dateRange === 'WinterToSpring') ||
+        const needsSplitting = (dateRange === 'WinterToSpring' && isNorthernHemisphere) ||
           (dateRange === 'SummerToFall' && !isNorthernHemisphere);
 
         if (needsSplitting) {
@@ -1137,7 +1138,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         });
         // Filter points by date range
         const isNorthernHemisphere = lat >= 0;
-        const needsSplitting = (dateRange === 'WinterToSpring') ||
+        const needsSplitting = (dateRange === 'WinterToSpring' && isNorthernHemisphere) ||
           (dateRange === 'SummerToFall' && !isNorthernHemisphere);
 
         if (needsSplitting) {
@@ -1378,27 +1379,14 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       { month: 'December', day: 335 }
     ];
 
-    if (dateRange === 'WinterToSpring') {
-      // Handle wrap-around case: days 355-365 and 1-172
-      for (const monthStart of monthStarts) {
-        if ((monthStart.day >= 355 && monthStart.day <= 365) || (monthStart.day >= 1 && monthStart.day <= 172)) {
-          monthBoundaries.push({
-            day: monthStart.day,
-            decl: getSolarDeclination(monthStart.day),
-            month: monthStart.month
-          });
-        }
-      }
-    } else {
-      // Use the new helper function for consistent filtering
-      for (const monthStart of monthStarts) {
-        if (isDayInRange(monthStart.day, dateRange)) {
-          monthBoundaries.push({
-            day: monthStart.day,
-            decl: getSolarDeclination(monthStart.day),
-            month: monthStart.month
-          });
-        }
+    // Use the helper function for consistent filtering (handles hemisphere correctly)
+    for (const monthStart of monthStarts) {
+      if (isDayInRange(monthStart.day, dateRange)) {
+        monthBoundaries.push({
+          day: monthStart.day,
+          decl: getSolarDeclination(monthStart.day),
+          month: monthStart.month
+        });
       }
     }
 
@@ -1433,46 +1421,24 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       // 15th of the month (14 days later)
       const fifteenthDay = monthStart.day + 14;
 
-      // Check if 1st is in range
-      if (dateRange === 'WinterToSpring') {
-        if ((firstDay >= 355 && firstDay <= 365) || (firstDay >= 1 && firstDay <= 172)) {
-          firstAndFifteenthDays.push({
-            day: firstDay,
-            decl: getSolarDeclination(firstDay),
-            month: monthStart.month,
-            dayOfMonth: 1
-          });
-        }
-      } else {
-        if (isDayInRange(firstDay, dateRange)) {
-          firstAndFifteenthDays.push({
-            day: firstDay,
-            decl: getSolarDeclination(firstDay),
-            month: monthStart.month,
-            dayOfMonth: 1
-          });
-        }
+      // Check if 1st is in range (use helper function for consistent filtering)
+      if (isDayInRange(firstDay, dateRange)) {
+        firstAndFifteenthDays.push({
+          day: firstDay,
+          decl: getSolarDeclination(firstDay),
+          month: monthStart.month,
+          dayOfMonth: 1
+        });
       }
 
-      // Check if 15th is in range
-      if (dateRange === 'WinterToSpring') {
-        if ((fifteenthDay >= 355 && fifteenthDay <= 365) || (fifteenthDay >= 1 && fifteenthDay <= 172)) {
-          firstAndFifteenthDays.push({
-            day: fifteenthDay,
-            decl: getSolarDeclination(fifteenthDay),
-            month: monthStart.month,
-            dayOfMonth: 15
-          });
-        }
-      } else {
-        if (isDayInRange(fifteenthDay, dateRange)) {
-          firstAndFifteenthDays.push({
-            day: fifteenthDay,
-            decl: getSolarDeclination(fifteenthDay),
-            month: monthStart.month,
-            dayOfMonth: 15
-          });
-        }
+      // Check if 15th is in range (use helper function for consistent filtering)
+      if (isDayInRange(fifteenthDay, dateRange)) {
+        firstAndFifteenthDays.push({
+          day: fifteenthDay,
+          decl: getSolarDeclination(fifteenthDay),
+          month: monthStart.month,
+          dayOfMonth: 15
+        });
       }
     }
 
@@ -1493,8 +1459,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     });
 
     // Filter points by date range
+    const isNorthernHemisphere = lat >= 0;
     let filteredPoints = noonAnalemmaPoints;
-    if (dateRange === 'WinterToSpring') {
+    if (dateRange === 'WinterToSpring' && isNorthernHemisphere) {
       const [seg1, seg2] = splitWinterToSpring(filteredPoints);
       filteredPoints = [...seg1, ...seg2];
     } else {
