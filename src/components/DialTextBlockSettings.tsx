@@ -156,7 +156,10 @@ const DialTextBlockSettings: React.FC<Props> = ({
           <>
             <div className="form-group">
               <label className="form-label">
-                Text Content (supports {"{location}"}, {"{coordinates}"}, {"{half-year}"}, {"{gnomon}"}, {"{today}"} and some Markup codes)
+                <span>Text Content</span>{' '}
+                <span style={{ fontSize: '0.9em', color: '#718096' }}>
+                  (supports {"{location}"}, {"{coordinates}"}, {"{half-year}"}, {"{gnomon}"}, {"{today}"} and some Markup codes)
+                </span>
               </label>
               <textarea
                 className="form-input"
