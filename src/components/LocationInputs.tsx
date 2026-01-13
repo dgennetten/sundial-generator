@@ -111,8 +111,6 @@ const estimateTimezoneFromLongitude = (_lat: number, lng: number) => {
     timezoneName = `UTC${sign}${offsetHours}`;
   }
 
-  console.log(`Estimated timezone from longitude ${lng}: ${timezoneName} (${offsetHours} hours)`);
-
   return {
     timeZoneId: null,
     dstOffset: 0,
@@ -132,7 +130,6 @@ const isCurrentlyInDST = (dstOffset: number): boolean => {
 const calculateTzMeridian = (longitude: number): number => {
   // Longitude is already in degrees west of Greenwich (negative for western hemisphere)
   const meridian = longitude;
-  console.log('Calculating tzMeridian from longitude:', { longitude, meridian });
   return meridian;
 };
 
@@ -268,7 +265,6 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
 
       if (timeZoneData.timeZoneId) {
         const tzName = timeZoneData.timeZoneName || 'Time Zone';
-        console.log('Setting timezone name:', tzName, 'from API response:', timeZoneData); // Debug log
         setTimezoneName(tzName);
       }
     };
@@ -608,10 +604,15 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
                 locationName: locationName
               });
             } else {
+              // Always calculate meridian from longitude, even if timezone lookup failed
+              const newMeridian = calculateTzMeridian(lng);
+              const tzName = timeZoneData.timeZoneName || 'Time Zone';
+              setTimezoneName(tzName);
+
               onChange({
                 lat,
                 lng,
-                tz: tzMeridian,
+                tz: newMeridian,
                 locationName: locationName
               });
             }

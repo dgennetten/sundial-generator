@@ -207,6 +207,30 @@ export interface TextBlockConfig {
 }
 
 /**
+ * Sundial print/export record from Supabase
+ */
+export interface SundialPrint {
+  id?: number;
+  location?: string;
+  latitude: number;
+  longitude: number;
+  inclination: number;
+  declination: number;
+  gnomon_type: string;
+  notes_type: string;
+  date_range: string;
+  created_at?: string;
+}
+
+/**
+ * Props for PrintedDialsMap component
+ */
+export interface SundialPrintMapProps {
+  onPinClick: (print: SundialPrint) => void;
+  refreshTrigger?: number; // Increment to trigger refresh
+}
+
+/**
  * Complete sundial configuration
  */
 export interface SundialConfig {

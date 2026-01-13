@@ -32,7 +32,9 @@ export type {
   FontConfig,
   BorderConfig,
   TextBlockConfig,
-  SundialConfig
+  SundialConfig,
+  SundialPrint,
+  SundialPrintMapProps
 } from './sundial';
 
 // Export-related types

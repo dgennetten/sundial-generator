@@ -23,11 +23,12 @@ interface DesignExportProps {
   gnomonHeight?: number;
   inclineType?: InclineType;
   tiltAngle?: number;
+  onLogComplete?: () => void;
 }
 
 
 
-const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orientation, customWidth, customHeight, dateRange, gnomonType, locationName, showBackground, backgroundColor, sundialNotesMode, dialTextBlock, latitude, longitude, gnomonHeight, inclineType, tiltAngle }) => {
+const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orientation, customWidth, customHeight, dateRange, gnomonType, locationName, showBackground, backgroundColor, sundialNotesMode, dialTextBlock, latitude, longitude, gnomonHeight, inclineType, tiltAngle, onLogComplete }) => {
   const [format, setFormat] = useState<ExportFormat>('PNG');
   const [dpi, setDpi] = useState<number>(600);
   const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -122,6 +123,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
         tiltAngle,
       });
       console.log('Print activity logged successfully');
+      onLogComplete?.(); // Trigger map refresh
     } catch (error) {
       console.error('Failed to log print activity:', error);
       // Don't prevent printing if logging fails
@@ -166,6 +168,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
         tiltAngle,
       });
       console.log('Export completed successfully');
+      onLogComplete?.(); // Trigger map refresh
     } catch (error) {
       console.error('Export failed:', error);
       // You could add user-facing error handling here, like showing a toast notification

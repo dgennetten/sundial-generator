@@ -2,6 +2,7 @@
 import { createSVGExport, downloadSVG } from './svgExportUtils';
 import type { ExportOptions, PageSize } from '../types';
 import { interpretDialTextBlockForEmail } from './dialTextBlockInterpreter';
+import { saveSundialPrint, computeInclinationDegrees } from './sundialPrintUtils';
 
 // Re-export types for backward compatibility
 export type { ExportFormat, PageSize } from '../types';
@@ -166,6 +167,31 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
       // Non-JSON response (e.g., HTML dev page). Log and continue.
       console.log('Export logged (non-JSON response):', text.substring(0, 200));
     }
+
+    // Also save to Supabase (wait for it to complete for refresh trigger, but don't throw on error)
+    if (options.latitude !== undefined && options.longitude !== undefined) {
+      const inclination = computeInclinationDegrees({
+        inclineType: options.inclineType,
+        latitude: options.latitude,
+        tiltAngle: options.tiltAngle,
+      });
+
+      try {
+        await saveSundialPrint({
+          location: options.locationName || undefined,
+          latitude: options.latitude,
+          longitude: options.longitude,
+          inclination,
+          declination: 0, // Store 0 for now (not yet implemented)
+          gnomon_type: options.gnomonType || 'Unknown',
+          notes_type: options.sundialNotesMode || 'Unknown',
+          date_range: options.dateRange || 'Unknown',
+        });
+      } catch (error) {
+        console.warn('Failed to save export to Supabase:', error);
+        // Don't throw - Supabase failures shouldn't prevent export
+      }
+    }
   } catch (error) {
     console.warn('Error logging export activity:', error);
     // Don't throw error - logging failure shouldn't prevent export
@@ -284,6 +310,31 @@ export async function logPrintActivity(options: {
     } catch {
       // Non-JSON response (e.g., HTML dev page). Log and continue.
       console.log('Print logged (non-JSON response):', text.substring(0, 200));
+    }
+
+    // Also save to Supabase (wait for it to complete for refresh trigger, but don't throw on error)
+    if (options.latitude !== undefined && options.longitude !== undefined) {
+      const inclination = computeInclinationDegrees({
+        inclineType: options.inclineType,
+        latitude: options.latitude,
+        tiltAngle: options.tiltAngle,
+      });
+
+      try {
+        await saveSundialPrint({
+          location: options.locationName || undefined,
+          latitude: options.latitude,
+          longitude: options.longitude,
+          inclination,
+          declination: 0, // Store 0 for now (not yet implemented)
+          gnomon_type: options.gnomonType || 'Unknown',
+          notes_type: options.sundialNotesMode || 'Unknown',
+          date_range: options.dateRange || 'Unknown',
+        });
+      } catch (error) {
+        console.warn('Failed to save print to Supabase:', error);
+        // Don't throw - Supabase failures shouldn't prevent printing
+      }
     }
   } catch (error) {
     console.warn('Error logging print activity:', error);

@@ -36,6 +36,8 @@ import { getSolarPosition, projectShadowToSurface } from './utils/analemmaGenera
 import AboutCard from './components/AboutCard';
 // import VisitorMap from './components/VisitorMap';
 import DialTextBlockSettings from './components/DialTextBlockSettings';
+import PrintedDialsMap from './components/PrintedDialsMap';
+import type { SundialPrint } from './types/sundial';
 
 
 const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n{half-year}\n*{gnomon}*\n*{incline}*\n*{today}*`;
@@ -118,6 +120,7 @@ const App: React.FC = () => {
   const [sundialNotesPositionMode, setSundialNotesPositionMode] = useState<'auto' | 'manual'>('auto');
   const [sundialNotesOffset, setSundialNotesOffset] = useState<number>(0); // in mm
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
+  const [printedDialsMapRefreshTrigger, setPrintedDialsMapRefreshTrigger] = useState<number>(0);
 
   // Calculate default dial orientation
   // Default orientation is North (North at top)
@@ -375,6 +378,44 @@ const App: React.FC = () => {
     activeHourlineIntervals,
     normalizedDeclinationLines,
   ]);
+
+  // Callback to restore settings from a printed dial record
+  const handlePinClick = useCallback((print: SundialPrint) => {
+    setLatitude(print.latitude);
+    setLongitude(print.longitude);
+    // Set timezone meridian to match longitude (required for calculations)
+    setTzMeridian(print.longitude);
+    setTiltAngle(print.inclination);
+    setInclineType('Manual'); // Set to Manual since we're restoring a specific angle
+    setGnomonType(print.gnomon_type as typeof gnomonType);
+    setSundialNotesMode(print.notes_type);
+    setHourlineDateRange(print.date_range as typeof hourlineDateRange);
+    setDeclinationDegrees(print.declination);
+    
+    // Restore location from saved record
+    if (print.location) {
+      setLocationName(print.location);
+      
+      // Ensure {location} placeholder exists in dialTextBlock (restore it if it was cleared)
+      setDialTextBlock(prev => {
+        // If {location} placeholder doesn't exist, add it at the beginning
+        if (!prev.includes('{location}')) {
+          // Add **{location}** as the first line (matching default format)
+          return `**{location}**\n${prev}`;
+        }
+        // If it already exists, keep it as is (it will be replaced at render time with locationName)
+        return prev;
+      });
+    }
+    // If no location saved, leave dialTextBlock as-is (don't clear {location} placeholder)
+  }, []);
+
+  // Callback to trigger map refresh after logging
+  const handleLogComplete = useCallback(() => {
+    // Increment refresh trigger to cause map to refresh
+    setPrintedDialsMapRefreshTrigger(prev => prev + 1);
+  }, []);
+
   return (
     <div className="app-container">
       {/* Controls Panel - Left Side */}
@@ -401,6 +442,7 @@ const App: React.FC = () => {
           gnomonHeight={effectiveGnomonHeight}
           inclineType={inclineType}
           tiltAngle={tiltAngle}
+          onLogComplete={handleLogComplete}
         />
 
         <LocationInputs
@@ -556,6 +598,10 @@ const App: React.FC = () => {
             setLineStyles={setLineStyles}
           />
         </React.Profiler>
+        <PrintedDialsMap
+          onPinClick={handlePinClick}
+          refreshTrigger={printedDialsMapRefreshTrigger}
+        />
         {/* <VisitorMap /> */}
         <AboutCard />
       </div>
