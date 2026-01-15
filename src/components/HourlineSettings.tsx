@@ -1,6 +1,6 @@
 import React from 'react';
 import type { LineStyle } from './LineSettings';
-import { Timer } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { saveHourlineIntervals, type HourlineInterval } from './hourlineUtils';
 
 type DateRange = 'FullYear' | 'SummerToFall' | 'WinterToSpring';
@@ -69,7 +69,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title"><Timer color="#2563eb" size={20} style={{marginRight: 6}} /> Hour Lines</h3>
+        <h3 className="card-title"><Clock color="#2563eb" size={20} style={{marginRight: 6}} /> Hour Lines</h3>
       </div>
       <div className="card-content">
         <div 
