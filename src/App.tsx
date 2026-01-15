@@ -48,7 +48,7 @@ const App: React.FC = () => {
   const [tzMeridian, setTzMeridian] = useState(-90);
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
-  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height'>('crosshair');
+  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height'>('popup-with-brace');
   const [pageSize, setPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom'>('Letter');
   const [customWidth, setCustomWidth] = useState<number>(8.5 * 25.4); // Store in mm
   const [customHeight, setCustomHeight] = useState<number>(11 * 25.4); // Store in mm
@@ -59,7 +59,7 @@ const App: React.FC = () => {
   const [tiltAngle, setTiltAngle] = useState<number>(90);
   const [declinationType, setDeclinationType] = useState<DeclinationType>('North');
   const [declinationDegrees, setDeclinationDegrees] = useState<number>(0);
-  const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToFall' | 'WinterToSpring'>('FullYear');
+  const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToFall' | 'WinterToSpring'>('WinterToSpring');
   const [lineStyles, setLineStyles] = useState<LineStyle[]>(() => {
     return loadLineStyles();
   });
@@ -77,7 +77,7 @@ const App: React.FC = () => {
           return { ...i, styleId: range === 'FullYear' ? 'dashed-hairline' : 'default-hairline' };
         }
         if (i.id === 'quarter-hour') {
-          return { ...i, active: range !== 'FullYear', styleId: 'dashed-hairline' };
+          return { ...i, active: range !== 'FullYear', styleId: 'hourline-5-2-day-dash' };
         }
         if (i.id === '5-minute' || i.id === '2-minute') {
           return { ...i, active: false };
@@ -87,7 +87,7 @@ const App: React.FC = () => {
       // Persist overrides of built-ins so refresh keeps the setting
       saveHourlineOverrides({
         'half-hour': { styleId: range === 'FullYear' ? 'dashed-hairline' : 'default-hairline' },
-        'quarter-hour': { active: range !== 'FullYear', styleId: 'dashed-hairline' },
+        'quarter-hour': { active: range !== 'FullYear', styleId: 'hourline-5-2-day-dash' },
         '5-minute': { active: false },
         '2-minute': { active: false },
       });
