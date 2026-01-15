@@ -17,7 +17,7 @@
 // Attribution-NonCommercial-ShareAlike 4.0 International License
 // along with this program. If not, see <https://creativecommons.org/licenses/by-nc-sa/4.0/>.
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 
 import PageSettings, { type InclineType, type DeclinationType, type DialShape } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
@@ -54,6 +54,7 @@ const App: React.FC = () => {
   const [customHeight, setCustomHeight] = useState<number>(11 * 25.4); // Store in mm
   const [customUnits, setCustomUnits] = useState<'in' | 'cm'>('in');
   const [previousPageSize, setPreviousPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom'>('Letter');
+  const isRestoringRef = useRef(false); // Flag to prevent auto-initialization during restore
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
   const [tiltAngle, setTiltAngle] = useState<number>(90);
@@ -205,8 +206,9 @@ const App: React.FC = () => {
   }, [pageSize]);
 
   // Initialize custom size values when switching to Custom
+  // Skip this if we're in the middle of a restore operation
   useEffect(() => {
-    if (pageSize === 'Custom') {
+    if (pageSize === 'Custom' && !isRestoringRef.current) {
       // Set initial values based on the previous page size
       const currentPageSize = pageSizeMap[previousPageSize as keyof typeof pageSizeMap] || pageSizeMap.Letter;
       const widthInInches = currentPageSize.width / 25.4;
@@ -418,6 +420,9 @@ const App: React.FC = () => {
 
   // Callback to restore dial configuration from saved config
   const handleRestoreDial = useCallback((config: any) => {
+    // Set restore flag to prevent auto-initialization
+    isRestoringRef.current = true;
+    
     // Location
     if (config.latitude !== undefined) setLatitude(config.latitude);
     if (config.longitude !== undefined) setLongitude(config.longitude);
@@ -431,11 +436,21 @@ const App: React.FC = () => {
     if (config.gnomonPosition !== undefined) setGnomonPosition(config.gnomonPosition);
     if (config.gnomonPositionMode !== undefined) setGnomonPositionMode(config.gnomonPositionMode);
     
-    // Page
-    if (config.pageSize !== undefined) setPageSize(config.pageSize);
+    // Page - restore custom dimensions FIRST, then pageSize
+    // This prevents the auto-initialization useEffect from overwriting restored values
     if (config.customWidth !== undefined) setCustomWidth(config.customWidth);
     if (config.customHeight !== undefined) setCustomHeight(config.customHeight);
     if (config.customUnits !== undefined) setCustomUnits(config.customUnits);
+    
+    // Now set pageSize (this will trigger the useEffect, but our flag prevents overwriting)
+    if (config.pageSize !== undefined) {
+      setPageSize(config.pageSize);
+    }
+    
+    // Clear restore flag after a short delay to allow state updates to complete
+    setTimeout(() => {
+      isRestoringRef.current = false;
+    }, 100);
     if (config.orientation !== undefined) setOrientation(config.orientation);
     if (config.inclineType !== undefined) setInclineType(config.inclineType);
     if (config.tiltAngle !== undefined) setTiltAngle(config.tiltAngle);
@@ -608,6 +623,11 @@ const App: React.FC = () => {
             setBackgroundColor(backgroundColor);
           }}
           lineStyles={lineStyles}
+          dialShape={dialShape}
+          borderStyle={borderStyle}
+          borderMargin={borderMargin}
+          showBackground={showBackground}
+          backgroundColor={backgroundColor}
         />
 
         <GnomonSettings

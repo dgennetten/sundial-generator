@@ -50,6 +50,12 @@ interface PageSettingsProps {
   onBorderChange: (dialShape: DialShape, borderStyle: string, margin: number) => void;
   onBackgroundChange: (showBackground: boolean, backgroundColor: string) => void;
   lineStyles: LineStyle[];
+  // Props for syncing with saved/restored state
+  dialShape?: DialShape;
+  borderStyle?: string;
+  borderMargin?: number; // in inches
+  showBackground?: boolean;
+  backgroundColor?: string;
 }
 
 const PageSettings: React.FC<PageSettingsProps> = ({
@@ -77,13 +83,54 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   onBorderChange,
   onBackgroundChange,
   lineStyles,
+  dialShape: dialShapeProp,
+  borderStyle: borderStyleProp,
+  borderMargin: borderMarginProp, // in inches
+  showBackground: showBackgroundProp,
+  backgroundColor: backgroundColorProp,
 }) => {
   // State for dial shape, border and background controls
-  const [dialShape, setDialShape] = useState<DialShape>('Rectangle');
-  const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
-  const [margin, setMargin] = useState<number>(6); // in mm
-  const [showBackground, setShowBackground] = useState<boolean>(true);
-  const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
+  const [dialShape, setDialShape] = useState<DialShape>(dialShapeProp ?? 'Rectangle');
+  const [borderStyle, setBorderStyle] = useState<string>(borderStyleProp ?? 'default-hairline');
+  const [margin, setMargin] = useState<number>(borderMarginProp ? borderMarginProp * 25.4 : 6); // Convert inches to mm
+  const [showBackground, setShowBackground] = useState<boolean>(showBackgroundProp ?? true);
+  const [backgroundColor, setBackgroundColor] = useState<string>(backgroundColorProp ?? 'Cornsilk');
+
+  // Sync internal state when props change (for restore functionality)
+  useEffect(() => {
+    if (dialShapeProp !== undefined) {
+      setDialShape(dialShapeProp);
+    }
+  }, [dialShapeProp]);
+
+  useEffect(() => {
+    if (borderStyleProp !== undefined) {
+      setBorderStyle(borderStyleProp);
+    }
+  }, [borderStyleProp]);
+
+  useEffect(() => {
+    if (borderMarginProp !== undefined) {
+      setMargin(borderMarginProp * 25.4); // Convert inches to mm
+    }
+  }, [borderMarginProp]);
+
+  useEffect(() => {
+    if (showBackgroundProp !== undefined) {
+      setShowBackground(showBackgroundProp);
+    }
+  }, [showBackgroundProp]);
+
+  useEffect(() => {
+    if (backgroundColorProp !== undefined) {
+      setBackgroundColor(backgroundColorProp);
+    }
+  }, [backgroundColorProp]);
+
+  // Note: customWidth, customHeight, and customUnits are used directly from props
+  // via getDisplayWidth() and getDisplayHeight(), so they don't need useEffect hooks.
+  // However, we need to ensure the component re-renders when these props change.
+  // React will handle this automatically since they're used in the render.
 
   // State for increment/decrement step values
   const [inclinationStep, setInclinationStep] = useState<number>(1.0);

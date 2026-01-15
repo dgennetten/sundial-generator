@@ -161,10 +161,11 @@ const RestoreDialDialog: React.FC<RestoreDialDialogProps> = ({ open, onClose, on
                           background: confirmDeleteId === config.id ? '#dc2626' : 'transparent',
                           border: confirmDeleteId === config.id ? '1px solid #dc2626' : '1px solid #e5e7eb',
                           borderRadius: '4px',
-                          padding: '6px 8px',
+                          padding: confirmDeleteId === config.id ? '6px 12px' : '6px 8px',
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
+                          gap: confirmDeleteId === config.id ? '6px' : '0',
                           color: confirmDeleteId === config.id ? 'white' : '#dc2626',
                           transition: 'all 0.2s',
                           flexShrink: 0,
@@ -183,6 +184,11 @@ const RestoreDialDialog: React.FC<RestoreDialDialogProps> = ({ open, onClose, on
                         }}
                       >
                         <Trash2 size={16} />
+                        {confirmDeleteId === config.id && (
+                          <span style={{ fontSize: '0.75rem', fontWeight: '500', whiteSpace: 'nowrap' }}>
+                            Click again to Confirm
+                          </span>
+                        )}
                       </button>
                     </div>
                   </div>
