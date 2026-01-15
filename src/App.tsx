@@ -416,6 +416,73 @@ const App: React.FC = () => {
     setPrintedDialsMapRefreshTrigger(prev => prev + 1);
   }, []);
 
+  // Callback to restore dial configuration from saved config
+  const handleRestoreDial = useCallback((config: any) => {
+    // Location
+    if (config.latitude !== undefined) setLatitude(config.latitude);
+    if (config.longitude !== undefined) setLongitude(config.longitude);
+    if (config.tzMeridian !== undefined) setTzMeridian(config.tzMeridian);
+    if (config.locationName !== undefined) setLocationName(config.locationName);
+    
+    // Gnomon
+    if (config.gnomonMode !== undefined) setGnomonMode(config.gnomonMode);
+    if (config.gnomonHeight !== undefined) setGnomonHeight(config.gnomonHeight);
+    if (config.gnomonType !== undefined) setGnomonType(config.gnomonType);
+    if (config.gnomonPosition !== undefined) setGnomonPosition(config.gnomonPosition);
+    if (config.gnomonPositionMode !== undefined) setGnomonPositionMode(config.gnomonPositionMode);
+    
+    // Page
+    if (config.pageSize !== undefined) setPageSize(config.pageSize);
+    if (config.customWidth !== undefined) setCustomWidth(config.customWidth);
+    if (config.customHeight !== undefined) setCustomHeight(config.customHeight);
+    if (config.customUnits !== undefined) setCustomUnits(config.customUnits);
+    if (config.orientation !== undefined) setOrientation(config.orientation);
+    if (config.inclineType !== undefined) setInclineType(config.inclineType);
+    if (config.tiltAngle !== undefined) setTiltAngle(config.tiltAngle);
+    if (config.declinationType !== undefined) setDeclinationType(config.declinationType);
+    if (config.declinationDegrees !== undefined) setDeclinationDegrees(config.declinationDegrees);
+    if (config.dialOrientation !== undefined) setDialOrientation(config.dialOrientation);
+    if (config.dialShape !== undefined) setDialShape(config.dialShape);
+    if (config.borderStyle !== undefined) setBorderStyle(config.borderStyle);
+    if (config.borderMargin !== undefined) setBorderMargin(config.borderMargin);
+    
+    // Hour lines
+    if (config.hourlineDateRange !== undefined) {
+      handleDateRangeChange(config.hourlineDateRange);
+    }
+    if (config.hourlineIntervals !== undefined && Array.isArray(config.hourlineIntervals)) {
+      setHourlineIntervals(config.hourlineIntervals);
+    }
+    if (config.startHour !== undefined) setStartHour(config.startHour);
+    if (config.stopHour !== undefined) setStopHour(config.stopHour);
+    if (config.use24Hour !== undefined) setUse24Hour(config.use24Hour);
+    if (config.labelWinterSide !== undefined) setLabelWinterSide(config.labelWinterSide);
+    if (config.labelSummerSide !== undefined) setLabelSummerSide(config.labelSummerSide);
+    if (config.labelOffset !== undefined) setLabelOffset(config.labelOffset);
+    if (config.fontFamily !== undefined) setFontFamily(config.fontFamily);
+    if (config.fontSize !== undefined) setFontSize(config.fontSize);
+    if (config.useDST !== undefined) setUseDST(config.useDST);
+    if (config.declinationNoonmarks !== undefined) setDeclinationNoonmarks(config.declinationNoonmarks);
+    
+    // Lines - restore these carefully to maintain references
+    if (config.lineStyles !== undefined && Array.isArray(config.lineStyles)) {
+      setLineStyles(config.lineStyles);
+    }
+    if (config.declinationLines !== undefined && Array.isArray(config.declinationLines)) {
+      setDeclinationLines(config.declinationLines);
+    }
+    
+    // Background/Text
+    if (config.showBackground !== undefined) setShowBackground(config.showBackground);
+    if (config.backgroundColor !== undefined) setBackgroundColor(config.backgroundColor);
+    if (config.dialTextBlock !== undefined) setDialTextBlock(config.dialTextBlock);
+    if (config.dialTextBlockFontSize !== undefined) setDialTextBlockFontSize(config.dialTextBlockFontSize);
+    if (config.dialTextBlockFontFamily !== undefined) setDialTextBlockFontFamily(config.dialTextBlockFontFamily);
+    if (config.sundialNotesMode !== undefined) setSundialNotesMode(config.sundialNotesMode);
+    if (config.sundialNotesPositionMode !== undefined) setSundialNotesPositionMode(config.sundialNotesPositionMode);
+    if (config.sundialNotesOffset !== undefined) setSundialNotesOffset(config.sundialNotesOffset);
+  }, [handleDateRangeChange]);
+
   return (
     <div className="app-container">
       {/* Controls Panel - Left Side */}
@@ -443,6 +510,35 @@ const App: React.FC = () => {
           inclineType={inclineType}
           tiltAngle={tiltAngle}
           onLogComplete={handleLogComplete}
+          tzMeridian={tzMeridian}
+          gnomonMode={gnomonMode}
+          gnomonPosition={gnomonPosition}
+          gnomonPositionMode={gnomonPositionMode}
+          customUnits={customUnits}
+          declinationType={declinationType}
+          declinationDegrees={declinationDegrees}
+          dialOrientation={dialOrientation}
+          dialShape={dialShape}
+          borderStyle={borderStyle}
+          borderMargin={borderMargin}
+          hourlineIntervals={hourlineIntervals}
+          lineStyles={lineStyles}
+          declinationLines={declinationLines}
+          startHour={startHour}
+          stopHour={stopHour}
+          use24Hour={use24Hour}
+          labelWinterSide={labelWinterSide}
+          labelSummerSide={labelSummerSide}
+          labelOffset={labelOffset}
+          fontFamily={fontFamily}
+          fontSize={fontSize}
+          useDST={useDST}
+          declinationNoonmarks={declinationNoonmarks}
+          dialTextBlockFontSize={dialTextBlockFontSize}
+          dialTextBlockFontFamily={dialTextBlockFontFamily}
+          sundialNotesPositionMode={sundialNotesPositionMode}
+          sundialNotesOffset={sundialNotesOffset}
+          onRestoreDial={handleRestoreDial}
         />
 
         <LocationInputs

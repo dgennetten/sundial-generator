@@ -1,8 +1,14 @@
 // src/components/DesignExport.tsx
-import React, { useState } from 'react';
-import { Printer, Download } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Printer, Download, Save, RotateCcw } from 'lucide-react';
 import { exportSundial, logPrintActivity, type ExportFormat, type PageSize } from '../utils/exportUtils';
 import type { GnomonType, InclineType } from '../types/sundial';
+import { saveDialConfig, loadAllSavedConfigs, deleteSavedConfig, hasSavedConfigs, type SavedDialConfig } from '../utils/dialSaveRestore';
+import SaveDialDialog from './SaveDialDialog';
+import RestoreDialDialog from './RestoreDialDialog';
+import type { HourlineInterval } from './hourlineUtils';
+import type { LineStyle } from './LineSettings';
+import type { DeclinationLine } from './DeclinationLineOptions';
 
 
 
@@ -24,17 +30,179 @@ interface DesignExportProps {
   inclineType?: InclineType;
   tiltAngle?: number;
   onLogComplete?: () => void;
+  // Additional props needed for save/restore
+  tzMeridian?: number;
+  gnomonMode?: 'auto' | 'manual';
+  gnomonPosition?: number;
+  gnomonPositionMode?: 'auto' | 'manual';
+  customUnits?: 'in' | 'cm';
+  declinationType?: string;
+  declinationDegrees?: number;
+  dialOrientation?: 'North' | 'South';
+  dialShape?: string;
+  borderStyle?: string;
+  borderMargin?: number;
+  hourlineIntervals?: HourlineInterval[];
+  lineStyles?: LineStyle[];
+  declinationLines?: DeclinationLine[];
+  startHour?: number;
+  stopHour?: number;
+  use24Hour?: boolean;
+  labelWinterSide?: boolean;
+  labelSummerSide?: boolean;
+  labelOffset?: number;
+  fontFamily?: string;
+  fontSize?: number;
+  useDST?: boolean;
+  declinationNoonmarks?: boolean;
+  dialTextBlockFontSize?: number;
+  dialTextBlockFontFamily?: string;
+  sundialNotesPositionMode?: 'auto' | 'manual';
+  sundialNotesOffset?: number;
+  onRestoreDial?: (config: SavedDialConfig['config']) => void;
 }
 
 
 
-const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orientation, customWidth, customHeight, dateRange, gnomonType, locationName, showBackground, backgroundColor, sundialNotesMode, dialTextBlock, latitude, longitude, gnomonHeight, inclineType, tiltAngle, onLogComplete }) => {
+const DesignExport: React.FC<DesignExportProps> = React.memo(({ 
+  pageSize, orientation, customWidth, customHeight, dateRange, gnomonType, locationName, showBackground, backgroundColor, 
+  sundialNotesMode, dialTextBlock, latitude, longitude, gnomonHeight, inclineType, tiltAngle, onLogComplete,
+  tzMeridian, gnomonMode, gnomonPosition, gnomonPositionMode, customUnits, declinationType, declinationDegrees,
+  dialOrientation, dialShape, borderStyle, borderMargin, hourlineIntervals, lineStyles, declinationLines,
+  startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST,
+  declinationNoonmarks, dialTextBlockFontSize, dialTextBlockFontFamily, sundialNotesPositionMode, sundialNotesOffset,
+  onRestoreDial
+}) => {
   const [format, setFormat] = useState<ExportFormat>('PNG');
   const [dpi, setDpi] = useState<number>(600);
   const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+  const [hasSavedConfigsState, setHasSavedConfigsState] = useState(false);
+  const [savedConfigs, setSavedConfigs] = useState<SavedDialConfig[]>([]);
 
   // Responsive: detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
+
+  // Check for saved configs on mount and when dialogs close
+  useEffect(() => {
+    const checkSavedConfigs = () => {
+      const hasConfigs = hasSavedConfigs();
+      setHasSavedConfigsState(hasConfigs);
+      if (hasConfigs) {
+        setSavedConfigs(loadAllSavedConfigs());
+      }
+    };
+    
+    checkSavedConfigs();
+  }, [saveDialogOpen, restoreDialogOpen]);
+
+  // Helper function to collect all current settings into config format
+  const collectCurrentConfig = useCallback((): SavedDialConfig['config'] => {
+    return {
+      // Location
+      latitude: latitude ?? 0,
+      longitude: longitude ?? 0,
+      tzMeridian: tzMeridian ?? 0,
+      locationName: locationName ?? 'Custom Lat/Long',
+      
+      // Gnomon
+      gnomonMode: gnomonMode ?? 'auto',
+      gnomonHeight: gnomonHeight ?? 10,
+      gnomonType: gnomonType ?? 'popup-with-brace',
+      gnomonPosition: gnomonPosition ?? 0,
+      gnomonPositionMode: gnomonPositionMode ?? 'auto',
+      
+      // Page
+      pageSize: pageSize ?? 'Letter',
+      customWidth: customWidth ?? 8.5 * 25.4,
+      customHeight: customHeight ?? 11 * 25.4,
+      customUnits: customUnits ?? 'in',
+      orientation: orientation ?? 'Landscape',
+      inclineType: inclineType ?? 'Horizontal',
+      tiltAngle: tiltAngle ?? 90,
+      declinationType: declinationType ?? 'North',
+      declinationDegrees: declinationDegrees ?? 0,
+      dialOrientation: dialOrientation ?? 'North',
+      dialShape: dialShape ?? 'Rectangle',
+      borderStyle: borderStyle ?? 'default-hairline',
+      borderMargin: borderMargin ?? 0.236,
+      
+      // Hour lines
+      hourlineDateRange: dateRange ?? 'WinterToSpring',
+      hourlineIntervals: hourlineIntervals ?? [],
+      startHour: startHour ?? 4,
+      stopHour: stopHour ?? 20,
+      use24Hour: use24Hour ?? false,
+      labelWinterSide: labelWinterSide ?? true,
+      labelSummerSide: labelSummerSide ?? true,
+      labelOffset: labelOffset ?? 1.5,
+      fontFamily: fontFamily ?? 'sans-serif',
+      fontSize: fontSize ?? 20,
+      useDST: useDST ?? true,
+      declinationNoonmarks: declinationNoonmarks ?? true,
+      
+      // Lines
+      lineStyles: lineStyles ?? [],
+      declinationLines: declinationLines ?? [],
+      
+      // Background/Text
+      showBackground: showBackground ?? true,
+      backgroundColor: backgroundColor ?? 'Cornsilk',
+      dialTextBlock: dialTextBlock ?? '',
+      dialTextBlockFontSize: dialTextBlockFontSize ?? 14,
+      dialTextBlockFontFamily: dialTextBlockFontFamily ?? 'sans-serif',
+      sundialNotesMode: sundialNotesMode ?? 'textBlock',
+      sundialNotesPositionMode: sundialNotesPositionMode ?? 'auto',
+      sundialNotesOffset: sundialNotesOffset ?? 0,
+    };
+  }, [
+    latitude, longitude, tzMeridian, locationName, gnomonMode, gnomonHeight, gnomonType, gnomonPosition, gnomonPositionMode,
+    pageSize, customWidth, customHeight, customUnits, orientation, inclineType, tiltAngle, declinationType, declinationDegrees,
+    dialOrientation, dialShape, borderStyle, borderMargin, dateRange, hourlineIntervals, startHour, stopHour, use24Hour,
+    labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks, lineStyles,
+    declinationLines, showBackground, backgroundColor, dialTextBlock, dialTextBlockFontSize, dialTextBlockFontFamily,
+    sundialNotesMode, sundialNotesPositionMode, sundialNotesOffset
+  ]);
+
+  const handleSave = useCallback(() => {
+    setSaveDialogOpen(true);
+  }, []);
+
+  const handleSaveConfirm = useCallback((name: string) => {
+    try {
+      const config = collectCurrentConfig();
+      saveDialConfig(name, config);
+      setSaveDialogOpen(false);
+      // Update saved configs list
+      setSavedConfigs(loadAllSavedConfigs());
+      setHasSavedConfigsState(true);
+    } catch (error) {
+      console.error('Failed to save configuration:', error);
+      alert(error instanceof Error ? error.message : 'Failed to save configuration');
+    }
+  }, [collectCurrentConfig]);
+
+  const handleRestore = useCallback(() => {
+    setRestoreDialogOpen(true);
+    setSavedConfigs(loadAllSavedConfigs());
+  }, []);
+
+  const handleRestoreConfirm = useCallback((config: SavedDialConfig['config']) => {
+    if (onRestoreDial) {
+      onRestoreDial(config);
+    }
+    setRestoreDialogOpen(false);
+  }, [onRestoreDial]);
+
+  const handleDelete = useCallback((id: string) => {
+    const success = deleteSavedConfig(id);
+    if (success) {
+      const remaining = loadAllSavedConfigs();
+      setSavedConfigs(remaining);
+      setHasSavedConfigsState(remaining.length > 0);
+    }
+  }, []);
 
   const handlePrint = async () => {
     console.log('Starting print...');
@@ -181,7 +349,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title"><Printer color="#2563eb" size={20} style={{ marginRight: 6 }} />Print and Export</h3>
+        <h3 className="card-title"><Printer color="#2563eb" size={20} style={{ marginRight: 6 }} />Print, Export, and Save</h3>
       </div>
       <div className="card-content">
         <div
@@ -193,8 +361,41 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
             flexDirection: 'column'
           }}
         >
-          {/* Print button above, aligned with Export button */}
-          <div className="form-group" style={{ alignSelf: 'end' }}>
+          {/* Save, Restore, and Print buttons */}
+          <div className="form-group" style={{ alignSelf: 'flex-end', display: 'flex', flexDirection: 'row', gap: '0.5rem', alignItems: 'center', flexWrap: 'nowrap' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={handleSave}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 'auto',
+                minWidth: '100px',
+                flexShrink: 0
+              }}
+            >
+              <Save size={16} style={{ marginRight: '4px' }} />
+              Save
+            </button>
+            <button
+              className="btn btn-secondary"
+              disabled={!hasSavedConfigsState}
+              onClick={handleRestore}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 'auto',
+                minWidth: '100px',
+                opacity: hasSavedConfigsState ? 1 : 0.5,
+                cursor: hasSavedConfigsState ? 'pointer' : 'not-allowed',
+                flexShrink: 0
+              }}
+            >
+              <RotateCcw size={16} style={{ marginRight: '4px' }} />
+              Restore
+            </button>
             <button
               className="btn btn-primary"
               onClick={handlePrint}
@@ -202,8 +403,11 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: isMobile ? '100%' : '140px',
-                minWidth: isMobile ? 'auto' : '70px'
+                width: 'auto',
+                minWidth: '120px',
+                flexShrink: 0,
+                paddingLeft: '0.75rem',
+                paddingRight: '0.75rem'
               }}
             >
               <Printer size={16} style={{ marginRight: '4px' }} />
@@ -270,12 +474,14 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: isMobile ? '100%' : '140px',
-                  minWidth: isMobile ? 'auto' : '70px',
+                  width: isMobile ? '100%' : '120px',
+                  minWidth: isMobile ? 'auto' : '120px',
                   opacity: isExporting ? 0.7 : 1,
                   cursor: isExporting ? 'not-allowed' : 'pointer',
                   transform: isExporting ? 'scale(0.98)' : 'scale(1)',
-                  transition: 'all 0.1s ease'
+                  transition: 'all 0.1s ease',
+                  paddingLeft: '0.75rem',
+                  paddingRight: '0.75rem'
                 }}
               >
                 <Download size={18} style={{ marginRight: '6px' }} stroke="#fff" strokeWidth={2} />
@@ -285,6 +491,23 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({ pageSize, orient
           </div>
         </div>
       </div>
+
+      {/* Save Dialog */}
+      <SaveDialDialog
+        open={saveDialogOpen}
+        onClose={() => setSaveDialogOpen(false)}
+        onSave={handleSaveConfirm}
+        existingNames={savedConfigs.map(c => c.name)}
+      />
+
+      {/* Restore Dialog */}
+      <RestoreDialDialog
+        open={restoreDialogOpen}
+        onClose={() => setRestoreDialogOpen(false)}
+        onRestore={handleRestoreConfirm}
+        onDelete={handleDelete}
+        savedConfigs={savedConfigs}
+      />
     </div>
   );
 });
