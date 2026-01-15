@@ -128,6 +128,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
           maxHeight: '90vh',
           boxShadow: '0 2px 16px rgba(0,0,0,0.2)',
           position: 'relative',
+          fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
         }}
         onClick={e => e.stopPropagation()}
       >
@@ -193,7 +194,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
         {/* Selected location info */}
         {selected && (
           <div style={{ marginBottom: 16, padding: '8px 12px', backgroundColor: '#f9fafb', borderRadius: '6px', fontSize: '14px' }}>
-            <strong>Selected:</strong> {selectedPlaceName || `${selected.lat.toFixed(6)}, ${selected.lng.toFixed(6)}`}
+            <strong>Selected:</strong> {selectedPlaceName || `${selected.lat.toFixed(4)}, ${selected.lng.toFixed(4)}`}
           </div>
         )}
 

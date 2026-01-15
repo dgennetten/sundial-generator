@@ -1,6 +1,6 @@
 {
   "name": "sundial-generator",
-  "version": "1.16.01",
+  "version": "1.16.02",
   "license": "CC-BY-NC-SA-4.0",
   "type": "module",
   "scripts": {

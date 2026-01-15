@@ -662,12 +662,13 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             marginTop: '12px',
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'flex-start',
             gap: isMobile ? '0.5rem' : '1rem'
           }}
         >
-          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
-            <label className="form-label">Dial Orientation</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '8px' }}>
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto', textAlign: 'left', width: '100%' }}>
+            <label className="form-label" style={{ textAlign: 'left', display: 'block', width: '100%' }}>Dial Orientation</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '8px', justifyContent: 'flex-start' }}>
               <span style={{
                 fontSize: '14px',
                 color: dialOrientationLockInfo.showNotice ? '#9ca3af' : (dialOrientation === 'North' ? '#2563eb' : '#6b7280')

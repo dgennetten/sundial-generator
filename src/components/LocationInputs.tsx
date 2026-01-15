@@ -316,11 +316,11 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
                   fontSize: layoutMode === 'mobile-landscape' ? '0.85rem' : '0.9rem'
                 }}
               >
+                <option value="Use Map">Use Map…</option>
                 {Object.keys(locations).map(location => (
                   <option key={location} value={location}>{location}</option>
                 ))}
                 <option value="Custom Lat/Long">Custom Lat/Long</option>
-                <option value="Use Map">Use Map…</option>
               </select>
               {foundLocationName && (
                 <div style={{
@@ -411,28 +411,21 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
 
         <div
           className="form-row"
-          style={
-            layoutMode === 'mobile-portrait'
-              ? { display: 'flex', flexDirection: 'column', width: '100%', gap: '0.5rem' }
-              : {
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'end',
-                gap: layoutMode === 'mobile-landscape' ? '0.5rem' : '0.75rem',
-                flexWrap: 'nowrap'
-              }
-          }
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'end',
+            gap: layoutMode === 'mobile-landscape' ? '0.5rem' : '0.75rem',
+            flexWrap: 'nowrap',
+            width: '100%'
+          }}
         >
           <div
             className="form-group"
-            style={
-              layoutMode === 'mobile-portrait'
-                ? { width: '100%' }
-                : {
-                  flex: '1',
-                  minWidth: layoutMode === 'mobile-landscape' ? '70px' : '80px'
-                }
-            }
+            style={{
+              flex: '1',
+              minWidth: layoutMode === 'mobile-landscape' ? '70px' : '80px'
+            }}
           >
             <label className="form-label">Latitude</label>
             <input
@@ -486,14 +479,10 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
           </div>
           <div
             className="form-group"
-            style={
-              layoutMode === 'mobile-portrait'
-                ? { width: '100%' }
-                : {
-                  flex: '1',
-                  minWidth: layoutMode === 'mobile-landscape' ? '70px' : '80px'
-                }
-            }
+            style={{
+              flex: '1',
+              minWidth: layoutMode === 'mobile-landscape' ? '70px' : '80px'
+            }}
           >
             <label className="form-label">Longitude</label>
             <input
@@ -547,13 +536,9 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
           </div>
           <div
             className="form-group"
-            style={
-              layoutMode === 'mobile-portrait'
-                ? { width: '100%' }
-                : {
-                  flex: '0 0 auto'
-                }
-            }
+            style={{
+              flex: '0 0 auto'
+            }}
           >
             <button
               type="button"
@@ -561,15 +546,15 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, sund
               style={{
                 height: 36,
                 cursor: 'pointer',
-                padding: layoutMode === 'mobile-portrait' ? '0 8px' : layoutMode === 'mobile-landscape' ? '0 6px' : '0 12px',
-                width: layoutMode === 'mobile-portrait' ? '100%' : 'auto',
-                minWidth: layoutMode === 'mobile-portrait' ? 0 : layoutMode === 'mobile-landscape' ? '60px' : '80px',
+                padding: layoutMode === 'mobile-landscape' ? '0 6px' : '0 12px',
+                width: 'auto',
+                minWidth: layoutMode === 'mobile-landscape' ? '60px' : '80px',
                 whiteSpace: 'nowrap',
                 fontSize: layoutMode === 'mobile-landscape' ? '0.85rem' : '0.9rem'
               }}
               onClick={() => setMapOpen(true)}
             >
-              {layoutMode === 'mobile-landscape' ? 'Map' : 'Use Map'}
+              Map
             </button>
           </div>
         </div>
