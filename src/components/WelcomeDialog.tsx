@@ -1,6 +1,6 @@
 // src/components/WelcomeDialog.tsx
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Compass } from 'lucide-react';
 
 const WELCOME_DISMISSED_KEY = 'sundial-welcome-dismissed';
 
@@ -88,8 +88,9 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose }) => {
           <X size={20} color="#6b7280" />
         </button>
 
-        <h2 style={{ margin: '0 0 24px 0', fontSize: '1.5rem', fontWeight: '600', color: '#1f2937' }}>
-          🧭 How to Build Your Custom Sundial
+        <h2 style={{ margin: '0 0 24px 0', fontSize: '1.5rem', fontWeight: '600', color: '#1f2937', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <Compass size={24} color="#2563eb" />
+          How to Build Your Custom Sundial
         </h2>
 
         <div style={{ fontSize: '1rem', lineHeight: '1.6', color: '#4b5563', marginBottom: '24px' }}>
@@ -105,6 +106,9 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose }) => {
             </li>
             <li style={{ marginBottom: '12px' }}>
               <strong>Select a date range</strong>: "<strong>Winter–Spring</strong>" or "<strong>Fall–Summer</strong>" for a cleaner, easier‑to‑read layout tailored to half‑year seasons.
+            </li>
+            <li style={{ marginBottom: '12px' }}>
+              <strong>Add special dates</strong>: Enter Day and Month in <strong>Declination Lines</strong>. Uncheck "Today" to remove red line with today's date.
             </li>
           </ul>
           
