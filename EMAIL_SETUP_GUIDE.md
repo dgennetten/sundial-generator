@@ -31,7 +31,7 @@ You need to set environment variables for your SMTP configuration. For Dreamhost
 SetEnv SMTP_HOST "smtp.dreamhost.com"
 SetEnv SMTP_USERNAME "sundial@gennetten.com"
 SetEnv SMTP_PASSWORD "your_email_password_here"
-SetEnv SMTP_FROM_EMAIL "sundial@gennetten.com"
+SetEnv SMTP_FROM_EMAIL "info@sundial.gennetten.org"
 SetEnv NOTIFICATION_EMAIL "douglas@gennetten.com"
 ```
 
@@ -65,6 +65,7 @@ You can directly modify the default values in `export-logger.php`:
 $smtpHost = $_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?? 'smtp.dreamhost.com';
 $smtpUsername = $_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'sundial@gennetten.com';
 $smtpPassword = $_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? 'YOUR_ACTUAL_PASSWORD_HERE';
+$smtpFromEmail = $_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL') ?? 'info@sundial.gennetten.org';
 ```
 
 ## Dreamhost-Specific Settings

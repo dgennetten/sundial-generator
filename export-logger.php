@@ -296,12 +296,20 @@ $emailSent = false;
 $emailError = '';
 
 try {
-    // Get SMTP settings - try multiple sources
-    $smtpHost = $_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?? 'smtp.dreamhost.com';
-    $smtpUsername = $_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'sundial@gennetten.com';
-    $smtpPassword = $_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? '';
-    $smtpFromEmail = $_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL') ?? 'sundial@gennetten.com';
-    $notificationEmail = $_ENV['NOTIFICATION_EMAIL'] ?? getenv('NOTIFICATION_EMAIL') ?? 'douglas@gennetten.com';
+    // Get SMTP settings - try multiple sources and trim to handle whitespace issues
+    $smtpHost = trim($_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?? 'smtp.dreamhost.com');
+    $smtpUsername = trim($_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'sundial@gennetten.org');
+    $smtpPassword = trim($_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? '');
+    $smtpFromEmail = trim($_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL') ?? 'info@sundial.gennetten.org');
+    $notificationEmail = trim($_ENV['NOTIFICATION_EMAIL'] ?? getenv('NOTIFICATION_EMAIL') ?? 'douglas@gennetten.com');
+    
+    // Validate that email addresses are not empty after trimming
+    if (empty($smtpFromEmail)) {
+        $smtpFromEmail = 'info@sundial.gennetten.org';
+    }
+    if (empty($notificationEmail)) {
+        $notificationEmail = 'douglas@gennetten.com';
+    }
     
     // Skip email if no password is configured
     if (empty($smtpPassword)) {
@@ -312,7 +320,9 @@ try {
         $debugInfo['smtpSettings'] = [
             'host' => $smtpHost,
             'username' => $smtpUsername,
+            'usernameLength' => strlen($smtpUsername),
             'hasPassword' => !empty($smtpPassword),
+            'passwordLength' => strlen($smtpPassword),
             'fromEmail' => $smtpFromEmail,
             'notificationEmail' => $notificationEmail
         ];
@@ -352,7 +362,9 @@ try {
         $debugInfo['smtpSettings'] = [
             'host' => $smtpHost,
             'username' => $smtpUsername,
+            'usernameLength' => strlen($smtpUsername),
             'hasPassword' => !empty($smtpPassword),
+            'passwordLength' => strlen($smtpPassword),
             'fromEmail' => $smtpFromEmail,
             'notificationEmail' => $notificationEmail,
             'emailSent' => true
@@ -368,7 +380,9 @@ try {
         'exception' => $e->getMessage(),
         'host' => $smtpHost ?? 'not set',
         'username' => $smtpUsername ?? 'not set',
+        'usernameLength' => isset($smtpUsername) ? strlen($smtpUsername) : 0,
         'hasPassword' => !empty($smtpPassword),
+        'passwordLength' => isset($smtpPassword) ? strlen($smtpPassword) : 0,
         'port' => $mail->Port ?? 'not set'
     ];
 }

@@ -13,8 +13,50 @@ error_reporting(E_ALL);
 
 // Add basic security - remove this in production
 $allowed_ips = ['127.0.0.1', '::1', 'your.ip.address.here']; // Add your IP address
-if (!in_array($_SERVER['REMOTE_ADDR'], $allowed_ips) && !isset($_GET['allow'])) {
-    die('Access denied. Add ?allow=1 to the URL to bypass (remove this script after testing).');
+
+// Check for bypass parameter - multiple ways to check
+$bypassEnabled = false;
+
+// Check $_GET array
+if (isset($_GET['allow']) && ($_GET['allow'] == '1' || $_GET['allow'] === true || $_GET['allow'] === '')) {
+    $bypassEnabled = true;
+}
+
+// Check query string directly
+if (!$bypassEnabled && isset($_SERVER['QUERY_STRING'])) {
+    $qs = $_SERVER['QUERY_STRING'];
+    if (strpos($qs, 'allow=1') !== false || strpos($qs, 'allow=') !== false || $qs === 'allow=1' || $qs === 'allow') {
+        $bypassEnabled = true;
+    }
+}
+
+// Check REQUEST_URI for the parameter
+if (!$bypassEnabled && isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'allow') !== false) {
+    $bypassEnabled = true;
+}
+
+if (!in_array($_SERVER['REMOTE_ADDR'], $allowed_ips) && !$bypassEnabled) {
+    $current_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+    // Remove any existing query parameters to avoid duplicates
+    $base_url = strtok($current_url, '?');
+    $bypass_url = $base_url . '?allow=1';
+    
+    $html = '<!DOCTYPE html><html><head><title>Access Denied</title><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($bypass_url) . '"></head><body style="font-family: Arial, sans-serif; padding: 20px;">';
+    $html .= '<h2>Access Denied</h2>';
+    $html .= '<p>Add <code>?allow=1</code> to the URL to bypass (remove this script after testing).</p>';
+    $html .= '<p><strong>Your current URL:</strong> <code>' . htmlspecialchars($current_url) . '</code></p>';
+    $html .= '<p><strong>Use this URL instead:</strong><br>';
+    $html .= '<a href="' . htmlspecialchars($bypass_url) . '" style="color: #0066cc; font-size: 16px; padding: 10px; display: inline-block; background: #f0f0f0; border: 1px solid #ccc; text-decoration: none; border-radius: 4px; margin: 10px 0;">' . htmlspecialchars($bypass_url) . '</a></p>';
+    $html .= '<p><strong>Or click here:</strong> <a href="' . htmlspecialchars($bypass_url) . '">Click to access test page</a></p>';
+    $html .= '<p><em>If automatic redirect doesn\'t work, click the link above or copy and paste the URL into your browser.</em></p>';
+    $html .= '<hr><p style="color: #666; font-size: 12px;"><strong>Debug Info:</strong><br>';
+    $html .= 'Current IP: ' . htmlspecialchars($_SERVER['REMOTE_ADDR']) . '<br>';
+    $html .= 'Query String: ' . htmlspecialchars($_SERVER['QUERY_STRING'] ?? 'none') . '<br>';
+    $html .= 'REQUEST_URI: ' . htmlspecialchars($_SERVER['REQUEST_URI'] ?? 'none') . '<br>';
+    $html .= '$_GET[\'allow\']: ' . (isset($_GET['allow']) ? htmlspecialchars(var_export($_GET['allow'], true)) : 'not set') . '<br>';
+    $html .= 'Bypass Enabled: ' . ($bypassEnabled ? 'YES' : 'NO') . '</p>';
+    $html .= '</body></html>';
+    die($html);
 }
 
 header('Content-Type: text/html; charset=UTF-8');
@@ -81,7 +123,8 @@ if (!$phpmailerFound) {
 // Test 2: Check environment variables
 echo "<h2>Test 2: Environment Variables Check</h2>";
 
-$envVars = [
+// Get raw values
+$rawEnvVars = [
     'SMTP_HOST' => $_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST'),
     'SMTP_USERNAME' => $_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME'),
     'SMTP_PASSWORD' => $_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD'),
@@ -89,15 +132,43 @@ $envVars = [
     'NOTIFICATION_EMAIL' => $_ENV['NOTIFICATION_EMAIL'] ?? getenv('NOTIFICATION_EMAIL')
 ];
 
-foreach ($envVars as $var => $value) {
-    if (!empty($value)) {
+// Trim values to handle whitespace issues from .htaccess
+$envVars = [];
+foreach ($rawEnvVars as $var => $value) {
+    $trimmed = $value ? trim($value) : '';
+    $envVars[$var] = $trimmed;
+    
+    // Display raw vs trimmed for debugging
+    if ($value && $value !== $trimmed) {
+        echo "<div style='color: orange;'>⚠️ $var: Had whitespace (raw length: " . strlen($value) . ", trimmed: " . strlen($trimmed) . ")</div>";
+    }
+    
+    if (!empty($trimmed)) {
         if ($var === 'SMTP_PASSWORD') {
-            echo "<div style='color: green;'>✅ $var: [SET - " . strlen($value) . " characters]</div>";
+            echo "<div style='color: green;'>✅ $var: [SET - " . strlen($trimmed) . " characters]</div>";
         } else {
-            echo "<div style='color: green;'>✅ $var: $value</div>";
+            echo "<div style='color: green;'>✅ $var: " . htmlspecialchars($trimmed) . "</div>";
         }
     } else {
-        echo "<div style='color: orange;'>⚠️ $var: NOT SET</div>";
+        echo "<div style='color: orange;'>⚠️ $var: NOT SET or EMPTY</div>";
+    }
+}
+
+// Validate email format
+echo "<h3>Email Validation</h3>";
+if (!empty($envVars['SMTP_FROM_EMAIL'])) {
+    if (filter_var($envVars['SMTP_FROM_EMAIL'], FILTER_VALIDATE_EMAIL)) {
+        echo "<div style='color: green;'>✅ SMTP_FROM_EMAIL is a valid email address</div>";
+    } else {
+        echo "<div style='color: red;'>❌ SMTP_FROM_EMAIL is NOT a valid email address: " . htmlspecialchars($envVars['SMTP_FROM_EMAIL']) . "</div>";
+    }
+}
+
+if (!empty($envVars['NOTIFICATION_EMAIL'])) {
+    if (filter_var($envVars['NOTIFICATION_EMAIL'], FILTER_VALIDATE_EMAIL)) {
+        echo "<div style='color: green;'>✅ NOTIFICATION_EMAIL is a valid email address</div>";
+    } else {
+        echo "<div style='color: red;'>❌ NOTIFICATION_EMAIL is NOT a valid email address: " . htmlspecialchars($envVars['NOTIFICATION_EMAIL']) . "</div>";
     }
 }
 
@@ -110,22 +181,69 @@ if (!$phpmailerFound) {
     try {
         $mail = new PHPMailer(true);
         
-        // Get SMTP settings with fallbacks
-        $smtpHost = $_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?? 'smtp.dreamhost.com';
-        $smtpUsername = $_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'sundial@gennetten.com';
-        $smtpPassword = $_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? '';
-        $smtpFromEmail = $_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL') ?? 'sundial@gennetten.com';
-        $notificationEmail = $_ENV['NOTIFICATION_EMAIL'] ?? getenv('NOTIFICATION_EMAIL') ?? 'douglas@gennetten.com';
+        // Get SMTP settings with fallbacks and trim to handle whitespace issues
+        $smtpHost = trim($_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?? 'smtp.dreamhost.com');
+        $smtpUsername = trim($_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'sundial@gennetten.org');
+        $smtpPassword = trim($_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? '');
+        $smtpFromEmail = trim($_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL') ?? 'info@sundial.gennetten.org');
+        $notificationEmail = trim($_ENV['NOTIFICATION_EMAIL'] ?? getenv('NOTIFICATION_EMAIL') ?? 'douglas@gennetten.com');
+        
+        // Validate that email addresses are not empty after trimming
+        if (empty($smtpFromEmail)) {
+            echo "<div style='color: orange;'>⚠️ SMTP_FROM_EMAIL is empty, using default: info@sundial.gennetten.org</div>";
+            $smtpFromEmail = 'info@sundial.gennetten.org';
+        }
+        
+        if (empty($notificationEmail)) {
+            echo "<div style='color: orange;'>⚠️ NOTIFICATION_EMAIL is empty, using default: douglas@gennetten.com</div>";
+            $notificationEmail = 'douglas@gennetten.com';
+        }
+        
+        // Validate email formats
+        if (!filter_var($smtpFromEmail, FILTER_VALIDATE_EMAIL)) {
+            echo "<div style='color: red;'>❌ SMTP_FROM_EMAIL is not a valid email address: " . htmlspecialchars($smtpFromEmail) . "</div>";
+        }
+        
+        if (!filter_var($notificationEmail, FILTER_VALIDATE_EMAIL)) {
+            echo "<div style='color: red;'>❌ NOTIFICATION_EMAIL is not a valid email address: " . htmlspecialchars($notificationEmail) . "</div>";
+        }
         
         if (empty($smtpPassword)) {
             echo "<div style='color: red;'>❌ Cannot test email - SMTP password not configured</div>";
             echo "<div>Please set SMTP_PASSWORD environment variable or configure it directly.</div>";
+        } elseif (empty($smtpUsername)) {
+            echo "<div style='color: red;'>❌ Cannot test email - SMTP username not configured</div>";
+            echo "<div>Please set SMTP_USERNAME environment variable.</div>";
         } else {
             echo "<div style='color: blue;'>🔄 Attempting to send test email...</div>";
-            echo "<div>Host: $smtpHost</div>";
-            echo "<div>Username: $smtpUsername</div>";
-            echo "<div>From: $smtpFromEmail</div>";
-            echo "<div>To: $notificationEmail</div>";
+            echo "<div><strong>SMTP Configuration:</strong></div>";
+            echo "<ul>";
+            echo "<li><strong>Host:</strong> " . htmlspecialchars($smtpHost) . "</li>";
+            echo "<li><strong>Port:</strong> 587</li>";
+            echo "<li><strong>Security:</strong> TLS</li>";
+            echo "<li><strong>Username:</strong> " . htmlspecialchars($smtpUsername) . " (" . strlen($smtpUsername) . " chars)</li>";
+            echo "<li><strong>Password:</strong> [SET - " . strlen($smtpPassword) . " characters]</li>";
+            echo "<li><strong>From Email:</strong> " . htmlspecialchars($smtpFromEmail) . "</li>";
+            echo "<li><strong>To Email:</strong> " . htmlspecialchars($notificationEmail) . "</li>";
+            echo "</ul>";
+            
+            // Show warnings for common issues
+            if (strpos($smtpUsername, '@') === false) {
+                echo "<div style='color: orange;'>⚠️ WARNING: Username doesn't contain '@' - Dreamhost requires full email address as username</div>";
+            }
+            if (strlen($smtpPassword) < 6) {
+                echo "<div style='color: orange;'>⚠️ WARNING: Password seems too short (" . strlen($smtpPassword) . " chars)</div>";
+            }
+            
+            // Password diagnostic (first and last character only, for debugging)
+            if (!empty($smtpPassword)) {
+                $firstChar = substr($smtpPassword, 0, 1);
+                $lastChar = substr($smtpPassword, -1);
+                $hasSpecialChars = preg_match('/[^a-zA-Z0-9]/', $smtpPassword);
+                echo "<div style='color: blue; font-size: 12px;'>🔍 Password diagnostic: Length=" . strlen($smtpPassword) . 
+                     ", First char='" . htmlspecialchars($firstChar) . "', Last char='" . htmlspecialchars($lastChar) . 
+                     "', Has special chars=" . ($hasSpecialChars ? 'Yes' : 'No') . "</div>";
+            }
             
             $mail->SMTPDebug = 2; // Enable verbose debug output
             $mail->isSMTP();
@@ -263,7 +381,7 @@ if (!$phpmailerFound) {
     echo "<div style='background: #ffe0e0; padding: 15px; border: 1px solid #ff0000; margin: 10px 0;'>";
     echo "<strong>❌ CRITICAL:</strong> PHPMailer library not found. You must install PHPMailer first.";
     echo "</div>";
-} elseif (empty($smtpPassword)) {
+} elseif (empty($envVars['SMTP_PASSWORD'])) {
     echo "<div style='background: #fff3cd; padding: 15px; border: 1px solid #ffc107; margin: 10px 0;'>";
     echo "<strong>⚠️ WARNING:</strong> SMTP password not configured. Set the SMTP_PASSWORD environment variable.";
     echo "</div>";
