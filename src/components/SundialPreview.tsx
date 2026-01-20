@@ -1914,8 +1914,22 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     };
 
     // Process text with placeholders, but handle {today} specially
-    let processedText = dialTextBlock
-      .replace(/\{location\}/gi, locationString)
+    let processedText = dialTextBlock;
+    
+    // Remove {location} placeholder if location is "Custom Lat/Long", otherwise replace it
+    if (locationString === 'Custom Lat/Long') {
+      // Remove {location} and any surrounding formatting (like **{location}**)
+      // Also handle cases with newlines before/after
+      processedText = processedText
+        .replace(/\*\*\{location\}\*\*/gi, '')  // Remove **{location}**
+        .replace(/\*\{location\}\*/gi, '')      // Remove *{location}*
+        .replace(/\{location\}/gi, '')          // Remove {location}
+        .replace(/\n{3,}/g, '\n\n');            // Clean up multiple newlines
+    } else {
+      processedText = processedText.replace(/\{location\}/gi, locationString);
+    }
+    
+    processedText = processedText
       .replace(/\{coordinates\}/gi, coordinatesString)
       .replace(/\{half-year\}/gi, dateRange === 'FullYear' ? '' : dateRange === 'SummerToFall' ? 'Summer - Fall' : 'Winter - Spring')
       .replace(/\{gnomon\}/gi, `height: ${gnomonHeight} mm`)

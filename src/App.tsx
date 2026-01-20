@@ -37,6 +37,7 @@ import AboutCard from './components/AboutCard';
 // import VisitorMap from './components/VisitorMap';
 import DialTextBlockSettings from './components/DialTextBlockSettings';
 import PrintedDialsMap from './components/PrintedDialsMap';
+import WelcomeDialog from './components/WelcomeDialog';
 import type { SundialPrint } from './types/sundial';
 
 
@@ -500,6 +501,9 @@ const App: React.FC = () => {
 
   return (
     <div className="app-container">
+      {/* Welcome Dialog */}
+      <WelcomeDialog />
+      
       {/* Controls Panel - Left Side */}
       <div className="controls-panel">
         <div className="app-header">
@@ -560,7 +564,6 @@ const App: React.FC = () => {
           latitude={latitude}
           longitude={longitude}
           tzMeridian={tzMeridian}
-          sundialNotesMode={sundialNotesMode}
           onChange={useCallback(({ lat, lng, tz, useDST, locationName }) => {
             setLatitude(lat);
             setLongitude(lng);

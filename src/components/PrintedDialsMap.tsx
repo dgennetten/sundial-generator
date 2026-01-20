@@ -118,32 +118,28 @@ const PrintedDialsMap: React.FC<SundialPrintMapProps> = ({
     });
 
     // Group prints by rounded coordinates to identify duplicates
-    const coordinateGroups = new Map<string, SundialPrint[]>();
-    validPrints.forEach(print => {
+    // Only show the latest print for each location
+    const coordinateMap = new Map<string, SundialPrint>();
+    const printsToShow: SundialPrint[] = [];
+    
+    validPrints.forEach((print) => {
       const key = `${print.latitude.toFixed(6)},${print.longitude.toFixed(6)}`;
-      if (!coordinateGroups.has(key)) {
-        coordinateGroups.set(key, []);
+      
+      // If we haven't seen this location yet, or this print is newer (earlier in the sorted list),
+      // add it to the map. Since prints are sorted by newest first (index 0 is latest),
+      // we only keep the first one we encounter for each location.
+      if (!coordinateMap.has(key)) {
+        coordinateMap.set(key, print);
+        printsToShow.push(print);
       }
-      coordinateGroups.get(key)!.push(print);
     });
 
-    // Determine pin colors
-    validPrints.forEach((print, index) => {
-      const isLatest = index === 0; // First print is the latest
-      const coordKey = `${print.latitude.toFixed(6)},${print.longitude.toFixed(6)}`;
-      const group = coordinateGroups.get(coordKey) || [];
-      const isDuplicate = group.length > 1 && !isLatest;
-
-
-      // Pin color: red/orange for latest, blue for duplicates, green for normal
-      let pinColor: string;
-      if (isLatest) {
-        pinColor = '#ff6b35'; // Red-orange
-      } else if (isDuplicate) {
-        pinColor = '#3b82f6'; // Blue
-      } else {
-        pinColor = '#22c55e'; // Green
-      }
+    // Determine pin colors (now all shown pins are the latest for their location)
+    printsToShow.forEach((print) => {
+      // Since we're only showing the latest for each location, all pins are "latest" for their location
+      // The very first print in the overall list is still the overall latest
+      const isOverallLatest = print === validPrints[0];
+      const pinColor = isOverallLatest ? '#ff6b35' : '#22c55e'; // Red-orange for overall latest, green for others
 
       const customIcon = L.divIcon({
         className: 'custom-marker',

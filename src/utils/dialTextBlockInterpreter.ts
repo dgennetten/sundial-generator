@@ -87,8 +87,22 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
       ? `incline: ${inclineDegrees.toFixed(1)}°`
       : '';
 
-  let processedText = template
-    .replace(/\{location\}/gi, locationString)
+  let processedText = template;
+  
+  // Remove {location} placeholder if location is "Custom Lat/Long", otherwise replace it
+  if (locationString === 'Custom Lat/Long') {
+    // Remove {location} and any surrounding formatting (like **{location}**)
+    // Also handle cases with newlines before/after
+    processedText = processedText
+      .replace(/\*\*\{location\}\*\*/gi, '')  // Remove **{location}**
+      .replace(/\*\{location\}\*/gi, '')      // Remove *{location}*
+      .replace(/\{location\}/gi, '')          // Remove {location}
+      .replace(/\n{3,}/g, '\n\n');            // Clean up multiple newlines
+  } else {
+    processedText = processedText.replace(/\{location\}/gi, locationString);
+  }
+  
+  processedText = processedText
     .replace(/\{coordinates\}/gi, coordinatesString)
     .replace(/\{half-year\}/gi, halfYearString)
     .replace(/\{gnomon\}/gi, gnomonString)

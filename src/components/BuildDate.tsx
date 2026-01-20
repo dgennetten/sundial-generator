@@ -1,4 +1,5 @@
 import React from 'react';
+import { clearWelcomeDismissed } from './WelcomeDialog';
 
 const BuildDate: React.FC = () => {
   const handleReset = () => {
@@ -14,6 +15,9 @@ const BuildDate: React.FC = () => {
       keysToRemove.forEach(key => {
         localStorage.removeItem(key);
       });
+      
+      // Clear welcome dialog dismissed state so it shows again
+      clearWelcomeDismissed();
       
       // Reload the page to apply defaults
       window.location.reload();
