@@ -99,13 +99,13 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose }) => {
               <strong>Set your location</strong> using the dropdown menu, the interactive map, or by entering latitude and longitude directly.
             </li>
             <li style={{ marginBottom: '12px' }}>
-              <strong>Choose your dial's size and shape</strong>, whether you prefer a classic rectangle or a graceful oval.
+              <strong>Choose your dial's size and shape: </strong>Large or Small; whether you prefer a classic rectangle or a graceful oval.
             </li>
             <li style={{ marginBottom: '12px' }}>
-              <strong>Pick a gnomon style</strong>—and don't miss the innovative <strong>popup gnomon</strong>, perfect for paper dials and hands‑on experimentation.
+              <strong>Pick a gnomon style: </strong>Don't miss the innovative <strong>popup gnomon</strong>, perfect for paper dials and hands‑on experimentation.
             </li>
             <li style={{ marginBottom: '12px' }}>
-              <strong>Select a date range</strong>: "<strong>Winter–Spring</strong>" or "<strong>Fall–Summer</strong>" for a cleaner, easier‑to‑read layout tailored to half‑year seasons.
+              <strong>Select a date range</strong>: "<strong>Winter–Spring</strong>" or "<strong>Fall–Summer</strong>" for a cleaner, easier‑to‑read layout.
             </li>
             <li style={{ marginBottom: '12px' }}>
               <strong>Add special dates</strong>: Enter Day and Month in <strong>Declination Lines</strong>. Uncheck "Today" to remove red line with today's date.
