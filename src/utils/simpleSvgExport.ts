@@ -2,6 +2,7 @@
 // Simplified SVG export for debugging
 
 import type { LineStyle } from '../components/LineSettings';
+import { log } from './logger';
 
 interface SpecialLayers {
   background: SVGGElement;
@@ -49,7 +50,7 @@ function getLineStylesFromDOM(): Record<string, string> {
       }
     }
   } catch (e) {
-    console.warn('Could not load line styles from localStorage:', e);
+    log.warn('Could not load line styles from localStorage:', e);
   }
   
   // Add some default mappings in case localStorage is empty
@@ -60,7 +61,7 @@ function getLineStylesFromDOM(): Record<string, string> {
     lineStyleMap['dotted-hairline'] = 'Dotted Hairline';
   }
   
-  console.log('Line style mapping:', lineStyleMap);
+  log.debug('Line style mapping:', lineStyleMap);
   return lineStyleMap;
 }
 
@@ -70,30 +71,30 @@ function getLineStylesFromDOM(): Record<string, string> {
 export function createSimpleSVGExport(options: SimpleSVGExportOptions): string | null {
   // Get line styles from the application state to use for layer naming
   const lineStyles = getLineStylesFromDOM();
-  console.log('=== SIMPLE SVG EXPORT DEBUG ===');
-  console.log('Options:', options);
+  log.group('=== SIMPLE SVG EXPORT DEBUG ===');
+  log.debug('Options:', options);
   
   // Find the sundial preview container more specifically
   // We need to find the div that contains the actual sundial SVG, not the card header
   const previewCards = document.querySelectorAll('.card');
   let svgContainer: HTMLElement | null = null;
   
-  console.log('Found', previewCards.length, 'cards');
+  log.debug(`Found ${previewCards.length} cards`);
   
   for (const card of previewCards) {
     const title = card.querySelector('.card-title');
-    console.log('Card title:', title?.textContent);
+    log.debug('Card title:', title?.textContent);
     
     if (title && title.textContent && title.textContent.includes('Sundial Preview')) {
-      console.log('Found Sundial Preview card');
+      log.debug('Found Sundial Preview card');
       
       // Debug: log all divs in this card
       const allDivs = card.querySelectorAll('div');
-      console.log('Found', allDivs.length, 'divs in the card');
+      log.debug(`Found ${allDivs.length} divs in the card`);
       
       allDivs.forEach((div, index) => {
         const style = div.getAttribute('style');
-        console.log(`Div ${index}:`, {
+        log.debug(`Div ${index}:`, {
           style: style,
           hasFlexDisplay: style?.includes('display: flex'),
           hasSVG: div.querySelector('svg') !== null,
@@ -106,7 +107,7 @@ export function createSimpleSVGExport(options: SimpleSVGExportOptions): string |
       if (!svgContainer) {
         // Try alternative selectors
         svgContainer = card.querySelector('div svg')?.parentElement as HTMLElement;
-        console.log('Trying alternative selector (svg parent) - found:', !!svgContainer);
+        log.debug('Trying alternative selector (svg parent) - found:', !!svgContainer);
       }
       
       if (!svgContainer) {
@@ -116,46 +117,48 @@ export function createSimpleSVGExport(options: SimpleSVGExportOptions): string |
           const svg = div.querySelector('svg[viewBox]');
           if (svg) {
             svgContainer = div as HTMLElement;
-            console.log('Found SVG container by viewBox selector');
+            log.debug('Found SVG container by viewBox selector');
             break;
           }
         }
       }
       
       if (svgContainer) {
-        console.log('Found SVG container div');
+        log.debug('Found SVG container div');
         break;
       } else {
-        console.error('Could not find SVG container in this card');
+        log.error('Could not find SVG container in this card');
       }
     }
   }
   
   if (!svgContainer) {
-    console.error('Could not find SVG container div in any card');
+    log.error('Could not find SVG container div in any card');
+    log.groupEnd();
     return null;
   }
   
-  console.log('Found SVG container');
+  log.debug('Found SVG container');
   
   // Find the SVG element within the container (not the card header)
   const svgElement = svgContainer.querySelector('svg') as SVGSVGElement;
   if (!svgElement) {
-    console.error('Could not find SVG element in SVG container');
-    console.log('SVG container HTML:', svgContainer.innerHTML.substring(0, 500));
+    log.error('Could not find SVG element in SVG container');
+    log.debug('SVG container HTML:', svgContainer.innerHTML.substring(0, 500));
+    log.groupEnd();
     return null;
   }
   
-  console.log('Found SVG element');
-  console.log('SVG viewBox:', svgElement.getAttribute('viewBox'));
-  console.log('SVG width:', svgElement.getAttribute('width'));
-  console.log('SVG height:', svgElement.getAttribute('height'));
-  console.log('SVG style:', svgElement.getAttribute('style'));
-  console.log('SVG children count:', svgElement.children.length);
+  log.debug('Found SVG element');
+  log.debug('SVG viewBox:', svgElement.getAttribute('viewBox'));
+  log.debug('SVG width:', svgElement.getAttribute('width'));
+  log.debug('SVG height:', svgElement.getAttribute('height'));
+  log.debug('SVG style:', svgElement.getAttribute('style'));
+  log.debug('SVG children count:', svgElement.children.length);
   
   // Log each child element
   Array.from(svgElement.children).forEach((child, index) => {
-    console.log(`Child ${index}:`, {
+    log.debug(`Child ${index}:`, {
       tagName: child.tagName,
       stroke: child.getAttribute('stroke'),
       fill: child.getAttribute('fill'),
@@ -168,9 +171,9 @@ export function createSimpleSVGExport(options: SimpleSVGExportOptions): string |
     
     // If it's a group, log its children too
     if (child.tagName === 'g' && child.children.length > 0) {
-      console.log(`  Group ${index} children:`);
+      log.debug(`  Group ${index} children:`);
       Array.from(child.children).forEach((grandchild, gIndex) => {
-        console.log(`    ${gIndex}:`, {
+        log.debug(`    ${gIndex}:`, {
           tagName: grandchild.tagName,
           stroke: grandchild.getAttribute('stroke'),
           fill: grandchild.getAttribute('fill'),
@@ -219,7 +222,7 @@ export function createSimpleSVGExport(options: SimpleSVGExportOptions): string |
     if (child.getAttribute('stroke') === '#ccc' && 
         child.getAttribute('fill') === 'none' && 
         child.getAttribute('stroke-dasharray') === '5,5') {
-      console.log('Removing clipping boundary element');
+      log.debug('Removing clipping boundary element');
       childrenToRemove.push(child);
     }
   });
@@ -229,7 +232,7 @@ export function createSimpleSVGExport(options: SimpleSVGExportOptions): string |
     svgClone.removeChild(child);
   });
   
-  console.log('SVG clone children after filtering:', svgClone.children.length);
+  log.debug('SVG clone children after filtering:', svgClone.children.length);
   
   // Add background if specified
   if (options.showBackground) {
@@ -245,14 +248,14 @@ export function createSimpleSVGExport(options: SimpleSVGExportOptions): string |
       backgroundRect.setAttribute('y', y.toString());
       backgroundRect.setAttribute('width', width.toString());
       backgroundRect.setAttribute('height', height.toString());
-      console.log(`Background positioned at: x=${x}, y=${y}, width=${width}, height=${height}`);
+      log.debug(`Background positioned at: x=${x}, y=${y}, width=${width}, height=${height}`);
     } else {
       // Fallback to percentage-based positioning
       backgroundRect.setAttribute('x', '0');
       backgroundRect.setAttribute('y', '0');
       backgroundRect.setAttribute('width', '100%');
       backgroundRect.setAttribute('height', '100%');
-      console.log('Using percentage-based background positioning');
+      log.debug('Using percentage-based background positioning');
     }
     
     backgroundRect.setAttribute('fill', bgColor);
@@ -268,8 +271,9 @@ export function createSimpleSVGExport(options: SimpleSVGExportOptions): string |
   const xmlDeclaration = '<?xml version="1.0" encoding="UTF-8"?>\n';
   const svgString = new XMLSerializer().serializeToString(organizedSvg);
   
-  console.log('Generated SVG string length:', svgString.length);
-  console.log('SVG string preview (first 1000 chars):', svgString.substring(0, 1000));
+  log.debug('Generated SVG string length:', svgString.length);
+  log.debug('SVG string preview (first 1000 chars):', svgString.substring(0, 1000));
+  log.groupEnd();
   
   return xmlDeclaration + svgString;
 }
@@ -278,7 +282,7 @@ export function createSimpleSVGExport(options: SimpleSVGExportOptions): string |
  * Organizes SVG content into layers based on line styles
  */
 function organizeSVGIntoLayers(svgElement: SVGSVGElement, lineStyleMap: Record<string, string>): SVGSVGElement {
-  console.log('Organizing SVG into layers by line style...');
+  log.debug('Organizing SVG into layers by line style...');
   
   // Create dynamic layers based on line styles found in the SVG
   const layers: Record<string, SVGGElement> = {};
@@ -310,7 +314,7 @@ function organizeSVGIntoLayers(svgElement: SVGSVGElement, lineStyleMap: Record<s
   [specialLayers.background, specialLayers.border, specialLayers.gnomon].forEach(layer => {
     if (layer.children.length > 0) {
       svgElement.appendChild(layer);
-      console.log(`Added special layer: ${layer.getAttribute('data-layer')} with ${layer.children.length} elements`);
+      log.debug(`Added special layer: ${layer.getAttribute('data-layer')} with ${layer.children.length} elements`);
     }
   });
   
@@ -319,7 +323,7 @@ function organizeSVGIntoLayers(svgElement: SVGSVGElement, lineStyleMap: Record<s
     const layer = layers[styleKey];
     if (layer.children.length > 0) {
       svgElement.appendChild(layer);
-      console.log(`Added line style layer: ${layer.getAttribute('data-layer')} with ${layer.children.length} elements`);
+      log.debug(`Added line style layer: ${layer.getAttribute('data-layer')} with ${layer.children.length} elements`);
     }
   });
   
@@ -327,7 +331,7 @@ function organizeSVGIntoLayers(svgElement: SVGSVGElement, lineStyleMap: Record<s
   [specialLayers.labels, specialLayers.textBlock, specialLayers.other].forEach(layer => {
     if (layer.children.length > 0) {
       svgElement.appendChild(layer);
-      console.log(`Added special layer: ${layer.getAttribute('data-layer')} with ${layer.children.length} elements`);
+      log.debug(`Added special layer: ${layer.getAttribute('data-layer')} with ${layer.children.length} elements`);
     }
   });
   
@@ -469,7 +473,7 @@ function extractLineStyleFromElement(element: Element): { styleKey: string, desc
     descriptiveName += ' Black';
   }
   
-  console.log(`Extracted style: ${styleKey} -> ${descriptiveName}`);
+  log.debug(`Extracted style: ${styleKey} -> ${descriptiveName}`);
   return { styleKey, descriptiveName };
 }
 

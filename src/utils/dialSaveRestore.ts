@@ -4,6 +4,7 @@
 import type { HourlineInterval } from '../components/hourlineUtils';
 import type { LineStyle } from '../components/LineSettings';
 import type { DeclinationLine } from '../components/DeclinationLineOptions';
+import { log } from './logger';
 
 export interface SavedDialConfig {
   id: string; // UUID or timestamp-based
@@ -136,7 +137,7 @@ export function loadAllSavedConfigs(): SavedDialConfig[] {
       );
     });
   } catch (error) {
-    console.error('Failed to load saved configurations:', error);
+    log.error('Failed to load saved configurations:', error);
     return [];
   }
 }
@@ -176,7 +177,7 @@ export function deleteSavedConfig(id: string): boolean {
     
     return true;
   } catch (error) {
-    console.error('Failed to delete configuration:', error);
+    log.error('Failed to delete configuration:', error);
     return false;
   }
 }

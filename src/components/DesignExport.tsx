@@ -9,6 +9,7 @@ import RestoreDialDialog from './RestoreDialDialog';
 import type { HourlineInterval } from './hourlineUtils';
 import type { LineStyle } from './LineSettings';
 import type { DeclinationLine } from './DeclinationLineOptions';
+import { log } from '../utils/logger';
 
 
 
@@ -178,7 +179,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       setSavedConfigs(loadAllSavedConfigs());
       setHasSavedConfigsState(true);
     } catch (error) {
-      console.error('Failed to save configuration:', error);
+      log.error('Failed to save configuration:', error);
       alert(error instanceof Error ? error.message : 'Failed to save configuration');
     }
   }, [collectCurrentConfig]);
@@ -205,7 +206,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   }, []);
 
   const handlePrint = async () => {
-    console.log('Starting print...');
+    log.info('Starting print...');
 
     // Create dynamic print styles based on current page settings
     const printStyleId = 'dynamic-print-styles';
@@ -290,10 +291,10 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         inclineType,
         tiltAngle,
       });
-      console.log('Print activity logged successfully');
+      log.info('Print activity logged successfully');
       onLogComplete?.(); // Trigger map refresh
     } catch (error) {
-      console.error('Failed to log print activity:', error);
+      log.error('Failed to log print activity:', error);
       // Don't prevent printing if logging fails
     }
 
@@ -308,11 +309,11 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
 
   const handleExport = async () => {
     if (isExporting) {
-      console.log('Export already in progress, ignoring click');
+      log.debug('Export already in progress, ignoring click');
       return; // Prevent multiple simultaneous exports
     }
 
-    console.log('Starting export, format:', format);
+    log.info('Starting export, format:', format);
     setIsExporting(true);
     try {
       await exportSundial({
@@ -335,13 +336,13 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         inclineType,
         tiltAngle,
       });
-      console.log('Export completed successfully');
+      log.info('Export completed successfully');
       onLogComplete?.(); // Trigger map refresh
     } catch (error) {
-      console.error('Export failed:', error);
+      log.error('Export failed:', error);
       // You could add user-facing error handling here, like showing a toast notification
     } finally {
-      console.log('Resetting export state');
+      log.debug('Resetting export state');
       setIsExporting(false);
     }
   };
@@ -435,7 +436,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                   className="form-select"
                   value={format}
                   onChange={(e) => {
-                    console.log('Format change:', e.target.value);
+                    log.debug('Format change:', e.target.value);
                     setFormat(e.target.value as ExportFormat);
                   }}
                   style={{ width: isMobile ? '100%' : 'auto' }}

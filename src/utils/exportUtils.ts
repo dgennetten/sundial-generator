@@ -3,6 +3,7 @@ import { createSVGExport, downloadSVG } from './svgExportUtils';
 import type { ExportOptions, PageSize } from '../types';
 import { interpretDialTextBlockForEmail } from './dialTextBlockInterpreter';
 import { saveSundialPrint, computeInclinationDegrees } from './sundialPrintUtils';
+import { log } from './logger';
 
 // Re-export types for backward compatibility
 export type { ExportFormat, PageSize } from '../types';
@@ -19,11 +20,11 @@ const pageSizeMap: Record<Exclude<PageSize, 'Custom'>, { width: number; height: 
  * Finds the sundial preview container in the DOM
  */
 function findPreviewContainer(): HTMLElement | null {
-  console.log('=== MAIN EXPORT CONTAINER SEARCH ===');
+  log.group('=== MAIN EXPORT CONTAINER SEARCH ===');
   
   // First, let's try a more direct approach - look for any large SVG on the page
   const allSvgs = document.querySelectorAll('svg');
-  console.log(`Found ${allSvgs.length} total SVG elements on page`);
+  log.debug(`Found ${allSvgs.length} total SVG elements on page`);
   
   for (const svg of allSvgs) {
     const width = svg.getAttribute('width') || svg.clientWidth;
@@ -31,12 +32,12 @@ function findPreviewContainer(): HTMLElement | null {
     const viewBox = svg.getAttribute('viewBox');
     const classes = svg.className;
     
-    console.log(`SVG: width=${width}, height=${height}, viewBox=${viewBox}, classes="${classes}"`);
+    log.debug(`SVG: width=${width}, height=${height}, viewBox=${viewBox}, classes="${classes}"`);
     
     // Skip small icons
     if (svg.classList.contains('lucide') || 
         (width && height && parseInt(width.toString()) <= 50 && parseInt(height.toString()) <= 50)) {
-      console.log('Skipping small SVG');
+      log.debug('Skipping small SVG');
       continue;
     }
     
@@ -46,15 +47,16 @@ function findPreviewContainer(): HTMLElement | null {
     
     if (numWidth > 100 || numHeight > 100 || (!width && !height) || 
         (viewBox && !viewBox.includes('0 0 24 24'))) {
-      console.log('Found potential sundial SVG - checking parent');
+      log.debug('Found potential sundial SVG - checking parent');
       const parent = svg.parentElement;
       if (parent) {
-        console.log(`SVG parent: ${parent.tagName}, classes: "${parent.className}"`);
-        console.log(`Parent dimensions: ${parent.offsetWidth}x${parent.offsetHeight}`);
+        log.debug(`SVG parent: ${parent.tagName}, classes: "${parent.className}"`);
+        log.debug(`Parent dimensions: ${parent.offsetWidth}x${parent.offsetHeight}`);
         
         // Make sure this isn't in a card header
         if (!parent.closest('.card-header') && !parent.closest('h1, h2, h3, h4, h5, h6')) {
-          console.log('Found suitable sundial container');
+          log.debug('Found suitable sundial container');
+          log.groupEnd();
           return parent;
         }
       }
@@ -62,41 +64,43 @@ function findPreviewContainer(): HTMLElement | null {
   }
   
   // Fallback: original card-based search
-  console.log('Direct SVG search failed, trying card-based search...');
+  log.debug('Direct SVG search failed, trying card-based search...');
   const previewCards = document.querySelectorAll('.card');
-  console.log('Found', previewCards.length, 'cards');
+  log.debug(`Found ${previewCards.length} cards`);
   
   for (const card of previewCards) {
     const title = card.querySelector('.card-title');
-    console.log('Card title:', title?.textContent);
+    log.debug('Card title:', title?.textContent);
     
     if (title && title.textContent && title.textContent.includes('Sundial Preview')) {
-      console.log('Found Sundial Preview card');
-      console.log('Card HTML structure:', card.outerHTML.substring(0, 500));
+      log.debug('Found Sundial Preview card');
+      log.debug('Card HTML structure:', card.outerHTML.substring(0, 500));
       
       // Look everywhere in the card for SVGs
       const allSvgsInCard = card.querySelectorAll('svg');
-      console.log(`Found ${allSvgsInCard.length} SVG elements in entire card`);
+      log.debug(`Found ${allSvgsInCard.length} SVG elements in entire card`);
       
       for (const svg of allSvgsInCard) {
         const width = svg.getAttribute('width') || svg.clientWidth;
         const height = svg.getAttribute('height') || svg.clientHeight;
         const viewBox = svg.getAttribute('viewBox');
         
-        console.log(`Card SVG: width=${width}, height=${height}, viewBox=${viewBox}, classes=${svg.className}`);
-        console.log(`SVG parent: ${svg.parentElement?.tagName}, parent classes: ${svg.parentElement?.className}`);
+        log.debug(`Card SVG: width=${width}, height=${height}, viewBox=${viewBox}, classes=${svg.className}`);
+        log.debug(`SVG parent: ${svg.parentElement?.tagName}, parent classes: ${svg.parentElement?.className}`);
         
         // Skip obvious icons
         if (!svg.classList.contains('lucide') && 
             (!width || !height || parseInt(width.toString()) > 50 || parseInt(height.toString()) > 50)) {
-          console.log('Found potential sundial SVG in card');
+          log.debug('Found potential sundial SVG in card');
+          log.groupEnd();
           return svg.parentElement as HTMLElement;
         }
       }
     }
   }
   
-  console.log('No suitable sundial container found anywhere');
+  log.debug('No suitable sundial container found anywhere');
+  log.groupEnd();
   return null;
 }
 
@@ -132,7 +136,7 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
       longitude: options.longitude,
     };
 
-    console.log('Sending log data to server:', logData);
+    log.info('Sending log data to server:', logData);
 
     // Use production URL in development since Vite doesn't handle PHP
     const isDevelopment = import.meta.env.DEV;
@@ -140,7 +144,7 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
       ? 'https://sundial.gennetten.org/export-logger.php'
       : '/export-logger.php';
 
-    console.log('Using logger URL:', loggerUrl);
+    log.debug('Using logger URL:', loggerUrl);
 
     const response = await fetch(loggerUrl, {
       method: 'POST',
@@ -151,7 +155,7 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
     });
 
     if (!response.ok) {
-      console.warn('Failed to log export activity:', response.status, response.statusText);
+      log.warn('Failed to log export activity:', response.status, response.statusText);
       return; // Do not throw
     }
 
@@ -159,13 +163,13 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
     const text = await response.text();
     try {
       const result = JSON.parse(text);
-      console.log('Export logged successfully:', result);
+      log.info('Export logged successfully:', result);
       if (!result.emailSent) {
-        console.warn('Email was not sent:', result.emailError || 'Unknown error');
+        log.warn('Email was not sent:', result.emailError || 'Unknown error');
       }
     } catch {
       // Non-JSON response (e.g., HTML dev page). Log and continue.
-      console.log('Export logged (non-JSON response):', text.substring(0, 200));
+      log.debug('Export logged (non-JSON response):', text.substring(0, 200));
     }
 
     // Also save to Supabase (wait for it to complete for refresh trigger, but don't throw on error)
@@ -188,12 +192,12 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
           date_range: options.dateRange || 'Unknown',
         });
       } catch (error) {
-        console.warn('Failed to save export to Supabase:', error);
+        log.warn('Failed to save export to Supabase:', error);
         // Don't throw - Supabase failures shouldn't prevent export
       }
     }
   } catch (error) {
-    console.warn('Error logging export activity:', error);
+    log.warn('Error logging export activity:', error);
     // Don't throw error - logging failure shouldn't prevent export
   }
 }
@@ -276,7 +280,7 @@ export async function logPrintActivity(options: {
       longitude: options.longitude,
     };
 
-    console.log('Sending print log data to server:', logData);
+    log.info('Sending print log data to server:', logData);
 
     // Use production URL in development since Vite doesn't handle PHP
     const isDevelopment = import.meta.env.DEV;
@@ -284,7 +288,7 @@ export async function logPrintActivity(options: {
       ? 'https://sundial.gennetten.org/export-logger.php'
       : '/export-logger.php';
 
-    console.log('Using logger URL:', loggerUrl);
+    log.debug('Using logger URL:', loggerUrl);
 
     const response = await fetch(loggerUrl, {
       method: 'POST',
@@ -295,7 +299,7 @@ export async function logPrintActivity(options: {
     });
 
     if (!response.ok) {
-      console.warn('Failed to log print activity:', response.status, response.statusText);
+      log.warn('Failed to log print activity:', response.status, response.statusText);
       return; // Do not throw
     }
 
@@ -303,13 +307,13 @@ export async function logPrintActivity(options: {
     const text = await response.text();
     try {
       const result = JSON.parse(text);
-      console.log('Print logged successfully:', result);
+      log.info('Print logged successfully:', result);
       if (!result.emailSent) {
-        console.warn('Email was not sent:', result.emailError || 'Unknown error');
+        log.warn('Email was not sent:', result.emailError || 'Unknown error');
       }
     } catch {
       // Non-JSON response (e.g., HTML dev page). Log and continue.
-      console.log('Print logged (non-JSON response):', text.substring(0, 200));
+      log.debug('Print logged (non-JSON response):', text.substring(0, 200));
     }
 
     // Also save to Supabase (wait for it to complete for refresh trigger, but don't throw on error)
@@ -332,12 +336,12 @@ export async function logPrintActivity(options: {
           date_range: options.dateRange || 'Unknown',
         });
       } catch (error) {
-        console.warn('Failed to save print to Supabase:', error);
+        log.warn('Failed to save print to Supabase:', error);
         // Don't throw - Supabase failures shouldn't prevent printing
       }
     }
   } catch (error) {
-    console.warn('Error logging print activity:', error);
+    log.warn('Error logging print activity:', error);
     // Don't throw error - logging failure shouldn't prevent printing
   }
 }
@@ -346,30 +350,30 @@ export async function logPrintActivity(options: {
  * Exports the sundial design in the specified format
  */
 export async function exportSundial(options: ExportOptions): Promise<void> {
-  console.log('Starting export with options:', options);
+  log.info('Starting export with options:', options);
   
   // findPreviewContainer now returns the SVG container directly
   const svgContainer = findPreviewContainer();
   if (!svgContainer) {
-    console.error('Could not find SVG container');
+    log.error('Could not find SVG container');
     throw new Error('Could not find SVG container within the preview.');
   }
-  console.log('Found SVG container:', svgContainer);
+  log.debug('Found SVG container:', svgContainer);
 
   const svgElement = svgContainer.querySelector('svg') as SVGSVGElement;
   if (!svgElement) {
-    console.error('Could not find SVG element');
+    log.error('Could not find SVG element');
     throw new Error('Could not find SVG element within the preview.');
   }
-  console.log('Found SVG element:', svgElement);
+  log.debug('Found SVG element:', svgElement);
 
   try {
     if (options.format === 'PNG') {
-      console.log('Exporting as PNG...');
+      log.info('Exporting as PNG...');
       await exportPNG(svgContainer, options);
-      console.log('PNG export completed successfully');
+      log.info('PNG export completed successfully');
     } else if (options.format === 'SVG') {
-      console.log('Exporting as SVG...');
+      log.info('Exporting as SVG...');
       // Use the sophisticated SVG export utility
       const svgContent = createSVGExport({
         pageSize: options.pageSize,
@@ -385,17 +389,17 @@ export async function exportSundial(options: ExportOptions): Promise<void> {
       }
       
       downloadSVG(svgContent, buildFilename(options, 'svg'));
-      console.log('SVG export completed successfully');
+      log.info('SVG export completed successfully');
     } else if (options.format === 'PDF') {
-      console.log('Exporting as PDF...');
+      log.info('Exporting as PDF...');
       await exportPDF(options);
-      console.log('PDF export completed successfully');
+      log.info('PDF export completed successfully');
     }
     
     // Log the export activity after successful export
     await logExportActivity(options);
   } catch (error) {
-    console.error(`Error exporting ${options.format}:`, error);
+    log.error(`Error exporting ${options.format}:`, error);
     throw error;
   }
 }
@@ -404,11 +408,12 @@ export async function exportSundial(options: ExportOptions): Promise<void> {
  * Exports as vector PDF by converting the generated SVG
  */
 async function exportPDF(options: ExportOptions): Promise<void> {
+  log.group('PDF Export');
   // Add a small delay to ensure all DOM updates are complete
   await new Promise(resolve => setTimeout(resolve, 100));
   
   // Build SVG content using the existing SVG export path
-  console.log('PDF Export calling SVG export with options:', {
+  log.debug('PDF Export calling SVG export with options:', {
     pageSize: options.pageSize,
     orientation: options.orientation,
     showBackground: options.showBackground,
@@ -440,19 +445,19 @@ async function exportPDF(options: ExportOptions): Promise<void> {
     throw new Error('Parsed SVG content is invalid');
   }
   
-  console.log('Parsed SVG dimensions:', {
+  log.debug('Parsed SVG dimensions:', {
     width: svgEl.getAttribute('width'),
     height: svgEl.getAttribute('height'),
     viewBox: svgEl.getAttribute('viewBox')
   });
   
   // Also log the first few lines of the SVG content to see what was actually generated
-  console.log('SVG content first 300 chars:', svgContent.substring(0, 300));
+  log.debug('SVG content first 300 chars:', svgContent.substring(0, 300));
   
   // Extract the SVG tag to see the exact dimensions
   const svgTagMatch = svgContent.match(/<svg[^>]*>/);
   if (svgTagMatch) {
-    console.log('SVG tag:', svgTagMatch[0]);
+    log.debug('SVG tag:', svgTagMatch[0]);
   }
 
   // Ensure strokes don't get thicker due to scaling when fitting to page
@@ -477,7 +482,7 @@ async function exportPDF(options: ExportOptions): Promise<void> {
   const widthPt = parseFloat(svgWidthAttr.replace('pt', ''));
   const heightPt = parseFloat(svgHeightAttr.replace('pt', ''));
   
-  console.log('Using SVG dimensions for PDF (pt):', { widthPt, heightPt });
+  log.debug('Using SVG dimensions for PDF (pt):', { widthPt, heightPt });
 
   // Adjust stroke width and dash lengths to counteract viewBox scaling
   const viewBoxAttr = svgEl.getAttribute('viewBox');
@@ -528,20 +533,20 @@ async function exportPDF(options: ExportOptions): Promise<void> {
   }
 
   // Use pt so the SVG's pt dimensions map 1:1 to PDF, avoiding any implicit scaling
-  console.log('Creating jsPDF with format:', [widthPt, heightPt]);
+  log.debug('Creating jsPDF with format:', [widthPt, heightPt]);
   
   // Determine orientation based on dimensions
   const orientation = widthPt > heightPt ? 'landscape' : 'portrait';
-  console.log('Calculated orientation:', orientation);
+  log.debug('Calculated orientation:', orientation);
   
   // Try using standard format name if it matches
   let format: string | number[] = [widthPt, heightPt];
   if (Math.abs(widthPt - 792) < 1 && Math.abs(heightPt - 612) < 1) {
     format = 'letter';
-    console.log('Using standard letter format with landscape orientation');
+    log.debug('Using standard letter format with landscape orientation');
   } else if (Math.abs(widthPt - 612) < 1 && Math.abs(heightPt - 792) < 1) {
     format = 'letter';
-    console.log('Using standard letter format with portrait orientation');
+    log.debug('Using standard letter format with portrait orientation');
   }
   
   const doc = new jsPDF({ 
@@ -549,8 +554,8 @@ async function exportPDF(options: ExportOptions): Promise<void> {
     format: format,
     orientation: orientation as 'landscape' | 'portrait'
   });
-  console.log('jsPDF created with internal page size:', doc.internal.pageSize);
-  console.log('jsPDF page dimensions:', {
+  log.debug('jsPDF created with internal page size:', doc.internal.pageSize);
+  log.debug('jsPDF page dimensions:', {
     width: doc.internal.pageSize.getWidth(),
     height: doc.internal.pageSize.getHeight()
   });
@@ -571,6 +576,7 @@ async function exportPDF(options: ExportOptions): Promise<void> {
 
   // Trigger download
   doc.save(buildFilename(options, 'pdf'));
+  log.groupEnd();
 }
 
 /**
@@ -579,7 +585,7 @@ async function exportPDF(options: ExportOptions): Promise<void> {
  * @param svgEl The SVG element to process.
  */
 function processNorthPointForPdf(svgEl: SVGSVGElement) {
-  console.log('Processing North Point for PDF export by simplifying its transform...');
+  log.debug('Processing North Point for PDF export by simplifying its transform...');
 
   const groupElements = svgEl.querySelectorAll('g');
   let northPointFound = false;
@@ -587,7 +593,7 @@ function processNorthPointForPdf(svgEl: SVGSVGElement) {
   groupElements.forEach(groupEl => {
     const transform = groupEl.getAttribute('transform');
     if (transform && transform.includes('translate') && transform.includes('scale') && transform.includes('-460.035')) {
-      console.log('Found North Point group with transform:', transform);
+      log.debug('Found North Point group with transform:', transform);
       northPointFound = true;
 
       // This logic is borrowed from the successful PNG export
@@ -604,14 +610,14 @@ function processNorthPointForPdf(svgEl: SVGSVGElement) {
         const finalTy = ty + (-600 * scaleFactor);
         const newTransform = `translate(${finalTx}, ${finalTy}) scale(${scaleFactor})`;
 
-        console.log('Simplified North Point transform to:', newTransform);
+        log.debug('Simplified North Point transform to:', newTransform);
         groupEl.setAttribute('transform', newTransform);
       }
     }
   });
 
   if (!northPointFound) {
-    console.log('North Point group not found in SVG for PDF processing.');
+    log.debug('North Point group not found in SVG for PDF processing.');
   }
 }
 
@@ -659,70 +665,70 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
   const estimatedHeight = domHeight * scale;
   
   if (estimatedWidth > maxCanvasSize || estimatedHeight > maxCanvasSize) {
-    console.warn('Canvas would exceed browser limits, reducing scale');
+    log.warn('Canvas would exceed browser limits, reducing scale');
     const maxScale = Math.min(maxCanvasSize / domWidth, maxCanvasSize / domHeight);
     scale = Math.min(scale, maxScale * 0.9); // Use 90% of max to be safe
-    console.log('Adjusted scale to:', scale);
+    log.debug('Adjusted scale to:', scale);
   }
 
   // Minimal logging for PNG export
-  console.log(`PNG Export: ${domWidth}x${domHeight} @ ${dpi}DPI (scale: ${scale.toFixed(2)})`);
+  log.info(`PNG Export: ${domWidth}x${domHeight} @ ${dpi}DPI (scale: ${scale.toFixed(2)})`);
 
   // Find the SVG element within the container
   const originalSvg = svgContainer.querySelector('svg');
   if (!originalSvg) {
-    console.error('No SVG found in container. Container HTML:', svgContainer.innerHTML.substring(0, 500));
+    log.error('No SVG found in container. Container HTML:', svgContainer.innerHTML.substring(0, 500));
     throw new Error('No SVG found in the container');
   }
   
-  console.log(`Original SVG found: ${originalSvg.tagName}`);
-  console.log(`Original SVG dimensions: ${originalSvg.clientWidth}x${originalSvg.clientHeight}`);
-  console.log(`SVG viewBox: ${originalSvg.getAttribute('viewBox')}`);
-  console.log(`SVG children count: ${originalSvg.children.length}`);
+  log.debug(`Original SVG found: ${originalSvg.tagName}`);
+  log.debug(`Original SVG dimensions: ${originalSvg.clientWidth}x${originalSvg.clientHeight}`);
+  log.debug(`SVG viewBox: ${originalSvg.getAttribute('viewBox')}`);
+  log.debug(`SVG children count: ${originalSvg.children.length}`);
   
   // Log what children the original SVG has
   for (let i = 0; i < originalSvg.children.length; i++) {
     const child = originalSvg.children[i];
-    console.log(`Original SVG child ${i}: ${child.tagName}, id="${child.id}", class="${child.className}"`);
+    log.debug(`Original SVG child ${i}: ${child.tagName}, id="${child.id}", class="${child.className}"`);
   }
   
   // Check if there are other SVGs in the container (like compass rose)
   const allSvgsInContainer = svgContainer.querySelectorAll('svg');
-  console.log(`Total SVGs in container: ${allSvgsInContainer.length}`);
+  log.debug(`Total SVGs in container: ${allSvgsInContainer.length}`);
   if (allSvgsInContainer.length > 1) {
-    console.log('Multiple SVGs found - checking for compass rose...');
+    log.debug('Multiple SVGs found - checking for compass rose...');
     allSvgsInContainer.forEach((svg, index) => {
-      console.log(`SVG ${index}: ${svg.getAttribute('width')}x${svg.getAttribute('height')}, children: ${svg.children.length}`);
+      log.debug(`SVG ${index}: ${svg.getAttribute('width')}x${svg.getAttribute('height')}, children: ${svg.children.length}`);
     });
   }
   
   // Instead of creating a new container, let's clone the original container
   // but ensure it has the right content and dimensions
   const tempContainer = svgContainer.cloneNode(true) as HTMLElement;
-  console.log(`Cloned container children count: ${tempContainer.children.length}`);
+  log.debug(`Cloned container children count: ${tempContainer.children.length}`);
   
   // Find the SVG in the cloned container
   const tempSvg = tempContainer.querySelector('svg');
   if (!tempSvg) {
-    console.error('No SVG found in cloned container!');
+    log.error('No SVG found in cloned container!');
     throw new Error('Cloned container has no SVG');
   }
   
-  console.log(`Cloned SVG children count: ${tempSvg.children.length}`);
+  log.debug(`Cloned SVG children count: ${tempSvg.children.length}`);
   
   // Log what children we actually have
   for (let i = 0; i < tempSvg.children.length; i++) {
     const child = tempSvg.children[i];
-    console.log(`SVG child ${i}: ${child.tagName}, id="${child.id}", class="${child.className}"`);
+    log.debug(`SVG child ${i}: ${child.tagName}, id="${child.id}", class="${child.className}"`);
   }
   
   // Verify the clone has content
   if (tempSvg.children.length === 0) {
-    console.error('Cloned SVG has no children! Trying to re-clone...');
+    log.error('Cloned SVG has no children! Trying to re-clone...');
     // Try to replace the empty SVG with a fresh clone
     const freshSvgClone = originalSvg.cloneNode(true) as SVGElement;
     tempSvg.parentNode?.replaceChild(freshSvgClone, tempSvg);
-    console.log(`Fresh clone children count: ${freshSvgClone.children.length}`);
+    log.debug(`Fresh clone children count: ${freshSvgClone.children.length}`);
   }
   
   // Set up the container dimensions
@@ -763,16 +769,16 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
     tempSvg.style.height = `${svgHeight}px`;
     tempSvg.style.display = 'block';
     
-    console.log(`Fixed SVG dimensions: ${tempSvg.getAttribute('width')}x${tempSvg.getAttribute('height')}`);
+    log.debug(`Fixed SVG dimensions: ${tempSvg.getAttribute('width')}x${tempSvg.getAttribute('height')}`);
   }
   
-  console.log(`Temp container setup: ${svgWidth}x${svgHeight}`);
-  console.log(`Temp container final HTML length: ${tempContainer.outerHTML.length}`);
+  log.debug(`Temp container setup: ${svgWidth}x${svgHeight}`);
+  log.debug(`Temp container final HTML length: ${tempContainer.outerHTML.length}`);
   
   // Quick optimization check - only log if there are excessive elements
   const tempPathElements = tempContainer.querySelectorAll('path');
   if (tempPathElements.length > 100) {
-    console.log(`PNG Export: Processing ${tempPathElements.length} path elements`);
+    log.debug(`PNG Export: Processing ${tempPathElements.length} path elements`);
   }
   
   // Fix text positioning attributes that html2canvas doesn't handle well
@@ -808,7 +814,7 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
       // Special handling for NorthPoint (compass rose) transforms
       // These have the pattern: translate(x, y) scale(s) translate(-460.035, -600) [rotate(180 460.035 600)]
       if (transform.includes('translate') && transform.includes('scale') && transform.includes('-460.035')) {
-        console.log('Found NorthPoint transform, attempting to fix for html2canvas:', transform);
+        log.debug('Found NorthPoint transform, attempting to fix for html2canvas:', transform);
         
         // Parse the transform components
         const translateMatch1 = transform.match(/translate\(([^)]+)\)/);
@@ -819,7 +825,7 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
           const [tx, ty] = translateMatch1[1].split(',').map(s => parseFloat(s.trim()));
           const scaleFactor = parseFloat(scaleMatch[1]);
           
-          console.log('NorthPoint transform parsing:', {
+          log.debug('NorthPoint transform parsing:', {
             originalTransform: transform,
             tx, ty, scaleFactor,
             rotateMatch: !!rotateMatch
@@ -841,7 +847,7 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
             newTransform += ` rotate(180 460.035 600)`;
           }
           
-          console.log('Simplified NorthPoint transform:', {
+          log.debug('Simplified NorthPoint transform:', {
             finalTx, finalTy, scaleFactor,
             newTransform
           });
@@ -872,11 +878,11 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
   
   // Force layout and check dimensions after adding to DOM
   void tempContainer.offsetHeight; // Force reflow by accessing layout property
-  console.log(`Final temp container dimensions: ${tempContainer.offsetWidth}x${tempContainer.offsetHeight}`);
+  log.debug(`Final temp container dimensions: ${tempContainer.offsetWidth}x${tempContainer.offsetHeight}`);
   
   // If the temp container has no dimensions, try to fix it
   if (tempContainer.offsetWidth === 0 || tempContainer.offsetHeight === 0) {
-    console.warn('Temp container has zero dimensions, attempting to fix...');
+    log.warn('Temp container has zero dimensions, attempting to fix...');
     tempContainer.style.width = `${svgWidth}px`;
     tempContainer.style.height = `${svgHeight}px`;
     tempContainer.style.minWidth = `${svgWidth}px`;
@@ -884,7 +890,7 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
     
     // Force another reflow
     void tempContainer.offsetHeight; // Force reflow by accessing layout property
-    console.log(`After fix: ${tempContainer.offsetWidth}x${tempContainer.offsetHeight}`);
+    log.debug(`After fix: ${tempContainer.offsetWidth}x${tempContainer.offsetHeight}`);
   }
 
   try {
@@ -893,20 +899,20 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
     // Final verification before html2canvas
     const finalSvg = tempContainer.querySelector('svg');
     if (!finalSvg || finalSvg.children.length === 0) {
-      console.error('CRITICAL: No SVG content found before html2canvas!');
-      console.error('Container HTML:', tempContainer.outerHTML.substring(0, 2000));
+      log.error('CRITICAL: No SVG content found before html2canvas!');
+      log.error('Container HTML:', tempContainer.outerHTML.substring(0, 2000));
       throw new Error('No SVG content to export');
     }
     
-    console.log(`Final verification: SVG has ${finalSvg.children.length} children`);
-    console.log(`SVG viewBox: ${finalSvg.getAttribute('viewBox')}`);
+    log.debug(`Final verification: SVG has ${finalSvg.children.length} children`);
+    log.debug(`SVG viewBox: ${finalSvg.getAttribute('viewBox')}`);
     
     // Capture at original size with scale option for high DPI
     const containerWidth = tempContainer.offsetWidth;
     const containerHeight = tempContainer.offsetHeight;
     
-    console.log(`html2canvas options: width=${containerWidth}, height=${containerHeight}, scale=${scale}`);
-    console.log(`Container dimensions: ${containerWidth}x${containerHeight}`);
+    log.debug(`html2canvas options: width=${containerWidth}, height=${containerHeight}, scale=${scale}`);
+    log.debug(`Container dimensions: ${containerWidth}x${containerHeight}`);
     
     const canvasPromise = html2canvas(tempContainer, {
       backgroundColor: options.showBackground ? (options.backgroundColor || '#ffffff') : '#ffffff',
@@ -922,8 +928,8 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
     
     const finalCanvas = await Promise.race([canvasPromise, timeoutPromise]) as HTMLCanvasElement;
     const endTime = performance.now();
-    console.log(`PNG export completed in ${(endTime - startTime).toFixed(0)}ms`);
-    console.log(`Final canvas dimensions: ${finalCanvas.width}x${finalCanvas.height}`);
+    log.info(`PNG export completed in ${(endTime - startTime).toFixed(0)}ms`);
+    log.debug(`Final canvas dimensions: ${finalCanvas.width}x${finalCanvas.height}`);
     
     // Remove the temporary container now that we have the canvas
     document.body.removeChild(tempContainer);
@@ -935,19 +941,19 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
             downloadFile(blob, buildFilename(options, 'png'), 'image/png');
             resolve();
           } else {
-            console.error('Canvas toBlob returned null');
-            console.error('Canvas width:', finalCanvas.width, 'height:', finalCanvas.height);
-            console.error('Canvas context:', finalCanvas.getContext('2d'));
+            log.error('Canvas toBlob returned null');
+            log.error('Canvas width:', finalCanvas.width, 'height:', finalCanvas.height);
+            log.error('Canvas context:', finalCanvas.getContext('2d'));
             
             // Try with a lower DPI as fallback
             if (dpi > 150) {
-              console.log('Retrying with lower DPI...');
+              log.debug('Retrying with lower DPI...');
               exportPNG(svgContainer, { ...options, dpi: 150 }).then(resolve).catch(reject);
               return;
             }
             
             // Final fallback: try with minimal options
-            console.log('Trying final fallback with minimal options...');
+            log.debug('Trying final fallback with minimal options...');
             html2canvas(svgContainer, {
               backgroundColor: '#ffffff',
               width: svgContainer.offsetWidth,
@@ -956,7 +962,7 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
             } as Parameters<typeof html2canvas>[1]).then(fallbackCanvas => {
               fallbackCanvas.toBlob((fallbackBlob) => {
                 if (fallbackBlob) {
-                  console.log('Fallback PNG export succeeded');
+                  log.info('Fallback PNG export succeeded');
                   downloadFile(fallbackBlob, buildFilename(options, 'png'), 'image/png');
                   resolve();
                 } else {
@@ -964,13 +970,13 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
                 }
               }, 'image/png');
             }).catch(fallbackError => {
-              console.error('Fallback also failed:', fallbackError);
+              log.error('Fallback also failed:', fallbackError);
               reject(new Error('Failed to create PNG blob - canvas.toBlob() returned null'));
             });
           }
         }, 'image/png');
       } catch (error) {
-        console.error('Error in toBlob:', error);
+        log.error('Error in toBlob:', error);
         const errorMessage = error instanceof Error ? error.message : String(error);
         reject(new Error(`Failed to create PNG blob: ${errorMessage}`));
       }
@@ -982,12 +988,12 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
       document.body.removeChild(tempContainer);
     }
     
-    console.error('Error in html2canvas:', error);
+    log.error('Error in html2canvas:', error);
     const errorMessage = error instanceof Error ? error.message : String(error);
     
     // If it's a timeout error and we haven't tried a lower DPI yet, try again
     if (errorMessage.includes('timed out') && dpi > 150) {
-      console.log('PNG export timed out, retrying with lower DPI...');
+      log.debug('PNG export timed out, retrying with lower DPI...');
       return exportPNG(svgContainer, { ...options, dpi: 150 });
     }
     throw new Error(`PNG export failed: ${errorMessage}`);

@@ -1,6 +1,7 @@
 // src/components/LocationInputs.tsx
 import React, { useState, lazy, Suspense, useCallback, useEffect } from 'react';
 import { MapPin } from 'lucide-react';
+import { log } from '../utils/logger';
 // Remove: import MapPicker from './MapPicker';
 const MapPicker = lazy(() => import('./MapPicker'));
 
@@ -176,7 +177,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
     // First, try to get timezone from our enhanced fallback system
     const fallbackResult = getTimezoneFromCoordinates(lat, lng);
     if (fallbackResult) {
-      console.log('Using enhanced fallback timezone data for coordinates:', lat, lng);
+      log.debug('Using enhanced fallback timezone data for coordinates:', lat, lng);
       return fallbackResult;
     }
 
@@ -191,7 +192,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
         const data = await response.json();
 
         if (data.status === 'OK') {
-          console.log('Successfully used Google Timezone API');
+          log.debug('Successfully used Google Timezone API');
           return {
             timeZoneId: data.timeZoneId,
             dstOffset: data.dstOffset,
@@ -199,12 +200,12 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
             timeZoneName: data.timeZoneName
           };
         } else {
-          console.log('Google Timezone API failed:', data.status, data.errorMessage);
-          console.log('Falling back to coordinate-based timezone estimation');
+          log.debug('Google Timezone API failed:', data.status, data.errorMessage);
+          log.debug('Falling back to coordinate-based timezone estimation');
         }
       } catch (e) {
-        console.log('Google Timezone API request failed:', e);
-        console.log('Falling back to coordinate-based timezone estimation');
+        log.debug('Google Timezone API request failed:', e);
+        log.debug('Falling back to coordinate-based timezone estimation');
       }
     }
 

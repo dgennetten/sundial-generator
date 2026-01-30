@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { MapPin, Search } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { log } from '../utils/logger';
 
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
@@ -81,7 +82,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
         setMapZoom(10);
       }
     } catch (error) {
-      console.error('Search failed:', error);
+      log.error('Search failed:', error);
     } finally {
       setIsSearching(false);
     }

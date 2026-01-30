@@ -1,6 +1,8 @@
 // src/utils/svgExportUtils.ts
 // Simple SVG export utilities - restored to the original working approach
 
+import { log } from './logger';
+
 export interface SVGExportOptions {
   pageSize: 'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom';
   customWidth?: number;
@@ -23,17 +25,18 @@ const pageSizeMap = {
  * This is the original working approach that was replaced by complex layering
  */
 export function createSVGExport(options: SVGExportOptions): string | null {
-  console.log('Starting simple SVG export with options:', options);
+  log.group('Simple SVG Export');
+  log.info('Starting simple SVG export with options:', options);
   
   // Find the sundial preview container
-  console.log('=== SIMPLE SVG EXPORT - FINDING SUNDIAL ===');
+  log.debug('=== SIMPLE SVG EXPORT - FINDING SUNDIAL ===');
   const previewCards = document.querySelectorAll('.card');
   let svgContainer: HTMLElement | null = null;
   
   for (const card of previewCards) {
     const title = card.querySelector('.card-title');
     if (title && title.textContent && title.textContent.includes('Sundial Preview')) {
-      console.log('Found Sundial Preview card');
+      log.debug('Found Sundial Preview card');
       
       // Find the SVG container
       svgContainer = card.querySelector('div[style*="display: flex"]') as HTMLElement;
@@ -45,26 +48,28 @@ export function createSVGExport(options: SVGExportOptions): string | null {
       }
       
       if (svgContainer) {
-        console.log('Found SVG container');
+        log.debug('Found SVG container');
         break;
       }
     }
   }
   
   if (!svgContainer) {
-    console.error('Could not find SVG container');
+    log.error('Could not find SVG container');
+    log.groupEnd();
     return null;
   }
   
   // Find the main SVG element
   const svgElement = svgContainer.querySelector('svg') as SVGSVGElement;
   if (!svgElement) {
-    console.error('Could not find SVG element');
+    log.error('Could not find SVG element');
+    log.groupEnd();
     return null;
   }
   
-  console.log('Found SVG element:', svgElement);
-  console.log('SVG viewBox:', svgElement.getAttribute('viewBox'));
+  log.debug('Found SVG element:', svgElement);
+  log.debug('SVG viewBox:', svgElement.getAttribute('viewBox'));
   
   // Get page dimensions
   const customPageSize = options.pageSize === 'Custom' && options.customWidth && options.customHeight
@@ -83,11 +88,11 @@ export function createSVGExport(options: SVGExportOptions): string | null {
   const pageWidthPt = printWidth * 72;
   const pageHeightPt = printHeight * 72;
   
-  console.log('SVG Export dimensions:', { pageSize: options.pageSize, orientation: options.orientation, printWidth, printHeight, pageWidthPt, pageHeightPt });
+  log.debug('SVG Export dimensions:', { pageSize: options.pageSize, orientation: options.orientation, printWidth, printHeight, pageWidthPt, pageHeightPt });
   
   // Get the original viewBox
   const originalViewBox = svgElement.getAttribute('viewBox') || '';
-  console.log('Original viewBox:', originalViewBox);
+  log.debug('Original viewBox:', originalViewBox);
   
   // Create the export SVG structure - SIMPLE APPROACH
   let svgContent = '';
@@ -117,7 +122,7 @@ export function createSVGExport(options: SVGExportOptions): string | null {
   // SIMPLE APPROACH: Just serialize the entire SVG content directly
   // This avoids all the complex layering that was causing duplicate dials
   const svgInnerContent = svgElement.innerHTML;
-  console.log('SVG inner content length:', svgInnerContent.length);
+  log.debug('SVG inner content length:', svgInnerContent.length);
   
   // Add the content directly without any special processing
   svgContent += svgInnerContent;
@@ -125,8 +130,9 @@ export function createSVGExport(options: SVGExportOptions): string | null {
   // Close SVG
   svgContent += '\n</svg>';
   
-  console.log('Generated simple SVG content length:', svgContent.length);
-  console.log('SVG preview:', svgContent.substring(0, 500) + '...');
+  log.debug('Generated simple SVG content length:', svgContent.length);
+  log.debug('SVG preview:', svgContent.substring(0, 500) + '...');
+  log.groupEnd();
   
   return svgContent;
 }

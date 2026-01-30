@@ -6,6 +6,7 @@ import type { LineStyle } from './LineSettings';
 import type { HourlineInterval } from './hourlineUtils';
 import { Sun } from 'lucide-react';
 import GnomonSVG from './GnomonSVG';
+import { log } from '../utils/logger';
 
 const pageSizeMap = {
   Letter: { width: 8.5 * 25.4, height: 11 * 25.4 },
@@ -1350,7 +1351,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const decl = getSolarDeclination(day);
       if (line.date && line.id && !line.fixed) {
         // Debug log for user dates
-        console.log(`User declination line: ${line.date} => day ${day}, decl ${decl}`);
+        log.debug(`User declination line: ${line.date} => day ${day}, decl ${decl}`);
       }
       return decl;
     }
@@ -1468,7 +1469,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       filteredPoints = filteredPoints.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
     }
 
-    console.log(`Finding intersection for declination ${decl.toFixed(2)}°, filtered points: ${filteredPoints.length}`);
+    log.debug(`Finding intersection for declination ${decl.toFixed(2)}°, filtered points: ${filteredPoints.length}`);
 
     // Find the point with the closest declination match
     let bestPoint: { x: number; y: number } | null = null;
@@ -1484,14 +1485,14 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       }
     }
 
-    console.log(`Best match for declination ${decl.toFixed(2)}°: difference = ${smallestDifference.toFixed(2)}°`);
+    log.debug(`Best match for declination ${decl.toFixed(2)}°: difference = ${smallestDifference.toFixed(2)}°`);
 
     // Only return the point if it's reasonably close (within 5 degrees)
     if (bestPoint && smallestDifference < 5.0) {
       return bestPoint;
     }
 
-    console.log(`No suitable intersection found for declination ${decl.toFixed(2)}° (tolerance: 5.0°)`);
+    log.debug(`No suitable intersection found for declination ${decl.toFixed(2)}° (tolerance: 5.0°)`);
     return null;
   }
 
@@ -1580,7 +1581,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       if (segment.length < 2) {
         // Debug log for short segments
         if (segment.length === 1) {
-          console.log('Short declination segment (1 point):', segment[0]);
+          log.debug('Short declination segment (1 point):', segment[0]);
         }
         return null;
       }
@@ -1603,7 +1604,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Draw declination lines
   if (declinationLines.length > 0) {
 
-    console.log('Declination lines to render:', declinationLines.map(l => ({ date: l.date, active: l.active, styleId: l.styleId, id: l.id, decl: getDeclinationForLine(l) })));
+    log.debug('Declination lines to render:', declinationLines.map(l => ({ date: l.date, active: l.active, styleId: l.styleId, id: l.id, decl: getDeclinationForLine(l) })));
   }
 
   const declinationLineElements = declinationLines.flatMap((line, idx) => {
@@ -1642,11 +1643,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   });
 
   // Create declination noonmarks if enabled
-  console.log(`Declination noonmarks enabled: ${declinationNoonmarks}, scale: ${scale}, viewBoxScaleFactor: ${viewBoxScaleFactor}`);
+  log.group('Declination Noonmarks');
+  log.debug(`Declination noonmarks enabled: ${declinationNoonmarks}, scale: ${scale}, viewBoxScaleFactor: ${viewBoxScaleFactor}`);
 
   const declinationNoonmarkElements = declinationNoonmarks ? declinationLines.flatMap((line, idx) => {
 
-    console.log(`Processing declination line ${idx}: ${line.date}, active: ${line.active}`);
+    log.debug(`Processing declination line ${idx}: ${line.date}, active: ${line.active}`);
 
     if (!line.active) return [];
     if (!isDateStringInRange(line.date)) return [];
@@ -1654,7 +1656,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
     if (!style) {
 
-      console.log(`No style found for line ${line.date}, styleId: ${line.styleId}`);
+      log.debug(`No style found for line ${line.date}, styleId: ${line.styleId}`);
       return [];
     }
 
@@ -1686,7 +1688,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     // Debug logging for declination noonmarks
 
-    console.log(`Declination noonmark processing: ${line.date}, active: ${line.active}, style: ${style?.color}`);
+    log.debug(`Declination noonmark processing: ${line.date}, active: ${line.active}, style: ${style?.color}`);
 
 
 
@@ -1696,19 +1698,19 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     if (line.date === '1st of the Month') {
       const monthBoundaries = getMonthBoundaryDeclinations();
 
-      console.log(`Month boundaries for noonmarks:`, monthBoundaries.map(b => `${b.month} (decl ${b.decl.toFixed(2)}°)`));
+      log.debug(`Month boundaries for noonmarks:`, monthBoundaries.map(b => `${b.month} (decl ${b.decl.toFixed(2)}°)`));
       return monthBoundaries.flatMap((boundary, boundaryIdx) => {
         // Find single intersection point with noon analemma for this declination
         const intersectionPoint = findDeclinationAnalemmaIntersection(boundary.decl);
         if (!intersectionPoint) {
 
-          console.log(`No intersection found for month boundary ${boundary.month} (decl ${boundary.decl.toFixed(2)}°)`);
+          log.debug(`No intersection found for month boundary ${boundary.month} (decl ${boundary.decl.toFixed(2)}°)`);
           return [];
         }
 
 
-        console.log(`Found intersection for ${boundary.month}: (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
-        console.log(`Rendering circle for ${boundary.month} at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
+        log.debug(`Found intersection for ${boundary.month}: (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
+        log.debug(`Rendering circle for ${boundary.month} at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
 
         return [
           <circle
@@ -1728,19 +1730,19 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     if (line.date === '1st and 15th') {
       const firstAndFifteenthDays = getFirstAndFifteenthDeclinations();
 
-      console.log(`1st and 15th days for noonmarks:`, firstAndFifteenthDays.map(d => `${d.month} ${d.dayOfMonth} (decl ${d.decl.toFixed(2)}°)`));
+      log.debug(`1st and 15th days for noonmarks:`, firstAndFifteenthDays.map(d => `${d.month} ${d.dayOfMonth} (decl ${d.decl.toFixed(2)}°)`));
       return firstAndFifteenthDays.flatMap((day, dayIdx) => {
         // Find single intersection point with noon analemma for this declination
         const intersectionPoint = findDeclinationAnalemmaIntersection(day.decl);
         if (!intersectionPoint) {
 
-          console.log(`No intersection found for ${day.month} ${day.dayOfMonth} (decl ${day.decl.toFixed(2)}°)`);
+          log.debug(`No intersection found for ${day.month} ${day.dayOfMonth} (decl ${day.decl.toFixed(2)}°)`);
           return [];
         }
 
 
-        console.log(`Found intersection for ${day.month} ${day.dayOfMonth}: (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
-        console.log(`Rendering circle for ${day.month} ${day.dayOfMonth} at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
+        log.debug(`Found intersection for ${day.month} ${day.dayOfMonth}: (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
+        log.debug(`Rendering circle for ${day.month} ${day.dayOfMonth} at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
 
         return [
           <circle
@@ -1760,7 +1762,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const decl = getDeclinationForLine(line);
     if (decl === null) {
 
-      console.log(`No declination found for line: ${line.date}`);
+      log.debug(`No declination found for line: ${line.date}`);
       return [];
     }
 
@@ -1768,13 +1770,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const intersectionPoint = findDeclinationAnalemmaIntersection(decl);
     if (!intersectionPoint) {
 
-      console.log(`No intersection found for declination ${decl.toFixed(2)}° (line: ${line.date})`);
+      log.debug(`No intersection found for declination ${decl.toFixed(2)}° (line: ${line.date})`);
       return [];
     }
 
 
-    console.log(`Found intersection for ${line.date} (decl ${decl.toFixed(2)}°): (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
-    console.log(`Rendering circle at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
+    log.debug(`Found intersection for ${line.date} (decl ${decl.toFixed(2)}°): (${intersectionPoint.x.toFixed(2)}, ${intersectionPoint.y.toFixed(2)})`);
+    log.debug(`Rendering circle at (${(scale * intersectionPoint.x).toFixed(2)}, ${(scale * intersectionPoint.y).toFixed(2)}) with radius ${circleRadius}`);
 
     return [
       <circle
@@ -2388,10 +2390,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                         y2: equinoxY
                       };
 
-                      console.log('Equinox line calculated:', result);
+                      log.debug('Equinox line calculated:', result);
                       return result;
                     } catch (error) {
-                      console.error('Error calculating equinox line:', error);
+                      log.error('Error calculating equinox line:', error);
                       return null;
                     }
                   };
@@ -2522,10 +2524,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                         y2: equinoxY
                       };
 
-                      console.log('Equinox line calculated:', result);
+                      log.debug('Equinox line calculated:', result);
                       return result;
                     } catch (error) {
-                      console.error('Error calculating equinox line:', error);
+                      log.error('Error calculating equinox line:', error);
                       return null;
                     }
                   };

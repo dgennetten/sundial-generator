@@ -1,6 +1,7 @@
 import { supabase } from './supabaseClient';
 import type { SundialPrint } from '../types/sundial';
 import type { InclineType } from '../types';
+import { log } from './logger';
 
 /**
  * Calculate inclination degrees from inclineType and tiltAngle
@@ -42,11 +43,11 @@ export async function saveSundialPrint(print: Omit<SundialPrint, 'id' | 'created
       .insert(print);
 
     if (error) {
-      console.error('Error saving sundial print to Supabase:', error);
+      log.error('Error saving sundial print to Supabase:', error);
       // Don't throw - logging failures shouldn't break the app
     }
   } catch (error) {
-    console.error('Exception saving sundial print to Supabase:', error);
+    log.error('Exception saving sundial print to Supabase:', error);
     // Don't throw - logging failures shouldn't break the app
   }
 }
@@ -63,7 +64,7 @@ export async function fetchSundialPrints(): Promise<{ prints: SundialPrint[]; to
       .select('*', { count: 'exact', head: true });
 
     if (countError) {
-      console.error('Error counting sundial prints:', countError);
+      log.error('Error counting sundial prints:', countError);
       throw new Error(`Failed to count prints: ${countError.message}`);
     }
 
@@ -77,7 +78,7 @@ export async function fetchSundialPrints(): Promise<{ prints: SundialPrint[]; to
       .limit(200);
 
     if (error) {
-      console.error('Error fetching sundial prints:', error);
+      log.error('Error fetching sundial prints:', error);
       throw new Error(`Failed to fetch prints: ${error.message}`);
     }
 
@@ -97,7 +98,7 @@ export async function fetchSundialPrints(): Promise<{ prints: SundialPrint[]; to
       totalCount,
     };
   } catch (error) {
-    console.error('Exception fetching sundial prints:', error);
+    log.error('Exception fetching sundial prints:', error);
     throw error; // Re-throw to let component handle it
   }
 }

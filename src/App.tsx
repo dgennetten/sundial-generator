@@ -39,6 +39,7 @@ import DialTextBlockSettings from './components/DialTextBlockSettings';
 import PrintedDialsMap from './components/PrintedDialsMap';
 import WelcomeDialog from './components/WelcomeDialog';
 import type { SundialPrint } from './types/sundial';
+import { log } from './utils/logger';
 
 
 const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n{half-year}\n*{gnomon}*\n*{incline}*\n*{today}*`;
@@ -181,7 +182,7 @@ const App: React.FC = () => {
 
   // Debug: log declinationLines before filtering
   React.useEffect(() => {
-    console.log('App declinationLines state:', declinationLines);
+    log.debug('App declinationLines state:', declinationLines);
   }, [declinationLines]);
 
   // Update font sizes and offset when page size changes
@@ -668,7 +669,7 @@ const App: React.FC = () => {
         />
 
         <React.Profiler id="HourlineSettings" onRender={(id, phase, actualDuration) => {
-          if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
+          if (phase === 'update') log.perf(id, phase, actualDuration);
         }}>
 
           <DeclinationLineOptions
@@ -709,7 +710,7 @@ const App: React.FC = () => {
           />
         </React.Profiler>
         <React.Profiler id="LineSettings" onRender={(id, phase, actualDuration) => {
-          if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
+          if (phase === 'update') log.perf(id, phase, actualDuration);
         }}>
 
           <LineSettings
@@ -727,7 +728,7 @@ const App: React.FC = () => {
 
       {/* Preview Panel - Right Side */}
       <React.Profiler id="SundialPreview" onRender={(id, phase, actualDuration) => {
-        if (phase === 'update') console.log(`${id} render: ${actualDuration.toFixed(1)}ms`);
+        if (phase === 'update') log.perf(id, phase, actualDuration);
       }}>
         <SundialPreview config={previewConfig} />
       </React.Profiler>

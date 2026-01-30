@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { MapPin } from 'lucide-react';
 import type { SundialPrint, SundialPrintMapProps } from '../types/sundial';
 import { fetchSundialPrints } from '../utils/sundialPrintUtils';
+import { log } from '../utils/logger';
 
 // Fix for default markers in Leaflet with React
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,7 +76,7 @@ const PrintedDialsMap: React.FC<SundialPrintMapProps> = ({
         setPrints(fetchedPrints);
         setTotalCount(fetchedTotal);
       } catch (error) {
-        console.error('Error loading sundial prints:', error);
+        log.error('Error loading sundial prints:', error);
         setError(error instanceof Error ? error.message : 'Failed to load sundial prints');
       } finally {
         setLoading(false);
@@ -105,13 +106,13 @@ const PrintedDialsMap: React.FC<SundialPrintMapProps> = ({
     const validPrints = prints.filter(print => {
       if (typeof print.latitude !== 'number' || typeof print.longitude !== 'number' ||
           isNaN(print.latitude) || isNaN(print.longitude)) {
-        console.error('Invalid coordinates for print:', print);
+        log.error('Invalid coordinates for print:', print);
         return false;
       }
       // Validate coordinate ranges
       if (print.latitude < -90 || print.latitude > 90 || 
           print.longitude < -180 || print.longitude > 180) {
-        console.error('Coordinates out of valid range for print:', print);
+        log.error('Coordinates out of valid range for print:', print);
         return false;
       }
       return true;
@@ -175,7 +176,7 @@ const PrintedDialsMap: React.FC<SundialPrintMapProps> = ({
 
         markersRef.current.push(marker);
       } catch (error) {
-        console.error('Error creating marker for print:', print, error);
+        log.error('Error creating marker for print:', print, error);
       }
     });
 
@@ -196,7 +197,7 @@ const PrintedDialsMap: React.FC<SundialPrintMapProps> = ({
             map.fitBounds(bounds.pad(0.1));
           }
         } else {
-          console.warn('Invalid bounds calculated, using default view');
+          log.warn('Invalid bounds calculated, using default view');
           // If bounds are invalid (e.g., all markers at same point), center on first marker
           if (markersRef.current.length > 0) {
             const firstMarker = markersRef.current[0];
@@ -204,7 +205,7 @@ const PrintedDialsMap: React.FC<SundialPrintMapProps> = ({
           }
         }
       } catch (error) {
-        console.error('Error fitting map bounds:', error);
+        log.error('Error fitting map bounds:', error);
         // Fallback: center on first marker
         if (markersRef.current.length > 0) {
           const firstMarker = markersRef.current[0];

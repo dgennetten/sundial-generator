@@ -2,6 +2,7 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Globe, Users, MapPin } from 'lucide-react';
 import type { VisitorData, VisitorLocation } from '../types';
 import { isVisitorData, safeJsonParse } from '../utils/typeGuards';
+import { log } from '../utils/logger';
 
 // Lazy load the Leaflet map component to reduce initial bundle size
 const VisitorMapLeaflet = lazy(() => import('./VisitorMapLeaflet'));
@@ -83,20 +84,23 @@ const VisitorMap: React.FC = () => {
       const parseResult = safeJsonParse(rawData, isVisitorData);
 
       if (parseResult.success) {
-        console.log('VisitorMap: Successfully loaded visitor data - Visitors:', parseResult.data.totalVisitors, 'Visits:', parseResult.data.totalVisits);
-        console.log('VisitorMap: ProcessedDate:', parseResult.data.processedDate);
-        console.log('VisitorMap: Last visitor IP:', parseResult.data.visitors[parseResult.data.visitors.length - 1]?.ip);
+        log.info('VisitorMap: Successfully loaded visitor data', {
+          visitors: parseResult.data.totalVisitors,
+          visits: parseResult.data.totalVisits,
+          processedDate: parseResult.data.processedDate,
+          lastVisitorIP: parseResult.data.visitors[parseResult.data.visitors.length - 1]?.ip
+        });
         setVisitorData(parseResult.data);
         setError(null);
       } else {
         throw new Error(`Invalid visitor data format: ${parseResult.error}`);
       }
     } catch (err) {
-      console.error('VisitorMap: Error loading visitor data:', err);
+      log.error('VisitorMap: Error loading visitor data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load visitor data');
       // Fallback to sample data if real data fails to load
       const sampleData = getSampleData();
-      console.log('VisitorMap: Using fallback sample data');
+      log.warn('VisitorMap: Using fallback sample data');
       setVisitorData(sampleData);
     } finally {
       setLoading(false);
@@ -114,7 +118,7 @@ const VisitorMap: React.FC = () => {
   // Debug logging
   React.useEffect(() => {
     if (visitorData) {
-      console.log('VisitorMap: Rendering - Visitors:', totalVisitors, 'Visits:', totalVisits);
+      log.debug('VisitorMap: Rendering - Visitors:', totalVisitors, 'Visits:', totalVisits);
     }
   }, [visitorData, totalVisitors, totalVisits]);
 
@@ -209,7 +213,7 @@ const VisitorMap: React.FC = () => {
 
   // Show error state (but still render with fallback data)
   if (error) {
-    console.warn('Visitor Map Error:', error);
+    log.warn('Visitor Map Error:', error);
   }
 
   // Don't render if no data
