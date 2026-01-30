@@ -91,7 +91,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
     }
 }
 
-// Convert sundialNotesMode to readable format
+// Convert decoration mode to readable format
 function formatSundialNotesMode($mode) {
     switch ($mode) {
         case 'none':
@@ -273,7 +273,7 @@ $emailBody .= "Export Format: $exportFormat\n";
 $emailBody .= "Page Size: $pageSize\n";
 $emailBody .= "Date Range: $dateRange\n";
 $emailBody .= "Gnomon Type: $gnomonType\n";
-$emailBody .= "Sundial Notes: $sundialNotesDisplay\n";
+$emailBody .= "Decoration: $sundialNotesDisplay\n";
 
 // Append approximate location if available
 if ($approximateLocation !== null) {
@@ -283,7 +283,7 @@ if ($approximateLocation !== null) {
 // Append dial text block content if it exists
 if (!empty($dialTextBlockInterpreted) || !empty($dialTextBlock)) {
     $emailBody .= "\n";
-    $emailBody .= "Sundial Notes Text:\n";
+    $emailBody .= "Decoration text:\n";
     $emailBody .= str_repeat('-', 50) . "\n";
     // Prefer interpreted text (placeholders expanded) if provided by the client
     $emailBody .= (!empty($dialTextBlockInterpreted) ? $dialTextBlockInterpreted : $dialTextBlock) . "\n";

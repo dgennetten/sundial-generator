@@ -152,9 +152,9 @@ export interface ExportOptions {
   gnomonType?: GnomonType;
   /** Location name for logging */
   locationName?: string;
-  /** Sundial notes mode for logging */
+  /** Decoration mode for logging */
   sundialNotesMode?: string;
-  /** Sundial notes text content (when mode is 'textBlock') */
+  /** Decoration text content (when mode is 'textBlock') */
   dialTextBlock?: string;
 
   /**

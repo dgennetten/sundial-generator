@@ -74,7 +74,7 @@ Each email includes:
 - Page size and orientation
 - Date range setting
 - Gnomon type
-- Sundial notes mode
+- Decoration mode
 
 ## Troubleshooting
 

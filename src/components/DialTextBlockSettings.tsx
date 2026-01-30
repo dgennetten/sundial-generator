@@ -34,7 +34,7 @@ const DialTextBlockSettings: React.FC<Props> = ({
     <div className="card">
       <div className="card-header">
         <h3 className="card-title">
-          <Text color="#2563eb" size={20} style={{ marginRight: 6 }} /> Sundial Notes
+          <Text color="#2563eb" size={20} style={{ marginRight: 6 }} /> Decoration
         </h3>
       </div>
       <div className="card-content">

@@ -36,7 +36,7 @@ function computeInclineDegrees(args: {
 }
 
 /**
- * Expands Sundial Notes Text block placeholders into a single string, intended for logging/email.
+ * Expands Decoration text block placeholders into a single string, intended for logging/email.
  * Unlike on-dial rendering, this does NOT depend on whether a "Today" declination line is visible.
  */
 export function interpretDialTextBlockForEmail(template: string, ctx: {
