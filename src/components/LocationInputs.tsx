@@ -2,7 +2,6 @@
 import React, { useState, lazy, Suspense, useCallback, useEffect } from 'react';
 import { MapPin } from 'lucide-react';
 import { log } from '../utils/logger';
-// Remove: import MapPicker from './MapPicker';
 const MapPicker = lazy(() => import('./MapPicker'));
 
 // Location data

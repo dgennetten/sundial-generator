@@ -98,35 +98,24 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   const [backgroundColor, setBackgroundColor] = useState<string>(backgroundColorProp ?? 'Cornsilk');
 
   // Sync internal state when props change (for restore functionality)
+  // Consolidate multiple useEffect hooks into a single one for better performance
   useEffect(() => {
     if (dialShapeProp !== undefined) {
       setDialShape(dialShapeProp);
     }
-  }, [dialShapeProp]);
-
-  useEffect(() => {
     if (borderStyleProp !== undefined) {
       setBorderStyle(borderStyleProp);
     }
-  }, [borderStyleProp]);
-
-  useEffect(() => {
     if (borderMarginProp !== undefined) {
       setMargin(borderMarginProp * 25.4); // Convert inches to mm
     }
-  }, [borderMarginProp]);
-
-  useEffect(() => {
     if (showBackgroundProp !== undefined) {
       setShowBackground(showBackgroundProp);
     }
-  }, [showBackgroundProp]);
-
-  useEffect(() => {
     if (backgroundColorProp !== undefined) {
       setBackgroundColor(backgroundColorProp);
     }
-  }, [backgroundColorProp]);
+  }, [dialShapeProp, borderStyleProp, borderMarginProp, showBackgroundProp, backgroundColorProp]);
 
   // Note: customWidth, customHeight, and customUnits are used directly from props
   // via getDisplayWidth() and getDisplayHeight(), so they don't need useEffect hooks.
@@ -208,36 +197,25 @@ const PageSettings: React.FC<PageSettingsProps> = ({
 
 
 
-  // Handle width change with unit conversion
-  const handleWidthChange = (value: number) => {
-    if (!setCustomWidth) return;
-
-    // Convert the input value to millimeters (internal storage)
-    let widthInMm: number;
-    if (customUnits === 'in') {
-      widthInMm = value * 25.4; // inches to mm
-    } else {
-      widthInMm = value * 10; // cm to mm
-    }
-
-    // Store the value in mm internally, but display in the current units
-    setCustomWidth(widthInMm);
+  // Generic unit conversion helpers (consolidated from duplicate functions)
+  const toMillimeters = (value: number, units: 'in' | 'cm'): number => {
+    return units === 'in' ? value * 25.4 : value * 10; // inches to mm OR cm to mm
   };
 
-  // Handle height change with unit conversion
-  const handleHeightChange = (value: number) => {
-    if (!setCustomHeight) return;
+  const fromMillimeters = (value: number, units: 'in' | 'cm'): number => {
+    return units === 'in' ? value / 25.4 : value / 10; // mm to inches OR mm to cm
+  };
 
-    // Convert the input value to millimeters (internal storage)
-    let heightInMm: number;
-    if (customUnits === 'in') {
-      heightInMm = value * 25.4; // inches to mm
-    } else {
-      heightInMm = value * 10; // cm to mm
-    }
+  // Handle dimension change with unit conversion
+  const handleDimensionChange = (value: number, setter: ((width: number) => void) | undefined) => {
+    if (!setter) return;
+    setter(toMillimeters(value, customUnits ?? 'in'));
+  };
 
-    // Store the value in mm internally, but display in the current units
-    setCustomHeight(heightInMm);
+  // Get display value in current units
+  const getDisplayValue = (value: number | undefined): number => {
+    if (!value) return 0;
+    return fromMillimeters(value, customUnits ?? 'in');
   };
 
   // Handle units toggle with conversion
@@ -248,24 +226,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     setCustomUnits(newUnits);
   };
 
-  // Get display values in current units
-  const getDisplayWidth = (): number => {
-    if (!customWidth) return 0;
-    if (customUnits === 'in') {
-      return customWidth / 25.4; // mm to inches
-    } else {
-      return customWidth / 10; // mm to cm
-    }
-  };
-
-  const getDisplayHeight = (): number => {
-    if (!customHeight) return 0;
-    if (customUnits === 'in') {
-      return customHeight / 25.4; // mm to inches
-    } else {
-      return customHeight / 10; // mm to cm
-    }
-  };
+  // Note: getDisplayValue() helper is defined above (replaces getDisplayWidth/getDisplayHeight)
 
   // Determine if dial orientation should be locked and what direction it should be
   const getDialOrientationLockInfo = () => {
@@ -368,8 +329,8 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               <input
                 type="number"
                 className="form-input"
-                value={getDisplayWidth()}
-                onChange={(e) => handleWidthChange(parseFloat(e.target.value) || 0)}
+                value={getDisplayValue(customWidth)}
+                onChange={(e) => handleDimensionChange(parseFloat(e.target.value) || 0, setCustomWidth)}
                 min={0.1}
                 step={0.1}
                 style={{ width: isMobile ? '60px' : '80px' }}
@@ -380,8 +341,8 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               <input
                 type="number"
                 className="form-input"
-                value={getDisplayHeight()}
-                onChange={(e) => handleHeightChange(parseFloat(e.target.value) || 0)}
+                value={getDisplayValue(customHeight)}
+                onChange={(e) => handleDimensionChange(parseFloat(e.target.value) || 0, setCustomHeight)}
                 min={0.1}
                 step={0.1}
                 style={{ width: isMobile ? '60px' : '80px' }}

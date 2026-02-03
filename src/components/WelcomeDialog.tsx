@@ -1,6 +1,7 @@
 // src/components/WelcomeDialog.tsx
 import React, { useState, useEffect } from 'react';
 import { X, Compass } from 'lucide-react';
+import { version } from '../../package.json';
 
 const WELCOME_DISMISSED_KEY = 'sundial-welcome-dismissed';
 
@@ -428,6 +429,17 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose }) => {
           >
             {translations[language].gotIt}
           </button>
+        </div>
+
+        {/* Version number at center bottom */}
+        <div style={{
+          textAlign: 'center',
+          fontSize: '0.75rem',
+          color: '#9ca3af',
+          marginTop: '0px',
+          marginBottom: '0px',
+        }}>
+          v{version}
         </div>
       </div>
     </div>
