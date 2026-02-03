@@ -178,7 +178,7 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
         inclineType: options.inclineType,
         latitude: options.latitude,
         tiltAngle: options.tiltAngle,
-      });
+      }) ?? 0;
 
       try {
         await saveSundialPrint({
@@ -322,7 +322,7 @@ export async function logPrintActivity(options: {
         inclineType: options.inclineType,
         latitude: options.latitude,
         tiltAngle: options.tiltAngle,
-      });
+      }) ?? 0;
 
       try {
         await saveSundialPrint({

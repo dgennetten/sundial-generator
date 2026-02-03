@@ -1,5 +1,6 @@
 // src/components/PageSettings.tsx
-import React, { useEffect, useState } from 'react';
+import { isInTropics, getEffectiveTiltAngle } from '../utils/sundialMath';
+import React, { useEffect, useState, useMemo } from 'react';
 import { StickyNote } from 'lucide-react';
 import type { LineStyle } from './LineSettings';
 
@@ -138,50 +139,40 @@ const PageSettings: React.FC<PageSettingsProps> = ({
 
   // Responsive: detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
-  // Helper functions for tropical calculations
-  const isInTropics = (lat: number): boolean => {
-    return Math.abs(lat) <= 23.4367; // Tropic of Cancer/Capricorn
-  };
-
-  const getCancerIncline = (lat: number): number => {
-    // Calculate tilt toward Tropic of Cancer (23.4367°)
-    // This creates a dial oriented toward the summer solstice
-    return Math.abs(lat - 23.4367);
-  };
-
-  const getCapricornIncline = (lat: number): number => {
-    // Calculate tilt toward Tropic of Capricorn (-23.4367°)
-    // This creates a dial oriented toward the winter solstice
-    return Math.abs(lat - (-23.4367));
-  };
 
   // Calculate effective tilt angle
-  const getEffectiveTiltAngle = () => {
-    const result = (() => {
-      switch (inclineType) {
-        case 'Horizontal': return 0;
-        case 'Cancer': return getCancerIncline(latitude);
-        case 'Polar': return Math.abs(latitude);
-        case 'Capricorn': return getCapricornIncline(latitude);
-        case 'Vertical': return 90;
-        case 'Manual': return tiltAngle;
-        default: return 0;
-      }
-    })();
+  const effectiveTiltAngle = () => getEffectiveTiltAngle(inclineType, latitude, tiltAngle);
 
-    // Ensure we return a valid number
-    return isNaN(result) ? 0 : result;
-  };
+  // Create reordered incline options for Southern hemisphere
+  // In Southern hemisphere: Horizontal → Capricorn (closer to horizontal) → Polar → Cancer → Vertical → Manual
+  const inclineOptions = useMemo(() => {
+    if (latitude < 0) {
+      // Southern hemisphere
+      return [
+        { value: 'Horizontal', label: 'Horizontal' },
+        { value: 'Capricorn', label: 'Capricorn' },
+        { value: 'Polar', label: 'Polar' },
+        { value: 'Cancer', label: 'Cancer' },
+        { value: 'Vertical', label: 'Vertical' },
+        { value: 'Manual', label: 'Manual' },
+      ];
+    }
+    // Northern hemisphere: original order
+    return [
+      { value: 'Horizontal', label: 'Horizontal' },
+      { value: 'Cancer', label: 'Cancer' },
+      { value: 'Polar', label: 'Polar' },
+      { value: 'Capricorn', label: 'Capricorn' },
+      { value: 'Vertical', label: 'Vertical' },
+      { value: 'Manual', label: 'Manual' },
+    ];
+  }, [latitude]);
 
   const handleInclineTypeChange = (newType: InclineType) => {
     setInclineType(newType);
     // Update tilt angle when changing from Manual to another type
     if (newType !== 'Manual') {
-      const newAngle = newType === 'Horizontal' ? 0 :
-        newType === 'Cancer' ? getCancerIncline(latitude) :
-          newType === 'Polar' ? latitude :
-            newType === 'Capricorn' ? getCapricornIncline(latitude) :
-              newType === 'Vertical' ? 90 : tiltAngle;
+      const newAngle = getEffectiveTiltAngle(newType, latitude, tiltAngle);
       setTiltAngle(newAngle);
     }
   };
@@ -456,12 +447,9 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               onChange={(e) => handleInclineTypeChange(e.target.value as InclineType)}
               style={{ minWidth: isMobile ? '80px' : 'auto' }}
             >
-              <option value="Horizontal">Horizontal</option>
-              <option value="Cancer">Cancer</option>
-              <option value="Polar">Polar</option>
-              <option value="Capricorn">Capricorn</option>
-              <option value="Vertical">Vertical</option>
-              <option value="Manual">Manual</option>
+              {inclineOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
             </select>
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
@@ -469,7 +457,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             <input
               type="number"
               className="form-input"
-              value={inclineType === 'Manual' ? tiltAngle.toFixed(1) : getEffectiveTiltAngle().toFixed(1)}
+              value={inclineType === 'Manual' ? tiltAngle.toFixed(1) : effectiveTiltAngle().toFixed(1)}
               onChange={(e) => setTiltAngle(parseFloat(e.target.value) || 0)}
               disabled={inclineType !== 'Manual'}
               min={0}

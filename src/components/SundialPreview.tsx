@@ -1,6 +1,6 @@
 import React from 'react';
 import type { JSX } from 'react';
-import { getAnalemmaPointsProjected, degreesToRadians, getSolarDeclination, projectShadowToSurface } from '../utils/analemmaGenerator';
+import { getAnalemmaPointsProjected, degreesToRadians, getSolarDeclination, projectShadowToSurface, getCancerIncline, getCapricornIncline } from '../utils/sundialMath';
 import type { DeclinationLine } from './DeclinationLineOptions';
 import type { LineStyle } from './LineSettings';
 import type { HourlineInterval } from './hourlineUtils';
@@ -1883,19 +1883,6 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
   let textBlockLines: Array<Array<{ text: string; bold: boolean; italic: boolean; color?: string }>> = [];
   if (dialTextBlock) {
-    // Helper functions for tropical calculations
-    const getCancerIncline = (lat: number): number => {
-      // Calculate tilt toward Tropic of Cancer (23.4367°)
-      // This creates a dial oriented toward the summer solstice
-      return Math.abs(lat - 23.4367);
-    };
-
-    const getCapricornIncline = (lat: number): number => {
-      // Calculate tilt toward Tropic of Capricorn (-23.4367°)
-      // This creates a dial oriented toward the winter solstice
-      return Math.abs(lat - (-23.4367));
-    };
-
     // Create incline string - show for all incline types except Horizontal
     const effectiveTiltAngle = inclineType === 'Horizontal' ? 0 :
       inclineType === 'Cancer' ? getCancerIncline(originalLatitude || lat || 0) :

@@ -32,7 +32,7 @@ import type { LineStyle } from './components/LineSettings';
 import DeclinationLineOptions from './components/DeclinationLineOptions';
 import { loadDeclinationLines } from './components/declinationLineUtils';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
-import { getSolarPosition, projectShadowToSurface } from './utils/analemmaGenerator';
+import { getEffectiveTiltAngle, calculateAutoGnomonHeight } from './utils/sundialMath';
 import AboutCard from './components/AboutCard';
 // import VisitorMap from './components/VisitorMap';
 import DialTextBlockSettings from './components/DialTextBlockSettings';
@@ -155,27 +155,10 @@ const App: React.FC = () => {
     }
   }, [lineStyles, hourlineIntervals]);
 
-  // Helper functions for tropical calculations
-  const getCancerIncline = (lat: number): number => {
-    // Calculate tilt toward Tropic of Cancer (23.4367°)
-    // This creates a dial oriented toward the summer solstice
-    return Math.abs(lat - 23.4367);
-  };
-
-  const getCapricornIncline = (lat: number): number => {
-    // Calculate tilt toward Tropic of Capricorn (-23.4367°)
-    // This creates a dial oriented toward the winter solstice
-    return Math.abs(lat - (-23.4367));
-  };
-
   // Update tilt angle when incline type or latitude changes
   useEffect(() => {
     if (inclineType !== 'Manual') {
-      const newAngle = inclineType === 'Horizontal' ? 0 :
-        inclineType === 'Cancer' ? getCancerIncline(latitude) :
-          inclineType === 'Polar' ? latitude :
-            inclineType === 'Capricorn' ? getCapricornIncline(latitude) :
-              inclineType === 'Vertical' ? 90 : 0;
+      const newAngle = getEffectiveTiltAngle(inclineType, latitude, tiltAngle);
       setTiltAngle(newAngle);
     }
   }, [inclineType, latitude]);
@@ -238,50 +221,20 @@ const App: React.FC = () => {
 
   // Calculate effective latitude based on incline
   const effectiveLatitude = useMemo(() => {
-    const tilt = inclineType === 'Horizontal' ? 0 :
-      inclineType === 'Cancer' ? getCancerIncline(latitude) :
-        inclineType === 'Polar' ? latitude :
-          inclineType === 'Capricorn' ? getCapricornIncline(latitude) :
-            inclineType === 'Vertical' ? 90 : tiltAngle;
+    const tilt = getEffectiveTiltAngle(inclineType, latitude, tiltAngle);
     return latitude - tilt;
   }, [inclineType, latitude, tiltAngle]);
 
-  // Function to calculate gnomon height based on winter-to-summer solstice distance
-  const calculateAutoGnomonHeight = useCallback((lat: number, pageHeight: number): number => {
-    // Winter solstice is around day 355, Summer solstice is around day 172
-    const winterSolsticeDay = 355;
-    const summerSolsticeDay = 172;
-    const noonHour = 12;
-
-    // Calculate shadow positions for winter and summer solstices at noon
-    const winterPos = getSolarPosition(winterSolsticeDay, lat, longitude, tzMeridian, noonHour);
-    const summerPos = getSolarPosition(summerSolsticeDay, lat, longitude, tzMeridian, noonHour);
-
-    if (winterPos.altitude <= 0 || summerPos.altitude <= 0) {
-      // Fallback to original calculation if sun is below horizon
-      return Math.round(Math.tan((lat * Math.PI) / 180) * 100 * 3.7 / 8);
-    }
-
-    // Project shadows to surface (using a temporary gnomon height of 1)
-    const tempGnomonHeight = 1;
-    const winterShadow = projectShadowToSurface(winterPos.altitude, winterPos.azimuth, tempGnomonHeight, 'Horizontal', lat);
-    const summerShadow = projectShadowToSurface(summerPos.altitude, summerPos.azimuth, tempGnomonHeight, 'Horizontal', lat);
-
-    // Calculate the distance between winter and summer shadows
-    const shadowDistance = Math.abs(winterShadow.y - summerShadow.y);
-
-    // Calculate required gnomon height to make this distance 40% of page height
-    const targetDistance = pageHeight * 0.4;
-    const requiredGnomonHeight = targetDistance / shadowDistance;
-    // Reduce to 66% of previous value, then increase by factor of 55/40
-    return Math.round(requiredGnomonHeight * 0.66 * (55 / 40));
+  // Use consolidated calculateAutoGnomonHeight from sundialMath
+  const autoGnomonHeight = useCallback((lat: number, pageHeight: number): number => {
+    return calculateAutoGnomonHeight(lat, longitude, tzMeridian, pageHeight);
   }, [longitude, tzMeridian]);
 
   const effectiveGnomonHeight = useMemo(() => (
     gnomonMode === 'auto'
-      ? calculateAutoGnomonHeight(effectiveLatitude, pageHeight)
+      ? autoGnomonHeight(effectiveLatitude, pageHeight)
       : gnomonHeight
-  ), [gnomonMode, effectiveLatitude, pageHeight, gnomonHeight, calculateAutoGnomonHeight]);
+  ), [gnomonMode, effectiveLatitude, pageHeight, gnomonHeight, autoGnomonHeight]);
 
   const activeHourlineIntervals = useMemo(() =>
     hourlineIntervals.filter(i => i.active),

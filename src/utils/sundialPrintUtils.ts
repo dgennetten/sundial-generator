@@ -1,37 +1,15 @@
+import { computeInclineDegrees as computeInclinationDegrees } from './sundialMath';
 import { supabase } from './supabaseClient';
 import type { SundialPrint } from '../types/sundial';
-import type { InclineType } from '../types';
 import { log } from './logger';
+
+// Re-export for backward compatibility
+export { computeInclinationDegrees };
 
 /**
  * Calculate inclination degrees from inclineType and tiltAngle
- * Uses the same logic as computeInclineDegrees from dialTextBlockInterpreter
+ * @deprecated Use computeInclineDegrees from sundialMath instead
  */
-function getCancerIncline(lat: number): number {
-  return Math.abs(lat - 23.4367);
-}
-
-function getCapricornIncline(lat: number): number {
-  return Math.abs(lat - (-23.4367));
-}
-
-export function computeInclinationDegrees(args: {
-  inclineType?: InclineType;
-  latitude?: number;
-  tiltAngle?: number;
-}): number {
-  const { inclineType, latitude, tiltAngle } = args;
-  if (!inclineType) return 0;
-  const lat = typeof latitude === 'number' ? latitude : 0;
-
-  if (inclineType === 'Horizontal') return 0;
-  if (inclineType === 'Vertical') return 90;
-  if (inclineType === 'Polar') return lat;
-  if (inclineType === 'Cancer') return getCancerIncline(lat);
-  if (inclineType === 'Capricorn') return getCapricornIncline(lat);
-  if (inclineType === 'Manual') return typeof tiltAngle === 'number' ? tiltAngle : 0;
-  return 0;
-}
 
 /**
  * Save a print/export record to Supabase

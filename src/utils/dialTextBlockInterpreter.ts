@@ -1,3 +1,4 @@
+import { computeInclineDegrees } from './sundialMath';
 import type { DateRange, InclineType } from '../types';
 
 function getTodayDateString(): string {
@@ -7,32 +8,6 @@ function getTodayDateString(): string {
     'July', 'August', 'September', 'October', 'November', 'December',
   ];
   return `${months[today.getMonth()]} ${today.getDate()}`;
-}
-
-function getCancerIncline(lat: number): number {
-  return Math.abs(lat - 23.4367);
-}
-
-function getCapricornIncline(lat: number): number {
-  return Math.abs(lat - (-23.4367));
-}
-
-function computeInclineDegrees(args: {
-  inclineType?: InclineType;
-  latitude?: number;
-  tiltAngle?: number;
-}): number | null {
-  const { inclineType, latitude, tiltAngle } = args;
-  if (!inclineType) return null;
-  const lat = typeof latitude === 'number' ? latitude : 0;
-
-  if (inclineType === 'Horizontal') return 0;
-  if (inclineType === 'Vertical') return 90;
-  if (inclineType === 'Polar') return lat;
-  if (inclineType === 'Cancer') return getCancerIncline(lat);
-  if (inclineType === 'Capricorn') return getCapricornIncline(lat);
-  if (inclineType === 'Manual') return typeof tiltAngle === 'number' ? tiltAngle : null;
-  return null;
 }
 
 /**
