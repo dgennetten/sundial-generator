@@ -940,7 +940,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
                 >
-                  {formatHour(h + 1, false)}
+                  {formatHour(h, false)}
                 </text>
               );
             }
@@ -979,7 +979,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
                 >
-                  {formatHour(h + 1, true)}
+                  {formatHour(h, true)}
                 </text>
               );
             }
@@ -1018,7 +1018,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
                 >
-                  {formatHour(h + 1, true)}
+                  {formatHour(h, true)}
                 </text>
               );
             }
@@ -1046,7 +1046,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
                 >
-                  {formatHour(h + 1, false)}
+                  {formatHour(h, false)}
                 </text>
               );
             }
@@ -1108,7 +1108,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
                 >
-                  {formatHour(h + 1, isSummer)}
+                  {formatHour(h, isSummer)}
                 </text>
               );
             }
@@ -1155,8 +1155,14 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           const [seg1, seg2] = segments;
           [seg1, seg2].forEach((segment, idx) => {
             if (segment.length === 0) return;
-            // Sort segment by day to avoid a straight line between segments
+
+            // For the second segment (idx === 1), add the last point of seg1 to maintain continuity
+            // This prevents a gap at the year boundary for WinterToSpring/SummerToFall date ranges
             let sortedSegment = [...segment].sort((a, b) => a.day - b.day);
+            if (idx === 1 && seg1.length > 0) {
+              const lastSeg1Point = [...seg1].sort((a, b) => a.day - b.day)[seg1.length - 1];
+              sortedSegment = [lastSeg1Point, ...sortedSegment];
+            }
 
             // Optimize for performance: if segment has too many points, reduce them
             // Skip optimization for calculated styles that need daily resolution
@@ -1448,13 +1454,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
   // Helper function to find the best intersection point of declination line with noon analemma
   function findDeclinationAnalemmaIntersection(decl: number): { x: number; y: number } | null {
-    // Get the noon analemma points (hour = 11, adjusted for off-by-one)
+    // Get the noon analemma points (hour = 12)
     // Use the same parameters as the declination lines (original lat, Horizontal orientation)
     const noonAnalemmaPoints = getAnalemmaPointsProjected({
       lat,
       lng,
       tzMeridian,
-      hour: 11,
+      hour: 12,
       gnomonHeight,
       orientation: 'Horizontal',
     });

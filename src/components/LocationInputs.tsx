@@ -18,6 +18,14 @@ const locations: { [key: string]: { lat: number; lng: number } } = {
   'St Petersburg, Russia': { lat: 59.8761, lng: 30.4339 }
 };
 
+interface TimezoneResult {
+  timeZoneId: string | null;
+  dstOffset: number; // DST offset in seconds (0 if no DST, >0 if DST capable)
+  rawOffset: number; // Standard offset in seconds
+  timeZoneName: string;
+  isCurrentlyInDST: boolean; // Whether currently in DST season
+}
+
 interface Props {
   latitude: number;
   longitude: number;
@@ -83,13 +91,19 @@ const getTimezoneFromCoordinates = (lat: number, lng: number) => {
     const distance = Math.sqrt(Math.pow(lat - tz.lat, 2) + Math.pow(lng - tz.lng, 2));
     if (distance < 1.0) { // Roughly 100km
       const now = new Date();
-      const isDST = isDaylightSavingTime(now, tz.timeZoneId);
+      const inDST = isDaylightSavingTime(now, tz.timeZoneId);
 
       return {
         timeZoneId: tz.timeZoneId,
-        dstOffset: isDST && tz.dstOffset > 0 ? tz.dstOffset * 3600 : 0,
+        // dstOffset: DST capability (>0 if timezone observes DST, 0 if never DST)
+        dstOffset: tz.dstOffset > 0 ? tz.dstOffset * 3600 : 0,
         rawOffset: tz.offset * 3600,
-        timeZoneName: isDST && tz.dstOffset > 0 ? tz.name.replace('Standard', 'Daylight').replace('Time', 'Daylight Time') : tz.name
+        // Include DST indicator in timezone name if currently in DST
+        timeZoneName: inDST && tz.dstOffset > 0 
+          ? tz.name.replace('Standard', 'Daylight').replace('Time', 'Daylight Time')
+          : tz.name,
+        // Track current DST status separately
+        isCurrentlyInDST: inDST
       };
     }
   }
@@ -112,9 +126,10 @@ const estimateTimezoneFromLongitude = (_lat: number, lng: number) => {
 
   return {
     timeZoneId: null,
-    dstOffset: 0,
+    dstOffset: 0, // No DST for estimated timezones
     rawOffset: offsetHours * 3600,
-    timeZoneName: timezoneName
+    timeZoneName: timezoneName,
+    isCurrentlyInDST: false
   };
 };
 
@@ -173,7 +188,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
   };
 
   // Enhanced timezone lookup with comprehensive fallback system
-  const fetchTimeZone = useCallback(async (lat: number, lng: number): Promise<{ timeZoneId: string | null; dstOffset: number | null; rawOffset: number | null; timeZoneName: string | null }> => {
+  const fetchTimeZone = useCallback(async (lat: number, lng: number): Promise<TimezoneResult> => {
     // First, try to get timezone from our enhanced fallback system
     const fallbackResult = getTimezoneFromCoordinates(lat, lng);
     if (fallbackResult) {
@@ -193,11 +208,15 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
 
         if (data.status === 'OK') {
           log.debug('Successfully used Google Timezone API');
+          // Google API returns dstOffset in seconds directly
+          const googleDstOffset = data.dstOffset || 0;
+          const inDST = googleDstOffset > 0;
           return {
             timeZoneId: data.timeZoneId,
-            dstOffset: data.dstOffset,
-            rawOffset: data.rawOffset,
-            timeZoneName: data.timeZoneName
+            dstOffset: googleDstOffset,
+            rawOffset: data.rawOffset || 0,
+            timeZoneName: data.timeZoneName || 'Time Zone',
+            isCurrentlyInDST: inDST
           };
         } else {
           log.debug('Google Timezone API failed:', data.status, data.errorMessage);
@@ -227,8 +246,12 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
       setLoadingTz(false);
 
       if (timeZoneData.timeZoneId) {
-        const isDST = timeZoneData.dstOffset !== null &&
-          isCurrentlyInDST(timeZoneData.dstOffset);
+        // For timezones with DST capability (dstOffset > 0), auto-check DST checkbox
+        // if currently in DST season
+        const isDST = timeZoneData.isCurrentlyInDST || 
+          (timeZoneData.dstOffset > 0 && timeZoneData.timeZoneId.includes('America/')) ||
+          (timeZoneData.dstOffset > 0 && timeZoneData.timeZoneId.includes('Europe/')) ||
+          (timeZoneData.dstOffset > 0 && timeZoneData.timeZoneId.includes('Australia/'));
         const tzName = timeZoneData.timeZoneName || 'Time Zone';
         const newMeridian = calculateTzMeridian(locationData.lng);
 

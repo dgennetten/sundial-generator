@@ -36,18 +36,15 @@ export function radiansToDegrees(rad: number): number {
 
 /**
  * Calculate tilt toward Tropic of Cancer (summer solstice orientation)
- * Returns positive value for Northern hemisphere (tilts up to northern sky)
- * Returns negative value for Southern hemisphere (tilts up to northern sky)
+ * Returns tilt magnitude in degrees (always positive, 0-90)
  */
 export function getCancerIncline(lat: number): number {
-  const tilt = Math.abs(lat - TROPIC_OF_CANCER);
-  // Return negative for Southern hemisphere to indicate tilt toward northern sky
-  return lat >= 0 ? tilt : -tilt;
+  return Math.abs(lat - TROPIC_OF_CANCER);
 }
 
 /**
  * Calculate tilt toward Tropic of Capricorn (winter solstice orientation)
- * Returns positive value (tilts toward southern sky)
+ * Returns tilt magnitude in degrees (always positive, 0-90)
  */
 export function getCapricornIncline(lat: number): number {
   return Math.abs(lat - TROPIC_OF_CAPRICORN);
@@ -61,16 +58,10 @@ export function isInTropics(lat: number): boolean {
 }
 
 /**
- * Compute effective tilt angle from inclineType
+ * Compute effective tilt angle for UI display
+ * Returns tilt magnitude (always positive, 0-90 degrees)
  */
-/**
- * Calculate the effective tilt angle for sundial calculations
- * Returns the tilt value to use for effectiveLatitude = latitude - tilt
- * 
- * For most incline types, this is the direct tilt value.
- * For Polar, it returns the raw latitude (to preserve hemisphere sign).
- */
-export function getEffectiveTiltAngle(
+export function getDisplayTiltAngle(
   inclineType: InclineType,
   latitude: number,
   tiltAngle: number
@@ -81,20 +72,61 @@ export function getEffectiveTiltAngle(
     case 'Cancer':
       return getCancerIncline(latitude);
     case 'Polar':
-      return latitude; // Use raw latitude (can be negative for Southern hemisphere)
+      return Math.abs(latitude);
     case 'Capricorn':
       return getCapricornIncline(latitude);
     case 'Vertical':
-      // For vertical dials:
-      // Northern hemisphere: effectiveLatitude = latitude - 90 (e.g., 40 - 90 = -50)
-      // Southern hemisphere: effectiveLatitude = latitude + 90 = |latitude| - 90 with positive sign
-      // We handle this by returning -latitude for Southern hemisphere
-      return latitude > 0 ? 90 : -90;
+      return 90;
     case 'Manual':
-      return tiltAngle;
+      return Math.abs(tiltAngle);
     default:
       return 0;
   }
+}
+
+/**
+ * Compute effective tilt angle for rendering
+ * Returns tilt value for effectiveLatitude = latitude - tilt
+ * For Southern hemisphere, returns negative values (as expected by rendering code)
+ */
+export function getRenderTiltAngle(
+  inclineType: InclineType,
+  latitude: number,
+  tiltAngle: number
+): number {
+  const isSouthern = latitude < 0;
+  switch (inclineType) {
+    case 'Horizontal':
+      return 0;
+    case 'Cancer':
+      // Negative for Southern hemisphere
+      return isSouthern ? -getCancerIncline(latitude) : getCancerIncline(latitude);
+    case 'Polar':
+      return latitude; // Raw latitude (negative for Southern)
+    case 'Capricorn':
+      // Negative for Southern hemisphere
+      return isSouthern ? -getCapricornIncline(latitude) : getCapricornIncline(latitude);
+    case 'Vertical':
+      // 90 for Northern, -90 for Southern
+      return isSouthern ? -90 : 90;
+    case 'Manual':
+      // For Manual, negate if Southern hemisphere
+      return isSouthern ? -Math.abs(tiltAngle) : Math.abs(tiltAngle);
+    default:
+      return 0;
+  }
+}
+
+/**
+ * @deprecated Use getDisplayTiltAngle for UI or getRenderTiltAngle for rendering
+ */
+export function getEffectiveTiltAngle(
+  inclineType: InclineType,
+  latitude: number,
+  tiltAngle: number
+): number {
+  // For backward compatibility, use display version (always positive)
+  return getDisplayTiltAngle(inclineType, latitude, tiltAngle);
 }
 
 /**

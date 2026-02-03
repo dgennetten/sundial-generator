@@ -32,7 +32,7 @@ import type { LineStyle } from './components/LineSettings';
 import DeclinationLineOptions from './components/DeclinationLineOptions';
 import { loadDeclinationLines } from './components/declinationLineUtils';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
-import { getEffectiveTiltAngle, calculateAutoGnomonHeight } from './utils/sundialMath';
+import { getDisplayTiltAngle, getRenderTiltAngle, calculateAutoGnomonHeight } from './utils/sundialMath';
 import AboutCard from './components/AboutCard';
 // import VisitorMap from './components/VisitorMap';
 import DialTextBlockSettings from './components/DialTextBlockSettings';
@@ -47,7 +47,7 @@ const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n{half-year}\n*{gn
 const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);
   const [longitude, setLongitude] = useState(-105.0844);
-  const [tzMeridian, setTzMeridian] = useState(-90);
+  const [tzMeridian, setTzMeridian] = useState(-105.0844); // Mountain Standard Time zone (Fort Collins)
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
   const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height'>('popup-with-brace');
@@ -155,13 +155,14 @@ const App: React.FC = () => {
     }
   }, [lineStyles, hourlineIntervals]);
 
-  // Update tilt angle when incline type or latitude changes
+  // Update tilt angle when incline type changes (not when latitude changes)
+  // This prevents issues when switching between locations
   useEffect(() => {
     if (inclineType !== 'Manual') {
-      const newAngle = getEffectiveTiltAngle(inclineType, latitude, tiltAngle);
+      const newAngle = getDisplayTiltAngle(inclineType, latitude, tiltAngle);
       setTiltAngle(newAngle);
     }
-  }, [inclineType, latitude]);
+  }, [inclineType]);
 
   // Debug: log declinationLines before filtering
   React.useEffect(() => {
@@ -219,9 +220,9 @@ const App: React.FC = () => {
     [pageWidth, pageHeight] = [pageHeight, pageWidth];
   }
 
-  // Calculate effective latitude based on incline
+  // Calculate effective latitude based on incline (for rendering)
   const effectiveLatitude = useMemo(() => {
-    const tilt = getEffectiveTiltAngle(inclineType, latitude, tiltAngle);
+    const tilt = getRenderTiltAngle(inclineType, latitude, tiltAngle);
     return latitude - tilt;
   }, [inclineType, latitude, tiltAngle]);
 

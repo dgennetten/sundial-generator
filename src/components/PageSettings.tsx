@@ -1,5 +1,5 @@
 // src/components/PageSettings.tsx
-import { isInTropics, getEffectiveTiltAngle } from '../utils/sundialMath';
+import { isInTropics, getDisplayTiltAngle } from '../utils/sundialMath';
 import React, { useEffect, useState, useMemo } from 'react';
 import { StickyNote } from 'lucide-react';
 import type { LineStyle } from './LineSettings';
@@ -140,11 +140,10 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   // Responsive: detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
 
-  // Calculate effective tilt angle
-  const effectiveTiltAngle = () => getEffectiveTiltAngle(inclineType, latitude, tiltAngle);
+  // Calculate effective tilt angle for UI display
+  const displayTiltAngle = () => getDisplayTiltAngle(inclineType, latitude, tiltAngle);
 
   // Create reordered incline options for Southern hemisphere
-  // In Southern hemisphere: Horizontal → Capricorn (closer to horizontal) → Polar → Cancer → Vertical → Manual
   const inclineOptions = useMemo(() => {
     if (latitude < 0) {
       // Southern hemisphere
@@ -172,7 +171,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     setInclineType(newType);
     // Update tilt angle when changing from Manual to another type
     if (newType !== 'Manual') {
-      const newAngle = getEffectiveTiltAngle(newType, latitude, tiltAngle);
+      const newAngle = getDisplayTiltAngle(newType, latitude, tiltAngle);
       setTiltAngle(newAngle);
     }
   };
@@ -457,7 +456,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             <input
               type="number"
               className="form-input"
-              value={inclineType === 'Manual' ? tiltAngle.toFixed(1) : effectiveTiltAngle().toFixed(1)}
+              value={inclineType === 'Manual' ? tiltAngle.toFixed(1) : displayTiltAngle().toFixed(1)}
               onChange={(e) => setTiltAngle(parseFloat(e.target.value) || 0)}
               disabled={inclineType !== 'Manual'}
               min={0}
