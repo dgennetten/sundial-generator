@@ -1,5 +1,5 @@
 // src/components/GnomonSettings.tsx
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { getSolarPosition, projectShadowToSurface, getAnalemmaPointsProjected } from '../utils/analemmaGenerator';
 import { MoveUpRight } from 'lucide-react';
 
@@ -39,6 +39,7 @@ const GnomonSettings: React.FC<Props> = ({
   const [positionMode, setPositionMode] = useState<PositionMode>(propPositionMode || 'auto');
   const [manualPosition, setManualPosition] = useState<number>(propPosition || 0);
   const [autoPosition, setAutoPosition] = useState<number>(0);
+  const userInitiatedChangeRef = useRef<boolean>(false);
 
   // Function to calculate gnomon height based on winter-to-summer solstice distance
   const calculateAutoGnomonHeight = (lat: number, lng: number, tz: number, pageH: number): number => {
@@ -105,11 +106,30 @@ const GnomonSettings: React.FC<Props> = ({
     setAutoPosition(autoPos);
     if (positionMode === 'auto') {
       setManualPosition(autoPos);
-      onChange({ mode, height, gnomonType, positionMode, position: autoPos });
-    } else {
-      onChange({ mode, height, gnomonType, positionMode, position: manualPosition });
     }
-  }, [mode, height, latitude, longitude, tzMeridian, pageHeight, gnomonType, positionMode, manualPosition, calculateAutoGnomonPosition, onChange]);
+    // Only call onChange if positionMode matches propPositionMode (user-initiated change)
+    // or if propPositionMode is undefined (initial render)
+    // Skip onChange if we're syncing from a prop change (positionMode differs from prop)
+    if (propPositionMode === undefined || positionMode === propPositionMode) {
+      if (positionMode === 'auto') {
+        onChange({ mode, height, gnomonType, positionMode, position: autoPos });
+      } else {
+        onChange({ mode, height, gnomonType, positionMode, position: manualPosition });
+      }
+    }
+  }, [mode, height, latitude, longitude, tzMeridian, pageHeight, gnomonType, positionMode, manualPosition, propPositionMode, calculateAutoGnomonPosition, onChange]);
+
+  // Sync local positionMode state with prop when it changes (only if different)
+  // Skip sync if user just made a change (to prevent reverting user's selection)
+  useEffect(() => {
+    if (userInitiatedChangeRef.current) {
+      userInitiatedChangeRef.current = false;
+      return;
+    }
+    if (propPositionMode !== undefined && propPositionMode !== positionMode) {
+      setPositionMode(propPositionMode);
+    }
+  }, [propPositionMode, positionMode]);
 
   // When switching from auto to manual height mode, set manual height to autoHeight
   useEffect(() => {
@@ -153,7 +173,7 @@ const GnomonSettings: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Height and Position dropdowns on one line */}
+        {/* Height and Position toggles on one line */}
         <div 
           className="form-row" 
           style={{ 
@@ -165,35 +185,146 @@ const GnomonSettings: React.FC<Props> = ({
         >
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
             <label className="form-label">Height</label>
-            <select
-              className="form-select"
-              value={mode}
-              onChange={(e) =>
-                onChange({
-                  mode: e.target.value as Mode,
-                  height,
-                  gnomonType,
-                  positionMode,
-                  position: manualPosition,
-                })
-              }
-              style={{ width: isMobile ? '100%' : 'auto' }}
-            >
-              <option value="auto">Auto</option>
-              <option value="manual">Manual</option>
-            </select>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.75rem',
+              marginTop: '0.25rem'
+            }}>
+              <span style={{ 
+                fontSize: '0.875rem', 
+                color: mode === 'auto' ? '#2563eb' : '#9ca3af',
+                fontWeight: mode === 'auto' ? '600' : '400',
+                transition: 'all 0.2s'
+              }}>Auto</span>
+              <label style={{
+                position: 'relative',
+                display: 'inline-block',
+                width: '44px',
+                height: '24px',
+                cursor: 'pointer'
+              }}>
+                <input
+                  type="checkbox"
+                  checked={mode === 'manual'}
+                  onChange={(e) => {
+                    const newMode = e.target.checked ? 'manual' : 'auto';
+                    onChange({
+                      mode: newMode,
+                      height,
+                      gnomonType,
+                      positionMode,
+                      position: manualPosition,
+                    });
+                  }}
+                  style={{
+                    opacity: 0,
+                    width: 0,
+                    height: 0
+                  }}
+                />
+                <span style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: mode === 'manual' ? '#2563eb' : '#cbd5e0',
+                  borderRadius: '24px',
+                  transition: 'background-color 0.3s',
+                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                  <span style={{
+                    position: 'absolute',
+                    content: '""',
+                    height: '18px',
+                    width: '18px',
+                    left: mode === 'manual' ? '22px' : '3px',
+                    bottom: '3px',
+                    backgroundColor: 'white',
+                    borderRadius: '50%',
+                    transition: 'left 0.3s',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                  }} />
+                </span>
+              </label>
+              <span style={{ 
+                fontSize: '0.875rem', 
+                color: mode === 'manual' ? '#2563eb' : '#9ca3af',
+                fontWeight: mode === 'manual' ? '600' : '400',
+                transition: 'all 0.2s'
+              }}>Manual</span>
+            </div>
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
             <label className="form-label">Position</label>
-            <select
-              className="form-select"
-              value={positionMode}
-              onChange={e => setPositionMode(e.target.value as PositionMode)}
-              style={{ width: isMobile ? '100%' : 'auto' }}
-            >
-              <option value="auto">Auto</option>
-              <option value="manual">Manual</option>
-            </select>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.75rem',
+              marginTop: '0.25rem'
+            }}>
+              <span style={{ 
+                fontSize: '0.875rem', 
+                color: positionMode === 'auto' ? '#2563eb' : '#9ca3af',
+                fontWeight: positionMode === 'auto' ? '600' : '400',
+                transition: 'all 0.2s'
+              }}>Auto</span>
+              <label style={{
+                position: 'relative',
+                display: 'inline-block',
+                width: '44px',
+                height: '24px',
+                cursor: 'pointer'
+              }}>
+                <input
+                  type="checkbox"
+                  checked={positionMode === 'manual'}
+                  onChange={e => {
+                    const newPositionMode = e.target.checked ? 'manual' : 'auto';
+                    userInitiatedChangeRef.current = true;
+                    setPositionMode(newPositionMode);
+                    // Immediately update parent to prevent sync useEffect from reverting
+                    onChange({ mode, height, gnomonType, positionMode: newPositionMode, position: manualPosition });
+                  }}
+                  style={{
+                    opacity: 0,
+                    width: 0,
+                    height: 0
+                  }}
+                />
+                <span style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: positionMode === 'manual' ? '#2563eb' : '#cbd5e0',
+                  borderRadius: '24px',
+                  transition: 'background-color 0.3s',
+                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                  <span style={{
+                    position: 'absolute',
+                    content: '""',
+                    height: '18px',
+                    width: '18px',
+                    left: positionMode === 'manual' ? '22px' : '3px',
+                    bottom: '3px',
+                    backgroundColor: 'white',
+                    borderRadius: '50%',
+                    transition: 'left 0.3s',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                  }} />
+                </span>
+              </label>
+              <span style={{ 
+                fontSize: '0.875rem', 
+                color: positionMode === 'manual' ? '#2563eb' : '#9ca3af',
+                fontWeight: positionMode === 'manual' ? '600' : '400',
+                transition: 'all 0.2s'
+              }}>Manual</span>
+            </div>
           </div>
         </div>
 
@@ -279,7 +410,7 @@ const GnomonSettings: React.FC<Props> = ({
         )}
         {positionMode === 'manual' && mode !== 'manual' && (
           <div className="form-group">
-            <label className="form-label">Gnomon Position (mm from top)</label>
+            <label className="form-label">Vertical Position (mm)</label>
             <input
               type="number"
               className="form-input"

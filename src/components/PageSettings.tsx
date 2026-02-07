@@ -57,6 +57,8 @@ interface PageSettingsProps {
   borderMargin?: number; // in inches
   showBackground?: boolean;
   backgroundColor?: string;
+  // Callback when incline type changes
+  onInclineTypeChange?: () => void;
 }
 
 const PageSettings: React.FC<PageSettingsProps> = ({
@@ -89,6 +91,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   borderMargin: borderMarginProp, // in inches
   showBackground: showBackgroundProp,
   backgroundColor: backgroundColorProp,
+  onInclineTypeChange,
 }) => {
   // State for dial shape, border and background controls
   const [dialShape, setDialShape] = useState<DialShape>(dialShapeProp ?? 'Rectangle');
@@ -162,6 +165,10 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     if (newType !== 'Manual') {
       const newAngle = getDisplayTiltAngle(newType, latitude, tiltAngle);
       setTiltAngle(newAngle);
+    }
+    // Trigger callback to reset gnomon position mode to auto
+    if (onInclineTypeChange) {
+      onInclineTypeChange();
     }
   };
 

@@ -586,6 +586,7 @@ const App: React.FC = () => {
           borderMargin={borderMargin}
           showBackground={showBackground}
           backgroundColor={backgroundColor}
+          onInclineTypeChange={() => setGnomonPositionMode('auto')}
         />
 
         <GnomonSettings
