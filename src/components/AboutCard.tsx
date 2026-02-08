@@ -22,11 +22,6 @@ const AboutCard: React.FC = () => {
             fontWeight: '500',
           }}
         >
-             <p>
-              <strong>
-              *COMING SOON: Declined (vertically rotated) dials! And this is in combination with Inclination!
-              </strong>
-            </p>
             <p>
             <strong>New Feature:</strong> New 'Dial Shape' option!  Now you can create oval and circular dials.
           </p>
@@ -35,38 +30,35 @@ const AboutCard: React.FC = () => {
             (this is getting closer to my 1985 code - see '11x17 inch sundial' link below.) These caclulated dashes aid in interpolating between
             hourlines and declination lines. 
           </p>
+          <p>
+            <strong>Planned Features:</strong> (1) Declined (vertically rotated) dials! And this is in combination with Inclination! (2) Optional Sun Azimuth and Altitude lines. (3) Optional horizon clipping. (4) Detailed instructions.
+          </p>
         </div>
         <div
           dangerouslySetInnerHTML={{
             __html: `
-<p>
-  The quickest way to learn how to use this app is to pick your location via the Use Map button; Choose a paper size available on your printer; 'Half-year' hourlines;  
-  'Popup with brace' gnomon; Print; Carefully cut the gnomon's solid red lines; lightly score the red dashed lines; gently fold and flatten each of the two parts of the gnomon; 
-  fold up the brace to 90 degrees and then fold up the trangular part, sliding it into the slot of the brace; hold the dial level as you rotate 1) to point true north, 
-  or 2) till the shadow tip intersects the current time, or 3) till the shadow tip intersects the current date (by default, a red dashed line).
-<p>
   This App traces its origins back to a gloriously nerdy gem—the 
-  <a href="https://sundial.gennetten.org/docs/1980-12-SundialArticle.pdf">Amateur Scientist column</a>
+  <a href="https://sundial.gennetten.org/docs/1980-12-SundialArticle.pdf" target="_blank" rel="noopener noreferrer">Amateur Scientist column</a>
   from the December 1980 issue of Scientific American. 
   Back then, my first sundial app was coded with love (and 
-  <a href="https://www.hp9845.net/9845/software/basic/">Rocky Mountain Basic</a>
+  <a href="https://www.hp9845.net/9845/software/basic/" target="_blank" rel="noopener noreferrer">Rocky Mountain Basic</a>
   ) on an 
-  <a href="https://www.hp9845.net/">HP9845</a> 
+  <a href="https://www.hp9845.net/" target="_blank" rel="noopener noreferrer">HP9845</a> 
     desktop workstation, which was basically a space shuttle cockpit compared to the future IBM PC toddlers.
 
   Not content with digital wizardry alone, I whipped up an 
-  <a href="https://sundial.gennetten.org/docs/SolarClockAd.pdf">advertisement</a>
+  <a href="https://sundial.gennetten.org/docs/SolarClockAd.pdf" target="_blank" rel="noopener noreferrer">advertisement</a>
   and, like a caffinated Da Vinci, scribbled out hand-drawn 
-  <a href="https://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf">instructional</a>,
-  <a href="https://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf">illustrations</a>.
+  <a href="https://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf" target="_blank" rel="noopener noreferrer">instructional</a>,
+  <a href="https://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf" target="_blank" rel="noopener noreferrer">illustrations</a>.
    Here's an example 
-  <a href="https://sundial.gennetten.org/docs/Tabloid-sizeDial.pdf">11x17 inch sundial</a>,
+  <a href="https://sundial.gennetten.org/docs/Tabloid-sizeDial.pdf" target="_blank" rel="noopener noreferrer">11x17 inch sundial</a>,
  plotted using an 
-  <a href="https://www.hpmuseum.net/display_item.php?hw=79">HP9872 plotter</a>.
+  <a href="https://www.hpmuseum.net/display_item.php?hw=79" target="_blank" rel="noopener noreferrer">HP9872 plotter</a>.
 </p>
 <p>The sundial generator now uses the professional-grade 
-<a href="https://academic.oup.com/mnras/article/238/4/1529/1037665">Hughes, Yallop & Hohenkerk</a>
-algorithm which "enables it to be calculated for any epoch within 30 centuries of the present day, to a precision of about 3 s of time." 
+<a href="https://academic.oup.com/mnras/article/238/4/1529/1037665" target="_blank" rel="noopener noreferrer">Hughes, Yallop & Hohenkerk</a>
+algorithm which "enables it to be calculated for any epoch within 30 centuries of the present day, to a precision of about 3 seconds of time." 
 </p>
 `,
           }}
