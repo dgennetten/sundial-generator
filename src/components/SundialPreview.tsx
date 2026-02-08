@@ -408,6 +408,43 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     return segments;
   }
 
+  function create2Day2GapSegments(points: { day: number; x: number; y: number }[]): { day: number; x: number; y: number }[][] {
+    if (points.length === 0) return [];
+
+    // Sort points by day
+    const sortedPoints = [...points].sort((a, b) => a.day - b.day);
+    const segments: { day: number; x: number; y: number }[][] = [];
+
+    // Create segments with 3 day-points (enclosing 2 days) followed by 2-day gaps
+    // This creates 4-day cycles (3 day-points + 1 gap day, then 1 more gap day)
+    const startDay = sortedPoints[0].day;
+    const endDay = sortedPoints[sortedPoints.length - 1].day;
+
+    // Start from the first day and create 4-day cycles (3 day-points + 1 gap day, then 1 more gap day)
+    for (let cycleStart = startDay; cycleStart <= endDay; cycleStart += 4) {
+      const segmentPoints: { day: number; x: number; y: number }[] = [];
+
+      // Collect 3 consecutive day-points starting from cycleStart (enclosing 2 days)
+      for (let dayOffset = 0; dayOffset < 3; dayOffset++) {
+        const targetDay = cycleStart + dayOffset;
+        if (targetDay > endDay) break;
+
+        // Find the point closest to this target day
+        const point = sortedPoints.find(p => Math.abs(p.day - targetDay) < 0.5);
+        if (point) {
+          segmentPoints.push(point);
+        }
+      }
+
+      // Only add segments with at least 2 points to form a line
+      if (segmentPoints.length >= 2) {
+        segments.push(segmentPoints);
+      }
+    }
+
+    return segments;
+  }
+
   // Helper to create dots at 2-minute intervals for declination lines
   function create2MinuteDots(decl: number, style: LineStyle | undefined): JSX.Element[] {
     if (!style) return [];
@@ -1167,7 +1204,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             // Optimize for performance: if segment has too many points, reduce them
             // Skip optimization for calculated styles that need daily resolution
             if (sortedSegment.length > 100 &&
-              !(style.style === 'calculated' && (style.calculatedType === 'hourline-5-2-day-dash' || style.calculatedType === 'hourline-2-5-day-dash'))) {
+              !(style.style === 'calculated' && (style.calculatedType === 'hourline-5-2-day-dash' || style.calculatedType === 'hourline-2-5-day-dash' || style.calculatedType === 'hourline-2-2-day-dash'))) {
               const step = Math.ceil(sortedSegment.length / 50); // Keep ~50 points max
               sortedSegment = sortedSegment.filter((_, index) => index % step === 0);
             }
@@ -1211,6 +1248,25 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   );
                 }
               });
+            } else if (style.style === 'calculated' && style.calculatedType === 'hourline-2-2-day-dash') {
+              // Create 2-day segments with 2-day gaps
+              const dashSegments = create2Day2GapSegments(sortedSegment);
+              dashSegments.forEach((segment, segIdx) => {
+                const pathData = clipPathData(segment);
+                if (pathData) {
+                  elements.push(
+                    <g key={`hourline-2-2-dash-${h}-${interval.id}-seg${idx}-dash-${segIdx}-${style.calculatedType}`}>
+                      <path
+                        d={pathData}
+                        stroke={style.color || 'black'}
+                        fill="none"
+                        strokeWidth={getStrokeWidth(style.width)}
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </g>
+                  );
+                }
+              });
             } else {
               // Regular rendering for non-calculated styles
               const pathData = clipPathData(sortedSegment);
@@ -1238,7 +1294,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           // Optimize for performance only for half-year views; keep full-year at 1 point/day
           // Skip optimization for calculated styles that need daily resolution
           if (dateRange !== 'FullYear' && points.length > 100 &&
-            !(style.style === 'calculated' && (style.calculatedType === 'hourline-5-2-day-dash' || style.calculatedType === 'hourline-2-5-day-dash'))) {
+            !(style.style === 'calculated' && (style.calculatedType === 'hourline-5-2-day-dash' || style.calculatedType === 'hourline-2-5-day-dash' || style.calculatedType === 'hourline-2-2-day-dash'))) {
             const step = Math.ceil(points.length / 50); // Keep ~50 points max
             points = points.filter((_, index) => index % step === 0);
           }
@@ -1276,6 +1332,25 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               if (pathData) {
                 elements.push(
                   <g key={`${h}-${interval.id}-2-5-dash-${segIdx}`}>
+                    <path
+                      d={pathData}
+                      stroke={style.color || 'black'}
+                      fill="none"
+                      strokeWidth={getStrokeWidth(style.width)}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  </g>
+                );
+              }
+            });
+          } else if (style.style === 'calculated' && style.calculatedType === 'hourline-2-2-day-dash') {
+            // Create 2-day segments with 2-day gaps
+            const dashSegments = create2Day2GapSegments(points);
+            dashSegments.forEach((segment, segIdx) => {
+              const pathData = clipPathData(segment);
+              if (pathData) {
+                elements.push(
+                  <g key={`${h}-${interval.id}-2-2-dash-${segIdx}`}>
                     <path
                       d={pathData}
                       stroke={style.color || 'black'}

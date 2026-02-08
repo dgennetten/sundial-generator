@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { PenLine, X } from 'lucide-react';
 import { saveLineStyles, emptyLine, isValidCssColor, DEFAULT_LINE_STYLES } from './lineStyleUtils';
+import type { HourlineInterval } from './hourlineUtils';
+import type { DeclinationLine } from './DeclinationLineOptions';
 
 export type LineStyle = {
   width: string; // e.g. 'hairline', '0.5mm'
@@ -9,26 +11,78 @@ export type LineStyle = {
   name: string;
   id: string; // unique id for each style
   fixed?: boolean; // true for the default, non-deletable
-  calculatedType?: 'declination-2min-dot' | 'declination-5min-dot' | 'hourline-5-2-day-dash' | 'declination-2min-dash' | 'hourline-2-5-day-dash'; // for calculated styles
+  calculatedType?: 'declination-2min-dot' | 'declination-5min-dot' | 'hourline-5-2-day-dash' | 'declination-2min-dash' | 'hourline-2-5-day-dash' | 'hourline-2-2-day-dash'; // for calculated styles
   applicableToLines?: ('hourline' | 'declination' | 'border')[]; // which line types this style can be applied to
 };
 
 const LineSettings: React.FC<{
   lineStyles: LineStyle[];
   setLineStyles: (styles: LineStyle[]) => void;
-}> = React.memo(({ lineStyles, setLineStyles }) => {
+  hourlineIntervals?: HourlineInterval[];
+  declinationLines?: DeclinationLine[];
+}> = React.memo(({ lineStyles, setLineStyles, hourlineIntervals, declinationLines }) => {
   const [showCalculatedPopup, setShowCalculatedPopup] = useState(false);
   const [pendingStyleIndex, setPendingStyleIndex] = useState<number | null>(null);
   const [selectedCalculatedType, setSelectedCalculatedType] = useState<string>('');
+  const [showOnlyUsed, setShowOnlyUsed] = useState<boolean>(true);
 
   // Get all calculated styles from defaults
   const calculatedStyles = DEFAULT_LINE_STYLES.filter(s => s.style === 'calculated');
 
-  // Handle editing
-  const handleChange = (idx: number, field: keyof LineStyle, value: string) => {
+  // Get currently used style IDs
+  const usedStyleIds = useMemo(() => {
+    const used = new Set<string>();
+    if (hourlineIntervals) {
+      hourlineIntervals
+        .filter(interval => interval.active)
+        .forEach(interval => used.add(interval.styleId));
+    }
+    if (declinationLines) {
+      declinationLines
+        .filter(line => line.active)
+        .forEach(line => used.add(line.styleId));
+    }
+    return used;
+  }, [hourlineIntervals, declinationLines]);
+
+  // Filter line styles based on showOnlyUsed checkbox
+  const displayedLineStyles = useMemo(() => {
+    if (!showOnlyUsed || usedStyleIds.size === 0) {
+      return lineStyles;
+    }
+    return lineStyles.filter(style => {
+      // Check if style is used by matching id or name
+      return usedStyleIds.has(style.id) || usedStyleIds.has(style.name);
+    });
+  }, [lineStyles, showOnlyUsed, usedStyleIds]);
+
+  // Handle editing - find the actual index in the original lineStyles array
+  const handleChange = (displayIdx: number, field: keyof LineStyle, value: string) => {
+    // Get the style from displayedLineStyles to find its id
+    const hasBlankRow = displayedLineStyles.length > 0 && displayedLineStyles[displayedLineStyles.length - 1]?.id === '';
+    const stylesToShow = hasBlankRow ? displayedLineStyles : [...displayedLineStyles, { ...emptyLine }];
+    const style = stylesToShow[displayIdx];
+    
+    // Find the actual index in the original lineStyles array
+    let actualIdx = -1;
+    if (style.id === '') {
+      // It's the blank row - find it in the original array
+      actualIdx = lineStyles.findIndex(s => s.id === '');
+      if (actualIdx === -1) {
+        actualIdx = lineStyles.length;
+      }
+    } else {
+      actualIdx = lineStyles.findIndex(s => s.id === style.id);
+    }
+    
+    if (actualIdx === -1) {
+      console.warn('Could not find style in original array');
+      return;
+    }
+
     // Special handling for when "calculated" is selected
     if (field === 'style' && value === 'calculated') {
-      setPendingStyleIndex(idx);
+      setPendingStyleIndex(actualIdx);
       setSelectedCalculatedType('');
       setShowCalculatedPopup(true);
       return;
@@ -38,19 +92,19 @@ const LineSettings: React.FC<{
     // For color, validate and normalize HTML color names and hex
     if (field === 'color') {
       if (isValidCssColor(value)) {
-        updated[idx] = { ...updated[idx], [field]: value };
+        updated[actualIdx] = { ...updated[actualIdx], [field]: value };
       } else {
-        updated[idx] = { ...updated[idx], [field]: value };
+        updated[actualIdx] = { ...updated[actualIdx], [field]: value };
         // Optionally, you could set an error state here
       }
     } else {
-      updated[idx] = { ...updated[idx], [field]: value };
+      updated[actualIdx] = { ...updated[actualIdx], [field]: value };
     }
     // If editing the blank row, add a new blank row
-    if (idx === lineStyles.length - 1 && lineStyles[idx].id === '') {
+    if (actualIdx === lineStyles.length - 1 && lineStyles[actualIdx].id === '') {
       // Only add if at least name is filled
       if (value.trim() !== '' && field === 'name') {
-        updated[idx].id = `user-${Date.now()}`;
+        updated[actualIdx].id = `user-${Date.now()}`;
         updated.push({ ...emptyLine });
       }
     }
@@ -58,9 +112,24 @@ const LineSettings: React.FC<{
     saveLineStyles(updated.filter((s) => s.id));
   };
 
-  // Handle delete
-  const handleDelete = (idx: number) => {
-    const updated = lineStyles.filter((_, i) => i !== idx);
+  // Handle delete - find the actual index in the original lineStyles array
+  const handleDelete = (displayIdx: number) => {
+    // Get the style from displayedLineStyles to find its id
+    const hasBlankRow = displayedLineStyles.length > 0 && displayedLineStyles[displayedLineStyles.length - 1]?.id === '';
+    const stylesToShow = hasBlankRow ? displayedLineStyles : [...displayedLineStyles, { ...emptyLine }];
+    const style = stylesToShow[displayIdx];
+    
+    if (!style || style.id === '') {
+      return; // Can't delete the blank row
+    }
+    
+    // Find the actual index in the original lineStyles array
+    const actualIdx = lineStyles.findIndex(s => s.id === style.id);
+    if (actualIdx === -1) {
+      return;
+    }
+    
+    const updated = lineStyles.filter((_, i) => i !== actualIdx);
     setLineStyles(updated);
     saveLineStyles(updated.filter((s) => s.id));
   };
@@ -145,7 +214,11 @@ const LineSettings: React.FC<{
               </tr>
             </thead>
             <tbody>
-              {(lineStyles[lineStyles.length - 1]?.id === '' ? lineStyles : [...lineStyles, { ...emptyLine }]).map((style, idx) => {
+              {(() => {
+                // Always include the blank row for adding new styles
+                const hasBlankRow = displayedLineStyles.length > 0 && displayedLineStyles[displayedLineStyles.length - 1]?.id === '';
+                return hasBlankRow ? displayedLineStyles : [...displayedLineStyles, { ...emptyLine }];
+              })().map((style, idx) => {
                 // For color validation feedback
                 const colorValid = isValidCssColor(style.color || '') || (style.color || '') === '';
                 return (
@@ -277,6 +350,17 @@ const LineSettings: React.FC<{
             </tbody>
           </table>
         </div>
+        <div className="form-group" style={{ marginTop: '0.75rem' }}>
+          <label className="form-checkbox" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={showOnlyUsed}
+              onChange={(e) => setShowOnlyUsed(e.target.checked)}
+              style={{ cursor: 'pointer' }}
+            />
+            <span style={{ fontSize: '0.875rem', color: '#4a5568' }}>Show Only Currently Used</span>
+          </label>
+        </div>
         <div style={{
           marginTop: '0.75rem',
           padding: '0.5rem',
@@ -286,7 +370,7 @@ const LineSettings: React.FC<{
           color: '#6b7280',
           fontStyle: 'italic'
         }}>
-          Note: 'D' styles only apply to Declination lines; 'H' styles only apply to Hourlines
+          Note: 'D' styles only apply to Date lines; 'H' styles only apply to Hourlines
         </div>
       </div>
 

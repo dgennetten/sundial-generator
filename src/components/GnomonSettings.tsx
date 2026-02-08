@@ -437,7 +437,7 @@ const GnomonSettings: React.FC<Props> = ({
         {mode === 'auto' && (
           <div className="form-group">
             <p style={{ fontSize: '0.9em', color: '#718096', margin: 0 }}>
-              Auto-calculated height: <strong>{autoHeight} mm</strong> (based on latitude: {latitude.toFixed(2)}°)
+              Auto-calculated height: <strong>{autoHeight} mm</strong>
             </p>
           </div>
         )}
