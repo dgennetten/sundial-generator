@@ -19,11 +19,13 @@ interface Translations {
     gnomon: { label: string; text: string };
     dateRange: { label: string; text: string };
     specialDates: { label: string; text: string };
+    reset: { label: string; text: string };
   };
   closing: string;
   closingBold: string;
   dontShowAgain: string;
   gotIt: string;
+  sendFeedback: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -35,11 +37,13 @@ const translations: Record<Language, Translations> = {
       gnomon: { label: 'Pick a gnomon style:', text: 'Don\'t miss the innovative popup gnomon, perfect for paper dials and hands‑on experimentation.' },
       dateRange: { label: 'Select a date range', text: ': Choose Winter–Spring or Fall–Summer for a cleaner, easier‑to‑read layout.' },
       specialDates: { label: 'Add special dates', text: ': Enter Day and Month in Date Lines. Uncheck Today to remove the red line with today\'s date.' },
+      reset: { label: 'Reset to default:', text: 'Getting lost? Reset the dial to default settings (and bring back this popup). Scroll to the bottom of the UI and click reset.' },
     },
     closing: 'Enjoy exploring, experimenting, and crafting your perfect dial.',
     closingBold: 'Happy Dialing!',
     dontShowAgain: 'Don\'t show again',
     gotIt: 'Got it',
+    sendFeedback: 'send feedback!',
   },
   es: {
     title: 'Cómo Construir Tu Reloj de Sol Personalizado',
@@ -49,11 +53,13 @@ const translations: Record<Language, Translations> = {
       gnomon: { label: 'Elige un estilo de gnomon:', text: ' No te pierdas el innovador gnomon emergente, perfecto para relojes de papel y experimentación práctica.' },
       dateRange: { label: 'Selecciona un rango de fechas', text: ': Elige Invierno–Primavera u Otoño–Verano para un diseño más limpio y fácil de leer.' },
       specialDates: { label: 'Añade fechas especiales', text: ': Ingresa Día y Mes en Líneas de Fecha. Desmarca Hoy para eliminar la línea roja con la fecha de hoy.' },
+      reset: { label: 'Restablecer a predeterminado:', text: '¿Te sientes perdido? Restablece el reloj a la configuración predeterminada (y vuelve a mostrar este popup). Desplázate hasta la parte inferior de la interfaz y haz clic en reset.' },
     },
     closing: 'Disfruta explorando, experimentando y creando tu reloj perfecto.',
     closingBold: '¡Feliz Construcción!',
     dontShowAgain: 'No volver a mostrar',
     gotIt: 'Entendido',
+    sendFeedback: '¡enviar comentarios!',
   },
   fr: {
     title: 'Comment Construire Votre Cadran Solaire Personnalisé',
@@ -63,11 +69,13 @@ const translations: Record<Language, Translations> = {
       gnomon: { label: 'Choisissez un style de gnomon:', text: ' Ne manquez pas le gnomon pop-up innovant, parfait pour les cadrans en papier et l\'expérimentation pratique.' },
       dateRange: { label: 'Sélectionnez une plage de dates', text: ': Choisissez Hiver–Printemps ou Automne–Été pour une mise en page plus claire et plus facile à lire.' },
       specialDates: { label: 'Ajoutez des dates spéciales', text: ': Entrez le Jour et le Mois dans les Lignes de Date. Décochez Aujourd\'hui pour supprimer la ligne rouge avec la date d\'aujourd\'hui.' },
+      reset: { label: 'Réinitialiser aux valeurs par défaut:', text: 'Vous êtes perdu? Réinitialisez le cadran aux paramètres par défaut (et réaffichez ce popup). Faites défiler jusqu\'en bas de l\'interface et cliquez sur reset.' },
     },
     closing: 'Profitez de l\'exploration, de l\'expérimentation et de la création de votre cadran parfait.',
     closingBold: 'Bon Cadranage!',
     dontShowAgain: 'Ne plus afficher',
     gotIt: 'Compris',
+    sendFeedback: 'envoyer des commentaires!',
   },
   de: {
     title: 'So Bauen Sie Ihre Individuelle Sonnenuhr',
@@ -77,11 +85,13 @@ const translations: Record<Language, Translations> = {
       gnomon: { label: 'Wählen Sie einen Gnomon-Stil:', text: ' Verpassen Sie nicht den innovativen Pop-up-Gnomon, perfekt für Papieruhren und praktische Experimente.' },
       dateRange: { label: 'Wählen Sie einen Datumsbereich', text: ': Wählen Sie Winter–Frühling oder Herbst–Sommer für ein klareres, leichter lesbares Layout.' },
       specialDates: { label: 'Fügen Sie besondere Daten hinzu', text: ': Geben Sie Tag und Monat in Datumslinien ein. Deaktivieren Sie Heute, um die rote Linie mit dem heutigen Datum zu entfernen.' },
+      reset: { label: 'Auf Standard zurücksetzen:', text: 'Sind Sie verloren? Setzen Sie die Sonnenuhr auf die Standardeinstellungen zurück (und zeigen Sie dieses Popup erneut an). Scrollen Sie zum Ende der Benutzeroberfläche und klicken Sie auf reset.' },
     },
     closing: 'Genießen Sie das Erkunden, Experimentieren und Gestalten Ihrer perfekten Sonnenuhr.',
     closingBold: 'Viel Erfolg!',
     dontShowAgain: 'Nicht mehr anzeigen',
     gotIt: 'Verstanden',
+    sendFeedback: 'Feedback senden!',
   },
   it: {
     title: 'Come Costruire la Tua Meridiana Personalizzata',
@@ -91,11 +101,13 @@ const translations: Record<Language, Translations> = {
       gnomon: { label: 'Scegli uno stile di gnomone:', text: ' Non perdere l\'innovativo gnomone pop-up, perfetto per meridiane di carta e sperimentazione pratica.' },
       dateRange: { label: 'Seleziona un intervallo di date', text: ': Scegli Inverno–Primavera o Autunno–Estate per un layout più pulito e facile da leggere.' },
       specialDates: { label: 'Aggiungi date speciali', text: ': Inserisci Giorno e Mese nelle Linee di Data. Deseleziona Oggi per rimuovere la linea rossa con la data di oggi.' },
+      reset: { label: 'Ripristina alle impostazioni predefinite:', text: 'Ti senti perso? Ripristina la meridiana alle impostazioni predefinite (e riporta questo popup). Scorri fino in fondo all\'interfaccia e clicca su reset.' },
     },
     closing: 'Divertiti esplorando, sperimentando e creando la tua meridiana perfetta.',
     closingBold: 'Buona Costruzione!',
     dontShowAgain: 'Non mostrare più',
     gotIt: 'Capito',
+    sendFeedback: 'invia feedback!',
   },
   pt: {
     title: 'Como Construir Seu Relógio de Sol Personalizado',
@@ -105,11 +117,13 @@ const translations: Record<Language, Translations> = {
       gnomon: { label: 'Escolha um estilo de gnômon:', text: ' Não perca o inovador gnômon pop-up, perfeito para relógios de papel e experimentação prática.' },
       dateRange: { label: 'Selecione um intervalo de datas', text: ': Escolha Inverno–Primavera ou Outono–Verão para um layout mais limpo e fácil de ler.' },
       specialDates: { label: 'Adicione datas especiais', text: ': Insira Dia e Mês nas Linhas de Data. Desmarque Hoje para remover a linha vermelha com a data de hoje.' },
+      reset: { label: 'Redefinir para padrão:', text: 'Está perdido? Redefina o relógio para as configurações padrão (e traga de volta este popup). Role até o final da interface e clique em reset.' },
     },
     closing: 'Aproveite explorando, experimentando e criando seu relógio perfeito.',
     closingBold: 'Boa Construção!',
     dontShowAgain: 'Não mostrar novamente',
     gotIt: 'Entendi',
+    sendFeedback: 'enviar feedback!',
   },
   zh: {
     title: '如何制作您的定制日晷',
@@ -119,11 +133,13 @@ const translations: Record<Language, Translations> = {
       gnomon: { label: '选择晷针样式：', text: ' 不要错过创新的弹出式晷针，非常适合纸质日晷和动手实验。' },
       dateRange: { label: '选择日期范围', text: '：选择冬季–春季或秋季–夏季，以获得更清晰、更易读的布局。' },
       specialDates: { label: '添加特殊日期', text: '：在日期线中输入日期和月份。取消选中"今天"以移除带有今天日期的红线。' },
+      reset: { label: '重置为默认值：', text: '感到困惑？将日晷重置为默认设置（并重新显示此弹出窗口）。滚动到界面底部并点击 reset。' },
     },
     closing: '享受探索、实验和制作完美日晷的乐趣。',
     closingBold: '祝制作愉快！',
     dontShowAgain: '不再显示',
     gotIt: '知道了',
+    sendFeedback: '发送反馈！',
   },
   ja: {
     title: 'カスタム日時計の作り方',
@@ -133,11 +149,13 @@ const translations: Record<Language, Translations> = {
       gnomon: { label: 'グノモンスタイルを選択：', text: ' 紙の日時計や実践的な実験に最適な革新的なポップアップグノモンをお見逃しなく。' },
       dateRange: { label: '日付範囲を選択', text: '：よりクリーンで読みやすいレイアウトのために、冬–春または秋–夏を選択します。' },
       specialDates: { label: '特別な日付を追加', text: '：日付線に日と月を入力します。今日の日付の赤い線を削除するには、「今日」のチェックを外します。' },
+      reset: { label: 'デフォルトにリセット：', text: '迷っていますか？日時計をデフォルト設定にリセットします（このポップアップも再度表示されます）。インターフェースの下部までスクロールして、reset をクリックしてください。' },
     },
     closing: '探索、実験、完璧な日時計を作り上げることをお楽しみください。',
     closingBold: '良い日時計作りを！',
     dontShowAgain: '再表示しない',
     gotIt: '了解しました',
+    sendFeedback: 'フィードバックを送信！',
   },
   ko: {
     title: '맞춤형 해시계 만들기',
@@ -147,11 +165,13 @@ const translations: Record<Language, Translations> = {
       gnomon: { label: '그노몬 스타일 선택：', text: ' 종이 해시계와 실습 실험에 완벽한 혁신적인 팝업 그노몬을 놓치지 마세요.' },
       dateRange: { label: '날짜 범위 선택', text: '：더 깔끔하고 읽기 쉬운 레이아웃을 위해 겨울–봄 또는 가을–여름을 선택합니다.' },
       specialDates: { label: '특별한 날짜 추가', text: '：날짜선에 일과 월을 입력합니다. 오늘 날짜의 빨간 선을 제거하려면 "오늘"의 체크를 해제하세요.' },
+      reset: { label: '기본값으로 재설정:', text: '길을 잃으셨나요? 해시계를 기본 설정으로 재설정하세요 (이 팝업도 다시 표시됩니다). 인터페이스 하단으로 스크롤하여 reset을 클릭하세요.' },
     },
     closing: '탐색하고 실험하며 완벽한 해시계를 만드는 것을 즐기세요.',
     closingBold: '좋은 해시계 만들기 되세요!',
     dontShowAgain: '다시 표시하지 않음',
     gotIt: '알겠습니다',
+    sendFeedback: '피드백 보내기!',
   },
   ru: {
     title: 'Как Создать Свой Персональный Солнечные Часы',
@@ -161,11 +181,13 @@ const translations: Record<Language, Translations> = {
       gnomon: { label: 'Выберите стиль гномона:', text: ' Не пропустите инновационный всплывающий гномон, идеально подходящий для бумажных часов и практических экспериментов.' },
       dateRange: { label: 'Выберите диапазон дат', text: ': Выберите Зима–Весна или Осень–Лето для более чистого и удобочитаемого макета.' },
       specialDates: { label: 'Добавьте особые даты', text: ': Введите День и Месяц в Линиях Даты. Снимите флажок Сегодня, чтобы удалить красную линию с сегодняшней датой.' },
+      reset: { label: 'Сбросить к значениям по умолчанию:', text: 'Запутались? Сбросьте солнечные часы к настройкам по умолчанию (и верните это всплывающее окно). Прокрутите до конца интерфейса и нажмите reset.' },
     },
     closing: 'Наслаждайтесь исследованием, экспериментированием и созданием ваших идеальных часов.',
     closingBold: 'Удачного Создания!',
     dontShowAgain: 'Больше не показывать',
     gotIt: 'Понятно',
+    sendFeedback: 'отправить отзыв!',
   },
   ar: {
     title: 'كيفية بناء ساعتك الشمسية المخصصة',
@@ -175,11 +197,13 @@ const translations: Record<Language, Translations> = {
       gnomon: { label: 'اختر نمط العقرب:', text: ' لا تفوت العقرب المنبثق المبتكر، المثالي للساعات الورقية والتجارب العملية.' },
       dateRange: { label: 'حدد نطاقاً زمنياً', text: ': اختر الشتاء–الربيع أو الخريف–الصيف للحصول على تخطيط أنظف وأسهل للقراءة.' },
       specialDates: { label: 'أضف تواريخ خاصة', text: ': أدخل اليوم والشهر في خطوط التاريخ. قم بإلغاء تحديد "اليوم" لإزالة الخط الأحمر مع تاريخ اليوم.' },
+      reset: { label: 'إعادة تعيين إلى الافتراضي:', text: 'هل أنت تائه؟ أعد تعيين الساعة الشمسية إلى الإعدادات الافتراضية (وأعد عرض هذه النافذة المنبثقة). انتقل إلى أسفل الواجهة وانقر على reset.' },
     },
     closing: 'استمتع بالاستكشاف والتجربة وصنع ساعتك المثالية.',
     closingBold: 'ساعة سعيدة!',
     dontShowAgain: 'لا تظهر مرة أخرى',
     gotIt: 'فهمت',
+    sendFeedback: 'إرسال الملاحظات!',
   },
 };
 
@@ -372,6 +396,52 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose }) => {
             <li style={{ marginBottom: '12px' }}>
               <strong>{translations[language].steps.specialDates.label}</strong>{translations[language].steps.specialDates.text}
             </li>
+            <li style={{ marginBottom: '12px' }}>
+              <strong>{translations[language].steps.reset.label}</strong>{' '}
+              {(() => {
+                const resetText = translations[language].steps.reset.text;
+                // Find the word "reset" (case-insensitive) and make it a link
+                const resetRegex = /\breset\b/i;
+                const parts = resetText.split(resetRegex);
+                
+                return parts.map((part, idx, arr) => {
+                  if (idx === arr.length - 1) {
+                    return <React.Fragment key={idx}>{part}</React.Fragment>;
+                  }
+                  return (
+                    <React.Fragment key={idx}>
+                      {part}
+                      <a
+                        href="#reset-button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleClose();
+                          setTimeout(() => {
+                            const resetButton = document.getElementById('reset-button');
+                            if (resetButton) {
+                              resetButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                              // Highlight the button briefly
+                              resetButton.style.transition = 'background-color 0.3s';
+                              resetButton.style.backgroundColor = '#eff6ff';
+                              setTimeout(() => {
+                                resetButton.style.backgroundColor = '';
+                              }, 2000);
+                            }
+                          }, 100);
+                        }}
+                        style={{
+                          color: '#2563eb',
+                          textDecoration: 'underline',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        reset
+                      </a>
+                    </React.Fragment>
+                  );
+                });
+              })()}
+            </li>
           </ul>
           
           <p style={{ margin: '16px 0 0 0' }}>
@@ -439,7 +509,22 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose }) => {
           marginTop: '0px',
           marginBottom: '0px',
         }}>
-          v{version}
+          v{version} — <a
+            href="mailto:support@sundial.gennetten.org?subject=Sundial%20Feedback"
+            style={{
+              color: '#9ca3af',
+              textDecoration: 'underline',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#718096';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#9ca3af';
+            }}
+          >
+            {translations[language].sendFeedback}
+          </a>
         </div>
       </div>
     </div>

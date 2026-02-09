@@ -27,6 +27,7 @@ const BuildDate: React.FC = () => {
   return (
     <div className="build-date-card">
       {__VERSION__} | <button 
+        id="reset-button"
         onClick={handleReset}
         className="reset-link"
         title="Reset all settings to defaults"
