@@ -683,12 +683,14 @@ const App: React.FC = () => {
         <AboutCard />
       </div>
 
-      {/* Preview Panel - Right Side */}
-      <React.Profiler id="SundialPreview" onRender={(id, phase, actualDuration) => {
-        if (phase === 'update') log.perf(id, phase, actualDuration);
-      }}>
-        <SundialPreview config={previewConfig} />
-      </React.Profiler>
+      {/* Preview Panel - Right Side (order places it at top on mobile portrait) */}
+      <div className="preview-panel">
+        <React.Profiler id="SundialPreview" onRender={(id, phase, actualDuration) => {
+          if (phase === 'update') log.perf(id, phase, actualDuration);
+        }}>
+          <SundialPreview config={previewConfig} />
+        </React.Profiler>
+      </div>
 
     </div>
   );
