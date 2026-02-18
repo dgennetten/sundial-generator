@@ -7,6 +7,7 @@ const MapPicker = lazy(() => import('./MapPicker'));
 // Location data
 const locations: { [key: string]: { lat: number; lng: number } } = {
   'Chicago, IL USA': { lat: 41.8781, lng: -87.6298 },
+  'Dallas, TX USA': { lat: 32.7767, lng: -96.7970 },
   'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
   'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321 },
   'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747 },
@@ -65,6 +66,7 @@ const getTimezoneFromCoordinates = (lat: number, lng: number) => {
     { lat: 40.7128, lng: -74.0060, timeZoneId: 'America/New_York', name: 'Eastern Time', offset: -5, dstOffset: 1 }, // New York
     { lat: 34.0522, lng: -118.2437, timeZoneId: 'America/Los_Angeles', name: 'Pacific Time', offset: -8, dstOffset: 1 }, // Los Angeles
     { lat: 41.8781, lng: -87.6298, timeZoneId: 'America/Chicago', name: 'Central Time', offset: -6, dstOffset: 1 }, // Chicago
+    { lat: 32.7767, lng: -96.7970, timeZoneId: 'America/Chicago', name: 'Central Time', offset: -6, dstOffset: 1 }, // Dallas
 
     // South America
     { lat: -8.0476, lng: -34.8770, timeZoneId: 'America/Recife', name: 'Brasilia Time', offset: -3, dstOffset: 0 }, // Recife
@@ -138,12 +140,13 @@ const isCurrentlyInDST = (dstOffset: number): boolean => {
   return dstOffset > 0;
 };
 
-// Calculate tzMeridian based on longitude (not timezone offset)
-// For sundial calculations, we use the actual longitude as the timezone meridian
-const calculateTzMeridian = (longitude: number): number => {
-  // Longitude is already in degrees west of Greenwich (negative for western hemisphere)
-  const meridian = longitude;
-  return meridian;
+// Calculate tzMeridian from timezone rawOffset (in seconds)
+// tzMeridian is the standard meridian of the timezone (e.g. -90 for CST, -105 for MST)
+// Formula: each hour of UTC offset = 15 degrees of longitude
+// This is used by getSolarPosition to compute the longitude correction:
+//   timeCorrection = 4 * (lng - tzMeridian) minutes
+const calculateTzMeridian = (rawOffsetSeconds: number): number => {
+  return (rawOffsetSeconds / 3600) * 15;
 };
 
 const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onChange }) => {
@@ -252,7 +255,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
           (timeZoneData.dstOffset > 0 && timeZoneData.timeZoneId.includes('Europe/')) ||
           (timeZoneData.dstOffset > 0 && timeZoneData.timeZoneId.includes('Australia/'));
         const tzName = timeZoneData.timeZoneName || 'Time Zone';
-        const newMeridian = calculateTzMeridian(locationData.lng);
+        const newMeridian = calculateTzMeridian(timeZoneData.rawOffset);
 
         setTimezoneName(tzName);
 
@@ -476,7 +479,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                   const isDST = timeZoneData.dstOffset !== null &&
                     isCurrentlyInDST(timeZoneData.dstOffset);
                   const tzName = timeZoneData.timeZoneName || 'Time Zone';
-                  const newMeridian = calculateTzMeridian(longitude);
+                  const newMeridian = calculateTzMeridian(timeZoneData.rawOffset);
 
                   setTimezoneName(tzName);
 
@@ -533,7 +536,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                   const isDST = timeZoneData.dstOffset !== null &&
                     isCurrentlyInDST(timeZoneData.dstOffset);
                   const tzName = timeZoneData.timeZoneName || 'Time Zone';
-                  const newMeridian = calculateTzMeridian(newLng);
+                  const newMeridian = calculateTzMeridian(timeZoneData.rawOffset);
 
                   setTimezoneName(tzName);
 
@@ -596,7 +599,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
               const isDST = timeZoneData.dstOffset !== null &&
                 isCurrentlyInDST(timeZoneData.dstOffset);
               const tzName = timeZoneData.timeZoneName || 'Time Zone';
-              const newMeridian = calculateTzMeridian(lng);
+              const newMeridian = calculateTzMeridian(timeZoneData.rawOffset);
 
               setTimezoneName(tzName);
 
@@ -609,8 +612,8 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                 locationName: locationName
               });
             } else {
-              // Always calculate meridian from longitude, even if timezone lookup failed
-              const newMeridian = calculateTzMeridian(lng);
+              // Fallback: timeZoneData.rawOffset is estimated from longitude by estimateTimezoneFromLongitude
+              const newMeridian = calculateTzMeridian(timeZoneData.rawOffset);
               const tzName = timeZoneData.timeZoneName || 'Time Zone';
               setTimezoneName(tzName);
 

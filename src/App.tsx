@@ -47,7 +47,7 @@ const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n{half-year}\n*{gn
 const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);
   const [longitude, setLongitude] = useState(-105.0844);
-  const [tzMeridian, setTzMeridian] = useState(-105.0844); // Mountain Standard Time zone (Fort Collins)
+  const [tzMeridian, setTzMeridian] = useState(-105); // Mountain Standard Time meridian (MST = UTC-7 = -105°)
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
   const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height'>('crosshair');
@@ -341,8 +341,8 @@ const App: React.FC = () => {
   const handlePinClick = useCallback((print: SundialPrint) => {
     setLatitude(print.latitude);
     setLongitude(print.longitude);
-    // Set timezone meridian to match longitude (required for calculations)
-    setTzMeridian(print.longitude);
+    // Estimate timezone standard meridian from longitude (nearest 15° = 1 hour)
+    setTzMeridian(Math.round(print.longitude / 15) * 15);
     setTiltAngle(print.inclination);
     setInclineType('Manual'); // Set to Manual since we're restoring a specific angle
     setGnomonType(print.gnomon_type as typeof gnomonType);

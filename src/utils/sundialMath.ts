@@ -266,7 +266,7 @@ export function getSolarPosition(
   const decl = getSolarDeclination(day);
   const declRad = degreesToRadians(decl);
   const eot = getEquationOfTime(day);
-  const timeCorrection = 4 * (tzMeridian - lng); // minutes
+  const timeCorrection = 4 * (lng - tzMeridian); // minutes: positive = location east of meridian (solar noon earlier)
   const correctedMinutes = timeCorrection + eot;
   const solarTime = hour + correctedMinutes / 60;
   const hourAngle = degreesToRadians(15 * (solarTime - 12));
