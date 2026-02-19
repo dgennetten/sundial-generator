@@ -2240,8 +2240,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 originalLatitude={originalLatitude}
               />
 
-              {hourlineElements.flat()}
               {declinationLineElements}
+              {hourlineElements.flat()}
               {declinationNoonmarkElements}
 
 
