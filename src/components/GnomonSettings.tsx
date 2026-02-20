@@ -131,14 +131,16 @@ const GnomonSettings: React.FC<Props> = ({
     }
   }, [propPositionMode, positionMode]);
 
-  // When switching from auto to manual height mode, set manual height to autoHeight
+  // Sync local manualPosition state with prop when it changes (e.g. during restore)
   useEffect(() => {
-    if (mode === 'manual' && autoHeight && height !== autoHeight) {
-      onChange({ mode, height: autoHeight, gnomonType, positionMode, position: manualPosition });
+    if (propPosition !== undefined && propPosition !== manualPosition) {
+      setManualPosition(propPosition);
     }
-    // Only run this effect when mode changes to manual
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propPosition]);
+
+  // No effect needed for auto->manual height initialization.
+  // The toggle handler (below) passes autoHeight when switching to manual.
 
   return (
     <div className="card">
@@ -211,7 +213,7 @@ const GnomonSettings: React.FC<Props> = ({
                     const newMode = e.target.checked ? 'manual' : 'auto';
                     onChange({
                       mode: newMode,
-                      height,
+                      height: newMode === 'manual' ? (autoHeight || height) : height,
                       gnomonType,
                       positionMode,
                       position: manualPosition,

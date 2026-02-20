@@ -8,7 +8,7 @@ export type HourlineInterval = {
 
 const BUILTIN_HOURLINE_INTERVALS: HourlineInterval[] = [
   { active: true, name: 'Hour', styleId: '0.5mm-black', fixed: true, id: 'hour' },
-  { active: true, name: 'Half-hour', styleId: 'hourline-5-2-day-dash', fixed: true, id: 'half-hour' },
+  { active: true, name: 'Half-hour', styleId: 'hourline-2-2-day-dash', fixed: true, id: 'half-hour' },
   { active: false, name: 'Quarter-hour', styleId: 'hourline-2-2-day-dash', fixed: true, id: 'quarter-hour' },
   { active: false, name: '5-minute', styleId: 'dotted-hairline', fixed: true, id: '5-minute' },
   { active: false, name: '2-minute', styleId: 'dotted-hairline', fixed: true, id: '2-minute' },

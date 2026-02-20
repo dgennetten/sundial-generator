@@ -77,7 +77,7 @@ const App: React.FC = () => {
     setHourlineIntervals(prev => {
       const updated = prev.map(i => {
         if (i.id === 'half-hour') {
-          return { ...i, styleId: 'hourline-5-2-day-dash' };
+          return { ...i, styleId: 'hourline-2-2-day-dash' };
         }
         if (i.id === 'quarter-hour') {
           return { ...i, active: range !== 'FullYear', styleId: 'hourline-2-2-day-dash' };
@@ -89,7 +89,7 @@ const App: React.FC = () => {
       });
       // Persist overrides of built-ins so refresh keeps the setting
       saveHourlineOverrides({
-        'half-hour': { styleId: 'hourline-5-2-day-dash' },
+        'half-hour': { styleId: 'hourline-2-2-day-dash' },
         'quarter-hour': { active: range !== 'FullYear', styleId: 'hourline-2-2-day-dash' },
         '5-minute': { active: false },
         '2-minute': { active: false },
@@ -125,10 +125,10 @@ const App: React.FC = () => {
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
   const [printedDialsMapRefreshTrigger, setPrintedDialsMapRefreshTrigger] = useState<number>(0);
 
-  // Calculate default dial orientation
-  // Default orientation is North (North at top)
+  // Calculate default dial orientation based on hemisphere
+  // Northern hemisphere: North at top; Southern hemisphere: South at top
   const getDefaultDialOrientation = (): 'North' | 'South' => {
-    return 'North';
+    return latitude >= 0 ? 'North' : 'South';
   };
 
   const [dialOrientation, setDialOrientation] = useState<'North' | 'South'>(getDefaultDialOrientation());
@@ -170,7 +170,9 @@ const App: React.FC = () => {
   }, [declinationLines]);
 
   // Update font sizes and offset when page size changes
+  // Skip during restore to avoid overwriting restored values
   React.useEffect(() => {
+    if (isRestoringRef.current) return;
     if (pageSize === '10x15cm Postcard') {
       setFontSize(12);
       setLabelOffset(1);

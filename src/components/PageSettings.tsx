@@ -259,14 +259,15 @@ const PageSettings: React.FC<PageSettingsProps> = ({
 
   const dialOrientationLockInfo = getDialOrientationLockInfo();
 
-  // Auto-set dial orientation when outside tropics and not horizontal
+  // Auto-set dial orientation based on hemisphere when outside tropics.
+  // For non-Horizontal dials this is forced (toggle is locked).
+  // For Horizontal dials this sets the default (toggle remains unlocked).
   useEffect(() => {
     const isOutsideTropics = !isInTropics(latitude);
-    const isNotHorizontal = inclineType !== 'Horizontal';
 
-    if (isOutsideTropics && isNotHorizontal) {
-      // Northern hemisphere: forced dial orientation is North
-      // Southern hemisphere: forced dial orientation is South
+    if (isOutsideTropics) {
+      // Northern hemisphere: dial orientation is North
+      // Southern hemisphere: dial orientation is South
       const requiredDirection = latitude > 0 ? 'North' : 'South';
       if (dialOrientation !== requiredDirection) {
         setDialOrientation(requiredDirection);
