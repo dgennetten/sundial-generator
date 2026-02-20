@@ -170,7 +170,7 @@ async function deployWithSFTP() {
     }
 
     // Files/directories to preserve on the server during cleanup
-    const preserveOnServer = new Set(['.', '..', 'docs', 'config.php', 'snotify.php', 'client-snippet-php.js']);
+    const preserveOnServer = new Set(['.', '..', 'docs', 'config.php', 'notify.php', 'client-snippet-php.js']);
 
     // Delete existing files (except preserved files/directories)
     for (const file of existingFiles) {
@@ -190,7 +190,7 @@ async function deployWithSFTP() {
       }
     }
 
-    console.log('🧹 Cleared remote directory (preserved docs, config.php, snotify.php, client-snippet-php.js)');
+    console.log('🧹 Cleared remote directory (preserved docs, config.php, notify.php, client-snippet-php.js)');
 
     // Upload dist directory
     console.log('📤 Uploading dist files...');

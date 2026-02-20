@@ -111,6 +111,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     dialOrientation = 'South',
     originalLatitude,
   } = p;
+
+  const geoLat = originalLatitude ?? lat;
+  const isGeoNorthern = geoLat >= 0;
+
   // Calculate custom page size in mm
   const getCustomPageSize = () => {
     if (pageSize !== 'Custom' || !customWidth || !customHeight) return null;
@@ -163,7 +167,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   });
   // Filter noonPoints by date range
   // WinterToSpring (UI: Winter - Spring), SummerToFall (UI: Summer - Fall)
-  const isNorthernHemisphere = lat >= 0;
+  const isNorthernHemisphere = isGeoNorthern;
   if (dateRange === 'WinterToSpring' && isNorthernHemisphere) {
     // Split into two segments and combine for y-centering (only for Northern Hemisphere wrap-around)
     const [seg1, seg2] = splitWinterToSpring(noonPoints);
@@ -177,7 +181,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   function isDayInRange(day: number, dateRange: 'FullYear' | 'SummerToFall' | 'WinterToSpring'): boolean {
     if (dateRange === 'FullYear') return true;
 
-    const isNorthernHemisphere = lat >= 0;
+    const isNorthernHemisphere = isGeoNorthern;
     const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
     const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
 
@@ -224,7 +228,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Helper to split points for Winter - Spring (formerly WinterToSummer)
   function splitWinterToSpring(points: { day: number; x: number; y: number }[]): [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]] {
     // Determine solstice days based on hemisphere
-    const isNorthernHemisphere = lat >= 0;
+    const isNorthernHemisphere = isGeoNorthern;
     const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
     const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
 
@@ -236,7 +240,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Helper to split points for Summer - Fall (formerly SummerToWinter); handles southern hemisphere wrap-around
   function splitSummerToFall(points: { day: number; x: number; y: number }[]): [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]] {
     // Determine solstice days based on hemisphere
-    const isNorthernHemisphere = lat >= 0;
+    const isNorthernHemisphere = isGeoNorthern;
     const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
     const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
 
@@ -865,6 +869,23 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Convert labelOffset from mm to px
   const labelOffsetPx = labelOffset * 3.78;
 
+  function getOutwardOffset(
+    pt: { x: number; y: number },
+    nx: number, ny: number,
+    allPoints: { x: number; y: number }[]
+  ): number {
+    if (allPoints.length === 0) return labelOffsetPx;
+    const cx = allPoints.reduce((sum, p) => sum + p.x, 0) / allPoints.length;
+    const cy = allPoints.reduce((sum, p) => sum + p.y, 0) / allPoints.length;
+    const ptX = scale * pt.x;
+    const ptY = scale * pt.y;
+    const cxS = scale * cx;
+    const cyS = scale * cy;
+    const dPos = (ptX + nx * labelOffsetPx - cxS) ** 2 + (ptY + ny * labelOffsetPx - cyS) ** 2;
+    const dNeg = (ptX - nx * labelOffsetPx - cxS) ** 2 + (ptY - ny * labelOffsetPx - cyS) ** 2;
+    return dPos > dNeg ? labelOffsetPx : -labelOffsetPx;
+  }
+
   // Convert fontSize from pt to mm for SVG (1 pt = 25.4/72 mm = 0.3528 mm)
   const fontSizeMm = fontSize * 0.3528;
   const dialTextBlockFontSizeMm = dialTextBlockFontSize * 0.3528;
@@ -908,7 +929,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           orientation: 'Horizontal',
         });
         // Filter points by date range
-        const isNorthernHemisphere = lat >= 0;
+        const isNorthernHemisphere = isGeoNorthern;
         const needsSplitting = (dateRange === 'WinterToSpring' && isNorthernHemisphere) ||
           (dateRange === 'SummerToFall' && !isNorthernHemisphere);
 
@@ -944,6 +965,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             summerSegment = sortedSeg1;
           }
 
+          const allVisiblePoints = [...winterSegment, ...summerSegment];
+
           // If labelWinterSide, place at winter solstice
           if (labelWinterSide && winterSegment.length > 0) {
             // Find the point closest to winter solstice day
@@ -959,9 +982,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
             const pt = winterSegment[bestIdx];
             const { nx, ny } = getNormalAtPoint(winterSegment, bestIdx);
-            // When effective latitude is negative (beyond polar tilt), the geometry is inverted
-            const isInvertedGeometry = lat < 0;
-            const offset = isInvertedGeometry ? -labelOffsetPx : labelOffsetPx;
+            const offset = getOutwardOffset(pt, nx, ny, allVisiblePoints);
             const x = scale * pt.x + nx * offset;
             const y = scale * pt.y + ny * offset;
             // Only add label if it's within the border bounds
@@ -998,9 +1019,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
             const pt = summerSegment[bestIdx];
             const { nx, ny } = getNormalAtPoint(summerSegment, bestIdx);
-            // When effective latitude is negative (beyond polar tilt), the geometry is inverted
-            const isInvertedGeometry = lat < 0;
-            const offset = isInvertedGeometry ? labelOffsetPx : -labelOffsetPx;
+            const offset = getOutwardOffset(pt, nx, ny, allVisiblePoints);
             const x = scale * pt.x + nx * offset;
             const y = scale * pt.y + ny * offset;
             // Only add label if it's within the border bounds
@@ -1029,7 +1048,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           const sortedPoints = [...points].sort((a, b) => a.day - b.day);
 
           // Determine solstice days based on hemisphere
-          const isNorthernHemisphere = lat >= 0;
+          const isNorthernHemisphere = isGeoNorthern;
           const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
           const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
 
@@ -1037,9 +1056,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           if (labelSummerSide) {
             const pt = sortedPoints[0];
             const { nx, ny } = getNormalAtPoint(sortedPoints, 0);
-            // When effective latitude is negative (beyond polar tilt), the geometry is inverted
-            const isInvertedGeometry = lat < 0;
-            const offset = isInvertedGeometry ? labelOffsetPx : -labelOffsetPx;
+            const offset = getOutwardOffset(pt, nx, ny, sortedPoints);
             const x = scale * pt.x + nx * offset;
             const y = scale * pt.y + ny * offset;
             // Only add label if it's within the border bounds
@@ -1065,9 +1082,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             const lastIdx = sortedPoints.length - 1;
             const pt = sortedPoints[lastIdx];
             const { nx, ny } = getNormalAtPoint(sortedPoints, lastIdx);
-            // When effective latitude is negative (beyond polar tilt), the geometry is inverted
-            const isInvertedGeometry = lat < 0;
-            const offset = isInvertedGeometry ? -labelOffsetPx : labelOffsetPx;
+            const offset = getOutwardOffset(pt, nx, ny, sortedPoints);
             const x = scale * pt.x + nx * offset;
             const y = scale * pt.y + ny * offset;
             // Only add label if it's within the border bounds
@@ -1093,7 +1108,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           if (points.length === 0) continue;
 
           // Determine solstice days based on hemisphere
-          const isNorthernHemisphere = lat >= 0;
+          const isNorthernHemisphere = isGeoNorthern;
           const summerSolsticeDay = isNorthernHemisphere ? 172 : 355;
           const winterSolsticeDay = isNorthernHemisphere ? 355 : 172;
 
@@ -1114,21 +1129,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             }
             const pt = points[idx];
             const { nx, ny } = getNormalAtPoint(points, idx);
-            // Offset outward by labelOffsetPx (mm to px)
-            // The direction depends on both the solstice type and the effective latitude
             const isSummer = solsticeDay === summerSolsticeDay;
 
-            // When effective latitude is negative (beyond polar tilt), the geometry is inverted
-            // We need to reverse the offset direction to keep labels outside the curves
-            const isInvertedGeometry = lat < 0;
-            let offset;
-            if (isInvertedGeometry) {
-              // For inverted geometry: Summer labels go below (positive offset), Winter labels go above (negative offset)
-              offset = isSummer ? labelOffsetPx : -labelOffsetPx;
-            } else {
-              // For normal geometry: Summer labels go above (negative offset), Winter labels go below (positive offset)
-              offset = isSummer ? -labelOffsetPx : labelOffsetPx;
-            }
+            const offset = getOutwardOffset(pt, nx, ny, points);
 
             const x = scale * pt.x + nx * offset;
             const y = scale * pt.y + ny * offset;
@@ -1175,7 +1178,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           orientation: 'Horizontal',
         });
         // Filter points by date range
-        const isNorthernHemisphere = lat >= 0;
+        const isNorthernHemisphere = isGeoNorthern;
         const needsSplitting = (dateRange === 'WinterToSpring' && isNorthernHemisphere) ||
           (dateRange === 'SummerToFall' && !isNorthernHemisphere);
 
@@ -1541,7 +1544,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     });
 
     // Filter points by date range
-    const isNorthernHemisphere = lat >= 0;
+    const isNorthernHemisphere = isGeoNorthern;
     let filteredPoints = noonAnalemmaPoints;
     if (dateRange === 'WinterToSpring' && isNorthernHemisphere) {
       const [seg1, seg2] = splitWinterToSpring(filteredPoints);
