@@ -1,11 +1,12 @@
 // src/components/DesignExport.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { Printer, Download, Save, RotateCcw } from 'lucide-react';
+import { Printer, Download, Save, RotateCcw, Undo } from 'lucide-react';
 import { exportSundial, logPrintActivity, type ExportFormat, type PageSize } from '../utils/exportUtils';
 import type { GnomonType, InclineType } from '../types/sundial';
 import { saveDialConfig, loadAllSavedConfigs, deleteSavedConfig, hasSavedConfigs, type SavedDialConfig } from '../utils/dialSaveRestore';
 import SaveDialDialog from './SaveDialDialog';
 import RestoreDialDialog from './RestoreDialDialog';
+import { clearWelcomeDismissed } from './WelcomeDialog';
 import type { HourlineInterval } from './hourlineUtils';
 import type { LineStyle } from './LineSettings';
 import type { DeclinationLine } from './DeclinationLineOptions';
@@ -165,6 +166,20 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
     declinationLines, showBackground, backgroundColor, dialTextBlock, dialTextBlockFontSize, dialTextBlockFontFamily,
     sundialNotesMode, sundialNotesPositionMode, sundialNotesOffset
   ]);
+
+  const handleResetDefaults = useCallback(() => {
+    if (confirm('This will reset all your custom settings (line styles, declination lines, etc.) to defaults. Are you sure?')) {
+      const keysToRemove = [
+        'sundial-line-styles',
+        'sundial-declination-lines',
+        'sundial-hourline-intervals',
+        'sundial-hourline-overrides',
+      ];
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      clearWelcomeDismissed();
+      window.location.reload();
+    }
+  }, []);
 
   const handleSave = useCallback(() => {
     setSaveDialogOpen(true);
@@ -366,13 +381,30 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
           <div className="form-group" style={{ alignSelf: 'flex-end', display: 'flex', flexDirection: 'row', gap: '0.5rem', alignItems: 'center', flexWrap: 'nowrap' }}>
             <button
               className="btn btn-secondary"
+              onClick={handleResetDefaults}
+              title="Reset to defaults"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '34px',
+                minWidth: '34px',
+                height: '34px',
+                padding: 0,
+                flexShrink: 0
+              }}
+            >
+              <Undo size={16} />
+            </button>
+            <button
+              className="btn btn-secondary"
               onClick={handleSave}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 width: 'auto',
-                minWidth: '100px',
+                padding: '0.5rem 0.6rem',
                 flexShrink: 0
               }}
             >
@@ -388,14 +420,14 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                 alignItems: 'center',
                 justifyContent: 'center',
                 width: 'auto',
-                minWidth: '100px',
+                padding: '0.5rem 0.6rem',
                 opacity: hasSavedConfigsState ? 1 : 0.5,
                 cursor: hasSavedConfigsState ? 'pointer' : 'not-allowed',
                 flexShrink: 0
               }}
             >
               <RotateCcw size={16} style={{ marginRight: '4px' }} />
-              Restore
+              Load
             </button>
             <button
               className="btn btn-primary"
@@ -404,11 +436,10 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: 'auto',
-                minWidth: '120px',
-                flexShrink: 0,
-                paddingLeft: '0.75rem',
-                paddingRight: '0.75rem'
+                width: '100px',
+                minWidth: '100px',
+                padding: '0.5rem 0.6rem',
+                flexShrink: 0
               }}
             >
               <Printer size={16} style={{ marginRight: '4px' }} />
@@ -475,14 +506,13 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: isMobile ? '100%' : '120px',
-                  minWidth: isMobile ? 'auto' : '120px',
+                  width: isMobile ? '100%' : '100px',
+                  minWidth: isMobile ? 'auto' : '100px',
                   opacity: isExporting ? 0.7 : 1,
                   cursor: isExporting ? 'not-allowed' : 'pointer',
                   transform: isExporting ? 'scale(0.98)' : 'scale(1)',
                   transition: 'all 0.1s ease',
-                  paddingLeft: '0.75rem',
-                  paddingRight: '0.75rem'
+                  padding: '0.5rem 0.6rem'
                 }}
               >
                 <Download size={18} style={{ marginRight: '6px' }} stroke="#fff" strokeWidth={2} />

@@ -1,6 +1,6 @@
 {
   "name": "sundial-generator",
-  "version": "1.19.7",
+  "version": "1.19.8",
   "license": "CC-BY-NC-SA-4.0",
   "type": "module",
   "scripts": {
@@ -14,6 +14,7 @@
     "preview": "vite preview",
     "debug-logs": "node scripts/debugLogProcessing.js",
     "debug-logs-90d": "node scripts/debugLogProcessing.js 90",
+    "deploy-sftp": "node deploy-sftp.js",
     "build-and-deploy": "powershell -ExecutionPolicy Bypass -File scripts/build-and-deploy.ps1"
   },
   "dependencies": {
