@@ -23,6 +23,9 @@ const AboutCard: React.FC = () => {
           }}
         >
             <p>
+            <strong>New Feature:</strong> Declined (vertically rotated) dials! And this is in combination with Inclination!
+          </p>
+          <p>
             <strong>New Feature:</strong> New 'Dial Shape' option!  Now you can create oval and circular dials.
           </p>
            <p>
@@ -31,7 +34,7 @@ const AboutCard: React.FC = () => {
             hourlines and declination lines. 
           </p>
           <p>
-            <strong>Planned Features:</strong> (1) Declined (vertically rotated) dials! And this is in combination with Inclination! (2) Optional Sun Azimuth and Altitude lines. (3) Optional horizon clipping. (4) Detailed instructions.
+            <strong>Planned Features:</strong> (1) Optional Sun Azimuth and Altitude lines. (2) Optional horizon clipping. (3) Detailed instructions.
           </p>
         </div>
         <div

@@ -1,5 +1,5 @@
 import { computeInclineDegrees } from './sundialMath';
-import type { DateRange, InclineType } from '../types';
+import type { DateRange, InclineType, DeclinationType } from '../types';
 
 function getTodayDateString(): string {
   const today = new Date();
@@ -22,6 +22,8 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
   gnomonHeightMm?: number;
   inclineType?: InclineType;
   tiltAngle?: number;
+  declinationType?: DeclinationType;
+  declinationDegrees?: number;
 }): string {
   if (!template) return '';
 
@@ -62,6 +64,13 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
       ? `incline: ${inclineDegrees.toFixed(1)}°`
       : '';
 
+  const isNorthern = (ctx.latitude ?? 0) >= 0;
+  const defaultDecl = isNorthern ? 'North' : 'South';
+  const isNonDefaultDeclination = ctx.declinationType && ctx.declinationType !== defaultDecl;
+  const declineString = isNonDefaultDeclination
+    ? `decline: ${(ctx.declinationDegrees ?? 0).toFixed(1)}°`
+    : '';
+
   let processedText = template;
   
   // Remove {location} placeholder if location is "Custom Lat/Long", otherwise replace it
@@ -81,7 +90,8 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
     .replace(/\{coordinates\}/gi, coordinatesString)
     .replace(/\{half-year\}/gi, halfYearString)
     .replace(/\{gnomon\}/gi, gnomonString)
-    .replace(/\{incline\}/gi, inclineString);
+    .replace(/\{incline\}/gi, inclineString)
+    .replace(/\{decline\}/gi, (inclineString && declineString) ? `, ${declineString}` : declineString);
 
   // Always expand {today} for email/logging (even if it isn't shown on the dial)
   const todayDate = getTodayDateString();

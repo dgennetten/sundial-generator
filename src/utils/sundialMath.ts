@@ -2,7 +2,7 @@
 // Consolidated math utilities for sundial calculations
 // Replaces duplicate functions from: analemmaGenerator.ts, dialTextBlockInterpreter.ts, sundialPrintUtils.ts, App.tsx, PageSettings.tsx, SundialPreview.tsx
 
-import type { InclineType } from '../types';
+import type { InclineType, DeclinationType } from '../types';
 
 // ============================================================================
 // Constants
@@ -291,21 +291,26 @@ export function getSolarPosition(
 
 /**
  * Project shadow position onto a sundial surface
+ * @param wallDeclination Rotation of dial from its default orientation, in degrees.
+ *   0 = no rotation (gnomon faces North in NH, South in SH).
+ *   Positive = clockwise rotation viewed from above.
  */
 export function projectShadowToSurface(
   altitude: number,
   azimuth: number,
   gnomonHeight: number,
   orientation: Orientation,
-  latitude: number
+  latitude: number,
+  wallDeclination: number = 0
 ): ShadowProjectionResult {
   const tanAlt = Math.tan(altitude);
   if (!isFinite(tanAlt) || tanAlt === 0) return { x: 0, y: 0 };
 
+  const effectiveAzimuth = azimuth - degreesToRadians(wallDeclination);
   const shadowLength = gnomonHeight / tanAlt;
 
-  const sx = shadowLength * Math.sin(azimuth);
-  const sy = shadowLength * Math.cos(azimuth);
+  const sx = shadowLength * Math.sin(effectiveAzimuth);
+  const sy = shadowLength * Math.cos(effectiveAzimuth);
   const sz = gnomonHeight;
 
   if (orientation === 'Horizontal') {
@@ -333,6 +338,7 @@ interface AnalemmaParams {
   hour: number;
   gnomonHeight: number;
   orientation: Orientation;
+  wallDeclination?: number;
 }
 
 export interface AnalemmaPoint {
@@ -345,7 +351,7 @@ export interface AnalemmaPoint {
  * Calculate analemma points projected onto a sundial surface
  */
 export function getAnalemmaPointsProjected(params: AnalemmaParams): AnalemmaPoint[] {
-  const { lat, lng, tzMeridian, hour, gnomonHeight, orientation } = params;
+  const { lat, lng, tzMeridian, hour, gnomonHeight, orientation, wallDeclination = 0 } = params;
   const points: AnalemmaPoint[] = [];
 
   for (let day = 1; day <= 365; day++) {
@@ -353,7 +359,7 @@ export function getAnalemmaPointsProjected(params: AnalemmaParams): AnalemmaPoin
     // Only skip individual points where the sun is below the horizon
     if (altitude <= 0) continue;
 
-    const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, orientation, lat);
+    const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, orientation, lat, wallDeclination);
     points.push({ day, x: coords.x, y: coords.y });
   }
 
@@ -405,4 +411,73 @@ export function calculateAutoGnomonHeight(
 
   // Reduce to 66% of previous value, then increase by factor of 55/40
   return Math.round(requiredGnomonHeight * 0.66 * (55 / 40));
+}
+
+// ============================================================================
+// Wall Declination
+// ============================================================================
+
+const COMPASS_BEARING: Record<string, number> = {
+  'North': 0, 'Northeast': 45, 'East': 90, 'Southeast': 135,
+  'South': 180, 'Southwest': 225, 'West': 270, 'Northwest': 315,
+};
+
+/**
+ * Convert a DeclinationType preset + latitude to the wall declination angle (degrees).
+ * The angle is the rotation of the dial from its default orientation (0 = poleward).
+ * For NH, poleward = North (0° compass). For SH, poleward = South (180° compass).
+ * Positive = clockwise rotation viewed from above.
+ */
+export function getWallDeclinationForPreset(
+  type: DeclinationType,
+  manualDegrees: number,
+  latitude: number
+): number {
+  if (type === 'Manual') return manualDegrees;
+  const defaultBearing = latitude >= 0 ? 0 : 180;
+  let degrees = (COMPASS_BEARING[type] ?? 0) - defaultBearing;
+  if (degrees > 180) degrees -= 360;
+  if (degrees < -180) degrees += 360;
+  return degrees;
+}
+
+/**
+ * Compute the general effective latitude and sub-style rotation for a
+ * declining + inclining sundial using the classical gnomonics formulas.
+ *
+ * For a surface tilted by t from horizontal and declined by D from the meridian:
+ *   sin(φ') = sin(φ)cos(t) - cos(φ)sin(t)cos(D)
+ *   tan(ψ)  = cos(φ)sin(D) / [sin(φ)sin(t) + cos(φ)cos(t)cos(D)]
+ *
+ * When D=0: φ' = φ - t and ψ = 0 (matches the existing tilt-only behavior).
+ * When t=0: φ' = φ and ψ = D (pure rotation for horizontal dials).
+ *
+ * @param latitude Geographic latitude in degrees
+ * @param tiltAngle Tilt from horizontal in degrees (the render tilt angle)
+ * @param wallDeclination Wall declination in degrees (positive = CW from above)
+ * @returns effectiveLatitude and styleRotation, both in degrees
+ */
+export function computeGeneralDialParameters(
+  latitude: number,
+  tiltAngle: number,
+  wallDeclination: number
+): { effectiveLatitude: number; styleRotation: number } {
+  const phi = degreesToRadians(latitude);
+  const t = degreesToRadians(tiltAngle);
+  const D = degreesToRadians(wallDeclination);
+
+  const sinPhiPrime =
+    Math.sin(phi) * Math.cos(t) -
+    Math.cos(phi) * Math.sin(t) * Math.cos(D);
+  const effectiveLatitude = radiansToDegrees(
+    Math.asin(Math.max(-1, Math.min(1, sinPhiPrime)))
+  );
+
+  const numerator = Math.cos(phi) * Math.sin(D);
+  const denominator =
+    Math.sin(phi) * Math.sin(t) +
+    Math.cos(phi) * Math.cos(t) * Math.cos(D);
+  const styleRotation = radiansToDegrees(Math.atan2(numerator, denominator));
+
+  return { effectiveLatitude, styleRotation };
 }

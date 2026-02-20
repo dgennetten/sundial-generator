@@ -32,7 +32,7 @@ import type { LineStyle } from './components/LineSettings';
 import DeclinationLineOptions from './components/DeclinationLineOptions';
 import { loadDeclinationLines } from './components/declinationLineUtils';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
-import { getDisplayTiltAngle, getRenderTiltAngle, calculateAutoGnomonHeight } from './utils/sundialMath';
+import { getDisplayTiltAngle, getRenderTiltAngle, calculateAutoGnomonHeight, getWallDeclinationForPreset, computeGeneralDialParameters } from './utils/sundialMath';
 import AboutCard from './components/AboutCard';
 // import VisitorMap from './components/VisitorMap';
 import DialTextBlockSettings from './components/DialTextBlockSettings';
@@ -42,7 +42,7 @@ import type { SundialPrint } from './types/sundial';
 import { log } from './utils/logger';
 
 
-const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n{half-year}\n*{gnomon}*\n*{incline}*\n*{today}*`;
+const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n{half-year}\n*{incline}{decline}*\n*{gnomon}*\n*{today}*`;
 
 const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);
@@ -62,6 +62,7 @@ const App: React.FC = () => {
   const [tiltAngle, setTiltAngle] = useState<number>(90);
   const [declinationType, setDeclinationType] = useState<DeclinationType>('North');
   const [declinationDegrees, setDeclinationDegrees] = useState<number>(0);
+  const prevHemisphereRef = useRef<'N' | 'S'>(latitude >= 0 ? 'N' : 'S');
   const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToFall' | 'WinterToSpring'>('FullYear');
   const [lineStyles, setLineStyles] = useState<LineStyle[]>(() => {
     return loadLineStyles();
@@ -111,9 +112,10 @@ const App: React.FC = () => {
   const [dialShape, setDialShape] = useState<DialShape>('Rectangle');
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
   const [borderMargin, setBorderMargin] = useState<number>(pageSize === '10x15cm Postcard' ? 0.1 : 0.236); // in inches (6mm default)
-  // Add state for gnomon position
+  // Add state for gnomon position (vertical = mm from top, horizontal = mm from left; undefined = center)
   const [gnomonPosition, setGnomonPosition] = useState<number>(0);
   const [gnomonPositionMode, setGnomonPositionMode] = useState<'auto' | 'manual'>('auto');
+  const [gnomonHorizontalPosition, setGnomonHorizontalPosition] = useState<number | undefined>(undefined);
   const [showBackground, setShowBackground] = useState<boolean>(true);
   const [backgroundColor, setBackgroundColor] = useState<string>('Cornsilk');
   const [dialTextBlock, setDialTextBlock] = useState<string>(DEFAULT_DIAL_TEXTBLOCK);
@@ -124,14 +126,6 @@ const App: React.FC = () => {
   const [sundialNotesOffset, setSundialNotesOffset] = useState<number>(0); // in mm
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
   const [printedDialsMapRefreshTrigger, setPrintedDialsMapRefreshTrigger] = useState<number>(0);
-
-  // Calculate default dial orientation based on hemisphere
-  // Northern hemisphere: North at top; Southern hemisphere: South at top
-  const getDefaultDialOrientation = (): 'North' | 'South' => {
-    return latitude >= 0 ? 'North' : 'South';
-  };
-
-  const [dialOrientation, setDialOrientation] = useState<'North' | 'South'>(getDefaultDialOrientation());
 
   // Page size map (mm)
   const pageSizeMap = useMemo(() => ({
@@ -163,6 +157,37 @@ const App: React.FC = () => {
       setTiltAngle(newAngle);
     }
   }, [inclineType]);
+
+  // Update declination degrees when declination type preset changes
+  useEffect(() => {
+    if (declinationType !== 'Manual') {
+      setDeclinationDegrees(getWallDeclinationForPreset(declinationType, declinationDegrees, latitude));
+    }
+  }, [declinationType]);
+
+  // Mirror declination type when latitude crosses the equator
+  const MIRROR_DECLINATION: Record<string, DeclinationType> = {
+    'North': 'South', 'South': 'North',
+    'Northeast': 'Southeast', 'Southeast': 'Northeast',
+    'Northwest': 'Southwest', 'Southwest': 'Northwest',
+    'East': 'East', 'West': 'West',
+  };
+  useEffect(() => {
+    const currentHemisphere: 'N' | 'S' = latitude >= 0 ? 'N' : 'S';
+    if (currentHemisphere !== prevHemisphereRef.current) {
+      prevHemisphereRef.current = currentHemisphere;
+      if (declinationType !== 'Manual') {
+        const mirrored = MIRROR_DECLINATION[declinationType];
+        if (mirrored) setDeclinationType(mirrored);
+      }
+    }
+  }, [latitude, declinationType]);
+
+  // Raw wall declination from UI presets
+  const rawWallDeclination = useMemo(() =>
+    getWallDeclinationForPreset(declinationType, declinationDegrees, latitude),
+    [declinationType, declinationDegrees, latitude]
+  );
 
   // Debug: log declinationLines before filtering
   React.useEffect(() => {
@@ -222,11 +247,17 @@ const App: React.FC = () => {
     [pageWidth, pageHeight] = [pageHeight, pageWidth];
   }
 
-  // Calculate effective latitude based on incline (for rendering)
-  const effectiveLatitude = useMemo(() => {
-    const tilt = getRenderTiltAngle(inclineType, latitude, tiltAngle);
-    return latitude - tilt;
-  }, [inclineType, latitude, tiltAngle]);
+  // Calculate render tilt angle for incline
+  const renderTiltAngle = useMemo(() =>
+    getRenderTiltAngle(inclineType, latitude, tiltAngle),
+    [inclineType, latitude, tiltAngle]
+  );
+
+  // General dial parameters: combines inclination + declination via classical gnomonics
+  const { effectiveLatitude, styleRotation: wallDeclination } = useMemo(() =>
+    computeGeneralDialParameters(latitude, renderTiltAngle, rawWallDeclination),
+    [latitude, renderTiltAngle, rawWallDeclination]
+  );
 
   // Use consolidated calculateAutoGnomonHeight from sundialMath
   const autoGnomonHeight = useCallback((lat: number, pageHeight: number): number => {
@@ -282,6 +313,7 @@ const App: React.FC = () => {
     borderStyle,
     borderMargin,
     gnomonPosition,
+    gnomonHorizontalPosition,
     showBackground,
     backgroundColor,
     dialTextBlock,
@@ -293,9 +325,11 @@ const App: React.FC = () => {
     locationName,
     inclineType,
     tiltAngle,
+    declinationType,
+    declinationDegrees,
     declinationNoonmarks,
-    dialOrientation,
     originalLatitude: latitude,
+    wallDeclination,
   }), [
     effectiveLatitude,
     longitude,
@@ -321,6 +355,7 @@ const App: React.FC = () => {
     borderStyle,
     borderMargin,
     gnomonPosition,
+    gnomonHorizontalPosition,
     showBackground,
     backgroundColor,
     dialTextBlock,
@@ -332,11 +367,13 @@ const App: React.FC = () => {
     locationName,
     inclineType,
     tiltAngle,
+    declinationType,
+    declinationDegrees,
     declinationNoonmarks,
-    dialOrientation,
     latitude,
     activeHourlineIntervals,
     normalizedDeclinationLines,
+    wallDeclination,
   ]);
 
   // Callback to restore settings from a printed dial record
@@ -393,7 +430,8 @@ const App: React.FC = () => {
     if (config.gnomonType !== undefined) setGnomonType(config.gnomonType);
     if (config.gnomonPosition !== undefined) setGnomonPosition(config.gnomonPosition);
     if (config.gnomonPositionMode !== undefined) setGnomonPositionMode(config.gnomonPositionMode);
-    
+    if (config.gnomonHorizontalPosition !== undefined) setGnomonHorizontalPosition(config.gnomonHorizontalPosition);
+
     // Page - restore custom dimensions FIRST, then pageSize
     // This prevents the auto-initialization useEffect from overwriting restored values
     if (config.customWidth !== undefined) setCustomWidth(config.customWidth);
@@ -414,7 +452,6 @@ const App: React.FC = () => {
     if (config.tiltAngle !== undefined) setTiltAngle(config.tiltAngle);
     if (config.declinationType !== undefined) setDeclinationType(config.declinationType);
     if (config.declinationDegrees !== undefined) setDeclinationDegrees(config.declinationDegrees);
-    if (config.dialOrientation !== undefined) setDialOrientation(config.dialOrientation);
     if (config.dialShape !== undefined) setDialShape(config.dialShape);
     if (config.borderStyle !== undefined) setBorderStyle(config.borderStyle);
     if (config.borderMargin !== undefined) setBorderMargin(config.borderMargin);
@@ -490,10 +527,10 @@ const App: React.FC = () => {
           gnomonMode={gnomonMode}
           gnomonPosition={gnomonPosition}
           gnomonPositionMode={gnomonPositionMode}
+          gnomonHorizontalPosition={gnomonHorizontalPosition}
           customUnits={customUnits}
           declinationType={declinationType}
           declinationDegrees={declinationDegrees}
-          dialOrientation={dialOrientation}
           dialShape={dialShape}
           borderStyle={borderStyle}
           borderMargin={borderMargin}
@@ -565,8 +602,6 @@ const App: React.FC = () => {
           declinationDegrees={declinationDegrees}
           setDeclinationDegrees={setDeclinationDegrees}
           latitude={latitude}
-          dialOrientation={dialOrientation}
-          setDialOrientation={setDialOrientation}
           customWidth={customWidth}
           setCustomWidth={setCustomWidth}
           customHeight={customHeight}
@@ -598,16 +633,20 @@ const App: React.FC = () => {
           longitude={longitude}
           tzMeridian={tzMeridian}
           pageHeight={pageHeight}
+          pageWidth={pageWidth}
           gnomonType={gnomonType}
           positionMode={gnomonPositionMode}
-          onChange={useCallback(({ mode, height, gnomonType, positionMode, position }) => {
+          position={gnomonPosition}
+          horizontalPosition={gnomonHorizontalPosition}
+          wallDeclination={wallDeclination}
+          onChange={useCallback(({ mode, height, gnomonType, positionMode, position, horizontalPosition }) => {
             setGnomonMode(mode);
             setGnomonHeight(height);
             setGnomonType(gnomonType);
             if (positionMode) setGnomonPositionMode(positionMode);
             if (typeof position === 'number') setGnomonPosition(position);
+            if (horizontalPosition !== undefined) setGnomonHorizontalPosition(horizontalPosition);
           }, [])}
-          position={gnomonPosition}
         />
 
         <DialTextBlockSettings

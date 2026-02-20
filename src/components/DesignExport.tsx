@@ -37,10 +37,10 @@ interface DesignExportProps {
   gnomonMode?: 'auto' | 'manual';
   gnomonPosition?: number;
   gnomonPositionMode?: 'auto' | 'manual';
+  gnomonHorizontalPosition?: number;
   customUnits?: 'in' | 'cm';
   declinationType?: string;
   declinationDegrees?: number;
-  dialOrientation?: 'North' | 'South';
   dialShape?: string;
   borderStyle?: string;
   borderMargin?: number;
@@ -69,8 +69,8 @@ interface DesignExportProps {
 const DesignExport: React.FC<DesignExportProps> = React.memo(({ 
   pageSize, orientation, customWidth, customHeight, dateRange, gnomonType, locationName, showBackground, backgroundColor, 
   sundialNotesMode, dialTextBlock, latitude, longitude, gnomonHeight, inclineType, tiltAngle, onLogComplete,
-  tzMeridian, gnomonMode, gnomonPosition, gnomonPositionMode, customUnits, declinationType, declinationDegrees,
-  dialOrientation, dialShape, borderStyle, borderMargin, hourlineIntervals, lineStyles, declinationLines,
+  tzMeridian, gnomonMode, gnomonPosition, gnomonPositionMode, gnomonHorizontalPosition, customUnits, declinationType, declinationDegrees,
+  dialShape, borderStyle, borderMargin, hourlineIntervals, lineStyles, declinationLines,
   startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST,
   declinationNoonmarks, dialTextBlockFontSize, dialTextBlockFontFamily, sundialNotesPositionMode, sundialNotesOffset,
   onRestoreDial
@@ -114,6 +114,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       gnomonType: gnomonType ?? 'popup-with-brace',
       gnomonPosition: gnomonPosition ?? 0,
       gnomonPositionMode: gnomonPositionMode ?? 'auto',
+      gnomonHorizontalPosition: gnomonHorizontalPosition,
       
       // Page
       pageSize: pageSize ?? 'Letter',
@@ -125,7 +126,6 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       tiltAngle: tiltAngle ?? 90,
       declinationType: declinationType ?? 'North',
       declinationDegrees: declinationDegrees ?? 0,
-      dialOrientation: dialOrientation ?? 'North',
       dialShape: dialShape ?? 'Rectangle',
       borderStyle: borderStyle ?? 'default-hairline',
       borderMargin: borderMargin ?? 0.236,
@@ -159,9 +159,9 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       sundialNotesOffset: sundialNotesOffset ?? 0,
     };
   }, [
-    latitude, longitude, tzMeridian, locationName, gnomonMode, gnomonHeight, gnomonType, gnomonPosition, gnomonPositionMode,
+    latitude, longitude, tzMeridian, locationName, gnomonMode, gnomonHeight, gnomonType, gnomonPosition, gnomonPositionMode, gnomonHorizontalPosition,
     pageSize, customWidth, customHeight, customUnits, orientation, inclineType, tiltAngle, declinationType, declinationDegrees,
-    dialOrientation, dialShape, borderStyle, borderMargin, dateRange, hourlineIntervals, startHour, stopHour, use24Hour,
+    dialShape, borderStyle, borderMargin, dateRange, hourlineIntervals, startHour, stopHour, use24Hour,
     labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks, lineStyles,
     declinationLines, showBackground, backgroundColor, dialTextBlock, dialTextBlockFontSize, dialTextBlockFontFamily,
     sundialNotesMode, sundialNotesPositionMode, sundialNotesOffset
@@ -305,6 +305,8 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         gnomonHeight,
         inclineType,
         tiltAngle,
+        declinationType: declinationType as import('../types').DeclinationType | undefined,
+        declinationDegrees,
       });
       log.info('Print activity logged successfully');
       onLogComplete?.(); // Trigger map refresh

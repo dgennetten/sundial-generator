@@ -1,12 +1,11 @@
 // src/components/PageSettings.tsx
-import { isInTropics, getDisplayTiltAngle } from '../utils/sundialMath';
+import { getDisplayTiltAngle } from '../utils/sundialMath';
 import React, { useEffect, useState, useMemo } from 'react';
 import { StickyNote } from 'lucide-react';
 import type { LineStyle } from './LineSettings';
 
-import type { PageSize, PageOrientation as Orientation, InclineType, DialOrientation } from '../types';
-export type { InclineType };
-export type DeclinationType = 'North' | 'Northeast' | 'Northwest' | 'East' | 'West' | 'Southeast' | 'Southwest' | 'South' | 'Manual';
+import type { PageSize, PageOrientation as Orientation, InclineType, DeclinationType } from '../types';
+export type { InclineType, DeclinationType };
 
 // Utility to convert named color to hex
 function colorToHex(color: string): string {
@@ -40,8 +39,6 @@ interface PageSettingsProps {
   declinationDegrees: number;
   setDeclinationDegrees: (degrees: number) => void;
   latitude: number;
-  dialOrientation: DialOrientation;
-  setDialOrientation: (orientation: DialOrientation) => void;
   customWidth?: number;
   setCustomWidth?: (width: number) => void;
   customHeight?: number;
@@ -75,8 +72,6 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   declinationDegrees,
   setDeclinationDegrees,
   latitude,
-  dialOrientation,
-  setDialOrientation,
   customWidth,
   setCustomWidth,
   customHeight,
@@ -172,9 +167,6 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     }
   };
 
-  const handleDialOrientationToggle = () => {
-    setDialOrientation(dialOrientation === 'North' ? 'South' : 'North');
-  };
 
   // Handler functions for dial shape and border controls
   const handleDialShapeChange = (newShape: DialShape) => {
@@ -234,46 +226,6 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   };
 
   // Note: getDisplayValue() helper is defined above (replaces getDisplayWidth/getDisplayHeight)
-
-  // Determine if dial orientation should be locked and what direction it should be
-  const getDialOrientationLockInfo = () => {
-    const isOutsideTropics = !isInTropics(latitude);
-    const isNotHorizontal = inclineType !== 'Horizontal';
-
-    if (isOutsideTropics && isNotHorizontal) {
-      return {
-        isLocked: true,
-        // Northern hemisphere: forced dial orientation is North
-        // Southern hemisphere: forced dial orientation is South
-        requiredDirection: latitude > 0 ? 'North' : 'South',
-        showNotice: true
-      };
-    }
-
-    return {
-      isLocked: false,
-      requiredDirection: dialOrientation,
-      showNotice: false
-    };
-  };
-
-  const dialOrientationLockInfo = getDialOrientationLockInfo();
-
-  // Auto-set dial orientation based on hemisphere when outside tropics.
-  // For non-Horizontal dials this is forced (toggle is locked).
-  // For Horizontal dials this sets the default (toggle remains unlocked).
-  useEffect(() => {
-    const isOutsideTropics = !isInTropics(latitude);
-
-    if (isOutsideTropics) {
-      // Northern hemisphere: dial orientation is North
-      // Southern hemisphere: dial orientation is South
-      const requiredDirection = latitude > 0 ? 'North' : 'South';
-      if (dialOrientation !== requiredDirection) {
-        setDialOrientation(requiredDirection);
-      }
-    }
-  }, [latitude, inclineType, dialOrientation, setDialOrientation]);
 
   return (
     <div className="card">
@@ -413,7 +365,10 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               className="form-select"
               value={inclineType}
               onChange={(e) => handleInclineTypeChange(e.target.value as InclineType)}
-              style={{ minWidth: isMobile ? '80px' : 'auto' }}
+              style={{
+                minWidth: isMobile ? '80px' : 'auto',
+                backgroundColor: inclineType !== 'Horizontal' ? '#dbeafe' : undefined,
+              }}
             >
               {inclineOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -476,72 +431,74 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             gap: isMobile ? '0.5rem' : '1rem',
             flexDirection: 'row',
             marginTop: isMobile ? '8px' : '0',
-            opacity: 0.5,
-            pointerEvents: 'none'
           }}
         >
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-            <label className="form-label" style={{ color: '#9ca3af' }}>Declination*</label>
+            <label className="form-label">Declination</label>
             <select
               className="form-select"
               value={declinationType}
               onChange={(e) => setDeclinationType(e.target.value as DeclinationType)}
-              disabled
-              style={{ minWidth: isMobile ? '80px' : 'auto', backgroundColor: '#f7fafc', color: '#a0aec0' }}
+              style={{
+                minWidth: isMobile ? '80px' : 'auto',
+                backgroundColor: declinationType !== (latitude >= 0 ? 'North' : 'South') ? '#dbeafe' : undefined,
+              }}
             >
               <option value="North">North</option>
               <option value="Northeast">Northeast</option>
-              <option value="Northwest">Northwest</option>
               <option value="East">East</option>
-              <option value="West">West</option>
               <option value="Southeast">Southeast</option>
-              <option value="Southwest">Southwest</option>
               <option value="South">South</option>
+              <option value="Southwest">Southwest</option>
+              <option value="West">West</option>
+              <option value="Northwest">Northwest</option>
               <option value="Manual">Manual</option>
             </select>
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-            <label className="form-label" style={{ color: '#9ca3af' }}>Degrees</label>
+            <label className="form-label">Degrees</label>
             <input
               type="number"
               className="form-input"
               value={declinationDegrees.toFixed(1)}
-              onChange={(e) => setDeclinationDegrees(parseFloat(e.target.value) || 0)}
-              disabled
-              min={0}
-              max={90}
+              onChange={(e) => {
+                const val = parseFloat(e.target.value);
+                if (!isNaN(val)) {
+                  setDeclinationDegrees(val);
+                  if (declinationType !== 'Manual') setDeclinationType('Manual');
+                }
+              }}
+              min={-180}
+              max={180}
               step={declinationStep}
+              disabled={declinationType !== 'Manual'}
               style={{
                 width: isMobile ? '70px' : '80px',
-                backgroundColor: '#f7fafc',
-                color: '#a0aec0'
+                backgroundColor: declinationType !== 'Manual' ? '#f7fafc' : undefined,
+                color: declinationType !== 'Manual' ? '#6b7280' : undefined,
               }}
             />
           </div>
           <div className="form-group" style={{ flex: '0 0 auto' }}>
-            <label className="form-label" style={{ marginBottom: '0.5rem', color: '#9ca3af' }}>Inc/Dec</label>
+            <label className="form-label" style={{ marginBottom: '0.5rem' }}>Inc/Dec</label>
             <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'not-allowed', whiteSpace: 'nowrap', color: '#9ca3af' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 <input
                   type="radio"
                   name="declinationStep"
                   value="1.0"
                   checked={declinationStep === 1.0}
                   onChange={() => setDeclinationStep(1.0)}
-                  disabled
-                  style={{ cursor: 'not-allowed' }}
                 />
                 1.0
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'not-allowed', whiteSpace: 'nowrap', color: '#9ca3af' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                 <input
                   type="radio"
                   name="declinationStep"
                   value="0.1"
                   checked={declinationStep === 0.1}
                   onChange={() => setDeclinationStep(0.1)}
-                  disabled
-                  style={{ cursor: 'not-allowed' }}
                 />
                 0.1
               </label>
@@ -659,65 +616,6 @@ const PageSettings: React.FC<PageSettingsProps> = ({
           </div>
         </div>
 
-        <div
-          className="form-row"
-          style={{
-            marginTop: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            gap: isMobile ? '0.5rem' : '1rem'
-          }}
-        >
-          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto', textAlign: 'left', width: '100%' }}>
-            <label className="form-label" style={{ textAlign: 'left', display: 'block', width: '100%' }}>Dial Orientation</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '8px', justifyContent: 'flex-start' }}>
-              <span style={{
-                fontSize: '14px',
-                color: dialOrientationLockInfo.showNotice ? '#9ca3af' : (dialOrientation === 'North' ? '#2563eb' : '#6b7280')
-              }}>North</span>
-              <button
-                type="button"
-                onClick={handleDialOrientationToggle}
-                disabled={dialOrientationLockInfo.isLocked}
-                style={{
-                  width: '44px',
-                  height: '24px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  backgroundColor: dialOrientationLockInfo.showNotice ? '#e5e7eb' : (dialOrientation === 'South' ? '#2563eb' : '#d1d5db'),
-                  cursor: dialOrientationLockInfo.isLocked ? 'not-allowed' : 'pointer',
-                  position: 'relative',
-                  transition: 'background-color 0.2s',
-                  opacity: dialOrientationLockInfo.isLocked ? 0.6 : 1
-                }}
-              >
-                <div
-                  style={{
-                    width: '18px',
-                    height: '18px',
-                    borderRadius: '50%',
-                    backgroundColor: 'white',
-                    position: 'absolute',
-                    top: '3px',
-                    left: dialOrientation === 'South' ? '23px' : '3px',
-                    transition: 'left 0.2s',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                  }}
-                />
-              </button>
-              <span style={{
-                fontSize: '14px',
-                color: dialOrientationLockInfo.showNotice ? '#9ca3af' : (dialOrientation === 'South' ? '#2563eb' : '#6b7280')
-              }}>South</span>
-              {dialOrientationLockInfo.showNotice && (
-                <span style={{ fontSize: '12px', color: '#dc2626', marginLeft: '8px' }}>
-                  Horizontal dials only.
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

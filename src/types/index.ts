@@ -20,7 +20,7 @@ export type {
   PageSize,
   PageOrientation,
   InclineType,
-  DialOrientation,
+  DeclinationType,
   GnomonType,
   GnomonConfig,
   DateRange, // 'FullYear' | 'SummerToFall' | 'WinterToSpring'

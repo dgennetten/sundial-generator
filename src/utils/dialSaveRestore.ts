@@ -23,6 +23,7 @@ export interface SavedDialConfig {
     gnomonType: string;
     gnomonPosition: number;
     gnomonPositionMode: 'auto' | 'manual';
+    gnomonHorizontalPosition?: number;
     
     // Page
     pageSize: string;
@@ -34,7 +35,6 @@ export interface SavedDialConfig {
     tiltAngle: number;
     declinationType: string;
     declinationDegrees: number;
-    dialOrientation: 'North' | 'South';
     dialShape: string;
     borderStyle: string;
     borderMargin: number;

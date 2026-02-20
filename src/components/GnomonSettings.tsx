@@ -14,10 +14,13 @@ interface Props {
   longitude: number;
   tzMeridian: number;
   pageHeight: number;
+  pageWidth: number;
   gnomonType: GnomonType;
   positionMode?: PositionMode;
   position?: number;
-  onChange: (values: { mode: Mode; height: number; gnomonType: GnomonType; positionMode?: PositionMode; position?: number }) => void;
+  horizontalPosition?: number;
+  wallDeclination?: number;
+  onChange: (values: { mode: Mode; height: number; gnomonType: GnomonType; positionMode?: PositionMode; position?: number; horizontalPosition?: number }) => void;
 }
 
 const GnomonSettings: React.FC<Props> = ({
@@ -27,9 +30,12 @@ const GnomonSettings: React.FC<Props> = ({
   longitude,
   tzMeridian,
   pageHeight,
+  pageWidth,
   gnomonType,
   positionMode: propPositionMode,
   position: propPosition,
+  horizontalPosition: propHorizontalPosition,
+  wallDeclination = 0,
   onChange,
 }) => {
 
@@ -38,6 +44,7 @@ const GnomonSettings: React.FC<Props> = ({
   const [autoHeight, setAutoHeight] = useState<number>(0);
   const [positionMode, setPositionMode] = useState<PositionMode>(propPositionMode || 'auto');
   const [manualPosition, setManualPosition] = useState<number>(propPosition || 0);
+  const [manualHorizontalPosition, setManualHorizontalPosition] = useState<number>(propHorizontalPosition ?? Math.round(pageWidth / 2));
   const [autoPosition, setAutoPosition] = useState<number>(0);
   const userInitiatedChangeRef = useRef<boolean>(false);
 
@@ -72,9 +79,8 @@ const GnomonSettings: React.FC<Props> = ({
     return Math.round(requiredGnomonHeight * 0.66 * (55/40));
   };
 
-  // Function to calculate gnomon position from top so that noon analemma is vertically centered
-  const calculateAutoGnomonPosition = useCallback((pageH: number): number => {
-    // Get noon analemma points for current latitude, longitude, tzMeridian, and autoHeight
+  // Calculate gnomon position so the noon analemma is centered on the page (vertical and horizontal)
+  const calculateAutoGnomonPosition = useCallback((pageW: number, pageH: number): { vertical: number; horizontal: number } => {
     const noonPoints = getAnalemmaPointsProjected({
       lat: latitude,
       lng: longitude,
@@ -82,16 +88,20 @@ const GnomonSettings: React.FC<Props> = ({
       hour: 12,
       gnomonHeight: autoHeight || height,
       orientation: 'Horizontal',
+      wallDeclination,
     });
-    if (!noonPoints.length) return Math.round(pageH * 0.2);
+    if (!noonPoints.length) {
+      return { vertical: Math.round(pageH * 0.2), horizontal: Math.round(pageW / 2) };
+    }
+    const xVals = noonPoints.map(p => p.x);
     const yVals = noonPoints.map(p => p.y);
-    const minY = Math.min(...yVals);
-    const maxY = Math.max(...yVals);
-    const analemmaCenterY = (minY + maxY) / 2;
-    // Position so that analemma center is at pageH/2
-    const gnomonPos = pageH / 2 - analemmaCenterY;
-    return Math.round(gnomonPos);
-  }, [latitude, longitude, tzMeridian, autoHeight, height]);
+    const centerX = (Math.min(...xVals) + Math.max(...xVals)) / 2;
+    const centerY = (Math.min(...yVals) + Math.max(...yVals)) / 2;
+    return {
+      vertical: Math.round(pageH / 2 - centerY),
+      horizontal: Math.round(pageW / 2 - centerX),
+    };
+  }, [latitude, longitude, tzMeridian, autoHeight, height, wallDeclination]);
 
   // Restore effect for autoHeight calculation
   useEffect(() => {
@@ -102,22 +112,20 @@ const GnomonSettings: React.FC<Props> = ({
   }, [mode, latitude, longitude, tzMeridian, pageHeight, gnomonType]);
 
   useEffect(() => {
-    const autoPos = calculateAutoGnomonPosition(pageHeight);
+    const { vertical: autoPos, horizontal: autoHPos } = calculateAutoGnomonPosition(pageWidth, pageHeight);
     setAutoPosition(autoPos);
     if (positionMode === 'auto') {
       setManualPosition(autoPos);
+      setManualHorizontalPosition(autoHPos);
     }
-    // Only call onChange if positionMode matches propPositionMode (user-initiated change)
-    // or if propPositionMode is undefined (initial render)
-    // Skip onChange if we're syncing from a prop change (positionMode differs from prop)
     if (propPositionMode === undefined || positionMode === propPositionMode) {
       if (positionMode === 'auto') {
-        onChange({ mode, height, gnomonType, positionMode, position: autoPos });
+        onChange({ mode, height, gnomonType, positionMode, position: autoPos, horizontalPosition: autoHPos });
       } else {
-        onChange({ mode, height, gnomonType, positionMode, position: manualPosition });
+        onChange({ mode, height, gnomonType, positionMode, position: manualPosition, horizontalPosition: manualHorizontalPosition });
       }
     }
-  }, [mode, height, latitude, longitude, tzMeridian, pageHeight, gnomonType, positionMode, manualPosition, propPositionMode, calculateAutoGnomonPosition, onChange]);
+  }, [mode, height, latitude, longitude, tzMeridian, pageHeight, pageWidth, gnomonType, positionMode, manualPosition, manualHorizontalPosition, propPositionMode, calculateAutoGnomonPosition, onChange]);
 
   // Sync local positionMode state with prop when it changes (only if different)
   // Skip sync if user just made a change (to prevent reverting user's selection)
@@ -138,6 +146,13 @@ const GnomonSettings: React.FC<Props> = ({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propPosition]);
+
+  useEffect(() => {
+    if (propHorizontalPosition !== undefined && propHorizontalPosition !== manualHorizontalPosition) {
+      setManualHorizontalPosition(propHorizontalPosition);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propHorizontalPosition]);
 
   // No effect needed for auto->manual height initialization.
   // The toggle handler (below) passes autoHeight when switching to manual.
@@ -162,6 +177,7 @@ const GnomonSettings: React.FC<Props> = ({
                   gnomonType: e.target.value as GnomonType,
                   positionMode,
                   position: manualPosition,
+                  horizontalPosition: positionMode === 'manual' ? manualHorizontalPosition : undefined,
                 })
               }
               style={{ width: isMobile ? '100%' : 'auto' }}
@@ -217,6 +233,7 @@ const GnomonSettings: React.FC<Props> = ({
                       gnomonType,
                       positionMode,
                       position: manualPosition,
+                      horizontalPosition: positionMode === 'manual' ? manualHorizontalPosition : undefined,
                     });
                   }}
                   style={{
@@ -287,7 +304,14 @@ const GnomonSettings: React.FC<Props> = ({
                     userInitiatedChangeRef.current = true;
                     setPositionMode(newPositionMode);
                     // Immediately update parent to prevent sync useEffect from reverting
-                    onChange({ mode, height, gnomonType, positionMode: newPositionMode, position: manualPosition });
+                    onChange({
+                      mode,
+                      height,
+                      gnomonType,
+                      positionMode: newPositionMode,
+                      position: manualPosition,
+                      horizontalPosition: newPositionMode === 'manual' ? manualHorizontalPosition : undefined,
+                    });
                   }}
                   style={{
                     opacity: 0,
@@ -330,18 +354,18 @@ const GnomonSettings: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Manual controls row: show both height and position inputs side by side if both are manual */}
+        {/* Manual controls: when both Height and Position are manual, all three on one line; otherwise separate rows */}
         {mode === 'manual' && positionMode === 'manual' && (
-          <div 
-            className="form-row" 
-            style={{ 
-              display: 'flex', 
-              alignItems: 'end', 
-              gap: isMobile ? '0.5rem' : '1rem',
-              flexDirection: 'row'
+          <div
+            className="form-row"
+            style={{
+              display: 'flex',
+              alignItems: 'end',
+              gap: isMobile ? '0.35rem' : '0.75rem',
+              flexWrap: 'nowrap',
             }}
           >
-            <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
+            <div className="form-group" style={{ flex: '1 1 0', minWidth: 0 }}>
               <label className="form-label">Height (mm)</label>
               <input
                 type="number"
@@ -357,13 +381,14 @@ const GnomonSettings: React.FC<Props> = ({
                     gnomonType,
                     positionMode,
                     position: manualPosition,
+                    horizontalPosition: manualHorizontalPosition,
                   })
                 }
-                style={{ width: isMobile ? '60px' : 'auto' }}
+                style={{ width: '100%', minWidth: 0 }}
               />
             </div>
-            <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-              <label className="form-label">Position (mm from edge)</label>
+            <div className="form-group" style={{ flex: '1 1 0', minWidth: 0 }}>
+              <label className="form-label">Vertical Pos. (mm)</label>
               <input
                 type="number"
                 className="form-input"
@@ -371,7 +396,7 @@ const GnomonSettings: React.FC<Props> = ({
                 max={pageHeight}
                 step={1}
                 value={manualPosition}
-                onChange={e => {
+                onChange={(e) => {
                   const val = parseFloat(e.target.value) || 0;
                   setManualPosition(val);
                   onChange({
@@ -380,17 +405,41 @@ const GnomonSettings: React.FC<Props> = ({
                     gnomonType,
                     positionMode,
                     position: val,
+                    horizontalPosition: manualHorizontalPosition,
                   });
                 }}
-                style={{ width: isMobile ? '60px' : '120px' }}
+                style={{ width: '100%', minWidth: 0 }}
+              />
+            </div>
+            <div className="form-group" style={{ flex: '1 1 0', minWidth: 0 }}>
+              <label className="form-label">Horizontal Pos. (mm)</label>
+              <input
+                type="number"
+                className="form-input"
+                min={0}
+                max={pageWidth}
+                step={1}
+                value={manualHorizontalPosition}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value) || 0;
+                  setManualHorizontalPosition(val);
+                  onChange({
+                    mode,
+                    height,
+                    gnomonType,
+                    positionMode,
+                    position: manualPosition,
+                    horizontalPosition: val,
+                  });
+                }}
+                style={{ width: '100%', minWidth: 0 }}
               />
             </div>
           </div>
         )}
-        {/* Fallback: show height or position input individually if only one is manual */}
         {mode === 'manual' && positionMode !== 'manual' && (
           <div className="form-group">
-            <label className="form-label">Gnomon Height (mm)</label>
+            <label className="form-label">Height (mm)</label>
             <input
               type="number"
               className="form-input"
@@ -405,34 +454,70 @@ const GnomonSettings: React.FC<Props> = ({
                   gnomonType,
                   positionMode,
                   position: manualPosition,
+                  horizontalPosition: undefined,
                 })
               }
             />
           </div>
         )}
         {positionMode === 'manual' && mode !== 'manual' && (
-          <div className="form-group">
-            <label className="form-label">Vertical Position (mm)</label>
-            <input
-              type="number"
-              className="form-input"
-              min={0}
-              max={pageHeight}
-              step={1}
-              value={manualPosition}
-              onChange={e => {
-                const val = parseFloat(e.target.value) || 0;
-                setManualPosition(val);
-                onChange({
-                  mode,
-                  height,
-                  gnomonType,
-                  positionMode,
-                  position: val,
-                });
-              }}
-              style={{ width: '120px' }}
-            />
+          <div
+            className="form-row"
+            style={{
+              display: 'flex',
+              alignItems: 'end',
+              gap: isMobile ? '0.35rem' : '0.75rem',
+              flexWrap: 'nowrap',
+            }}
+          >
+            <div className="form-group" style={{ flex: '1 1 0', minWidth: 0 }}>
+              <label className="form-label">Vertical Pos. (mm)</label>
+              <input
+                type="number"
+                className="form-input"
+                min={0}
+                max={pageHeight}
+                step={1}
+                value={manualPosition}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value) || 0;
+                  setManualPosition(val);
+                  onChange({
+                    mode,
+                    height,
+                    gnomonType,
+                    positionMode,
+                    position: val,
+                    horizontalPosition: manualHorizontalPosition,
+                  });
+                }}
+                style={{ width: '100%', minWidth: 0 }}
+              />
+            </div>
+            <div className="form-group" style={{ flex: '1 1 0', minWidth: 0 }}>
+              <label className="form-label">Horizontal Pos. (mm)</label>
+              <input
+                type="number"
+                className="form-input"
+                min={0}
+                max={pageWidth}
+                step={1}
+                value={manualHorizontalPosition}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value) || 0;
+                  setManualHorizontalPosition(val);
+                  onChange({
+                    mode,
+                    height,
+                    gnomonType,
+                    positionMode,
+                    position: manualPosition,
+                    horizontalPosition: val,
+                  });
+                }}
+                style={{ width: '100%', minWidth: 0 }}
+              />
+            </div>
           </div>
         )}
 

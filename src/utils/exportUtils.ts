@@ -121,6 +121,8 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
       gnomonHeightMm: options.gnomonHeight,
       inclineType: options.inclineType,
       tiltAngle: options.tiltAngle,
+      declinationType: options.declinationType,
+      declinationDegrees: options.declinationDegrees,
     });
 
     const logData = {
@@ -255,6 +257,8 @@ export async function logPrintActivity(options: {
   gnomonHeight?: number;
   inclineType?: import('../types').InclineType;
   tiltAngle?: number;
+  declinationType?: import('../types').DeclinationType;
+  declinationDegrees?: number;
 }): Promise<void> {
   try {
     const dialTextBlockInterpreted = interpretDialTextBlockForEmail(options.dialTextBlock || '', {
@@ -265,6 +269,8 @@ export async function logPrintActivity(options: {
       gnomonHeightMm: options.gnomonHeight,
       inclineType: options.inclineType,
       tiltAngle: options.tiltAngle,
+      declinationType: options.declinationType,
+      declinationDegrees: options.declinationDegrees,
     });
 
     const logData = {
