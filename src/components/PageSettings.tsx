@@ -154,6 +154,17 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     ];
   }, [latitude]);
 
+  // Cancer, Polar, Capricorn are only valid when Declination is at default (North/South by hemisphere)
+  const isDeclinationDefault = declinationType === (latitude >= 0 ? 'North' : 'South');
+
+  useEffect(() => {
+    if (!isDeclinationDefault && (inclineType === 'Cancer' || inclineType === 'Polar' || inclineType === 'Capricorn')) {
+      setTiltAngle(getDisplayTiltAngle(inclineType, latitude, tiltAngle));
+      setInclineType('Manual');
+      if (onInclineTypeChange) onInclineTypeChange();
+    }
+  }, [declinationType, latitude]); // Run when declination (or latitude) leaves default; inclineType/tiltAngle in deps would cause loops
+
   const handleInclineTypeChange = (newType: InclineType) => {
     setInclineType(newType);
     // Update tilt angle when changing from Manual to another type
@@ -370,9 +381,19 @@ const PageSettings: React.FC<PageSettingsProps> = ({
                 backgroundColor: inclineType !== 'Horizontal' ? '#dbeafe' : undefined,
               }}
             >
-              {inclineOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
+              {inclineOptions.map(opt => {
+                const isPresetIncline = opt.value === 'Cancer' || opt.value === 'Polar' || opt.value === 'Capricorn';
+                return (
+                  <option
+                    key={opt.value}
+                    value={opt.value}
+                    disabled={isPresetIncline && !isDeclinationDefault}
+                    style={isPresetIncline && !isDeclinationDefault ? { color: '#9ca3af' } : undefined}
+                  >
+                    {opt.label}
+                  </option>
+                );
+              })}
             </select>
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
