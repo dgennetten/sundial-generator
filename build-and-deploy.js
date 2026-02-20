@@ -169,9 +169,12 @@ async function deployWithSFTP() {
       console.log('📁 Directory is empty or newly created');
     }
 
-    // Delete existing files (except . and .. and docs directory)
+    // Files/directories to preserve on the server during cleanup
+    const preserveOnServer = new Set(['.', '..', 'docs', 'config.php', 'notify.php']);
+
+    // Delete existing files (except preserved files/directories)
     for (const file of existingFiles) {
-      if (file.name !== '.' && file.name !== '..' && file.name !== 'docs') {
+      if (!preserveOnServer.has(file.name)) {
         const remoteFilePath = `${config.remotePath}/${file.name}`;
         try {
           if (file.type === 'd') {
@@ -187,7 +190,7 @@ async function deployWithSFTP() {
       }
     }
 
-    console.log('🧹 Cleared remote directory (preserved docs)');
+    console.log('🧹 Cleared remote directory (preserved docs, config.php, notify.php)');
 
     // Upload dist directory
     console.log('📤 Uploading dist files...');

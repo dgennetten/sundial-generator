@@ -14,13 +14,7 @@
     "preview": "vite preview",
     "debug-logs": "node scripts/debugLogProcessing.js",
     "debug-logs-90d": "node scripts/debugLogProcessing.js 90",
-    "secure-deploy": "powershell -ExecutionPolicy Bypass -File scripts/secure-deploy.ps1",
-    "secure-deploy-dry": "powershell -ExecutionPolicy Bypass -File scripts/secure-deploy.ps1 -DryRun",
-    "build-and-deploy": "powershell -ExecutionPolicy Bypass -File scripts/build-and-deploy.ps1",
-    "build-and-deploy-dry": "powershell -ExecutionPolicy Bypass -File scripts/build-and-deploy.ps1 -DryRun",
-    "deploy": "node deploy.js",
-    "deploy-sftp": "node deploy-sftp.js",
-    "deploy-docs-force": "node deploy-docs-force.js"
+    "build-and-deploy": "powershell -ExecutionPolicy Bypass -File scripts/build-and-deploy.ps1"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.90.1",
