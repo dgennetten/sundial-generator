@@ -58,8 +58,11 @@ const LineSettings: React.FC<{
     });
   }, [lineStyles, showOnlyUsed, usedStyleIds]);
 
-  // Focus the new style name input only on initial mount (not when list length changes, to avoid stealing focus while typing)
+  // Focus the new style name input on initial mount, but skip after reset so we don't scroll the left pane to the bottom
   useEffect(() => {
+    try {
+      if (sessionStorage.getItem('sundial-scroll-panel-to-top')) return;
+    } catch (_) {}
     const id = requestAnimationFrame(() => {
       newStyleNameInputRef.current?.focus();
     });

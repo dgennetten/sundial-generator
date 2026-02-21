@@ -7,6 +7,8 @@ interface GnomonSVGProps {
   inclineType?: string;
   fontSize?: number;
   originalLatitude?: number;
+  /** Wall declination in degrees (horizontal dials only); gnomon rotates about (0,0) by this angle */
+  wallDeclination?: number;
 }
 
 const GnomonSVG: React.FC<GnomonSVGProps> = ({
@@ -15,7 +17,8 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
   lat = 0,
   inclineType = 'Horizontal',
   fontSize = 20,
-  originalLatitude
+  originalLatitude,
+  wallDeclination = 0,
 }) => {
   // Convert fontSize from pt to mm for SVG (1 pt = 25.4/72 mm = 0.3528 mm)
   const fontSizeMm = fontSize * 0.3528;
@@ -112,9 +115,11 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
   if (gnomonType === 'popup') {
     // For popup orientation, we need to flip the triangle if pointing up
     const flipTransform = popupOrientation === 'up' ? 'scale(1, -1)' : '';
+    // On horizontal declined dials, rotate gnomon about (0,0) by wall declination
+    const declinationRotate = inclineType === 'Horizontal' && wallDeclination ? `rotate(${-wallDeclination})` : '';
 
     return (
-      <g transform={flipTransform}>
+      <g transform={[declinationRotate, flipTransform].filter(Boolean).join(' ')}>
         {/* Popup: right triangle pointing down with dashed left side */}
         {/* Right side (solid) */}
         <line
@@ -169,9 +174,11 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
 
     // For popup orientation, we need to flip the triangle if pointing up
     const flipTransform = popupOrientation === 'up' ? 'scale(1, -1)' : '';
+    // On horizontal declined dials, rotate gnomon about (0,0) by wall declination
+    const declinationRotate = inclineType === 'Horizontal' && wallDeclination ? `rotate(${-wallDeclination})` : '';
 
     return (
-      <g transform={flipTransform}>
+      <g transform={[declinationRotate, flipTransform].filter(Boolean).join(' ')}>
         {/* Main triangle - same as popup */}
         {/* Right side (solid) */}
         <line

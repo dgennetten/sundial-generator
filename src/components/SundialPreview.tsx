@@ -2150,6 +2150,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 inclineType={inclineType}
                 fontSize={fontSize}
                 originalLatitude={originalLatitude}
+                wallDeclination={wallDeclination}
               />
 
               {declinationLineElements}

@@ -179,6 +179,9 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       ];
       keysToRemove.forEach(key => localStorage.removeItem(key));
       clearWelcomeDismissed();
+      document.querySelector<HTMLElement>('.controls-panel')?.scrollTo(0, 0);
+      try { sessionStorage.setItem('sundial-scroll-panel-to-top', '1'); } catch (_) {}
+      window.location.hash = '';
       window.location.reload();
     }
   }, []);

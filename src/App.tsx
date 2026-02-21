@@ -63,6 +63,7 @@ const App: React.FC = () => {
   const [declinationType, setDeclinationType] = useState<DeclinationType>('North');
   const [declinationDegrees, setDeclinationDegrees] = useState<number>(0);
   const prevHemisphereRef = useRef<'N' | 'S'>(latitude >= 0 ? 'N' : 'S');
+  const controlsPanelRef = useRef<HTMLDivElement>(null);
   const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToFall' | 'WinterToSpring'>('FullYear');
   const [lineStyles, setLineStyles] = useState<LineStyle[]>(() => {
     return loadLineStyles();
@@ -183,6 +184,21 @@ const App: React.FC = () => {
       }
     }
   }, [latitude, declinationType]);
+
+  // After reset: scroll left pane to top. Remove flag only after delayed scroll so LineSettings can skip focus-on-mount.
+  useEffect(() => {
+    try {
+      if (!sessionStorage.getItem('sundial-scroll-panel-to-top')) return;
+      const panel = controlsPanelRef.current ?? document.querySelector<HTMLElement>('.controls-panel');
+      const scroll = () => panel?.scrollTo(0, 0);
+      scroll();
+      const t = setTimeout(() => {
+        scroll();
+        sessionStorage.removeItem('sundial-scroll-panel-to-top');
+      }, 150);
+      return () => clearTimeout(t);
+    } catch (_) {}
+  }, []);
 
   // Raw wall declination from UI presets
   const rawWallDeclination = useMemo(() =>
@@ -503,7 +519,7 @@ const App: React.FC = () => {
       <WelcomeDialog />
       
       {/* Controls Panel - Left Side */}
-      <div className="controls-panel">
+      <div ref={controlsPanelRef} className="controls-panel">
         <div className="app-header">
           <h1 className="app-title">Sundial Generator</h1>
           <p className="app-subtitle">Create beautiful, accurate sundials for any location</p>

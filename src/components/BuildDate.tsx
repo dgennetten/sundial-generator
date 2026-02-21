@@ -16,10 +16,10 @@ const BuildDate: React.FC = () => {
         localStorage.removeItem(key);
       });
       
-      // Clear welcome dialog dismissed state so it shows again
       clearWelcomeDismissed();
-      
-      // Reload the page to apply defaults
+      document.querySelector<HTMLElement>('.controls-panel')?.scrollTo(0, 0);
+      try { sessionStorage.setItem('sundial-scroll-panel-to-top', '1'); } catch (_) {}
+      window.location.hash = '';
       window.location.reload();
     }
   };
