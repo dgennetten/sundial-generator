@@ -97,7 +97,10 @@ const DialTextBlockSettings: React.FC<Props> = ({
                   className="form-select"
                   value={sundialNotesPositionMode}
                   onChange={(e) => setSundialNotesPositionMode(e.target.value as 'auto' | 'manual')}
-                  style={{ width: '100px' }}
+                  style={{
+                    width: '100px',
+                    backgroundColor: sundialNotesPositionMode === 'manual' ? '#dbeafe' : undefined,
+                  }}
                 >
                   <option value="auto">Auto</option>
                   <option value="manual">Manual</option>
