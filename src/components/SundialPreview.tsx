@@ -271,6 +271,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       case 'Hour': return 1;
       case 'Half-hour': return 0.5;
       case 'Quarter-hour': return 0.25;
+      case 'Noon hour': return 1; // only used for priority; drawing is only at 12
       case '5-minute': return 1 / 12; // 5 minutes = 1/12 hour
       case '2-minute': return 1 / 30; // 2 minutes = 1/30 hour
       default: return 1;
@@ -280,6 +281,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Helper to get interval priority (lower number = higher priority)
   function getIntervalPriority(intervalName: string): number {
     switch (intervalName) {
+      case 'Noon hour': return 0; // noon line uses its own style when active
       case 'Hour': return 1;
       case 'Half-hour': return 2;
       case 'Quarter-hour': return 3;
@@ -293,10 +295,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   function isTimeSlotCovered(time: number, currentIntervalName: string, activeIntervals: HourlineInterval[]): boolean {
     const currentIntervalPriority = getIntervalPriority(currentIntervalName);
     return activeIntervals.some(activeInterval => {
+      if (!activeInterval.active) return false;
       const activePriority = getIntervalPriority(activeInterval.name);
+      if (activePriority >= currentIntervalPriority) return false;
+      // Noon hour only draws at 12, so it only "covers" that slot
+      if (activeInterval.name === 'Noon hour') return time === 12;
       const activeStep = getIntervalStep(activeInterval.name);
-      // Check if this active interval has higher priority AND would draw at this time
-      return activePriority < currentIntervalPriority && Math.abs(time % activeStep) < 0.001;
+      return Math.abs(time % activeStep) < 0.001;
     });
   }
 
@@ -797,7 +802,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const step = getIntervalStep(interval.name);
       for (let h = startHour; h <= stopHour; h += step) {
         // Skip if a higher priority interval is already drawing at this time
-        if (isTimeSlotCovered(h, interval.name, hourlineIntervals)) continue;
+        const skipSlot = isTimeSlotCovered(h, interval.name, hourlineIntervals);
+        const placeNoonLabel = h === 12 && hourlineIntervals.some(i => i.active && i.name === 'Noon hour');
+        if (skipSlot && !placeNoonLabel) continue;
         let points = getAnalemmaPointsProjected({
           lat,
           lng,
@@ -1044,8 +1051,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const style = lineStyles.find(s => s.id === interval.styleId || s.name === interval.styleId);
       if (!style) return [];
       const step = getIntervalStep(interval.name);
+      const hoursToDraw = interval.name === 'Noon hour'
+        ? (12 >= startHour && 12 <= stopHour ? [12] : [])
+        : (() => { const arr: number[] = []; for (let h = startHour; h <= stopHour; h += step) arr.push(h); return arr; })();
       const elements: JSX.Element[] = [];
-      for (let h = startHour; h <= stopHour; h += step) {
+      for (const h of hoursToDraw) {
         // Skip if a higher priority interval is already drawing at this time
         if (isTimeSlotCovered(h, interval.name, hourlineIntervals)) continue;
         let points = getAnalemmaPointsProjected({

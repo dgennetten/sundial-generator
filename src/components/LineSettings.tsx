@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { PenLine, X } from 'lucide-react';
 import { saveLineStyles, emptyLine, isValidCssColor, DEFAULT_LINE_STYLES } from './lineStyleUtils';
 import type { HourlineInterval } from './hourlineUtils';
@@ -25,6 +25,7 @@ const LineSettings: React.FC<{
   const [pendingStyleIndex, setPendingStyleIndex] = useState<number | null>(null);
   const [selectedCalculatedType, setSelectedCalculatedType] = useState<string>('');
   const [showOnlyUsed, setShowOnlyUsed] = useState<boolean>(true);
+  const newStyleNameInputRef = useRef<HTMLInputElement | null>(null);
 
   // Get all calculated styles from defaults
   const calculatedStyles = DEFAULT_LINE_STYLES.filter(s => s.style === 'calculated');
@@ -51,10 +52,19 @@ const LineSettings: React.FC<{
       return lineStyles;
     }
     return lineStyles.filter(style => {
-      // Check if style is used by matching id or name
+      // Always include the blank row (new style being added) so it stays editable
+      if (!style.id || style.id === '') return true;
       return usedStyleIds.has(style.id) || usedStyleIds.has(style.name);
     });
   }, [lineStyles, showOnlyUsed, usedStyleIds]);
+
+  // Focus the new style name input only on initial mount (not when list length changes, to avoid stealing focus while typing)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      newStyleNameInputRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   // Handle editing - find the actual index in the original lineStyles array
   const handleChange = (displayIdx: number, field: keyof LineStyle, value: string) => {
@@ -89,25 +99,35 @@ const LineSettings: React.FC<{
     }
 
     const updated = [...lineStyles];
+    // When editing the virtual blank row we're appending; ensure it has emptyLine base so id === '' and it stays in the list
+    const base = actualIdx >= lineStyles.length ? emptyLine : updated[actualIdx];
     // For color, validate and normalize HTML color names and hex
     if (field === 'color') {
       if (isValidCssColor(value)) {
-        updated[actualIdx] = { ...updated[actualIdx], [field]: value };
+        updated[actualIdx] = { ...base, [field]: value };
       } else {
-        updated[actualIdx] = { ...updated[actualIdx], [field]: value };
-        // Optionally, you could set an error state here
+        updated[actualIdx] = { ...base, [field]: value };
       }
     } else {
-      updated[actualIdx] = { ...updated[actualIdx], [field]: value };
+      updated[actualIdx] = { ...base, [field]: value };
     }
-    // If editing the blank row, add a new blank row
-    if (actualIdx === lineStyles.length - 1 && lineStyles[actualIdx].id === '') {
-      // Only add if at least name is filled
-      if (value.trim() !== '' && field === 'name') {
-        updated[actualIdx].id = `user-${Date.now()}`;
-        updated.push({ ...emptyLine });
-      }
-    }
+    setLineStyles(updated);
+    saveLineStyles(updated.filter((s) => s.id));
+  };
+
+  // Commit the new style (assign id and add next blank row) on blur or Enter, not on every keystroke
+  const handleCommitNewStyle = (displayIdx: number) => {
+    const hasBlankRow = displayedLineStyles.length > 0 && displayedLineStyles[displayedLineStyles.length - 1]?.id === '';
+    const stylesToShow = hasBlankRow ? displayedLineStyles : [...displayedLineStyles, { ...emptyLine }];
+    const style = stylesToShow[displayIdx];
+    if (style.id !== '' || !(style.name || '').trim()) return;
+    let actualIdx = lineStyles.findIndex(s => s.id === '');
+    if (actualIdx === -1) actualIdx = lineStyles.length - 1;
+    if (actualIdx < 0) return;
+    const updated = [...lineStyles];
+    if (actualIdx >= updated.length) return;
+    updated[actualIdx] = { ...updated[actualIdx], id: `user-${Date.now()}` };
+    updated.push({ ...emptyLine });
     setLineStyles(updated);
     saveLineStyles(updated.filter((s) => s.id));
   };
@@ -225,13 +245,22 @@ const LineSettings: React.FC<{
                   <tr key={style.id || `blank-${idx}`}>
                     <td style={{ padding: '0.3rem 0.3rem', minWidth: '70px' }}>
                       <input
+                        ref={style.id === '' ? newStyleNameInputRef : undefined}
                         type="text"
                         className="form-input"
                         value={style.name || ''}
                         onChange={e => handleChange(idx, 'name', e.target.value)}
+                        onBlur={() => style.id === '' && handleCommitNewStyle(idx)}
+                        onKeyDown={e => {
+                          if (style.id === '' && e.key === 'Enter') {
+                            handleCommitNewStyle(idx);
+                            e.preventDefault();
+                          }
+                        }}
                         disabled={!!style.fixed}
                         style={{ width: '100%', fontSize: '0.9rem' }}
                         placeholder={style.id === '' ? "Style Name" : undefined}
+                        aria-label={style.id === '' ? 'New style name' : 'Style name'}
                       />
                     </td>
                     <td style={{ padding: '0.3rem 0.3rem' }}>
@@ -358,7 +387,7 @@ const LineSettings: React.FC<{
               onChange={(e) => setShowOnlyUsed(e.target.checked)}
               style={{ cursor: 'pointer' }}
             />
-            <span style={{ fontSize: '0.875rem', color: '#4a5568' }}>Show Only Currently Used</span>
+            <span style={{ fontSize: '0.875rem', color: '#4a5568' }}>Show Only Currently Used Line Styles</span>
           </label>
         </div>
         <div style={{
