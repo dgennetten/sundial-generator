@@ -61,6 +61,7 @@ interface DesignExportProps {
   dialTextBlockFontFamily?: string;
   sundialNotesPositionMode?: 'auto' | 'manual';
   sundialNotesOffset?: number;
+  sundialNotesOffsetHorizontal?: number;
   onRestoreDial?: (config: SavedDialConfig['config']) => void;
 }
 
@@ -72,7 +73,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   tzMeridian, gnomonMode, gnomonPosition, gnomonPositionMode, gnomonHorizontalPosition, customUnits, declinationType, declinationDegrees,
   dialShape, borderStyle, borderMargin, hourlineIntervals, lineStyles, declinationLines,
   startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST,
-  declinationNoonmarks, dialTextBlockFontSize, dialTextBlockFontFamily, sundialNotesPositionMode, sundialNotesOffset,
+  declinationNoonmarks, dialTextBlockFontSize, dialTextBlockFontFamily, sundialNotesPositionMode, sundialNotesOffset, sundialNotesOffsetHorizontal,
   onRestoreDial
 }) => {
   const [format, setFormat] = useState<ExportFormat>('PNG');
@@ -157,6 +158,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       sundialNotesMode: sundialNotesMode ?? 'textBlock',
       sundialNotesPositionMode: sundialNotesPositionMode ?? 'auto',
       sundialNotesOffset: sundialNotesOffset ?? 0,
+      sundialNotesOffsetHorizontal: sundialNotesOffsetHorizontal ?? 0,
     };
   }, [
     latitude, longitude, tzMeridian, locationName, gnomonMode, gnomonHeight, gnomonType, gnomonPosition, gnomonPositionMode, gnomonHorizontalPosition,
@@ -164,7 +166,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
     dialShape, borderStyle, borderMargin, dateRange, hourlineIntervals, startHour, stopHour, use24Hour,
     labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks, lineStyles,
     declinationLines, showBackground, backgroundColor, dialTextBlock, dialTextBlockFontSize, dialTextBlockFontFamily,
-    sundialNotesMode, sundialNotesPositionMode, sundialNotesOffset
+    sundialNotesMode, sundialNotesPositionMode, sundialNotesOffset, sundialNotesOffsetHorizontal
   ]);
 
   const handleResetDefaults = useCallback(() => {

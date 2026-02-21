@@ -124,6 +124,7 @@ const App: React.FC = () => {
   const [sundialNotesMode, setSundialNotesMode] = useState<string>('textBlock');
   const [sundialNotesPositionMode, setSundialNotesPositionMode] = useState<'auto' | 'manual'>('auto');
   const [sundialNotesOffset, setSundialNotesOffset] = useState<number>(0); // in mm
+  const [sundialNotesOffsetHorizontal, setSundialNotesOffsetHorizontal] = useState<number>(0); // in mm
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
   const [printedDialsMapRefreshTrigger, setPrintedDialsMapRefreshTrigger] = useState<number>(0);
 
@@ -322,6 +323,7 @@ const App: React.FC = () => {
     sundialNotesMode,
     sundialNotesPositionMode,
     sundialNotesOffset,
+    sundialNotesOffsetHorizontal,
     locationName,
     inclineType,
     tiltAngle,
@@ -364,6 +366,7 @@ const App: React.FC = () => {
     sundialNotesMode,
     sundialNotesPositionMode,
     sundialNotesOffset,
+    sundialNotesOffsetHorizontal,
     locationName,
     inclineType,
     tiltAngle,
@@ -491,6 +494,7 @@ const App: React.FC = () => {
     if (config.sundialNotesMode !== undefined) setSundialNotesMode(config.sundialNotesMode);
     if (config.sundialNotesPositionMode !== undefined) setSundialNotesPositionMode(config.sundialNotesPositionMode);
     if (config.sundialNotesOffset !== undefined) setSundialNotesOffset(config.sundialNotesOffset);
+    if (config.sundialNotesOffsetHorizontal !== undefined) setSundialNotesOffsetHorizontal(config.sundialNotesOffsetHorizontal);
   }, [handleDateRangeChange]);
 
   return (
@@ -551,6 +555,7 @@ const App: React.FC = () => {
           dialTextBlockFontFamily={dialTextBlockFontFamily}
           sundialNotesPositionMode={sundialNotesPositionMode}
           sundialNotesOffset={sundialNotesOffset}
+          sundialNotesOffsetHorizontal={sundialNotesOffsetHorizontal}
           onRestoreDial={handleRestoreDial}
         />
 
@@ -662,6 +667,8 @@ const App: React.FC = () => {
           setSundialNotesPositionMode={setSundialNotesPositionMode}
           sundialNotesOffset={sundialNotesOffset}
           setSundialNotesOffset={setSundialNotesOffset}
+          sundialNotesOffsetHorizontal={sundialNotesOffsetHorizontal}
+          setSundialNotesOffsetHorizontal={setSundialNotesOffsetHorizontal}
         />
 
         <React.Profiler id="HourlineSettings" onRender={(id, phase, actualDuration) => {

@@ -14,6 +14,8 @@ interface Props {
   setSundialNotesPositionMode: (v: 'auto' | 'manual') => void;
   sundialNotesOffset: number;
   setSundialNotesOffset: (v: number) => void;
+  sundialNotesOffsetHorizontal: number;
+  setSundialNotesOffsetHorizontal: (v: number) => void;
 }
 
 const DialTextBlockSettings: React.FC<Props> = ({
@@ -29,6 +31,8 @@ const DialTextBlockSettings: React.FC<Props> = ({
   setSundialNotesPositionMode,
   sundialNotesOffset,
   setSundialNotesOffset,
+  sundialNotesOffsetHorizontal,
+  setSundialNotesOffsetHorizontal,
 }) => {
   return (
     <div className="card">
@@ -100,17 +104,30 @@ const DialTextBlockSettings: React.FC<Props> = ({
                 </select>
               </div>
               {sundialNotesPositionMode === 'manual' && (
-                <div className="form-group" style={{ flex: '0 0 auto' }}>
-                  <label className="form-label">Offset (mm)</label>
-                  <input
-                    type="number"
-                    className="form-input"
-                    value={sundialNotesOffset}
-                    onChange={(e) => setSundialNotesOffset(Number(e.target.value))}
-                    step={1}
-                    style={{ width: '80px' }}
-                  />
-                </div>
+                <>
+                  <div className="form-group" style={{ flex: '0 0 auto' }}>
+                    <label className="form-label">Vertical (mm)</label>
+                    <input
+                      type="number"
+                      className="form-input"
+                      value={sundialNotesOffset}
+                      onChange={(e) => setSundialNotesOffset(Number(e.target.value))}
+                      step={1}
+                      style={{ width: '80px' }}
+                    />
+                  </div>
+                  <div className="form-group" style={{ flex: '0 0 auto' }}>
+                    <label className="form-label">Horizontal (mm)</label>
+                    <input
+                      type="number"
+                      className="form-input"
+                      value={sundialNotesOffsetHorizontal}
+                      onChange={(e) => setSundialNotesOffsetHorizontal(Number(e.target.value))}
+                      step={1}
+                      style={{ width: '80px' }}
+                    />
+                  </div>
+                </>
               )}
             </div>
           </div>

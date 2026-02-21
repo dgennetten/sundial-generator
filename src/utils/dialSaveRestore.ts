@@ -66,6 +66,7 @@ export interface SavedDialConfig {
     sundialNotesMode: string;
     sundialNotesPositionMode: 'auto' | 'manual';
     sundialNotesOffset: number;
+    sundialNotesOffsetHorizontal: number;
   };
 }
 

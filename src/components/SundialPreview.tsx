@@ -55,6 +55,7 @@ type Props = {
   sundialNotesMode?: string;
   sundialNotesPositionMode?: 'auto' | 'manual';
   sundialNotesOffset?: number;
+  sundialNotesOffsetHorizontal?: number;
   locationName?: string;
   inclineType?: string;
   tiltAngle?: number;
@@ -108,6 +109,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     sundialNotesMode = 'northPoint',
     sundialNotesPositionMode = 'auto',
     sundialNotesOffset = 0,
+    sundialNotesOffsetHorizontal = 0,
     locationName = '',
     inclineType = 'Horizontal',
     tiltAngle = 0,
@@ -2070,8 +2072,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const lineHeight = dialTextBlockFontSizeMm * 1.2;
 
   // The text block position is already the centroid, so we use it directly
+  // Apply manual offsets if in manual position mode
+  const adjustedTextBlockX = sundialNotesPositionMode === 'manual'
+    ? textBlockX + sundialNotesOffsetHorizontal
+    : textBlockX;
   // For North-oriented dials, the entire SVG group is rotated 180°, so we don't need to adjust coordinates
-  const adjustedTextBlockX = textBlockX;
   // Apply manual offset if in manual position mode (positive offset moves down)
   const adjustedTextBlockY = sundialNotesPositionMode === 'manual'
     ? textBlockY + sundialNotesOffset
