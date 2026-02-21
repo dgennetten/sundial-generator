@@ -1858,10 +1858,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Fallback if no location name is provided
     locationString = 'Lat: ' + displayLat.toFixed(3) + ', Lon: ' + lng.toFixed(3);
   }
-  let coordinatesString = '';
-  if (typeof displayLat === 'number' && typeof lng === 'number') {
-    coordinatesString = `Latitude: ${displayLat.toFixed(3)}, Longitude: ${lng.toFixed(3)}`;
-  }
+  const latStr = typeof displayLat === 'number' ? displayLat.toFixed(3) : '';
+  const lngStr = typeof lng === 'number' ? lng.toFixed(3) : '';
 
 
   let textBlockLines: Array<Array<{ text: string; bold: boolean; italic: boolean; color?: string }>> = [];
@@ -1909,7 +1907,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     }
     
     processedText = processedText
-      .replace(/\{coordinates\}/gi, coordinatesString)
+      .replace(/\{latitude\}/gi, latStr)
+      .replace(/\{longitude\}/gi, lngStr)
       .replace(/\{half-year\}/gi, dateRange === 'FullYear' ? '' : dateRange === 'SummerToFall' ? 'Summer - Fall' : 'Winter - Spring')
       .replace(/\{gnomon\}/gi, `height: ${gnomonHeight} mm`)
       .replace(/\{incline\}/gi, inclineString)

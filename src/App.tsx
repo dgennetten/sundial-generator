@@ -42,7 +42,7 @@ import type { SundialPrint } from './types/sundial';
 import { log } from './utils/logger';
 
 
-const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{coordinates}\n{half-year}\n*{incline}{decline}*\n*{gnomon}*\n*{today}*`;
+const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\nLatitude: {latitude}, Longitude: {longitude}\n{half-year}\n*{incline}{decline}*\n*{gnomon}*\n*{today}*`;
 
 const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);

@@ -35,10 +35,8 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
     locationString = `Lat: ${displayLat.toFixed(3)}, Lon: ${displayLng.toFixed(3)}`;
   }
 
-  const coordinatesString =
-    typeof displayLat === 'number' && typeof displayLng === 'number'
-      ? `Latitude: ${displayLat.toFixed(3)}, Longitude: ${displayLng.toFixed(3)}`
-      : '';
+  const latStr = typeof displayLat === 'number' ? displayLat.toFixed(3) : '';
+  const lngStr = typeof displayLng === 'number' ? displayLng.toFixed(3) : '';
 
   const halfYearString =
     ctx.dateRange === 'FullYear'
@@ -87,7 +85,8 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
   }
   
   processedText = processedText
-    .replace(/\{coordinates\}/gi, coordinatesString)
+    .replace(/\{latitude\}/gi, latStr)
+    .replace(/\{longitude\}/gi, lngStr)
     .replace(/\{half-year\}/gi, halfYearString)
     .replace(/\{gnomon\}/gi, gnomonString)
     .replace(/\{incline\}/gi, inclineString)
