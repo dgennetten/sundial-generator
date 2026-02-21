@@ -20,6 +20,20 @@ const DeclinationLineOptions: React.FC<{
 }> = ({ lineStyles, declinationLines, setDeclinationLines, dateRange = 'FullYear', lat = 0 }) => {
   const [draftDate, setDraftDate] = React.useState('');
   const [draftStyle, setDraftStyle] = React.useState('red-dashed-hairline');
+  const lastInputRef = React.useRef<HTMLInputElement | null>(null);
+  const shouldRestoreFocusRef = React.useRef(false);
+  
+  // Restore focus to the last input after a new row is created
+  React.useEffect(() => {
+    if (shouldRestoreFocusRef.current && lastInputRef.current) {
+      // Small delay to ensure DOM is updated
+      const timer = setTimeout(() => {
+        lastInputRef.current?.focus();
+        shouldRestoreFocusRef.current = false;
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [declinationLines.length]);
   const isDayInRange = (day: number): boolean => {
     if (dateRange === 'FullYear') return true;
     const isNorthern = lat >= 0;
@@ -104,6 +118,8 @@ const DeclinationLineOptions: React.FC<{
         // Reset drafts for a fresh blank row
         setDraftDate('');
         setDraftStyle('red-dashed-hairline');
+        // Mark that we should restore focus after state update
+        shouldRestoreFocusRef.current = true;
       }
     } else {
       // Safe to update existing row
@@ -166,11 +182,14 @@ const DeclinationLineOptions: React.FC<{
                 const isBlank = !line.id && !line.date;
                 const isFixed = line.fixed;
                 const showDelete = !isFixed && !isBlank && line.date;
+                const isLastRow = idx === (declinationLines[declinationLines.length - 1]?.id === '' ? declinationLines : [...declinationLines, { ...emptyLine }]).length - 1;
+                const isBlankRow = line.id === '';
                 return (
                   <tr key={`decl-${idx}`}>
                     <td style={{ padding: '0.3rem 0.3rem' }}>
                       <div style={{ position: 'relative', display: 'inline-block' }}>
                         <input
+                          ref={isLastRow && isBlankRow ? lastInputRef : null}
                           type="text"
                           className="form-input"
                           value={line.id === '' ? draftDate : (line.date)}
