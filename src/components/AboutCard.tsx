@@ -22,9 +22,7 @@ const AboutCard: React.FC = () => {
             fontWeight: '500',
           }}
         >
-            <p>
-            <strong>New Feature:</strong> Declined (vertically rotated) dials! And this is in combination with Inclination!
-          </p>
+
           <p>
             <strong>New Feature:</strong> New 'Dial Shape' option!  Now you can create oval and circular dials.
           </p>

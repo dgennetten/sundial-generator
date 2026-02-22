@@ -33,6 +33,14 @@ export const DEFAULT_LINE_STYLES: LineStyle[] = [
     id: '0.5mm-black',
   },
   {
+    width: '1mm',
+    color: 'black',
+    style: 'solid',
+    name: 'Fat Black',
+    id: 'fat-black',
+    fixed: true,
+  },
+  {
     width: 'hairline',
     color: 'red',
     style: 'dashed',
