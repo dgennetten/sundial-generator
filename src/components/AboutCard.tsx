@@ -32,7 +32,7 @@ const AboutCard: React.FC = () => {
             hourlines and declination lines. 
           </p>
           <p>
-            <strong>Planned Features:</strong> (1) Optional Sun Azimuth and Altitude lines. (2) Optional horizon clipping. (3) Detailed instructions.
+          <strong>Planned Features:</strong> (1) Optional Sun Azimuth and Altitude lines. (2) Optional horizon clipping. (3) Detailed instructions. (4) Declined dials.
           </p>
         </div>
         <div
