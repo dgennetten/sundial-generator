@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { PenLine, X } from 'lucide-react';
 import { saveLineStyles, emptyLine, isValidCssColor, DEFAULT_LINE_STYLES } from './lineStyleUtils';
 import type { HourlineInterval } from './hourlineUtils';
@@ -25,7 +25,6 @@ const LineSettings: React.FC<{
   const [pendingStyleIndex, setPendingStyleIndex] = useState<number | null>(null);
   const [selectedCalculatedType, setSelectedCalculatedType] = useState<string>('');
   const [showOnlyUsed, setShowOnlyUsed] = useState<boolean>(true);
-  const newStyleNameInputRef = useRef<HTMLInputElement | null>(null);
 
   // Get all calculated styles from defaults
   const calculatedStyles = DEFAULT_LINE_STYLES.filter(s => s.style === 'calculated');
@@ -57,17 +56,6 @@ const LineSettings: React.FC<{
       return usedStyleIds.has(style.id) || usedStyleIds.has(style.name);
     });
   }, [lineStyles, showOnlyUsed, usedStyleIds]);
-
-  // Focus the new style name input on initial mount, but skip after reset so we don't scroll the left pane to the bottom
-  useEffect(() => {
-    try {
-      if (sessionStorage.getItem('sundial-scroll-panel-to-top')) return;
-    } catch (_) {}
-    const id = requestAnimationFrame(() => {
-      newStyleNameInputRef.current?.focus();
-    });
-    return () => cancelAnimationFrame(id);
-  }, []);
 
   // Handle editing - find the actual index in the original lineStyles array
   const handleChange = (displayIdx: number, field: keyof LineStyle, value: string) => {
@@ -248,7 +236,6 @@ const LineSettings: React.FC<{
                   <tr key={style.id || `blank-${idx}`}>
                     <td style={{ padding: '0.3rem 0.3rem', minWidth: '70px' }}>
                       <input
-                        ref={style.id === '' ? newStyleNameInputRef : undefined}
                         type="text"
                         className="form-input"
                         value={style.name || ''}
