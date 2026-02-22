@@ -39,6 +39,8 @@ interface PageSettingsProps {
   declinationDegrees: number;
   setDeclinationDegrees: (degrees: number) => void;
   latitude: number;
+  dialOrientation: 'North' | 'South';
+  setDialOrientation: (orientation: 'North' | 'South') => void;
   customWidth?: number;
   setCustomWidth?: (width: number) => void;
   customHeight?: number;
@@ -72,6 +74,8 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   declinationDegrees,
   setDeclinationDegrees,
   latitude,
+  dialOrientation,
+  setDialOrientation,
   customWidth,
   setCustomWidth,
   customHeight,
@@ -455,14 +459,17 @@ const PageSettings: React.FC<PageSettingsProps> = ({
           }}
         >
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-            <label className="form-label">Declination</label>
+            <label className="form-label" style={{ color: '#9ca3af' }}>Declination</label>
             <select
               className="form-select"
               value={declinationType}
               onChange={(e) => setDeclinationType(e.target.value as DeclinationType)}
+              disabled={true}
               style={{
                 minWidth: isMobile ? '80px' : 'auto',
-                backgroundColor: declinationType !== (latitude >= 0 ? 'North' : 'South') ? '#dbeafe' : undefined,
+                backgroundColor: '#f7fafc',
+                color: '#9ca3af',
+                cursor: 'not-allowed',
               }}
             >
               <option value="North">North</option>
@@ -477,7 +484,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             </select>
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-            <label className="form-label">Degrees</label>
+            <label className="form-label" style={{ color: '#9ca3af' }}>Degrees</label>
             <input
               type="number"
               className="form-input"
@@ -492,37 +499,95 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               min={-180}
               max={180}
               step={declinationStep}
-              disabled={declinationType !== 'Manual'}
+              disabled={true}
               style={{
                 width: isMobile ? '70px' : '80px',
-                backgroundColor: declinationType !== 'Manual' ? '#f7fafc' : undefined,
-                color: declinationType !== 'Manual' ? '#6b7280' : undefined,
+                backgroundColor: '#f7fafc',
+                color: '#9ca3af',
+                cursor: 'not-allowed',
               }}
             />
           </div>
           <div className="form-group" style={{ flex: '0 0 auto' }}>
-            <label className="form-label" style={{ marginBottom: '0.5rem' }}>Inc/Dec</label>
-            <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            <label className="form-label" style={{ marginBottom: '0.5rem', color: '#9ca3af' }}>Inc/Dec</label>
+            <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', opacity: 0.5 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'not-allowed', whiteSpace: 'nowrap', color: '#9ca3af' }}>
                 <input
                   type="radio"
                   name="declinationStep"
                   value="1.0"
                   checked={declinationStep === 1.0}
                   onChange={() => setDeclinationStep(1.0)}
+                  disabled={true}
                 />
                 1.0
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', cursor: 'not-allowed', whiteSpace: 'nowrap', color: '#9ca3af' }}>
                 <input
                   type="radio"
                   name="declinationStep"
                   value="0.1"
                   checked={declinationStep === 0.1}
                   onChange={() => setDeclinationStep(0.1)}
+                  disabled={true}
                 />
                 0.1
               </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Dial Orientation row */}
+        <div
+          className="form-row"
+          style={{
+            display: 'flex',
+            alignItems: 'end',
+            gap: isMobile ? '0.5rem' : '1rem',
+            flexDirection: 'row',
+            marginTop: '0.5rem'
+          }}
+        >
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
+            <label className="form-label">Dial Facing</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '14px', color: inclineType !== 'Horizontal' ? '#9ca3af' : (dialOrientation === 'North' ? '#2563eb' : '#6b7280') }}>North</span>
+              <button
+                type="button"
+                onClick={() => inclineType === 'Horizontal' && setDialOrientation(dialOrientation === 'North' ? 'South' : 'North')}
+                disabled={inclineType !== 'Horizontal'}
+                style={{
+                  width: '44px',
+                  height: '24px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  backgroundColor: inclineType !== 'Horizontal' ? '#d1d5db' : (dialOrientation === 'South' ? '#2563eb' : '#d1d5db'),
+                  cursor: inclineType !== 'Horizontal' ? 'not-allowed' : 'pointer',
+                  position: 'relative',
+                  transition: 'background-color 0.2s',
+                  opacity: inclineType !== 'Horizontal' ? 0.6 : 1
+                }}
+              >
+                <div
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    backgroundColor: 'white',
+                    position: 'absolute',
+                    top: '3px',
+                    left: dialOrientation === 'South' ? '23px' : '3px',
+                    transition: 'left 0.2s',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                  }}
+                />
+              </button>
+              <span style={{ fontSize: '14px', color: inclineType !== 'Horizontal' ? '#9ca3af' : (dialOrientation === 'South' ? '#2563eb' : '#6b7280') }}>South</span>
+              {inclineType !== 'Horizontal' && (
+                <span style={{ fontSize: '12px', color: '#dc2626', marginLeft: '8px' }}>
+                  Horizontal dials only.
+                </span>
+              )}
             </div>
           </div>
         </div>

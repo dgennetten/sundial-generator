@@ -64,6 +64,7 @@ type Props = {
   declinationNoonmarks?: boolean;
   originalLatitude?: number;
   wallDeclination?: number;
+  dialOrientation?: 'North' | 'South';
 };
 // Note: App now prefers passing a single `config` prop. To keep JSX happy where only `config` is provided,
 // we use a union props type here and normalize to a single `p` object.
@@ -118,10 +119,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     declinationNoonmarks = true,
     originalLatitude,
     wallDeclination = 0,
+    dialOrientation,
   } = p;
 
   const geoLat = originalLatitude ?? lat;
   const isGeoNorthern = geoLat >= 0;
+  // Use dialOrientation if provided, otherwise default based on hemisphere
+  const effectiveDialOrientation = dialOrientation ?? (isGeoNorthern ? 'North' : 'South');
 
   // Calculate custom page size in mm
   const getCustomPageSize = () => {
@@ -2134,9 +2138,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           </defs>
           {borderRect}
           {clippingBoundary}
-          {/* Main content group — NH dials rotate 180° so noon shadow points up */}
+          {/* Main content group — North-facing dials rotate 180° so noon shadow points up */}
           <g
-            transform={`${isGeoNorthern ? 'rotate(180) ' : ''}scale(${viewBoxScaleFactor})`}
+            transform={`${effectiveDialOrientation === 'North' ? 'rotate(180) ' : ''}scale(${viewBoxScaleFactor})`}
             clipPath={`url(#dial-clip-${dialShape.toLowerCase()})`}
           >
             {/* Content positioned relative to gnomon */}
@@ -2163,7 +2167,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 const { x, y } = label.props;
                 return React.cloneElement(label, {
                   key: `label-${index}`,
-                  transform: isGeoNorthern ? `rotate(180 ${x} ${y})` : undefined
+                  transform: effectiveDialOrientation === 'North' ? `rotate(180 ${x} ${y})` : undefined
                 });
               })}
 
@@ -2178,7 +2182,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   textAnchor="middle"
                   fontFamily={dialTextBlockFontFamily}
                   style={{ userSelect: 'none', pointerEvents: 'none' }}
-                  transform={isGeoNorthern ? `rotate(180 ${adjustedTextBlockX} ${adjustedTextBlockY})` : undefined}
+                  transform={effectiveDialOrientation === 'North' ? `rotate(180 ${adjustedTextBlockX} ${adjustedTextBlockY})` : undefined}
                 >
                   {textBlockLines.map((line, lineIndex) => (
                     <tspan
@@ -2566,7 +2570,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={isGeoNorthern ? `rotate(180 ${summerQuarter.x - 10} ${equinoxLine.y1 - 8})` : undefined}
+                              transform={effectiveDialOrientation === 'North' ? `rotate(180 ${summerQuarter.x - 10} ${equinoxLine.y1 - 8})` : undefined}
                             >
                               Spring
                             </text>
@@ -2582,7 +2586,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={isGeoNorthern ? `rotate(180 ${fallQuarter.x + 12} ${equinoxLine.y1 - 8})` : undefined}
+                              transform={effectiveDialOrientation === 'North' ? `rotate(180 ${fallQuarter.x + 12} ${equinoxLine.y1 - 8})` : undefined}
                             >
                               Summer
                             </text>
@@ -2598,7 +2602,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={isGeoNorthern ? `rotate(180 ${winterQuarter.x - 5} ${equinoxLine.y1 + 8})` : undefined}
+                              transform={effectiveDialOrientation === 'North' ? `rotate(180 ${winterQuarter.x - 5} ${equinoxLine.y1 + 8})` : undefined}
                             >
                               Fall
                             </text>
@@ -2614,7 +2618,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={isGeoNorthern ? `rotate(180 ${springQuarter.x + 10} ${equinoxLine.y1 + 8})` : undefined}
+                              transform={effectiveDialOrientation === 'North' ? `rotate(180 ${springQuarter.x + 10} ${equinoxLine.y1 + 8})` : undefined}
                             >
                               Winter
                             </text>

@@ -62,6 +62,7 @@ const App: React.FC = () => {
   const [tiltAngle, setTiltAngle] = useState<number>(90);
   const [declinationType, setDeclinationType] = useState<DeclinationType>('North');
   const [declinationDegrees, setDeclinationDegrees] = useState<number>(0);
+  const [dialOrientation, setDialOrientation] = useState<'North' | 'South'>(latitude >= 0 ? 'North' : 'South');
   const prevHemisphereRef = useRef<'N' | 'S'>(latitude >= 0 ? 'N' : 'S');
   const controlsPanelRef = useRef<HTMLDivElement>(null);
   const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToFall' | 'WinterToSpring'>('FullYear');
@@ -150,6 +151,18 @@ const App: React.FC = () => {
       setHourlineIntervals(updated);
     }
   }, [lineStyles, hourlineIntervals]);
+
+  // Update dial orientation when crossing equator (hemisphere change) to match hemisphere default
+  useEffect(() => {
+    const currentHemisphere: 'N' | 'S' = latitude >= 0 ? 'N' : 'S';
+    const prevHemisphere = prevHemisphereRef.current;
+    if (currentHemisphere !== prevHemisphere) {
+      // Hemisphere changed - update dial orientation to match new hemisphere default
+      const defaultOrientation = latitude >= 0 ? 'North' : 'South';
+      setDialOrientation(defaultOrientation);
+      // Note: prevHemisphereRef will be updated by the declination useEffect below
+    }
+  }, [latitude]); // Only depend on latitude, not dialOrientation to avoid loops
 
   // Update tilt angle when incline type changes (not when latitude changes)
   // This prevents issues when switching between locations
@@ -348,6 +361,7 @@ const App: React.FC = () => {
     declinationNoonmarks,
     originalLatitude: latitude,
     wallDeclination,
+    dialOrientation,
   }), [
     effectiveLatitude,
     longitude,
@@ -393,6 +407,7 @@ const App: React.FC = () => {
     activeHourlineIntervals,
     normalizedDeclinationLines,
     wallDeclination,
+    dialOrientation,
   ]);
 
   // Callback to restore settings from a printed dial record
@@ -623,6 +638,8 @@ const App: React.FC = () => {
           declinationDegrees={declinationDegrees}
           setDeclinationDegrees={setDeclinationDegrees}
           latitude={latitude}
+          dialOrientation={dialOrientation}
+          setDialOrientation={setDialOrientation}
           customWidth={customWidth}
           setCustomWidth={setCustomWidth}
           customHeight={customHeight}
