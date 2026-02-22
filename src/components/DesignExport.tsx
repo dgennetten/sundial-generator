@@ -125,7 +125,8 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       orientation: orientation ?? 'Landscape',
       inclineType: inclineType ?? 'Horizontal',
       tiltAngle: tiltAngle ?? 90,
-      declinationType: declinationType ?? 'North',
+      // Declination defaults based on hemisphere (disabled in UI, but still saved for backward compatibility)
+      declinationType: declinationType ?? (latitude && latitude >= 0 ? 'North' : 'South'),
       declinationDegrees: declinationDegrees ?? 0,
       dialShape: dialShape ?? 'Rectangle',
       borderStyle: borderStyle ?? 'default-hairline',

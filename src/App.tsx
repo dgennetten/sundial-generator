@@ -60,7 +60,7 @@ const App: React.FC = () => {
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
   const [tiltAngle, setTiltAngle] = useState<number>(90);
-  const [declinationType, setDeclinationType] = useState<DeclinationType>('North');
+  const [declinationType, setDeclinationType] = useState<DeclinationType>(latitude >= 0 ? 'North' : 'South');
   const [declinationDegrees, setDeclinationDegrees] = useState<number>(0);
   const [dialOrientation, setDialOrientation] = useState<'North' | 'South'>(latitude >= 0 ? 'North' : 'South');
   const prevHemisphereRef = useRef<'N' | 'S'>(latitude >= 0 ? 'N' : 'S');
@@ -180,23 +180,18 @@ const App: React.FC = () => {
     }
   }, [declinationType]);
 
-  // Mirror declination type when latitude crosses the equator
-  const MIRROR_DECLINATION: Record<string, DeclinationType> = {
-    'North': 'South', 'South': 'North',
-    'Northeast': 'Southeast', 'Southeast': 'Northeast',
-    'Northwest': 'Southwest', 'Southwest': 'Northwest',
-    'East': 'East', 'West': 'West',
-  };
+  // Update declination type when latitude crosses the equator to match hemisphere default
+  // Since declination is disabled, always set to default (North for NH, South for SH)
   useEffect(() => {
     const currentHemisphere: 'N' | 'S' = latitude >= 0 ? 'N' : 'S';
     if (currentHemisphere !== prevHemisphereRef.current) {
       prevHemisphereRef.current = currentHemisphere;
-      if (declinationType !== 'Manual') {
-        const mirrored = MIRROR_DECLINATION[declinationType];
-        if (mirrored) setDeclinationType(mirrored);
-      }
+      // Always set to default for new hemisphere (declination is disabled)
+      const defaultDeclinationType = latitude >= 0 ? 'North' : 'South';
+      setDeclinationType(defaultDeclinationType);
+      setDeclinationDegrees(0);
     }
-  }, [latitude, declinationType]);
+  }, [latitude]); // Only depend on latitude, not declinationType to avoid loops
 
   // After reset: scroll left pane to top. Remove flag only after delayed scroll so LineSettings can skip focus-on-mount.
   useEffect(() => {
@@ -484,8 +479,12 @@ const App: React.FC = () => {
     if (config.orientation !== undefined) setOrientation(config.orientation);
     if (config.inclineType !== undefined) setInclineType(config.inclineType);
     if (config.tiltAngle !== undefined) setTiltAngle(config.tiltAngle);
-    if (config.declinationType !== undefined) setDeclinationType(config.declinationType);
-    if (config.declinationDegrees !== undefined) setDeclinationDegrees(config.declinationDegrees);
+    // Declination is disabled - always set to default for current hemisphere
+    // Use the latitude from the config if available, otherwise use current latitude
+    const restoreLatitude = config.latitude !== undefined ? config.latitude : latitude;
+    const defaultDeclinationType = restoreLatitude >= 0 ? 'North' : 'South';
+    setDeclinationType(defaultDeclinationType);
+    setDeclinationDegrees(0);
     if (config.dialShape !== undefined) setDialShape(config.dialShape);
     if (config.borderStyle !== undefined) setBorderStyle(config.borderStyle);
     if (config.borderMargin !== undefined) setBorderMargin(config.borderMargin);
