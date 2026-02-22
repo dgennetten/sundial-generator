@@ -660,6 +660,7 @@ const App: React.FC = () => {
           position={gnomonPosition}
           horizontalPosition={gnomonHorizontalPosition}
           wallDeclination={wallDeclination}
+          lockHorizontalToCenter={declinationType !== 'Manual' || Math.abs(rawWallDeclination) < 1e-6}
           onChange={useCallback(({ mode, height, gnomonType, positionMode, position, horizontalPosition }) => {
             setGnomonMode(mode);
             setGnomonHeight(height);

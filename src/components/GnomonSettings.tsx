@@ -20,6 +20,8 @@ interface Props {
   position?: number;
   horizontalPosition?: number;
   wallDeclination?: number;
+  /** When true (declination preset / grayed or declination zero), auto horizontal stays at center */
+  lockHorizontalToCenter?: boolean;
   onChange: (values: { mode: Mode; height: number; gnomonType: GnomonType; positionMode?: PositionMode; position?: number; horizontalPosition?: number }) => void;
 }
 
@@ -36,6 +38,7 @@ const GnomonSettings: React.FC<Props> = ({
   position: propPosition,
   horizontalPosition: propHorizontalPosition,
   wallDeclination = 0,
+  lockHorizontalToCenter = false,
   onChange,
 }) => {
 
@@ -114,18 +117,19 @@ const GnomonSettings: React.FC<Props> = ({
   useEffect(() => {
     const { vertical: autoPos, horizontal: autoHPos } = calculateAutoGnomonPosition(pageWidth, pageHeight);
     setAutoPosition(autoPos);
+    const horizontalForAuto = lockHorizontalToCenter ? Math.round(pageWidth / 2) : autoHPos;
     if (positionMode === 'auto') {
       setManualPosition(autoPos);
-      setManualHorizontalPosition(autoHPos);
+      setManualHorizontalPosition(horizontalForAuto);
     }
     if (propPositionMode === undefined || positionMode === propPositionMode) {
       if (positionMode === 'auto') {
-        onChange({ mode, height, gnomonType, positionMode, position: autoPos, horizontalPosition: autoHPos });
+        onChange({ mode, height, gnomonType, positionMode, position: autoPos, horizontalPosition: horizontalForAuto });
       } else {
         onChange({ mode, height, gnomonType, positionMode, position: manualPosition, horizontalPosition: manualHorizontalPosition });
       }
     }
-  }, [mode, height, latitude, longitude, tzMeridian, pageHeight, pageWidth, gnomonType, positionMode, manualPosition, manualHorizontalPosition, propPositionMode, calculateAutoGnomonPosition, onChange]);
+  }, [mode, height, latitude, longitude, tzMeridian, pageHeight, pageWidth, gnomonType, positionMode, manualPosition, manualHorizontalPosition, propPositionMode, lockHorizontalToCenter, calculateAutoGnomonPosition, onChange]);
 
   // Sync local positionMode state with prop when it changes (only if different)
   // Skip sync if user just made a change (to prevent reverting user's selection)
