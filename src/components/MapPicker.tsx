@@ -45,13 +45,15 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
   const [mapZoom, setMapZoom] = useState(selected ? 8 : 2);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Focus search box when modal opens
+  // Focus search box (location textbox) when modal opens
   useEffect(() => {
-    if (open && searchInputRef.current) {
+    if (open) {
       setSearchQuery('');
-      setTimeout(() => {
+      // Use a slightly longer timeout to ensure the modal is fully rendered
+      const timeoutId = setTimeout(() => {
         searchInputRef.current?.focus();
-      }, 100);
+      }, 150);
+      return () => clearTimeout(timeoutId);
     }
   }, [open]);
 

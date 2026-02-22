@@ -125,7 +125,8 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       orientation: orientation ?? 'Landscape',
       inclineType: inclineType ?? 'Horizontal',
       tiltAngle: tiltAngle ?? 90,
-      declinationType: declinationType ?? 'North',
+      // Declination defaults based on hemisphere (disabled in UI, but still saved for backward compatibility)
+      declinationType: declinationType ?? (latitude && latitude >= 0 ? 'North' : 'South'),
       declinationDegrees: declinationDegrees ?? 0,
       dialShape: dialShape ?? 'Rectangle',
       borderStyle: borderStyle ?? 'default-hairline',
@@ -384,74 +385,80 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
             flexDirection: 'column'
           }}
         >
-          {/* Save, Restore, and Print buttons */}
-          <div className="form-group" style={{ alignSelf: 'flex-end', display: 'flex', flexDirection: 'row', gap: '0.5rem', alignItems: 'center', flexWrap: 'nowrap' }}>
-            <button
-              className="btn btn-secondary"
-              onClick={handleResetDefaults}
-              title="Reset to defaults"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '34px',
-                minWidth: '34px',
-                height: '34px',
-                padding: 0,
-                flexShrink: 0
-              }}
-            >
-              <Undo size={16} />
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={handleSave}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 'auto',
-                padding: '0.5rem 0.6rem',
-                flexShrink: 0
-              }}
-            >
-              <Save size={16} style={{ marginRight: '4px' }} />
-              Save
-            </button>
-            <button
-              className="btn btn-secondary"
-              disabled={!hasSavedConfigsState}
-              onClick={handleRestore}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 'auto',
-                padding: '0.5rem 0.6rem',
-                opacity: hasSavedConfigsState ? 1 : 0.5,
-                cursor: hasSavedConfigsState ? 'pointer' : 'not-allowed',
-                flexShrink: 0
-              }}
-            >
-              <RotateCcw size={16} style={{ marginRight: '4px' }} />
-              Load
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={handlePrint}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100px',
-                minWidth: '100px',
-                padding: '0.5rem 0.6rem',
-                flexShrink: 0
-              }}
-            >
-              <Printer size={16} style={{ marginRight: '4px' }} />
-              Print
-            </button>
+          {/* Reset button (left) and Save, Load, Print, Export buttons (right) */}
+          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '0.5rem' }}>
+            {/* Reset button - left aligned */}
+            <div className="form-group" style={{ alignSelf: 'flex-start' }}>
+              <button
+                className="btn btn-secondary"
+                onClick={handleResetDefaults}
+                title="Reset to defaults"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '34px',
+                  minWidth: '34px',
+                  height: '34px',
+                  padding: 0,
+                  flexShrink: 0
+                }}
+              >
+                <Undo size={16} />
+              </button>
+            </div>
+            {/* Save, Load, Print buttons - right aligned */}
+            <div className="form-group" style={{ alignSelf: 'flex-end', display: 'flex', flexDirection: 'row', gap: '0.4rem', alignItems: 'center', flexWrap: 'nowrap' }}>
+              <button
+                className="btn btn-secondary"
+                onClick={handleSave}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 'auto',
+                  padding: '0.5rem 0.6rem',
+                  flexShrink: 1
+                }}
+              >
+                <Save size={16} style={{ marginRight: '4px' }} />
+                Save
+              </button>
+              <button
+                className="btn btn-secondary"
+                disabled={!hasSavedConfigsState}
+                onClick={handleRestore}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 'auto',
+                  padding: '0.5rem 0.6rem',
+                  opacity: hasSavedConfigsState ? 1 : 0.5,
+                  cursor: hasSavedConfigsState ? 'pointer' : 'not-allowed',
+                  flexShrink: 1
+                }}
+              >
+                <RotateCcw size={16} style={{ marginRight: '4px' }} />
+                Load
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handlePrint}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100px',
+                  minWidth: '100px',
+                  padding: '0.5rem 0.6rem',
+                  flexShrink: 0
+                }}
+              >
+                <Printer size={16} style={{ marginRight: '4px' }} />
+                Print
+              </button>
+            </div>
           </div>
 
           {/* Export controls row */}
