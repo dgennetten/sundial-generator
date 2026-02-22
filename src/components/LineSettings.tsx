@@ -309,7 +309,7 @@ const LineSettings: React.FC<{
                           value={style.color || ''}
                           onChange={e => handleChange(idx, 'color', e.target.value)}
                           style={{
-                            width: '35px', // was '70px'
+                            width: '50px', // Increased from 35px (borrowed 15px from Style column)
                             fontSize: '0.9rem',
                             borderColor: colorValid ? undefined : 'red',
                             background: colorValid ? undefined : '#ffeaea'
@@ -330,6 +330,7 @@ const LineSettings: React.FC<{
                         onChange={e => handleChange(idx, 'style', e.target.value)}
                         style={{
                           fontSize: '0.9rem',
+                          width: '85px', // Reduced from auto to borrow width for color textbox
                           backgroundColor: style.style === 'calculated' ? '#f5f5f5' : undefined,
                           color: style.style === 'calculated' ? '#666' : undefined
                         }}
