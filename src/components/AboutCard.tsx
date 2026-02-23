@@ -23,17 +23,6 @@ const AboutCard: React.FC = () => {
           }}
         >
 
-          <p>
-            <strong>New Feature:</strong> New 'Dial Shape' option!  Now you can create oval and circular dials.
-          </p>
-           <p>
-            <strong>New Feature:</strong> New "Calculated" dash styles. The dashes contain date/time information in their position and length. 
-            (this is getting closer to my 1985 code - see '11x17 inch sundial' link below.) These caclulated dashes aid in interpolating between
-            hourlines and declination lines. 
-          </p>
-          <p>
-          <strong>Planned Features:</strong> (1) Optional Sun Azimuth and Altitude lines. (2) Optional horizon clipping. (3) Detailed instructions. (4) Declined dials.
-          </p>
         </div>
         <div
           dangerouslySetInnerHTML={{
@@ -47,9 +36,8 @@ const AboutCard: React.FC = () => {
   <a href="https://www.hp9845.net/" target="_blank" rel="noopener noreferrer">HP9845</a> 
     desktop workstation, which was basically a space shuttle cockpit compared to the future IBM PC toddlers.
 
-  Not content with digital wizardry alone, I whipped up an 
-  <a href="https://sundial.gennetten.org/docs/SolarClockAd.pdf" target="_blank" rel="noopener noreferrer">advertisement</a>
-  and, like a caffinated Da Vinci, scribbled out hand-drawn 
+  Not content with digital wizardry alone, 
+  like a caffinated Da Vinci, scribbled out two pages of hand-drawn 
   <a href="https://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf" target="_blank" rel="noopener noreferrer">instructional</a>,
   <a href="https://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf" target="_blank" rel="noopener noreferrer">illustrations</a>.
    Here's an example 
@@ -57,7 +45,7 @@ const AboutCard: React.FC = () => {
  plotted using an 
   <a href="https://www.hpmuseum.net/display_item.php?hw=79" target="_blank" rel="noopener noreferrer">HP9872 plotter</a>.
 </p>
-<p>The sundial generator now uses the professional-grade 
+<p>The sundial generator uses the 
 <a href="https://academic.oup.com/mnras/article/238/4/1529/1037665" target="_blank" rel="noopener noreferrer">Hughes, Yallop & Hohenkerk</a>
 algorithm which "enables it to be calculated for any epoch within 30 centuries of the present day, to a precision of about 3 seconds of time." 
 </p>
