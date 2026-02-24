@@ -1,6 +1,6 @@
 // src/components/DesignExport.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { Printer, Download, FolderPlus, FolderUp, Undo } from 'lucide-react';
+import { Printer, Download, Save, FolderUp, Undo } from 'lucide-react';
 import { exportSundial, logPrintActivity, type ExportFormat, type PageSize } from '../utils/exportUtils';
 import type { GnomonType, InclineType } from '../types/sundial';
 import { saveDialConfig, loadAllSavedConfigs, deleteSavedConfig, hasSavedConfigs, type SavedDialConfig } from '../utils/dialSaveRestore';
@@ -419,7 +419,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                     flexShrink: 0
                   }}
                 >
-                  <FolderPlus size={16} />
+                  <Save size={16} />
                   Save
                 </button>
                 <button
