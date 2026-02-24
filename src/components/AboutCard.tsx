@@ -37,7 +37,7 @@ const AboutCard: React.FC = () => {
     desktop workstation, which was basically a space shuttle cockpit compared to the future IBM PC toddlers.
 
   Not content with digital wizardry alone, 
-  like a caffinated Da Vinci, scribbled out two pages of hand-drawn 
+  like a caffinated Da Vinci, I scribbled out two pages of hand-drawn 
   <a href="https://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf" target="_blank" rel="noopener noreferrer">instructional</a>,
   <a href="https://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf" target="_blank" rel="noopener noreferrer">illustrations</a>.
    Here's an example 
