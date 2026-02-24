@@ -1,6 +1,6 @@
 // src/components/LocationInputs.tsx
 import React, { useState, lazy, Suspense, useCallback, useEffect } from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin, Map } from 'lucide-react';
 import { log } from '../utils/logger';
 const MapPicker = lazy(() => import('./MapPicker'));
 
@@ -305,7 +305,15 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
           className="form-row"
           style={
             layoutMode === 'mobile-portrait'
-              ? { display: 'flex', flexDirection: 'column', width: '100%', gap: '0.5rem' }
+              ? {
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'end',
+                  gap: '0.5rem',
+                  flexWrap: 'nowrap',
+                  width: '100%',
+                  minWidth: 0
+                }
               : {
                 display: 'flex',
                 flexDirection: 'row',
@@ -319,7 +327,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
             className="form-group"
             style={
               layoutMode === 'mobile-portrait'
-                ? { width: '100%' }
+                ? { flex: '1 1 0', minWidth: 0 }
                 : {
                   flex: '1',
                   minWidth: layoutMode === 'mobile-landscape' ? '120px' : '150px'
@@ -400,7 +408,7 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
             className="form-group"
             style={
               layoutMode === 'mobile-portrait'
-                ? { width: '100%' }
+                ? { flex: '0 1 auto', minWidth: 0 }
                 : {
                   flex: layoutMode === 'mobile-landscape' ? '0 0 120px' : '0 0 140px',
                   minWidth: layoutMode === 'mobile-landscape' ? '100px' : '120px'
@@ -573,10 +581,15 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                 width: 'auto',
                 minWidth: layoutMode === 'mobile-landscape' ? '60px' : '80px',
                 whiteSpace: 'nowrap',
-                fontSize: layoutMode === 'mobile-landscape' ? '0.85rem' : '0.9rem'
+                fontSize: layoutMode === 'mobile-landscape' ? '0.85rem' : '0.9rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.35rem'
               }}
               onClick={() => setMapOpen(true)}
             >
+              <Map size={16} />
               Map
             </button>
           </div>
