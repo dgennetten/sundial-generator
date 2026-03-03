@@ -24,7 +24,30 @@ composer require phpmailer/phpmailer
 
 ### 2. Configure SMTP Settings
 
-You need to set environment variables for your SMTP configuration. For Dreamhost, create a `.htaccess` file in your web directory with:
+**If the diagnostic shows "SMTP_* NOT SET or EMPTY"**, your server is not passing environment variables to PHP (common when `.htaccess` `SetEnv` is not allowed or `.htaccess` is missing). Use the PHP config file method below.
+
+#### Option A: PHP config file (recommended when env vars are not available)
+
+1. Copy the example file to create your config:
+   - In the repo: copy `email-config.example.php` to `email-config.php`
+   - Or on the server: in the same directory as `export-logger.php`, create `email-config.php`
+
+2. Edit `email-config.php` and set your real SMTP values:
+   ```php
+   <?php
+   $_ENV['SMTP_HOST']           = 'smtp.dreamhost.com';
+   $_ENV['SMTP_USERNAME']       = 'info@sundial.gennetten.org';   // full email address
+   $_ENV['SMTP_PASSWORD']       = 'your_actual_email_password';
+   $_ENV['SMTP_FROM_EMAIL']     = 'info@sundial.gennetten.org';
+   $_ENV['NOTIFICATION_EMAIL']  = 'douglas@gennetten.com';
+   ```
+3. Deploy: upload `email-config.php` to the server next to `export-logger.php` (e.g. `/home/dgennetten/sundial.gennetten.org/email-config.php`). Do not commit `email-config.php`; it is in `.gitignore`.
+
+Both `export-logger.php` and `test-email-system.php` load this file automatically if it exists.
+
+#### Option B: .htaccess (when your host allows SetEnv)
+
+For Dreamhost or when Apache passes env to PHP, create a `.htaccess` file in your web directory:
 
 ```apache
 # SMTP Configuration for Dreamhost
@@ -35,38 +58,7 @@ SetEnv SMTP_FROM_EMAIL "info@sundial.gennetten.org"
 SetEnv NOTIFICATION_EMAIL "douglas@gennetten.com"
 ```
 
-**Security Note**: Make sure your `.htaccess` file is not accessible via web browser.
-
-### 3. Alternative Configuration Methods
-
-If environment variables don't work, you can also:
-
-#### Option A: Create a PHP config file
-Create `email-config.php`:
-```php
-<?php
-// Email configuration - keep this file secure!
-$_ENV['SMTP_HOST'] = 'smtp.dreamhost.com';
-$_ENV['SMTP_USERNAME'] = 'sundial@gennetten.com';
-$_ENV['SMTP_PASSWORD'] = 'your_password_here';
-$_ENV['SMTP_FROM_EMAIL'] = 'sundial@gennetten.com';
-$_ENV['NOTIFICATION_EMAIL'] = 'douglas@gennetten.com';
-?>
-```
-
-Then include it in `export-logger.php` by adding this line after the session_start():
-```php
-include_once 'email-config.php';
-```
-
-#### Option B: Direct modification (less secure)
-You can directly modify the default values in `export-logger.php`:
-```php
-$smtpHost = $_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?? 'smtp.dreamhost.com';
-$smtpUsername = $_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'sundial@gennetten.com';
-$smtpPassword = $_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? 'YOUR_ACTUAL_PASSWORD_HERE';
-$smtpFromEmail = $_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL') ?? 'info@sundial.gennetten.org';
-```
+**Security Note**: Keep `.htaccess` and `email-config.php` out of version control and ensure they are not publicly readable if possible.
 
 ## Dreamhost-Specific Settings
 
@@ -87,15 +79,18 @@ Use the test script (see `test-email-system.php` below) to verify everything wor
 - Install PHPMailer using one of the methods above
 - Check file permissions on the PHPMailer directory
 
-### 2. "SMTP password not configured"
-- Set the `SMTP_PASSWORD` environment variable
-- Check that your `.htaccess` file is in the correct location
-- Verify the password is correct for your email account
+### 2. "SMTP password not configured" / "SMTP_* NOT SET or EMPTY"
+- **Preferred**: Create `email-config.php` on the server (copy from `email-config.example.php`, set real values, upload to same directory as `export-logger.php`). The scripts load it automatically.
+- Or set env vars via `.htaccess` if your host allows `SetEnv` and ensure `.htaccess` is deployed.
+- Verify the password is correct for your email account.
 
-### 3. SMTP Authentication Errors
-- Verify your email username and password
-- For Dreamhost, ensure you're using the full email address as username
-- Check that your email account exists and is active
+### 3. SMTP Authentication Errors ("Could not authenticate")
+- **Rotate your password**: If you ever shared the SMTP password (e.g. in a chat or ticket), change it in the Dreamhost panel and update `email-config.php`.
+- For Dreamhost, use the **full email address** as `SMTP_USERNAME` (e.g. `info@sundial.gennetten.org`).
+- In Dreamhost panel: confirm the mail account exists, is active, and that **SMTP / external sending** is allowed for that account.
+- If the account has 2FA or “app passwords,” use an **app-specific password** in `SMTP_PASSWORD`, not the main account password.
+- Passwords with special characters (`!`, `$`, `"`, etc.): keep the value in **single quotes** in PHP (e.g. `'your!pass'`). Ensure there is **no space or newline** inside the quotes or after the line in `email-config.php`.
+- If auth still fails: in Dreamhost panel, **reset the mailbox password** for the sending address, then update `email-config.php` with the new password (type or paste carefully so there’s no trailing space). The scripts use AUTH PLAIN and trim the password to avoid common encoding issues.
 
 ### 4. SSL/TLS Errors
 - The script includes Dreamhost-specific SSL settings

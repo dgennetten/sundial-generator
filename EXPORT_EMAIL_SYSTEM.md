@@ -78,6 +78,27 @@ Each email includes:
 
 ## Troubleshooting
 
+### Problem: Export/print email "recently stopped working"
+
+1. **Run the diagnostic script on the server** (fastest check):
+   - Open `https://sundial.gennetten.org/test-email-system.php?allow=1` in a browser.
+   - It will show: PHPMailer found, env vars (SMTP_PASSWORD set?), and a live send test.
+   - If **SMTP password not configured** appears, the server no longer has `SMTP_PASSWORD` (e.g. env cleared after deploy, .htaccess not deployed, or hosting changed how env is set).
+
+2. **Verify env vars on the server**:
+   - `SMTP_PASSWORD` must be set (e.g. in `.htaccess` or server env). If it’s empty, the script skips sending and returns `emailSent: false` and `emailError: "SMTP password not configured..."`.
+   - Ensure `.htaccess` (with `SetEnv SMTP_PASSWORD "..."`) is deployed with the app; some deploys only upload `dist/` and skip `.htaccess`.
+
+3. **Redeploy PHP and config**:
+   ```bash
+   npm run upload-php
+   ```
+   Ensure `export-logger.php` and `.htaccess` are on the server. If you use a different deploy path, confirm the PHP file and env config are included.
+
+4. **Check browser devtools after Export/Print**:
+   - In Network, select the request to `export-logger.php` and open the Response.
+   - If the body is JSON, look for `emailSent` and `emailError`. If it’s HTML or plain text, the script crashed before sending JSON (check server PHP error logs).
+
 ### Problem: No emails being received
 
 1. **Check if the PHP file is deployed**:
@@ -101,8 +122,8 @@ This usually indicates a permissions issue with the log directory. The system wi
 ### Problem: Logging works but no emails
 
 This indicates an SMTP configuration issue. Check:
-- SMTP credentials in `export-logger.php`
-- PHPMailer installation at `/home/dgennetten/PHPMailer/`
+- SMTP credentials (env vars or `export-logger.php` defaults)
+- PHPMailer installation at `/home/dgennetten/PHPMailer/` (or Composer `vendor/`)
 - Server firewall settings for SMTP
 
 ## Development vs Production

@@ -61,6 +61,13 @@ if (!in_array($_SERVER['REMOTE_ADDR'], $allowed_ips) && !$bypassEnabled) {
 
 header('Content-Type: text/html; charset=UTF-8');
 
+// Load optional local config when .htaccess SetEnv is not available (same as export-logger.php)
+$emailConfigPath = __DIR__ . '/email-config.php';
+$emailConfigLoaded = file_exists($emailConfigPath);
+if ($emailConfigLoaded) {
+    require_once $emailConfigPath;
+}
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -122,8 +129,9 @@ if (!$phpmailerFound) {
 
 // Test 2: Check environment variables
 echo "<h2>Test 2: Environment Variables Check</h2>";
+echo "<div><strong>Config file:</strong> " . ($emailConfigLoaded ? "✅ loaded from <code>" . htmlspecialchars($emailConfigPath) . "</code>" : "⚠️ not found at <code>" . htmlspecialchars($emailConfigPath) . "</code> (env vars from .htaccess or system only)") . "</div>";
 
-// Get raw values
+// Get raw values (check $_ENV first so email-config.php values are seen)
 $rawEnvVars = [
     'SMTP_HOST' => $_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST'),
     'SMTP_USERNAME' => $_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME'),
@@ -183,7 +191,7 @@ if (!$phpmailerFound) {
         
         // Get SMTP settings with fallbacks and trim to handle whitespace issues
         $smtpHost = trim($_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?? 'smtp.dreamhost.com');
-        $smtpUsername = trim($_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'sundial@gennetten.org');
+        $smtpUsername = trim($_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'info@sundial.gennetten.org');
         $smtpPassword = trim($_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? '');
         $smtpFromEmail = trim($_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL') ?? 'info@sundial.gennetten.org');
         $notificationEmail = trim($_ENV['NOTIFICATION_EMAIL'] ?? getenv('NOTIFICATION_EMAIL') ?? 'douglas@gennetten.com');
@@ -249,8 +257,9 @@ if (!$phpmailerFound) {
             $mail->isSMTP();
             $mail->Host = $smtpHost;
             $mail->SMTPAuth = true;
+            $mail->AuthType = 'PLAIN'; // PLAIN often works when LOGIN fails with special chars in password
             $mail->Username = $smtpUsername;
-            $mail->Password = $smtpPassword;
+            $mail->Password = trim($smtpPassword); // trim in case config had trailing newline/space
             $mail->SMTPSecure = 'tls';
             $mail->Port = 587;
             

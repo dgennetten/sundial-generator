@@ -10,9 +10,8 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
- * License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the Creative Commons
+ * Attribution-NonCommercial-ShareAlike 4.0 International License for more details.
  *
  * You should have received a copy of the Creative Commons
  * Attribution-NonCommercial-ShareAlike 4.0 International License
@@ -24,7 +23,9 @@
  * - SMTP_PASSWORD: Your SMTP password
  * - SMTP_FROM_EMAIL: Email address to send from
  * - NOTIFICATION_EMAIL: Email address to receive notifications
- * 
+ *
+ * Optional: email-config.php in this directory (sets $_ENV) when .htaccess SetEnv is not available.
+ *
  * Required Dependencies:
  * - PHPMailer library (configure paths below)
  */
@@ -44,6 +45,13 @@ header('Content-Type: application/json');
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
+}
+
+// Track whether config was loaded (for debug output)
+$emailConfigLoaded = false;
+if (file_exists(__DIR__ . '/email-config.php')) {
+    require_once __DIR__ . '/email-config.php';
+    $emailConfigLoaded = true;
 }
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -66,7 +74,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
         __DIR__ . '/../PHPMailer',
         '/usr/share/php/PHPMailer'
     ];
-    
+
     $found = false;
     foreach ($phpmailerPaths as $basePath) {
         if (file_exists($basePath . '/src/PHPMailer.php')) {
@@ -77,7 +85,7 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
             break;
         }
     }
-    
+
     if (!$found) {
         // Fallback error - log this issue
         error_log("PHPMailer not found in common locations. Please install PHPMailer.");
@@ -135,10 +143,10 @@ function getApproximateLocation($lat, $lon) {
     if ($lat === null || $lon === null) {
         return null;
     }
-    
+
     // Use OpenStreetMap Nominatim API for reverse geocoding (free, no API key required)
     $url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon&zoom=10&addressdetails=1";
-    
+
     // Set a user agent (required by Nominatim usage policy)
     $context = stream_context_create([
         'http' => [
@@ -149,20 +157,20 @@ function getApproximateLocation($lat, $lon) {
             'timeout' => 5 // 5 second timeout
         ]
     ]);
-    
+
     $response = @file_get_contents($url, false, $context);
     if ($response === false) {
         return null;
     }
-    
+
     $data = json_decode($response, true);
     if (!$data || !isset($data['address'])) {
         return null;
     }
-    
+
     $address = $data['address'];
     $parts = [];
-    
+
     // Build location string from most specific to least specific
     if (isset($address['city'])) {
         $parts[] = $address['city'];
@@ -171,27 +179,27 @@ function getApproximateLocation($lat, $lon) {
     } elseif (isset($address['village'])) {
         $parts[] = $address['village'];
     }
-    
+
     if (isset($address['state'])) {
         $parts[] = $address['state'];
     } elseif (isset($address['region'])) {
         $parts[] = $address['region'];
     }
-    
+
     if (isset($address['country'])) {
         $parts[] = $address['country'];
     }
-    
+
     // If we have at least one part, return the location
     if (!empty($parts)) {
         return implode(', ', $parts);
     }
-    
+
     // Fallback: return display name if available
     if (isset($data['display_name'])) {
         return $data['display_name'];
     }
-    
+
     return null;
 }
 
@@ -242,7 +250,7 @@ foreach ($possibleLogDirs as $dir) {
 // If we found a writable directory, try to write the log
 if ($logDir && $logFile) {
     $logSuccess = file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
-    
+
     // If writing failed, try without file locking
     if ($logSuccess === false) {
         $logSuccess = file_put_contents($logFile, $logEntry, FILE_APPEND);
@@ -251,6 +259,7 @@ if ($logDir && $logFile) {
 
 // Debug information for troubleshooting
 $debugInfo = [
+    'emailConfigLoaded' => $emailConfigLoaded,
     'logDir' => $logDir,
     'logFile' => $logFile,
     'logDirExists' => $logDir ? is_dir($logDir) : false,
@@ -298,11 +307,11 @@ $emailError = '';
 try {
     // Get SMTP settings - try multiple sources and trim to handle whitespace issues
     $smtpHost = trim($_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?? 'smtp.dreamhost.com');
-    $smtpUsername = trim($_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'sundial@gennetten.org');
+    $smtpUsername = trim($_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'info@sundial.gennetten.org');
     $smtpPassword = trim($_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? '');
     $smtpFromEmail = trim($_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL') ?? 'info@sundial.gennetten.org');
     $notificationEmail = trim($_ENV['NOTIFICATION_EMAIL'] ?? getenv('NOTIFICATION_EMAIL') ?? 'douglas@gennetten.com');
-    
+
     // Validate that email addresses are not empty after trimming
     if (empty($smtpFromEmail)) {
         $smtpFromEmail = 'info@sundial.gennetten.org';
@@ -310,12 +319,12 @@ try {
     if (empty($notificationEmail)) {
         $notificationEmail = 'douglas@gennetten.com';
     }
-    
+
     // Skip email if no password is configured
     if (empty($smtpPassword)) {
         $emailSent = false;
         $emailError = 'SMTP password not configured. Please set SMTP_PASSWORD environment variable.';
-        
+
         // Add debug info
         $debugInfo['smtpSettings'] = [
             'host' => $smtpHost,
@@ -327,15 +336,16 @@ try {
             'notificationEmail' => $notificationEmail
         ];
     } else {
-        $mail->SMTPDebug = 0; // Set to 2 for debugging
+        $mail->SMTPDebug = 0;
         $mail->isSMTP();
         $mail->Host = $smtpHost;
         $mail->SMTPAuth = true;
+        $mail->AuthType = 'PLAIN'; // more reliable with Dreamhost
         $mail->Username = $smtpUsername;
-        $mail->Password = $smtpPassword;
+        $mail->Password = trim($smtpPassword);
         $mail->SMTPSecure = 'tls';
         $mail->Port = 587;
-        
+
         // Dreamhost-specific settings
         if (strpos($smtpHost, 'dreamhost') !== false) {
             $mail->SMTPOptions = array(
@@ -357,7 +367,7 @@ try {
 
         $mail->send();
         $emailSent = true;
-        
+
         // Add success debug info
         $debugInfo['smtpSettings'] = [
             'host' => $smtpHost,
@@ -372,18 +382,18 @@ try {
     }
 } catch (Exception $e) {
     $emailSent = false;
-    $emailError = $mail->ErrorInfo . ' | Exception: ' . $e->getMessage();
-    
+    $emailError = (isset($mail) ? $mail->ErrorInfo : '') . ' | Exception: ' . $e->getMessage();
+
     // Enhanced debug info for email failures
     $debugInfo['smtpError'] = [
-        'phpmailerError' => $mail->ErrorInfo,
+        'phpmailerError' => isset($mail) ? $mail->ErrorInfo : 'N/A',
         'exception' => $e->getMessage(),
         'host' => $smtpHost ?? 'not set',
         'username' => $smtpUsername ?? 'not set',
         'usernameLength' => isset($smtpUsername) ? strlen($smtpUsername) : 0,
-        'hasPassword' => !empty($smtpPassword),
+        'hasPassword' => isset($smtpPassword) && $smtpPassword !== '',
         'passwordLength' => isset($smtpPassword) ? strlen($smtpPassword) : 0,
-        'port' => $mail->Port ?? 'not set'
+        'port' => (isset($mail) && isset($mail->Port)) ? $mail->Port : 'not set'
     ];
 }
 
@@ -411,4 +421,3 @@ if (!$emailSent) {
 
 echo json_encode($response);
 exit;
-?>
