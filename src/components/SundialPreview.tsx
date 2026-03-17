@@ -1874,7 +1874,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         inclineType === 'Polar' ? (originalLatitude || lat || 0) :
           inclineType === 'Capricorn' ? getCapricornIncline(originalLatitude || lat || 0) :
             inclineType === 'Vertical' ? 90 : tiltAngle;
-    const inclineString = inclineType !== 'Horizontal' ? `incline: ${effectiveTiltAngle.toFixed(1)}°` : '';
+    const inclineString = (inclineType !== 'Horizontal' && Math.abs(effectiveTiltAngle) >= 0.05) ? `incline: ${effectiveTiltAngle.toFixed(1)}°` : '';
 
     // Create decline string - show when declination is non-default for the hemisphere
     const defaultDecl = isGeoNorthern ? 'North' : 'South';

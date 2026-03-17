@@ -1,5 +1,6 @@
 // src/components/DesignExport.tsx
 import React, { useState, useEffect, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 import { Printer, Download, Save, FolderUp, Undo } from 'lucide-react';
 import { exportSundial, logPrintActivity, type ExportFormat, type PageSize } from '../utils/exportUtils';
 import type { GnomonType, InclineType } from '../types/sundial';
@@ -63,6 +64,7 @@ interface DesignExportProps {
   sundialNotesOffset?: number;
   sundialNotesOffsetHorizontal?: number;
   onRestoreDial?: (config: SavedDialConfig['config']) => void;
+  onSetTodayLineActive?: (active: boolean) => void;
 }
 
 
@@ -74,7 +76,8 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   dialShape, borderStyle, borderMargin, hourlineIntervals, lineStyles, declinationLines,
   startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST,
   declinationNoonmarks, dialTextBlockFontSize, dialTextBlockFontFamily, sundialNotesPositionMode, sundialNotesOffset, sundialNotesOffsetHorizontal,
-  onRestoreDial
+  onRestoreDial,
+  onSetTodayLineActive
 }) => {
   const [format, setFormat] = useState<ExportFormat>('PNG');
   const [dpi, setDpi] = useState<number>(600);
@@ -83,6 +86,11 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
   const [hasSavedConfigsState, setHasSavedConfigsState] = useState(false);
   const [savedConfigs, setSavedConfigs] = useState<SavedDialConfig[]>([]);
+
+  const [pendingAction, setPendingAction] = useState<'print' | 'export' | null>(null);
+  const [includeTodayLine, setIncludeTodayLine] = useState(false);
+
+  const hasTodayLineActive = declinationLines?.some(line => line.id === 'today' && line.active) ?? false;
 
   // Responsive: detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
@@ -370,6 +378,54 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
     }
   };
 
+  const handlePrintClick = () => {
+    if (hasTodayLineActive) {
+      setPendingAction('print');
+      setIncludeTodayLine(false);
+    } else {
+      handlePrint();
+    }
+  };
+
+  const handleExportClick = () => {
+    if (isExporting) return;
+    if (hasTodayLineActive) {
+      setPendingAction('export');
+      setIncludeTodayLine(false);
+    } else {
+      handleExport();
+    }
+  };
+
+  const handleDialogCancel = () => {
+    setPendingAction(null);
+  };
+
+  const handleDialogContinue = async () => {
+    const action = pendingAction;
+    const shouldHideToday = !includeTodayLine && hasTodayLineActive;
+    setPendingAction(null);
+
+    if (shouldHideToday) {
+      onSetTodayLineActive?.(false);
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    }
+
+    try {
+      if (action === 'print') {
+        await handlePrint();
+      } else if (action === 'export') {
+        await handleExport();
+      }
+    } finally {
+      if (shouldHideToday) {
+        onSetTodayLineActive?.(true);
+      }
+    }
+  };
+
+  const todayFormatted = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+
   return (
     <div className="card">
       <div className="card-header">
@@ -446,7 +502,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
               <div className="form-group" style={{ flexShrink: 0 }}>
                 <button
                   className="btn btn-primary"
-                  onClick={handlePrint}
+                  onClick={handlePrintClick}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -516,7 +572,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
             <div className="form-group" style={{ alignSelf: isMobile ? 'stretch' : 'end', marginLeft: isMobile ? 0 : 'auto', flex: '0 0 auto' }}>
               <button
                 className="btn btn-primary"
-                onClick={handleExport}
+                onClick={handleExportClick}
                 disabled={isExporting}
                 style={{
                   display: 'inline-flex',
@@ -555,6 +611,91 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         onDelete={handleDelete}
         savedConfigs={savedConfigs}
       />
+
+      {/* Print/Export Today Line Dialog */}
+      {pendingAction && ReactDOM.createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0,0,0,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+          }}
+          onClick={handleDialogCancel}
+        >
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: 8,
+              padding: 24,
+              minWidth: 340,
+              maxWidth: '90vw',
+              boxShadow: '0 2px 16px rgba(0,0,0,0.2)',
+              position: 'relative',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                cursor: 'pointer',
+                fontSize: '0.95rem',
+                color: '#374151',
+                userSelect: 'none',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={includeTodayLine}
+                onChange={e => setIncludeTodayLine(e.target.checked)}
+                style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#2563eb' }}
+              />
+              Include Today ({todayFormatted}) Date Line?
+            </label>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
+              <button
+                onClick={handleDialogCancel}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#f3f4f6',
+                  border: '1px solid #d1d5db',
+                  color: '#374151',
+                  cursor: 'pointer',
+                  borderRadius: '6px',
+                  fontSize: '0.9rem',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDialogContinue}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#2563eb',
+                  border: '1px solid #2563eb',
+                  color: 'white',
+                  cursor: 'pointer',
+                  borderRadius: '6px',
+                  fontSize: '0.9rem',
+                }}
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 });

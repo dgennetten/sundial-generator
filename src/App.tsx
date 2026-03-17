@@ -527,6 +527,12 @@ const App: React.FC = () => {
     if (config.sundialNotesOffsetHorizontal !== undefined) setSundialNotesOffsetHorizontal(config.sundialNotesOffsetHorizontal);
   }, [handleDateRangeChange]);
 
+  const handleSetTodayLineActive = useCallback((active: boolean) => {
+    setDeclinationLines(prev => prev.map(line =>
+      line.id === 'today' ? { ...line, active } : line
+    ));
+  }, []);
+
   return (
     <div className="app-container">
       {/* Welcome Dialog */}
@@ -587,6 +593,7 @@ const App: React.FC = () => {
           sundialNotesOffset={sundialNotesOffset}
           sundialNotesOffsetHorizontal={sundialNotesOffsetHorizontal}
           onRestoreDial={handleRestoreDial}
+          onSetTodayLineActive={handleSetTodayLineActive}
         />
 
         <LocationInputs
