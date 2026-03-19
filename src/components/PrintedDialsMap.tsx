@@ -219,7 +219,7 @@ const PrintedDialsMap: React.FC<SundialPrintMapProps> = ({
     <div className="card">
       <div className="card-header">
         <h3 className="card-title">
-          <MapPin color="#2563eb" size={20} style={{ marginRight: 6 }} /> History of Printed/Exported Dials
+          <MapPin color="#2563eb" size={20} style={{ marginRight: 6 }} /> Past 30 Days of Prints & Exports
         </h3>
       </div>
       <div className="card-content">

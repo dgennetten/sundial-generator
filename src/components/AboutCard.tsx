@@ -22,7 +22,14 @@ const AboutCard: React.FC = () => {
             fontWeight: '500',
           }}
         >
-
+          <a
+            href="https://tempus-sol.eu/wsd-online-conference/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#7c2d12', textDecoration: 'underline' }}
+          >
+            Don't miss the 2026 World Sundial Day conference!
+          </a>
         </div>
         <div
           dangerouslySetInnerHTML={{
