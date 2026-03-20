@@ -22,6 +22,20 @@ const DeclinationLineOptions: React.FC<{
   const [draftStyle, setDraftStyle] = React.useState('red-dashed-hairline');
   const lastInputRef = React.useRef<HTMLInputElement | null>(null);
   const shouldRestoreFocusRef = React.useRef(false);
+  const promotionTimerRef = React.useRef<number | null>(null);
+  const promotionTokenRef = React.useRef(0);
+  const pendingSyntheticDateRef = React.useRef<string>('');
+  const pendingSyntheticStyleRef = React.useRef<string>(draftStyle);
+
+  React.useEffect(() => {
+    pendingSyntheticStyleRef.current = draftStyle;
+  }, [draftStyle]);
+
+  React.useEffect(() => {
+    return () => {
+      if (promotionTimerRef.current) window.clearTimeout(promotionTimerRef.current);
+    };
+  }, []);
   
   // Restore focus to the last input after a new row is created
   React.useEffect(() => {
@@ -56,6 +70,28 @@ const DeclinationLineOptions: React.FC<{
       const dayOfYear = Math.floor((today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
       return isDayInRange(dayOfYear);
     }
+    // Range support: Month Day-Day (e.g. "July 1-8")
+    const rangeRe = /^([A-Za-z]+)\s+(\d{1,2})\s*-\s*(\d{1,2})$/;
+    const rangeMatch = rangeRe.exec(dateStr.trim());
+    if (rangeMatch) {
+      const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+      const mShort = rangeMatch[1].slice(0, 3).toLowerCase();
+      const mi = months.indexOf(mShort);
+      const startDay = parseInt(rangeMatch[2], 10);
+      const endDay = parseInt(rangeMatch[3], 10);
+      if (mi >= 0 && startDay >= 1 && startDay <= 31 && endDay >= 1 && endDay <= 31 && endDay >= startDay) {
+        // Consider the range valid only if *all* dates are within the selected dateRange
+        for (let d = startDay; d <= endDay; d++) {
+          const date = new Date(2000, mi, d);
+          if (isNaN(date.getTime())) return true; // unknown -> don't block
+          const start = new Date(date.getFullYear(), 0, 0);
+          const day = Math.floor((date.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+          if (!isDayInRange(day)) return false;
+        }
+        return true;
+      }
+      return false;
+    }
     // Robust parse for 'Month Day' with short or long month names
     const m = /^(\w+)\s+(\d{1,2})$/i.exec(dateStr.trim());
     let date: Date;
@@ -80,20 +116,58 @@ const DeclinationLineOptions: React.FC<{
   // Handle editing
   const handleChange = (idx: number, field: keyof DeclinationLine, value: string | boolean) => {
     const updated = [...declinationLines];
+    let didPromote = false;
 
-    // Robust validator for 'Month Day' (short/long month) or 'Today'
-    const isValidDateStr = (s: string): boolean => {
-      if (!s) return false;
-      if (s === 'Today') return true;
-      const m = /^(\w+)\s+(\d{1,2})$/i.exec(String(s).trim());
-      if (m) {
-        const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-        const mi = months.indexOf(m[1].slice(0,3).toLowerCase());
-        const day = parseInt(m[2], 10);
-        return mi >= 0 && day >= 1 && day <= 31;
+    const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+    const normalizeMonthShort = (rawToken: string): string | null => {
+      const token = String(rawToken).trim();
+      // Avoid partial inputs like "J" or "Ju" from being treated as valid dates.
+      if (token.length < 3) return null;
+      const key = token.slice(0, 3).toLowerCase();
+      if (!months.includes(key)) return null;
+      return key.charAt(0).toUpperCase() + key.slice(1);
+    };
+
+    const parseDateInput = (
+      input: string,
+    ):
+      | { type: 'single'; date: string; dayTokenLen: number }
+      | { type: 'range'; startDay: number; endDay: number; monthShort: string }
+      | null => {
+      const s = String(input || '').trim();
+      if (!s) return null;
+
+      if (s.toLowerCase() === 'today') {
+        return { type: 'single', date: 'Today', dayTokenLen: 2 };
       }
-      const d = new Date(String(s) + ' 2000');
-      return !isNaN(d.getTime());
+
+      // Accept "July 1" or "Jul 1" (exact, complete input only).
+      const singleRe = /^([A-Za-z]+)\s+(\d{1,2})$/;
+      const mSingle = singleRe.exec(s);
+      if (mSingle) {
+        const monthShort = normalizeMonthShort(mSingle[1]);
+        if (!monthShort) return null;
+        const day = parseInt(mSingle[2], 10);
+        if (day < 1 || day > 31) return null;
+        const dayTokenLen = mSingle[2].length;
+        return { type: 'single', date: `${monthShort} ${day}`, dayTokenLen };
+      }
+
+      // Accept "July 1-5" (range, inclusive).
+      const rangeRe = /^([A-Za-z]+)\s+(\d{1,2})\s*-\s*(\d{1,2})$/;
+      const mRange = rangeRe.exec(s);
+      if (mRange) {
+        const monthShort = normalizeMonthShort(mRange[1]);
+        if (!monthShort) return null;
+        const startDay = parseInt(mRange[2], 10);
+        const endDay = parseInt(mRange[3], 10);
+        if (startDay < 1 || startDay > 31) return null;
+        if (endDay < 1 || endDay > 31) return null;
+        if (endDay < startDay) return null;
+        return { type: 'range', startDay, endDay, monthShort };
+      }
+
+      return null;
     };
 
     const isSyntheticBlankRow = idx === declinationLines.length && (declinationLines[declinationLines.length - 1]?.id !== '');
@@ -105,21 +179,66 @@ const DeclinationLineOptions: React.FC<{
       // Update draft states to keep input controlled without creating a row yet
       if (field === 'date') setDraftDate(String(value));
       if (field === 'styleId') setDraftStyle(String(value));
-      // Only promote and append a new blank when we have a valid full date
-      if (field === 'date' && isValidDateStr(str)) {
-        const newLine = {
-          ...emptyLine,
-          active: true,
-          styleId: 'red-dashed-hairline',
-          date: String(value),
-          id: `user-${Date.now()}`,
-        } as DeclinationLine;
-        updated.push(newLine);
-        // Reset drafts for a fresh blank row
-        setDraftDate('');
-        setDraftStyle('red-dashed-hairline');
-        // Mark that we should restore focus after state update
-        shouldRestoreFocusRef.current = true;
+      // Only promote and append new lines when we have a complete, parseable date/range.
+      if (field === 'date') {
+        const parsed = parseDateInput(str);
+
+        // Cancel any in-flight promotion when user changes the input.
+        if (promotionTimerRef.current) window.clearTimeout(promotionTimerRef.current);
+        promotionTimerRef.current = null;
+        promotionTokenRef.current += 1;
+
+        if (!parsed) {
+          return;
+        }
+
+        if (parsed.type === 'range') {
+          // If the user has completed a range, promote immediately as a *single* row.
+          // Rendering expands it later (in App.tsx) so the UI doesn't create 8 separate inputs.
+          const baseId = `user-${Date.now()}`;
+          didPromote = true;
+          updated.push({
+            ...emptyLine,
+            active: true,
+            styleId: pendingSyntheticStyleRef.current,
+            date: `${parsed.monthShort} ${parsed.startDay}-${parsed.endDay}`,
+            id: `${baseId}-0`,
+          } as DeclinationLine);
+          setDraftDate('');
+          setDraftStyle('red-dashed-hairline');
+          shouldRestoreFocusRef.current = true;
+        } else {
+          // For single dates: debounce promotion so users can continue typing a range
+          // (e.g. "July 1-10" should not immediately create a new row after "July 1").
+          const delayMs = parsed.type === 'single' && parsed.dayTokenLen === 1 ? 1500 : 600;
+          pendingSyntheticDateRef.current = str;
+          const token = promotionTokenRef.current;
+          promotionTimerRef.current = window.setTimeout(() => {
+            // If user has typed more since scheduling, don't promote.
+            if (promotionTokenRef.current !== token) return;
+
+            const current = String(pendingSyntheticDateRef.current || '').trim();
+            const parsedNow = parseDateInput(current);
+            if (!parsedNow || parsedNow.type !== 'single') return;
+
+            const baseId = `user-${Date.now()}`;
+            const newLine: DeclinationLine = {
+              ...emptyLine,
+              active: true,
+              styleId: pendingSyntheticStyleRef.current,
+              date: parsedNow.date,
+              id: `${baseId}-0`,
+            };
+
+            const next = [...declinationLines, newLine];
+            setDeclinationLines(next);
+            saveDeclinationLines(next.filter(l => l.id));
+
+            setDraftDate('');
+            setDraftStyle('red-dashed-hairline');
+            shouldRestoreFocusRef.current = true;
+          }, delayMs);
+        }
       }
     } else {
       // Safe to update existing row
@@ -128,13 +247,25 @@ const DeclinationLineOptions: React.FC<{
       if (isRealBlankRow) {
         if (field === 'date') {
           const str = String(value || '').trim();
-          if (isValidDateStr(str)) {
-            updated[idx].active = true;
-            updated[idx].styleId = 'red-dashed-hairline';
-            updated[idx].id = `user-${Date.now()}`;
+          const parsed = parseDateInput(str);
+          if (parsed) {
+            // Range expansion on a "real" blank row: replace the blank row with multiple date rows.
+            if (parsed.type === 'range') {
+              // Keep as a single row; rendering will expand to per-day marks.
+              updated[idx].active = true;
+              updated[idx].styleId = draftStyle;
+              updated[idx].date = `${parsed.monthShort} ${parsed.startDay}-${parsed.endDay}`;
+              updated[idx].id = `user-${Date.now()}`;
+            } else {
+              updated[idx].active = true;
+              updated[idx].styleId = draftStyle;
+              updated[idx].date = parsed.date;
+              updated[idx].id = `user-${Date.now()}`;
+            }
           } else {
             updated[idx].active = false;
             updated[idx].id = '';
+            updated[idx].date = '';
           }
         } else if (field === 'active') {
           updated[idx].active = false;
@@ -144,10 +275,7 @@ const DeclinationLineOptions: React.FC<{
 
     // If we only updated draft values for the synthetic row and did not promote, avoid touching state
     if (isSyntheticBlankRow) {
-      const str = field === 'date' ? String(value || '').trim() : '';
-      if (!(field === 'date' && isValidDateStr(str))) {
-        return;
-      }
+      if (!didPromote) return;
     }
 
     setDeclinationLines(updated);
@@ -184,6 +312,7 @@ const DeclinationLineOptions: React.FC<{
                 const showDelete = !isFixed && !isBlank && line.date;
                 const isLastRow = idx === (declinationLines[declinationLines.length - 1]?.id === '' ? declinationLines : [...declinationLines, { ...emptyLine }]).length - 1;
                 const isBlankRow = line.id === '';
+                const rangeHelp = 'Month Day or Month Day-Day (e.g. July 1-5)';
                 return (
                   <tr key={`decl-${idx}`}>
                     <td style={{ padding: '0.3rem 0.3rem' }}>
@@ -195,9 +324,13 @@ const DeclinationLineOptions: React.FC<{
                           value={line.id === '' ? draftDate : (line.date)}
                           onChange={e => handleChange(idx, 'date', e.target.value)}
                           disabled={!!isFixed}
-                          placeholder="Month Day"
+                            placeholder="Month Day or Month Day-Day (e.g. July 1-5)"
                           style={{ width: '130px', fontSize: '0.9rem', paddingRight: '20px' }}
-                          title={!isDateStringInRange(line.date) ? 'date not within selected date range' : undefined}
+                          title={
+                            !isDateStringInRange(line.date)
+                              ? `${rangeHelp}. Date not within selected date range.`
+                              : rangeHelp
+                          }
                         />
                         {!isDateStringInRange(line.date) && (
                           <span

@@ -301,13 +301,64 @@ const App: React.FC = () => {
   );
 
   const normalizedDeclinationLines = useMemo(() =>
-    declinationLines
-      .map(l => ({
-        ...l,
-        id: l.id || `user-${Date.now()}-${Math.random()}`,
-        styleId: l.styleId || 'default-hairline',
-      }))
-      .filter(l => l.active && l.date && l.styleId),
+    (() => {
+      const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+      const normalizeMonthShort = (rawToken: string): string | null => {
+        const token = String(rawToken).trim();
+        if (token.length < 3) return null;
+        const key = token.slice(0, 3).toLowerCase();
+        if (!months.includes(key)) return null;
+        return key.charAt(0).toUpperCase() + key.slice(1); // e.g. "jul" -> "Jul"
+      };
+
+      const parseRange = (s: string): { type: 'range'; monthShort: string; startDay: number; endDay: number } | null => {
+        const str = String(s || '').trim();
+        // Accept "July 1-5" and "Jul 1 - 5"
+        const rangeRe = /^([A-Za-z]+)\s+(\d{1,2})\s*-\s*(\d{1,2})$/;
+        const mRange = rangeRe.exec(str);
+        if (!mRange) return null;
+        const monthShort = normalizeMonthShort(mRange[1]);
+        if (!monthShort) return null;
+        const startDay = parseInt(mRange[2], 10);
+        const endDay = parseInt(mRange[3], 10);
+        if (startDay < 1 || startDay > 31) return null;
+        if (endDay < 1 || endDay > 31) return null;
+        if (endDay < startDay) return null;
+        return { type: 'range', monthShort, startDay, endDay };
+      };
+
+      const expanded: DeclinationLine[] = [];
+
+      declinationLines.forEach((l) => {
+        const id = l.id || `user-${Date.now()}-${Math.random()}`;
+        const styleId = l.styleId || 'default-hairline';
+
+        if (!l.active || !l.date) return;
+
+        const parsed = parseRange(l.date);
+        if (parsed) {
+          // Expand into one line per day (inclusive)
+          const baseId = id || `user-${Date.now()}-${Math.random()}`;
+          for (let d = parsed.startDay; d <= parsed.endDay; d++) {
+            expanded.push({
+              ...l,
+              id: `${baseId}-${d}`,
+              styleId,
+              date: `${parsed.monthShort} ${d}`,
+            });
+          }
+          return;
+        }
+
+        expanded.push({
+          ...l,
+          id,
+          styleId,
+        });
+      });
+
+      return expanded.filter(l => l.active && l.date && l.styleId);
+    })(),
     [declinationLines]
   );
   const previewConfig = useMemo(() => ({

@@ -135,8 +135,16 @@ const PrintedDialsMap: React.FC<SundialPrintMapProps> = ({
       }
     });
 
-    // Determine pin colors (now all shown pins are the latest for their location)
-    printsToShow.forEach((print) => {
+    // Render non-latest pins first, then the overall-latest (red) so it stacks on top.
+    // Also set zIndexOffset so the red pin stays above others when coordinates overlap.
+    const sortedForZOrder = [...printsToShow].sort((a, b) => {
+      const aLatest = a === validPrints[0];
+      const bLatest = b === validPrints[0];
+      if (aLatest !== bLatest) return aLatest ? 1 : -1; // overall latest last → drawn on top
+      return 0;
+    });
+
+    sortedForZOrder.forEach((print) => {
       // Since we're only showing the latest for each location, all pins are "latest" for their location
       // The very first print in the overall list is still the overall latest
       const isOverallLatest = print === validPrints[0];
@@ -168,6 +176,8 @@ const PrintedDialsMap: React.FC<SundialPrintMapProps> = ({
         const marker = L.marker([print.latitude, print.longitude], {
           icon: customIcon,
           title: `Lat: ${print.latitude.toFixed(4)}, Lon: ${print.longitude.toFixed(4)}`,
+          // Keep the red (latest) pin above green pins when they overlap
+          zIndexOffset: isOverallLatest ? 1000 : 0,
         }).addTo(map);
 
         marker.on('click', () => {
