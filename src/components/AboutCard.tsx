@@ -22,13 +22,14 @@ const AboutCard: React.FC = () => {
             fontWeight: '500',
           }}
         >
+          My other works can be found here:{' '}
           <a
-            href="https://tempus-sol.eu/wsd-online-conference/"
+            href="https://douglas.gennetten.com"
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: '#7c2d12', textDecoration: 'underline' }}
           >
-            Don't miss the 2026 World Sundial Day conference!
+            douglas.gennetten.com
           </a>
         </div>
         <div
