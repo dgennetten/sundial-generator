@@ -21,8 +21,6 @@ interface Translations {
     specialDates: { label: string; text: string };
     reset: { label: string; text: string };
   };
-  closing: string;
-  closingBold: string;
   dontShowAgain: string;
   gotIt: string;
   sendFeedback: string;
@@ -39,8 +37,6 @@ const translations: Record<Language, Translations> = {
       specialDates: { label: 'Special Dates:', text: ': Enter Day and Month in Date Lines. Uncheck Today to remove the red line with today\'s date.' },
       reset: { label: 'Reset to Defaults:', text: 'Click Reset button to restore defaults and bring back this popup.' },
     },
-    closing: 'TIP: Verify your final dial scaling by enabling and measuring the popup gnomon. Enjoy exploring, experimenting, and crafting your perfect dial.',
-    closingBold: 'Happy Dialing!',
     dontShowAgain: 'Don\'t show again',
     gotIt: 'Got it',
     sendFeedback: 'send feedback!',
@@ -55,8 +51,6 @@ const translations: Record<Language, Translations> = {
       specialDates: { label: 'Fechas Especiales:', text: ': Ingresa Día y Mes en Líneas de Fecha. Desmarca Hoy para eliminar la línea roja con la fecha de hoy.' },
       reset: { label: 'Restablecer a Predeterminados:', text: 'Haz clic en el botón Restablecer para restaurar los valores predeterminados y volver a mostrar este popup.' },
     },
-    closing: 'CONSEJO: Verifica la escala final de tu reloj habilitando y midiendo el gnomon emergente. Disfruta explorando, experimentando y creando tu reloj perfecto.',
-    closingBold: '¡Feliz Construcción!',
     dontShowAgain: 'No volver a mostrar',
     gotIt: 'Entendido',
     sendFeedback: '¡enviar comentarios!',
@@ -71,8 +65,6 @@ const translations: Record<Language, Translations> = {
       specialDates: { label: 'Dates Spéciales :', text: ': Entrez le Jour et le Mois dans les Lignes de Date. Décochez Aujourd\'hui pour supprimer la ligne rouge avec la date d\'aujourd\'hui.' },
       reset: { label: 'Réinitialiser aux Valeurs par Défaut :', text: 'Cliquez sur le bouton Réinitialiser pour restaurer les paramètres par défaut et réafficher ce popup.' },
     },
-    closing: 'ASTUCE : Vérifiez l\'échelle finale de votre cadran en activant et en mesurant le gnomon pop-up. Profitez de l\'exploration, de l\'expérimentation et de la création de votre cadran parfait.',
-    closingBold: 'Bon Cadranage!',
     dontShowAgain: 'Ne plus afficher',
     gotIt: 'Compris',
     sendFeedback: 'envoyer des commentaires!',
@@ -87,8 +79,6 @@ const translations: Record<Language, Translations> = {
       specialDates: { label: 'Besondere Daten:', text: ': Geben Sie Tag und Monat in Datumslinien ein. Deaktivieren Sie Heute, um die rote Linie mit dem heutigen Datum zu entfernen.' },
       reset: { label: 'Auf Standardwerte Zurücksetzen:', text: 'Klicken Sie auf die Schaltfläche Zurücksetzen, um die Standardeinstellungen wiederherzustellen und dieses Popup erneut anzuzeigen.' },
     },
-    closing: 'TIPP: Überprüfen Sie die endgültige Skalierung Ihrer Sonnenuhr, indem Sie den Pop-up-Gnomon aktivieren und messen. Genießen Sie das Erkunden, Experimentieren und Gestalten Ihrer perfekten Sonnenuhr.',
-    closingBold: 'Viel Erfolg!',
     dontShowAgain: 'Nicht mehr anzeigen',
     gotIt: 'Verstanden',
     sendFeedback: 'Feedback senden!',
@@ -103,8 +93,6 @@ const translations: Record<Language, Translations> = {
       specialDates: { label: 'Date Speciali:', text: ': Inserisci Giorno e Mese nelle Linee di Data. Deseleziona Oggi per rimuovere la linea rossa con la data di oggi.' },
       reset: { label: 'Ripristina le Impostazioni Predefinite:', text: 'Clicca il pulsante Ripristina per ripristinare le impostazioni predefinite e riportare questo popup.' },
     },
-    closing: 'SUGGERIMENTO: Verifica la scala finale del tuo quadrante abilitando e misurando il gnomone pop-up. Divertiti esplorando, sperimentando e creando la tua meridiana perfetta.',
-    closingBold: 'Buona Costruzione!',
     dontShowAgain: 'Non mostrare più',
     gotIt: 'Capito',
     sendFeedback: 'invia feedback!',
@@ -119,8 +107,6 @@ const translations: Record<Language, Translations> = {
       specialDates: { label: 'Datas Especiais:', text: ': Insira Dia e Mês nas Linhas de Data. Desmarque Hoje para remover a linha vermelha com a data de hoje.' },
       reset: { label: 'Redefinir para Padrões:', text: 'Clique no botão Redefinir para restaurar os padrões e trazer de volta este popup.' },
     },
-    closing: 'DICA: Verifique a escala final do seu relógio habilitando e medindo o gnômon pop-up. Aproveite explorando, experimentando e criando seu relógio perfeito.',
-    closingBold: 'Boa Construção!',
     dontShowAgain: 'Não mostrar novamente',
     gotIt: 'Entendi',
     sendFeedback: 'enviar feedback!',
@@ -135,8 +121,6 @@ const translations: Record<Language, Translations> = {
       specialDates: { label: '特殊日期：', text: '在日期线中输入日期和月份。取消选中"今天"以移除带有今天日期的红线。' },
       reset: { label: '重置为默认值：', text: '点击重置按钮以恢复默认设置并重新显示此弹出窗口。' },
     },
-    closing: '提示：通过启用并测量弹出式晷针来验证最终日晷的比例。享受探索、实验和制作完美日晷的乐趣。',
-    closingBold: '祝制作愉快！',
     dontShowAgain: '不再显示',
     gotIt: '知道了',
     sendFeedback: '发送反馈！',
@@ -151,8 +135,6 @@ const translations: Record<Language, Translations> = {
       specialDates: { label: '特別な日付：', text: '日付線に日と月を入力します。今日の日付の赤い線を削除するには、「今日」のチェックを外します。' },
       reset: { label: 'デフォルトにリセット：', text: 'リセットボタンをクリックしてデフォルト設定に戻し、このポップアップを再表示してください。' },
     },
-    closing: 'ヒント：ポップアップグノモンを有効にして測定することで、最終的な日時計のスケールを確認してください。探索、実験、完璧な日時計を作り上げることをお楽しみください。',
-    closingBold: '良い日時計作りを！',
     dontShowAgain: '再表示しない',
     gotIt: '了解しました',
     sendFeedback: 'フィードバックを送信！',
@@ -167,8 +149,6 @@ const translations: Record<Language, Translations> = {
       specialDates: { label: '특별한 날짜:', text: '날짜선에 일과 월을 입력합니다. 오늘 날짜의 빨간 선을 제거하려면 "오늘"의 체크를 해제하세요.' },
       reset: { label: '기본값으로 재설정:', text: '재설정 버튼을 클릭하여 기본값을 복원하고 이 팝업을 다시 표시하세요.' },
     },
-    closing: '팁: 팝업 그노몬을 활성화하고 측정하여 최종 해시계의 비율을 확인하세요. 탐색하고 실험하며 완벽한 해시계를 만드는 것을 즐기세요.',
-    closingBold: '좋은 해시계 만들기 되세요!',
     dontShowAgain: '다시 표시하지 않음',
     gotIt: '알겠습니다',
     sendFeedback: '피드백 보내기!',
@@ -183,8 +163,6 @@ const translations: Record<Language, Translations> = {
       specialDates: { label: 'Особые Даты:', text: ': Введите День и Месяц в Линиях Даты. Снимите флажок Сегодня, чтобы удалить красную линию с сегодняшней датой.' },
       reset: { label: 'Сбросить к Значениям по Умолчанию:', text: 'Нажмите кнопку Сбросить, чтобы восстановить настройки по умолчанию и вернуть это всплывающее окно.' },
     },
-    closing: 'СОВЕТ: Проверьте масштаб готовых солнечных часов, включив и измерив всплывающий гномон. Наслаждайтесь исследованием, экспериментированием и созданием ваших идеальных часов.',
-    closingBold: 'Удачного Создания!',
     dontShowAgain: 'Больше не показывать',
     gotIt: 'Понятно',
     sendFeedback: 'отправить отзыв!',
@@ -199,8 +177,6 @@ const translations: Record<Language, Translations> = {
       specialDates: { label: 'تواريخ خاصة:', text: ': أدخل اليوم والشهر في خطوط التاريخ. قم بإلغاء تحديد "اليوم" لإزالة الخط الأحمر مع تاريخ اليوم.' },
       reset: { label: 'إعادة التعيين إلى الافتراضيات:', text: 'انقر على زر إعادة التعيين لاستعادة الإعدادات الافتراضية وإعادة عرض هذه النافذة المنبثقة.' },
     },
-    closing: 'نصيحة: تحقق من مقياس ساعتك الشمسية النهائية عن طريق تفعيل وقياس العقرب المنبثق. استمتع بالاستكشاف والتجربة وصنع ساعتك المثالية.',
-    closingBold: 'ساعة سعيدة!',
     dontShowAgain: 'لا تظهر مرة أخرى',
     gotIt: 'فهمت',
     sendFeedback: 'إرسال الملاحظات!',
@@ -443,11 +419,6 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose }) => {
               })()}
             </li>
           </ul>
-          
-          <p style={{ margin: '16px 0 0 0' }}>
-            {translations[language].closing}<br />
-            <strong>{translations[language].closingBold}</strong>
-          </p>
         </div>
 
         <div style={{ 
