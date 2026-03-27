@@ -6,6 +6,7 @@ const MapPicker = lazy(() => import('./MapPicker'));
 
 // Location data
 const locations: { [key: string]: { lat: number; lng: number } } = {
+  'Biggleswade, England, United Kingdom': { lat: 52.0873, lng: -0.2641 },
   'Chicago, IL USA': { lat: 41.8781, lng: -87.6298 },
   'Dallas, TX USA': { lat: 32.7767, lng: -96.7970 },
   'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
@@ -76,6 +77,7 @@ const getTimezoneFromCoordinates = (lat: number, lng: number) => {
     { lat: 50.4777, lng: 12.3649, timeZoneId: 'Europe/Berlin', name: 'Central European Time', offset: 1, dstOffset: 1 }, // Falkenstein
     { lat: 49.6116, lng: 6.1319, timeZoneId: 'Europe/Luxembourg', name: 'Central European Time', offset: 1, dstOffset: 1 }, // Luxembourg
     { lat: 51.5074, lng: -0.1278, timeZoneId: 'Europe/London', name: 'Greenwich Mean Time', offset: 0, dstOffset: 1 }, // London
+    { lat: 52.0873, lng: -0.2641, timeZoneId: 'Europe/London', name: 'Greenwich Mean Time', offset: 0, dstOffset: 1 }, // Biggleswade
     { lat: 48.8566, lng: 2.3522, timeZoneId: 'Europe/Paris', name: 'Central European Time', offset: 1, dstOffset: 1 }, // Paris
 
     // Asia/Russia
