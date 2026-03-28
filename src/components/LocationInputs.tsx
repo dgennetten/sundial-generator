@@ -8,6 +8,7 @@ const MapPicker = lazy(() => import('./MapPicker'));
 const locations: { [key: string]: { lat: number; lng: number } } = {
   'Biggleswade, England': { lat: 52.0873, lng: -0.2641 },
   'Chicago, IL USA': { lat: 41.8781, lng: -87.6298 },
+  'Cocoa Beach, FL USA': { lat: 28.3200, lng: -80.6076 },
   'Dallas, TX USA': { lat: 32.7767, lng: -96.7970 },
   'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
   'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321 },
@@ -62,6 +63,7 @@ const getTimezoneFromCoordinates = (lat: number, lng: number) => {
   const timezoneData = [
     // North America
     { lat: 40.5853, lng: -105.0844, timeZoneId: 'America/Denver', name: 'Mountain Time', offset: -7, dstOffset: 1 }, // Fort Collins
+    { lat: 28.3200, lng: -80.6076, timeZoneId: 'America/New_York', name: 'Eastern Time', offset: -5, dstOffset: 1 }, // Cocoa Beach
     { lat: 34.9496, lng: -81.9321, timeZoneId: 'America/New_York', name: 'Eastern Time', offset: -5, dstOffset: 1 }, // Spartanburg
     { lat: 32.2226, lng: -110.9747, timeZoneId: 'America/Phoenix', name: 'Mountain Standard Time', offset: -7, dstOffset: 0 }, // Tucson (no DST)
     { lat: 40.7128, lng: -74.0060, timeZoneId: 'America/New_York', name: 'Eastern Time', offset: -5, dstOffset: 1 }, // New York

@@ -374,49 +374,7 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose }) => {
             </li>
             <li style={{ marginBottom: '12px' }}>
               <strong>{translations[language].steps.reset.label}</strong>{' '}
-              {(() => {
-                const resetText = translations[language].steps.reset.text;
-                // Find the word "reset" (case-insensitive) and make it a link
-                const resetRegex = /\breset\b/i;
-                const parts = resetText.split(resetRegex);
-                
-                return parts.map((part, idx, arr) => {
-                  if (idx === arr.length - 1) {
-                    return <React.Fragment key={idx}>{part}</React.Fragment>;
-                  }
-                  return (
-                    <React.Fragment key={idx}>
-                      {part}
-                      <a
-                        href="#reset-button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleClose();
-                          setTimeout(() => {
-                            const resetButton = document.getElementById('reset-button');
-                            if (resetButton) {
-                              resetButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                              // Highlight the button briefly
-                              resetButton.style.transition = 'background-color 0.3s';
-                              resetButton.style.backgroundColor = '#eff6ff';
-                              setTimeout(() => {
-                                resetButton.style.backgroundColor = '';
-                              }, 2000);
-                            }
-                          }, 100);
-                        }}
-                        style={{
-                          color: '#2563eb',
-                          textDecoration: 'underline',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        reset
-                      </a>
-                    </React.Fragment>
-                  );
-                });
-              })()}
+              {translations[language].steps.reset.text}
             </li>
           </ul>
         </div>
