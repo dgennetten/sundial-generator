@@ -236,19 +236,23 @@ export function getSolarDeclination(dayOfYear: number, year: number = new Date()
 // Solar Position and Shadow Projection
 // ============================================================================
 
+/**
+ * @deprecated Use dialInclination / dialDeclination parameters instead.
+ * Retained for backward compatibility with tests and legacy callers.
+ */
 export type Orientation = 'Horizontal' | 'Vertical' | 'Polar';
 
 export interface SolarPositionResult {
   /** Solar altitude in radians */
   altitude: number;
-  /** Solar azimuth in radians */
+  /** Solar azimuth in radians, measured from North clockwise */
   azimuth: number;
 }
 
 export interface ShadowProjectionResult {
-  /** X coordinate in millimeters */
+  /** X coordinate in millimeters (positive = West on dial face) */
   x: number;
-  /** Y coordinate in millimeters */
+  /** Y coordinate in millimeters (positive = poleward / up on dial face) */
   y: number;
 }
 
@@ -290,55 +294,118 @@ export function getSolarPosition(
 }
 
 /**
- * Project shadow position onto a sundial surface
- * @param wallDeclination Rotation of dial from its default orientation, in degrees.
- *   0 = no rotation (gnomon faces North in NH, South in SH).
- *   Positive = clockwise rotation viewed from above.
+ * Project a shadow onto the dial surface using proper 3D ENU geometry.
+ *
+ * The dial surface is defined by its outward normal derived from dialInclination
+ * and dialDeclination. The style tip sits perpendicular to the dial surface at
+ * height styleHeight. The shadow is the intersection of the anti-solar ray from
+ * the style tip with the dial plane.
+ *
+ * Coordinate axes on the returned dial face (positive directions):
+ *   x — West  (morning hours are positive x, afternoon negative x)
+ *   y — poleward / up  (noon shadow is positive y for horizontal dials)
+ *
+ * Sign convention (Shadows Pro standard):
+ *   dialDeclination = 0   → poleward-facing (South in NH, North in SH)
+ *   dialDeclination > 0   → declined toward West
+ *   dialDeclination < 0   → declined toward East
+ *
+ * @returns {x, y} in dial surface coordinates (mm), or null when the sun is
+ *   behind or parallel to the dial face.
+ */
+export function computeShadowPoint(
+  solarAltitude: number,    // radians
+  solarAzimuth: number,     // radians, from North clockwise
+  styleHeight: number,      // perpendicular height of style tip above dial surface (mm)
+  latitude: number,         // geographic latitude, degrees (+N / −S)
+  dialInclination: number,  // dial tilt from horizontal, degrees (0 = flat, 90 = vertical)
+  dialDeclination: number   // dial rotation from poleward, degrees (+West / −East)
+): { x: number; y: number } | null {
+  const t = degreesToRadians(dialInclination);
+  const D = degreesToRadians(dialDeclination);
+  const hemisphereSign = latitude >= 0 ? 1 : -1;
+
+  // Dial surface outward normal in East-North-Up (ENU) frame
+  const nX = -Math.sin(t) * Math.sin(D);
+  const nY = -hemisphereSign * Math.sin(t) * Math.cos(D);
+  const nZ = Math.cos(t);
+
+  // Sun unit vector toward the sun in ENU frame
+  const sX = Math.cos(solarAltitude) * Math.sin(solarAzimuth); // East
+  const sY = Math.cos(solarAltitude) * Math.cos(solarAzimuth); // North
+  const sZ = Math.sin(solarAltitude);                           // Up
+
+  // n · sunHat must be positive for sun to illuminate the dial face
+  const dotNS = nX * sX + nY * sY + nZ * sZ;
+  if (dotNS <= 0) return null;
+
+  // Style tip: gnomonTip = styleHeight * dialNormal
+  // Shadow point: styleHeight * (dialNormal − sunHat / dotNS)
+  const factor = styleHeight / dotNS;
+  const shadowEast  = styleHeight * nX - factor * sX;
+  const shadowNorth = styleHeight * nY - factor * sY;
+  const shadowUp    = styleHeight * nZ - factor * sZ;
+
+  // --- Dial 2D basis vectors ---
+  // xDialAxis: West direction (−1, 0, 0) projected onto the dial plane.
+  // Positive x = West on the dial face as seen by the viewer.
+  const dotWN = -nX; // dot(dialNormal, West) = dot((nX,nY,nZ),(−1,0,0)) = −nX
+  let xX = -1.0 - dotWN * nX;
+  let xY =      - dotWN * nY;
+  let xZ =      - dotWN * nZ;
+  let xLen = Math.sqrt(xX * xX + xY * xY + xZ * xZ);
+
+  if (xLen < 1e-6) {
+    // Fallback for East/West-facing dials (n ≈ ±East): use n × Up = (nY, −nX, 0)
+    xX = nY; xY = -nX; xZ = 0;
+    xLen = Math.sqrt(xX * xX + xY * xY);
+    if (xLen < 1e-6) { xX = 1; xY = 0; xZ = 0; xLen = 1; }
+  }
+  xX /= xLen; xY /= xLen; xZ /= xLen;
+
+  // yDialAxis = xDialAxis × dialNormal  (positive y = poleward / up on dial face)
+  const yX = xY * nZ - xZ * nY;
+  const yY = xZ * nX - xX * nZ;
+  const yZ = xX * nY - xY * nX;
+
+  return {
+    x: shadowEast * xX + shadowNorth * xY + shadowUp * xZ,
+    y: shadowEast * yX + shadowNorth * yY + shadowUp * yZ,
+  };
+}
+
+/**
+ * @deprecated Use computeShadowPoint() instead.
+ * Retained for backward compatibility with existing tests and legacy callers.
+ * All existing callers used orientation='Horizontal', which maps to
+ * dialInclination=0, dialDeclination=wallDeclination.
  */
 export function projectShadowToSurface(
   altitude: number,
   azimuth: number,
-  gnomonHeight: number,
+  styleHeight: number,
   orientation: Orientation,
   latitude: number,
   wallDeclination: number = 0
 ): ShadowProjectionResult {
-  const tanAlt = Math.tan(altitude);
-  if (!isFinite(tanAlt) || tanAlt === 0) return { x: 0, y: 0 };
-
-  const effectiveAzimuth = azimuth - degreesToRadians(wallDeclination);
-  const shadowLength = gnomonHeight / tanAlt;
-
-  const sx = shadowLength * Math.sin(effectiveAzimuth);
-  const sy = shadowLength * Math.cos(effectiveAzimuth);
-  const sz = gnomonHeight;
-
-  if (orientation === 'Horizontal') {
-    return { x: sx, y: -sy };
-  }
-
-  if (orientation === 'Vertical') {
-    return { x: sx, y: sz };
-  }
-
-  if (orientation === 'Polar') {
-    const tilt = degreesToRadians(latitude);
-    const x = sx;
-    const y = sz * Math.cos(tilt) - sy * Math.sin(tilt);
-    return { x, y };
-  }
-
-  return { x: sx, y: sy };
+  if (altitude <= 0) return { x: 0, y: 0 };
+  // Map legacy orientation to inclination degrees
+  const inclinationDeg =
+    orientation === 'Vertical' ? 90 :
+    orientation === 'Polar'    ? Math.abs(latitude) :
+    0; // Horizontal
+  const result = computeShadowPoint(altitude, azimuth, styleHeight, latitude, inclinationDeg, wallDeclination);
+  return result ?? { x: 0, y: 0 };
 }
 
-interface AnalemmaParams {
+export interface AnalemmaParams {
   lat: number;
   lng: number;
   tzMeridian: number;
   hour: number;
-  gnomonHeight: number;
-  orientation: Orientation;
-  wallDeclination?: number;
+  styleHeight: number;       // perpendicular height of style tip above dial surface (mm)
+  dialInclination: number;   // dial tilt from horizontal, degrees (0 = flat, 90 = vertical)
+  dialDeclination?: number;  // dial rotation from poleward, degrees (+West / −East); default 0
 }
 
 export interface AnalemmaPoint {
@@ -348,22 +415,25 @@ export interface AnalemmaPoint {
 }
 
 /**
- * Calculate analemma points projected onto a sundial surface
+ * Calculate analemma points projected onto a sundial surface for a given hour.
+ * Returns one point per visible day (sun above horizon and illuminating the dial face).
+ * The last point duplicates the first to close the analemma loop for rendering.
  */
 export function getAnalemmaPointsProjected(params: AnalemmaParams): AnalemmaPoint[] {
-  const { lat, lng, tzMeridian, hour, gnomonHeight, orientation, wallDeclination = 0 } = params;
+  const { lat, lng, tzMeridian, hour, styleHeight, dialInclination, dialDeclination = 0 } = params;
   const points: AnalemmaPoint[] = [];
 
   for (let day = 1; day <= 365; day++) {
     const { altitude, azimuth } = getSolarPosition(day, lat, lng, tzMeridian, hour);
-    // Only skip individual points where the sun is below the horizon
     if (altitude <= 0) continue;
 
-    const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, orientation, lat, wallDeclination);
+    const coords = computeShadowPoint(altitude, azimuth, styleHeight, lat, dialInclination, dialDeclination);
+    if (coords === null) continue; // sun behind the dial face
+
     points.push({ day, x: coords.x, y: coords.y });
   }
 
-  // Close the loop if possible
+  // Close the loop for rendering
   if (points.length > 1) {
     points.push({ ...points[0] });
   }
@@ -376,41 +446,44 @@ export function getAnalemmaPointsProjected(params: AnalemmaParams): AnalemmaPoin
 // ============================================================================
 
 /**
- * Calculate gnomon height based on winter-to-summer solstice shadow distance
+ * Calculate auto style height so the winter-to-summer solstice shadow span
+ * fills roughly 40% of the page height (for a horizontal reference dial).
  */
 export function calculateAutoGnomonHeight(
   lat: number,
   lng: number,
   tzMeridian: number,
-  pageHeight: number
+  pageHeight: number,
+  dialInclination: number = 0,
+  dialDeclination: number = 0
 ): number {
   const winterSolsticeDay = 355;
   const summerSolsticeDay = 172;
   const noonHour = 12;
 
-  // Calculate shadow positions for winter and summer solstices at noon
   const winterPos = getSolarPosition(winterSolsticeDay, lat, lng, tzMeridian, noonHour);
   const summerPos = getSolarPosition(summerSolsticeDay, lat, lng, tzMeridian, noonHour);
 
   if (winterPos.altitude <= 0 || summerPos.altitude <= 0) {
-    // Fallback to original calculation if sun is below horizon
     return Math.round(Math.tan((lat * Math.PI) / 180) * 100 * 3.7 / 8);
   }
 
-  // Project shadows to surface (using a temporary gnomon height of 1)
-  const tempGnomonHeight = 1;
-  const winterShadow = projectShadowToSurface(winterPos.altitude, winterPos.azimuth, tempGnomonHeight, 'Horizontal', lat);
-  const summerShadow = projectShadowToSurface(summerPos.altitude, summerPos.azimuth, tempGnomonHeight, 'Horizontal', lat);
+  const tempStyleHeight = 1;
+  const winterShadow = computeShadowPoint(winterPos.altitude, winterPos.azimuth, tempStyleHeight, lat, dialInclination, dialDeclination);
+  const summerShadow = computeShadowPoint(summerPos.altitude, summerPos.azimuth, tempStyleHeight, lat, dialInclination, dialDeclination);
 
-  // Calculate the distance between winter and summer shadows
-  const shadowDistance = Math.abs(winterShadow.y - summerShadow.y);
+  if (!winterShadow || !summerShadow) {
+    return Math.round(Math.tan((lat * Math.PI) / 180) * 100 * 3.7 / 8);
+  }
 
-  // Calculate required gnomon height to make this distance 40% of page height
+  // Use the larger of y-span and x-span to size the dial
+  const ySpan = Math.abs(winterShadow.y - summerShadow.y);
+  const xSpan = Math.abs(winterShadow.x - summerShadow.x);
+  const shadowDistance = Math.max(ySpan, xSpan, 1e-6);
   const targetDistance = pageHeight * 0.4;
-  const requiredGnomonHeight = targetDistance / shadowDistance;
+  const requiredStyleHeight = targetDistance / shadowDistance;
 
-  // Reduce to 66% of previous value, then increase by factor of 55/40
-  return Math.round(requiredGnomonHeight * 0.66 * (55 / 40));
+  return Math.round(requiredStyleHeight * 0.66 * (55 / 40));
 }
 
 // ============================================================================
@@ -441,43 +514,3 @@ export function getWallDeclinationForPreset(
   return degrees;
 }
 
-/**
- * Compute the general effective latitude and sub-style rotation for a
- * declining + inclining sundial using the classical gnomonics formulas.
- *
- * For a surface tilted by t from horizontal and declined by D from the meridian:
- *   sin(φ') = sin(φ)cos(t) - cos(φ)sin(t)cos(D)
- *   tan(ψ)  = cos(φ)sin(D) / [sin(φ)sin(t) + cos(φ)cos(t)cos(D)]
- *
- * When D=0: φ' = φ - t and ψ = 0 (matches the existing tilt-only behavior).
- * When t=0: φ' = φ and ψ = D (pure rotation for horizontal dials).
- *
- * @param latitude Geographic latitude in degrees
- * @param tiltAngle Tilt from horizontal in degrees (the render tilt angle)
- * @param wallDeclination Wall declination in degrees (positive = CW from above)
- * @returns effectiveLatitude and styleRotation, both in degrees
- */
-export function computeGeneralDialParameters(
-  latitude: number,
-  tiltAngle: number,
-  wallDeclination: number
-): { effectiveLatitude: number; styleRotation: number } {
-  const phi = degreesToRadians(latitude);
-  const t = degreesToRadians(tiltAngle);
-  const D = degreesToRadians(wallDeclination);
-
-  const sinPhiPrime =
-    Math.sin(phi) * Math.cos(t) -
-    Math.cos(phi) * Math.sin(t) * Math.cos(D);
-  const effectiveLatitude = radiansToDegrees(
-    Math.asin(Math.max(-1, Math.min(1, sinPhiPrime)))
-  );
-
-  const numerator = Math.cos(phi) * Math.sin(D);
-  const denominator =
-    Math.sin(phi) * Math.sin(t) +
-    Math.cos(phi) * Math.cos(t) * Math.cos(D);
-  const styleRotation = radiansToDegrees(Math.atan2(numerator, denominator));
-
-  return { effectiveLatitude, styleRotation };
-}

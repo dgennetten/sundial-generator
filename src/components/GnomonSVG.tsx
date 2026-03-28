@@ -5,10 +5,9 @@ interface GnomonSVGProps {
   gnomonHeight: number;
   lat?: number;
   inclineType?: string;
+  dialInclination?: number;
   fontSize?: number;
   originalLatitude?: number;
-  /** Wall declination in degrees (horizontal dials only); gnomon rotates about (0,0) by this angle */
-  wallDeclination?: number;
 }
 
 const GnomonSVG: React.FC<GnomonSVGProps> = ({
@@ -16,30 +15,29 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
   gnomonHeight,
   lat = 0,
   inclineType = 'Horizontal',
+  dialInclination = 0,
   fontSize = 20,
   originalLatitude,
-  wallDeclination = 0,
 }) => {
   // Convert fontSize from pt to mm for SVG (1 pt = 25.4/72 mm = 0.3528 mm)
   const fontSizeMm = fontSize * 0.3528;
 
-  // Simple logic: determine if gnomon is above or below equinox line
+  // Determine popup gnomon orientation so the triangle always points toward the dial grid.
+  // Geographic latitude determines which side of the equinox line the gnomon sits on.
+  // When dialInclination exceeds the polar angle (= |lat|), the dial has tilted past
+  // polar and the gnomon triangle needs to flip 180° to stay clear of the dial grid.
   const getPopupOrientation = (): 'up' | 'down' => {
-    // The 'lat' prop passed to GnomonSVG is already the effectiveLatitude from App.tsx
-    // This represents the latitude of the dial's plane.
-    const dialPlaneLatitude = lat; // Use the effectiveLatitude directly
+    const geoLat = originalLatitude ?? lat;
+    const isNorthern = geoLat >= 0;
+    const polarAngle = Math.abs(geoLat);
+    const pastPolar = dialInclination > polarAngle;
 
-    // Special case for Polar: The effective latitude is 0, so it's at the equinox.
-    // The user's rule implies "at equinox" should point DOWN.
-    if (inclineType === 'Polar') {
-      return 'down';
-    }
-
-    // For all other cases, use the dialPlaneLatitude (effectiveLatitude)
-    // to determine if the gnomon is above or below the equinox.
-    // Gnomon above equinox (dialPlaneLatitude >= 0) -> point DOWN
-    // Gnomon below equinox (dialPlaneLatitude < 0) -> point UP
-    return dialPlaneLatitude >= 0 ? 'down' : 'up';
+    // Base orientation: northern hemisphere → 'down', southern → 'up'
+    // Flip when past polar because the dial face has rotated through vertical
+    // and the gnomon triangle would land on the dial grid without the flip.
+    const base: 'up' | 'down' = isNorthern ? 'down' : 'up';
+    if (pastPolar) return base === 'down' ? 'up' : 'down';
+    return base;
   };
 
   const popupOrientation = getPopupOrientation();
@@ -115,11 +113,8 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
   if (gnomonType === 'popup') {
     // For popup orientation, we need to flip the triangle if pointing up
     const flipTransform = popupOrientation === 'up' ? 'scale(1, -1)' : '';
-    // On horizontal declined dials, rotate gnomon about (0,0) by wall declination
-    const declinationRotate = inclineType === 'Horizontal' && wallDeclination ? `rotate(${-wallDeclination})` : '';
-
     return (
-      <g transform={[declinationRotate, flipTransform].filter(Boolean).join(' ')}>
+      <g transform={flipTransform || undefined}>
         {/* Popup: right triangle pointing down with dashed left side */}
         {/* Right side (solid) */}
         <line
@@ -175,10 +170,8 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
     // For popup orientation, we need to flip the triangle if pointing up
     const flipTransform = popupOrientation === 'up' ? 'scale(1, -1)' : '';
     // On horizontal declined dials, rotate gnomon about (0,0) by wall declination
-    const declinationRotate = inclineType === 'Horizontal' && wallDeclination ? `rotate(${-wallDeclination})` : '';
-
     return (
-      <g transform={[declinationRotate, flipTransform].filter(Boolean).join(' ')}>
+      <g transform={flipTransform || undefined}>
         {/* Main triangle - same as popup */}
         {/* Right side (solid) */}
         <line

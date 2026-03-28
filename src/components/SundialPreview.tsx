@@ -1,6 +1,6 @@
 import React from 'react';
 import type { JSX } from 'react';
-import { getAnalemmaPointsProjected, degreesToRadians, getSolarDeclination, projectShadowToSurface, getCancerIncline, getCapricornIncline } from '../utils/sundialMath';
+import { getAnalemmaPointsProjected, degreesToRadians, getSolarDeclination, computeShadowPoint, getCancerIncline, getCapricornIncline } from '../utils/sundialMath';
 import type { DeclinationLine } from './DeclinationLineOptions';
 import type { LineStyle } from './LineSettings';
 import type { HourlineInterval } from './hourlineUtils';
@@ -63,7 +63,8 @@ type Props = {
   declinationDegrees?: number;
   declinationNoonmarks?: boolean;
   originalLatitude?: number;
-  wallDeclination?: number;
+  dialInclination?: number;   // dial tilt from horizontal, degrees (0 = flat, 90 = vertical)
+  dialDeclination?: number;   // dial rotation from poleward, degrees (+West / −East)
   dialOrientation?: 'North' | 'South';
 };
 // Note: App now prefers passing a single `config` prop. To keep JSX happy where only `config` is provided,
@@ -118,7 +119,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     declinationDegrees = 0,
     declinationNoonmarks = true,
     originalLatitude,
-    wallDeclination = 0,
+    dialInclination = 0,
+    dialDeclination = 0,
     dialOrientation,
   } = p;
 
@@ -174,9 +176,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     lng,
     tzMeridian,
     hour: noonHour,
-    gnomonHeight,
-    orientation: 'Horizontal',
-    wallDeclination,
+    styleHeight: gnomonHeight,
+    dialInclination,
+    dialDeclination,
   });
   // Filter noonPoints by date range
   // WinterToSpring (UI: Winter - Spring), SummerToFall (UI: Summer - Fall)
@@ -495,7 +497,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
         if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-        const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, 'Horizontal', lat, wallDeclination);
+        const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination);
+        if (!coords) continue;
         const x = scale * coords.x;
         const y = scale * coords.y;
 
@@ -549,7 +552,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
         if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-        const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, 'Horizontal', lat, wallDeclination);
+        const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination);
+        if (!coords) continue;
         const x = scale * coords.x;
         const y = scale * coords.y;
 
@@ -616,7 +620,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       cosAz = Math.max(-1, Math.min(1, cosAz));
       let azimuth = Math.acos(cosAz);
       if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-      const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, 'Horizontal', lat, wallDeclination);
+      const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination);
+      if (!coords) { previousPoint = null; continue; }
 
       const currentPoint = { x: scale * coords.x, y: scale * coords.y };
 
@@ -679,25 +684,18 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     return { nx: -dy / len, ny: dx / len };
   }
 
-  // Build an SVG path from a series of points, breaking on extreme jumps.
+  // Build an SVG path from a series of points, breaking only on genuine
+  // discontinuities (sun crossing below horizon between adjacent days).
+  // Boundary clipping is handled by the SVG clipPath on the parent group.
   function clipPathData(points: { x: number; y: number }[]): string | null {
     if (points.length < 2) return null;
 
-    // For extreme tilt angles (near vertical), be more aggressive about filtering
-    const isExtremeIncline = inclineType === 'Vertical' || Math.abs(tiltAngle - 90) < 5;
-    const maxDistanceFromCenter = isExtremeIncline ? Math.min(width, height) * 2 : Math.max(width, height) * 5;
+    // Uniform threshold: break a segment when consecutive points jump more
+    // than 3× the dial diagonal — this catches horizon-crossing gaps without
+    // triggering on geometrically valid declined/inclined arcs near the border.
+    const dialDiagonal = Math.sqrt(width * width + height * height);
+    const maxSegLen = dialDiagonal * 3;
 
-    // Pre-filter points that are extremely far from the dial center
-    const centeredPoints = points.filter(p => {
-      const distanceFromCenter = Math.sqrt(p.x * p.x + p.y * p.y);
-      return distanceFromCenter <= maxDistanceFromCenter;
-    });
-
-    if (centeredPoints.length < 2) return null;
-
-    // Build path segments, breaking on extremely long jumps that indicate
-    // discontinuities (e.g., near-vertical dials). Actual boundary clipping
-    // is handled by the SVG clipPath on the parent group.
     const segments: string[] = [];
     let current: { x: number; y: number }[] = [];
 
@@ -710,24 +708,20 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       current = [];
     };
 
-    for (let i = 0; i < centeredPoints.length; i++) {
-      const p = centeredPoints[i];
+    for (let i = 0; i < points.length; i++) {
+      const p = points[i];
 
       if (current.length > 0) {
         const prev = current[current.length - 1];
-        const dx = Math.abs(p.x - prev.x);
-        const dy = Math.abs(p.y - prev.y);
+        const dx = p.x - prev.x;
+        const dy = p.y - prev.y;
         const segLen = Math.sqrt(dx * dx + dy * dy);
 
-        // Break on extremely long segments (artifacts from near-vertical dials)
-        const maxSeg = isExtremeIncline
-          ? Math.min(width, height) * 3
-          : Math.max(width, height) * 10;
-        if (segLen > maxSeg) {
-          // Don't break on year-wrap: p is the path start (closing 365→1)
+        if (segLen > maxSegLen) {
+          // Allow year-wrap closing (last point ≈ first point)
           const first = current[0];
           const distToFirst = Math.sqrt((p.x - first.x) ** 2 + (p.y - first.y) ** 2);
-          if (distToFirst < maxSeg * 0.2) {
+          if (distToFirst < maxSegLen * 0.2) {
             current.push(p);
             continue;
           }
@@ -814,9 +808,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           lng,
           tzMeridian,
           hour: h,
-          gnomonHeight,
-          orientation: 'Horizontal',
-          wallDeclination,
+          styleHeight: gnomonHeight,
+          dialInclination,
+          dialDeclination,
         });
         // Filter points by date range
         const isNorthernHemisphere = isGeoNorthern;
@@ -1067,9 +1061,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           lng,
           tzMeridian,
           hour: h,
-          gnomonHeight,
-          orientation: 'Horizontal',
-          wallDeclination,
+          styleHeight: gnomonHeight,
+          dialInclination,
+          dialDeclination,
         });
         // Filter points by date range
         const isNorthernHemisphere = isGeoNorthern;
@@ -1441,9 +1435,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       lng,
       tzMeridian,
       hour: 12,
-      gnomonHeight,
-      orientation: 'Horizontal',
-      wallDeclination,
+      styleHeight: gnomonHeight,
+      dialInclination,
+      dialDeclination,
     });
 
     // Filter points by date range
@@ -1515,7 +1509,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
         if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-        const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, 'Horizontal', lat, wallDeclination);
+        const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination);
+        if (!coords) continue;
         const x = scale * coords.x;
         const y = scale * coords.y;
         if (Math.sqrt(x * x + y * y) <= maxRadius) {
@@ -1552,11 +1547,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
         if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-        const coords = projectShadowToSurface(altitude, azimuth, gnomonHeight, 'Horizontal', lat, wallDeclination);
-        const x = scale * coords.x;
-        const y = scale * coords.y;
-        if (Math.sqrt(x * x + y * y) <= maxRadius) {
-          currentSegment.push({ x, y });
+        const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination);
+        if (coords && Math.sqrt((scale * coords.x) ** 2 + (scale * coords.y) ** 2) <= maxRadius) {
+          currentSegment.push({ x: scale * coords.x, y: scale * coords.y });
+        } else if (currentSegment.length > 0) {
+          segments.push(currentSegment);
+          currentSegment = [];
         }
       } else if (currentSegment.length > 0) {
         segments.push(currentSegment);
@@ -2042,7 +2038,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       let azimuth = Math.acos(cosAz);
       if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
 
-      return projectShadowToSurface(altitude, azimuth, gnomonHeight, 'Horizontal', lat, wallDeclination);
+      return computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination) ?? { x: 0, y: 0 };
     }
 
     const summerSolsticeDeclination = 23.44;   // June 21st
@@ -2143,17 +2139,19 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             transform={`${effectiveDialOrientation === 'North' ? 'rotate(180) ' : ''}scale(${viewBoxScaleFactor})`}
             clipPath={`url(#dial-clip-${dialShape.toLowerCase()})`}
           >
-            {/* Content positioned relative to gnomon */}
-            <g transform={`translate(${(gnomonHorizontalPosition ?? width / 2) - width / 2}, ${(gnomonPosition ?? 0) - (height / 2)})`}>
+            {/* Content positioned relative to gnomon.
+                For horizontal dials (dialInclination=0), declining is a plate rotation: rotate by dialDeclination.
+                For inclined dials, the 3D projection math already accounts for dialDeclination. */}
+            <g transform={`translate(${(gnomonHorizontalPosition ?? width / 2) - width / 2}, ${(gnomonPosition ?? 0) - (height / 2)})${dialInclination === 0 && dialDeclination !== 0 ? ` rotate(${dialDeclination})` : ''}`}>
               {/* Gnomon mark at (0,0) */}
               <GnomonSVG
                 gnomonType={gnomonType}
                 gnomonHeight={gnomonHeight}
                 lat={lat}
                 inclineType={inclineType}
+                dialInclination={dialInclination}
                 fontSize={fontSize}
                 originalLatitude={originalLatitude}
-                wallDeclination={wallDeclination}
               />
 
               {declinationLineElements}
@@ -2217,9 +2215,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   lng,
                   tzMeridian: standardTzMeridian,
                   hour: 12, // Noon hour
-                  gnomonHeight,
-                  orientation: 'Horizontal',
-                  wallDeclination,
+                  styleHeight: gnomonHeight,
+                  dialInclination,
+                  dialDeclination,
                 });
 
                 // Calculate the bounding box of the original analemma for proper centering
@@ -2280,23 +2278,6 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 // Always show full-year replica for seasons guide, regardless of hourline date range
                 const needsSplitting = false; // Force full-year display for seasons guide
 
-                // Convert InclineType to Orientation for analemma generation
-                const getOrientation = (inclineType: string): 'Horizontal' | 'Vertical' | 'Polar' => {
-                  switch (inclineType) {
-                    case 'Horizontal':
-                    case 'Cancer':
-                    case 'Capricorn':
-                    case 'Manual':
-                      return 'Horizontal';
-                    case 'Vertical':
-                      return 'Vertical';
-                    case 'Polar':
-                      return 'Polar';
-                    default:
-                      return 'Horizontal';
-                  }
-                };
-
                 if (needsSplitting) {
                   let segments: [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]];
 
@@ -2320,9 +2301,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                         lng,
                         tzMeridian: standardTzMeridian,
                         hour: 12,
-                        gnomonHeight,
-                        orientation: getOrientation(inclineType),
-                        wallDeclination,
+                        styleHeight: gnomonHeight,
+                        dialInclination,
+                        dialDeclination,
                       }).find(p => Math.abs(p.day - equinoxDay) < 1);
 
                       if (!equinoxNoonPoint) return null;
@@ -2341,9 +2322,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                         lng,
                         tzMeridian: standardTzMeridian,
                         hour: 11.5, // 11:30
-                        gnomonHeight,
-                        orientation: getOrientation(inclineType),
-                        wallDeclination,
+                        styleHeight: gnomonHeight,
+                        dialInclination,
+                        dialDeclination,
                       }).find(p => Math.abs(p.day - equinoxDay) < 1);
 
                       const rightHourPoint = getAnalemmaPointsProjected({
@@ -2351,9 +2332,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                         lng,
                         tzMeridian: standardTzMeridian,
                         hour: 12.5, // 12:30
-                        gnomonHeight,
-                        orientation: getOrientation(inclineType),
-                        wallDeclination,
+                        styleHeight: gnomonHeight,
+                        dialInclination,
+                        dialDeclination,
                       }).find(p => Math.abs(p.day - equinoxDay) < 1);
 
                       if (!leftHourPoint || !rightHourPoint) return null;
@@ -2451,9 +2432,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                         lng,
                         tzMeridian: standardTzMeridian,
                         hour: 12,
-                        gnomonHeight,
-                        orientation: getOrientation(inclineType),
-                        wallDeclination,
+                        styleHeight: gnomonHeight,
+                        dialInclination,
+                        dialDeclination,
                       }).find(p => Math.abs(p.day - equinoxDay) < 1);
 
                       if (!equinoxNoonPoint) return null;
@@ -2472,9 +2453,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                         lng,
                         tzMeridian: standardTzMeridian,
                         hour: 11.5, // 11:30
-                        gnomonHeight,
-                        orientation: getOrientation(inclineType),
-                        wallDeclination,
+                        styleHeight: gnomonHeight,
+                        dialInclination,
+                        dialDeclination,
                       }).find(p => Math.abs(p.day - equinoxDay) < 1);
 
                       const rightHourPoint = getAnalemmaPointsProjected({
@@ -2482,9 +2463,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                         lng,
                         tzMeridian: standardTzMeridian,
                         hour: 12.5, // 12:30
-                        gnomonHeight,
-                        orientation: getOrientation(inclineType),
-                        wallDeclination,
+                        styleHeight: gnomonHeight,
+                        dialInclination,
+                        dialDeclination,
                       }).find(p => Math.abs(p.day - equinoxDay) < 1);
 
                       if (!leftHourPoint || !rightHourPoint) return null;
@@ -2639,9 +2620,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   lng,
                   tzMeridian,
                   hour: 12, // Noon hour
-                  gnomonHeight,
-                  orientation: 'Horizontal',
-                  wallDeclination,
+                  styleHeight: gnomonHeight,
+                  dialInclination,
+                  dialDeclination,
                 });
 
                 // Calculate the bounding box of the analemma

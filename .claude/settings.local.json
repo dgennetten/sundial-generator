@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:fliphtml5.com)",
+      "WebSearch",
+      "WebFetch(domain:www.mysundial.ca)",
+      "WebFetch(domain:www.merlinsundials.co.uk)",
+      "WebFetch(domain:www.shadowspro.com)",
+      "WebFetch(domain:files.eric.ed.gov)",
+      "WebFetch(domain:sundialsoc.org.uk)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:www.ens-lyon.fr)",
+      "WebFetch(domain:sundials.co)",
+      "Bash(npx vitest:*)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}

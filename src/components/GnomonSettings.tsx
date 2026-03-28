@@ -1,6 +1,7 @@
 // src/components/GnomonSettings.tsx
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { getSolarPosition, projectShadowToSurface, getAnalemmaPointsProjected } from '../utils/analemmaGenerator';
+import { getSolarPosition, getAnalemmaPointsProjected } from '../utils/analemmaGenerator';
+import { calculateAutoGnomonHeight as calcAutoHeight } from '../utils/sundialMath';
 import { MoveUpRight } from 'lucide-react';
 
 type Mode = 'auto' | 'manual';
@@ -19,7 +20,8 @@ interface Props {
   positionMode?: PositionMode;
   position?: number;
   horizontalPosition?: number;
-  wallDeclination?: number;
+  dialInclination?: number;
+  dialDeclination?: number;
   /** When true (declination preset / grayed or declination zero), auto horizontal stays at center */
   lockHorizontalToCenter?: boolean;
   onChange: (values: { mode: Mode; height: number; gnomonType: GnomonType; positionMode?: PositionMode; position?: number; horizontalPosition?: number }) => void;
@@ -37,7 +39,8 @@ const GnomonSettings: React.FC<Props> = ({
   positionMode: propPositionMode,
   position: propPosition,
   horizontalPosition: propHorizontalPosition,
-  wallDeclination = 0,
+  dialInclination = 0,
+  dialDeclination = 0,
   lockHorizontalToCenter = false,
   onChange,
 }) => {
@@ -52,35 +55,8 @@ const GnomonSettings: React.FC<Props> = ({
   const userInitiatedChangeRef = useRef<boolean>(false);
 
   // Function to calculate gnomon height based on winter-to-summer solstice distance
-  const calculateAutoGnomonHeight = (lat: number, lng: number, tz: number, pageH: number): number => {
-    // Winter solstice is around day 355, Summer solstice is around day 172
-    const winterSolsticeDay = 355;
-    const summerSolsticeDay = 172;
-    const noonHour = 12;
-    
-    // Calculate shadow positions for winter and summer solstices at noon
-    const winterPos = getSolarPosition(winterSolsticeDay, lat, lng, tz, noonHour);
-    const summerPos = getSolarPosition(summerSolsticeDay, lat, lng, tz, noonHour);
-    
-    if (winterPos.altitude <= 0 || summerPos.altitude <= 0) {
-      // Fallback to original calculation if sun is below horizon
-      return Math.round(Math.tan((lat * Math.PI) / 180) * 100 * 3.7 / 8);
-    }
-    
-    // Project shadows to surface (using a temporary gnomon height of 1)
-    const tempGnomonHeight = 1;
-    const winterShadow = projectShadowToSurface(winterPos.altitude, winterPos.azimuth, tempGnomonHeight, 'Horizontal', lat);
-    const summerShadow = projectShadowToSurface(summerPos.altitude, summerPos.azimuth, tempGnomonHeight, 'Horizontal', lat);
-    
-    // Calculate the distance between winter and summer shadows
-    const shadowDistance = Math.abs(winterShadow.y - summerShadow.y);
-    
-    // Calculate required gnomon height to make this distance 40% of page height
-    const targetDistance = pageH * 0.4;
-    const requiredGnomonHeight = targetDistance / shadowDistance;
-    // Reduce to 66% of previous value, then increase by factor of 55/40
-    return Math.round(requiredGnomonHeight * 0.66 * (55/40));
-  };
+  const calculateAutoGnomonHeight = (lat: number, lng: number, tz: number, pageH: number): number =>
+    calcAutoHeight(lat, lng, tz, pageH, dialInclination, dialDeclination);
 
   // Calculate gnomon position so the noon analemma is centered on the page (vertical and horizontal)
   const calculateAutoGnomonPosition = useCallback((pageW: number, pageH: number): { vertical: number; horizontal: number } => {
@@ -89,9 +65,9 @@ const GnomonSettings: React.FC<Props> = ({
       lng: longitude,
       tzMeridian: tzMeridian,
       hour: 12,
-      gnomonHeight: autoHeight || height,
-      orientation: 'Horizontal',
-      wallDeclination,
+      styleHeight: autoHeight || height,
+      dialInclination,
+      dialDeclination,
     });
     if (!noonPoints.length) {
       return { vertical: Math.round(pageH * 0.2), horizontal: Math.round(pageW / 2) };
@@ -104,7 +80,7 @@ const GnomonSettings: React.FC<Props> = ({
       vertical: Math.round(pageH / 2 - centerY),
       horizontal: Math.round(pageW / 2 - centerX),
     };
-  }, [latitude, longitude, tzMeridian, autoHeight, height, wallDeclination]);
+  }, [latitude, longitude, tzMeridian, autoHeight, height, dialInclination, dialDeclination]);
 
   // Restore effect for autoHeight calculation
   useEffect(() => {
@@ -112,7 +88,7 @@ const GnomonSettings: React.FC<Props> = ({
       const computed = calculateAutoGnomonHeight(latitude, longitude, tzMeridian, pageHeight);
       setAutoHeight(computed);
     }
-  }, [mode, latitude, longitude, tzMeridian, pageHeight, gnomonType]);
+  }, [mode, latitude, longitude, tzMeridian, pageHeight, gnomonType, dialInclination, dialDeclination]);
 
   useEffect(() => {
     const { vertical: autoPos, horizontal: autoHPos } = calculateAutoGnomonPosition(pageWidth, pageHeight);

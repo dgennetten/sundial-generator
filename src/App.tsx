@@ -32,7 +32,7 @@ import type { LineStyle } from './components/LineSettings';
 import DeclinationLineOptions from './components/DeclinationLineOptions';
 import { loadDeclinationLines } from './components/declinationLineUtils';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
-import { getDisplayTiltAngle, getRenderTiltAngle, calculateAutoGnomonHeight, getWallDeclinationForPreset, computeGeneralDialParameters } from './utils/sundialMath';
+import { getDisplayTiltAngle, calculateAutoGnomonHeight, getWallDeclinationForPreset } from './utils/sundialMath';
 import AboutCard from './components/AboutCard';
 // import VisitorMap from './components/VisitorMap';
 import DialTextBlockSettings from './components/DialTextBlockSettings';
@@ -180,18 +180,16 @@ const App: React.FC = () => {
     }
   }, [declinationType]);
 
-  // Update declination type when latitude crosses the equator to match hemisphere default
-  // Since declination is disabled, always set to default (North for NH, South for SH)
+  // When latitude crosses the equator reset declination to the new hemisphere's poleward default
   useEffect(() => {
     const currentHemisphere: 'N' | 'S' = latitude >= 0 ? 'N' : 'S';
     if (currentHemisphere !== prevHemisphereRef.current) {
       prevHemisphereRef.current = currentHemisphere;
-      // Always set to default for new hemisphere (declination is disabled)
       const defaultDeclinationType = latitude >= 0 ? 'North' : 'South';
       setDeclinationType(defaultDeclinationType);
       setDeclinationDegrees(0);
     }
-  }, [latitude]); // Only depend on latitude, not declinationType to avoid loops
+  }, [latitude]);
 
   // After reset: scroll left pane to top. Remove flag only after delayed scroll so LineSettings can skip focus-on-mount.
   useEffect(() => {
@@ -208,8 +206,8 @@ const App: React.FC = () => {
     } catch (_) {}
   }, []);
 
-  // Raw wall declination from UI presets
-  const rawWallDeclination = useMemo(() =>
+  // Dial declination: rotation from poleward direction, degrees (+West / −East)
+  const dialDeclination = useMemo(() =>
     getWallDeclinationForPreset(declinationType, declinationDegrees, latitude),
     [declinationType, declinationDegrees, latitude]
   );
@@ -272,28 +270,21 @@ const App: React.FC = () => {
     [pageWidth, pageHeight] = [pageHeight, pageWidth];
   }
 
-  // Calculate render tilt angle for incline
-  const renderTiltAngle = useMemo(() =>
-    getRenderTiltAngle(inclineType, latitude, tiltAngle),
+  // Dial inclination: tilt from horizontal in degrees (0 = flat, 90 = vertical)
+  const dialInclination = useMemo(() =>
+    getDisplayTiltAngle(inclineType, latitude, tiltAngle),
     [inclineType, latitude, tiltAngle]
   );
 
-  // General dial parameters: combines inclination + declination via classical gnomonics
-  const { effectiveLatitude, styleRotation: wallDeclination } = useMemo(() =>
-    computeGeneralDialParameters(latitude, renderTiltAngle, rawWallDeclination),
-    [latitude, renderTiltAngle, rawWallDeclination]
-  );
-
-  // Use consolidated calculateAutoGnomonHeight from sundialMath
-  const autoGnomonHeight = useCallback((lat: number, pageHeight: number): number => {
-    return calculateAutoGnomonHeight(lat, longitude, tzMeridian, pageHeight);
-  }, [longitude, tzMeridian]);
+  const autoGnomonHeight = useCallback((pageHeight: number): number => {
+    return calculateAutoGnomonHeight(latitude, longitude, tzMeridian, pageHeight, dialInclination, dialDeclination);
+  }, [latitude, longitude, tzMeridian, dialInclination, dialDeclination]);
 
   const effectiveGnomonHeight = useMemo(() => (
     gnomonMode === 'auto'
-      ? autoGnomonHeight(effectiveLatitude, pageHeight)
+      ? autoGnomonHeight(pageHeight)
       : gnomonHeight
-  ), [gnomonMode, effectiveLatitude, pageHeight, gnomonHeight, autoGnomonHeight]);
+  ), [gnomonMode, pageHeight, gnomonHeight, autoGnomonHeight]);
 
   const activeHourlineIntervals = useMemo(() =>
     hourlineIntervals.filter(i => i.active),
@@ -362,7 +353,7 @@ const App: React.FC = () => {
     [declinationLines]
   );
   const previewConfig = useMemo(() => ({
-    lat: effectiveLatitude,
+    lat: latitude,
     lng: longitude,
     tzMeridian,
     scale: 1,
@@ -406,10 +397,11 @@ const App: React.FC = () => {
     declinationDegrees,
     declinationNoonmarks,
     originalLatitude: latitude,
-    wallDeclination,
+    dialInclination,
+    dialDeclination,
     dialOrientation,
   }), [
-    effectiveLatitude,
+    latitude,
     longitude,
     tzMeridian,
     effectiveGnomonHeight,
@@ -449,10 +441,10 @@ const App: React.FC = () => {
     declinationType,
     declinationDegrees,
     declinationNoonmarks,
-    latitude,
     activeHourlineIntervals,
     normalizedDeclinationLines,
-    wallDeclination,
+    dialInclination,
+    dialDeclination,
     dialOrientation,
   ]);
 
@@ -530,12 +522,19 @@ const App: React.FC = () => {
     if (config.orientation !== undefined) setOrientation(config.orientation);
     if (config.inclineType !== undefined) setInclineType(config.inclineType);
     if (config.tiltAngle !== undefined) setTiltAngle(config.tiltAngle);
-    // Declination is disabled - always set to default for current hemisphere
-    // Use the latitude from the config if available, otherwise use current latitude
+    // Restore declination; fall back to hemisphere default if not saved
     const restoreLatitude = config.latitude !== undefined ? config.latitude : latitude;
     const defaultDeclinationType = restoreLatitude >= 0 ? 'North' : 'South';
-    setDeclinationType(defaultDeclinationType);
-    setDeclinationDegrees(0);
+    if (config.declinationType !== undefined) {
+      setDeclinationType(config.declinationType);
+    } else {
+      setDeclinationType(defaultDeclinationType);
+    }
+    if (config.declinationDegrees !== undefined) {
+      setDeclinationDegrees(config.declinationDegrees);
+    } else {
+      setDeclinationDegrees(0);
+    }
     if (config.dialShape !== undefined) setDialShape(config.dialShape);
     if (config.borderStyle !== undefined) setBorderStyle(config.borderStyle);
     if (config.borderMargin !== undefined) setBorderMargin(config.borderMargin);
@@ -724,7 +723,7 @@ const App: React.FC = () => {
         <GnomonSettings
           mode={gnomonMode}
           height={gnomonHeight}
-          latitude={effectiveLatitude}
+          latitude={latitude}
           longitude={longitude}
           tzMeridian={tzMeridian}
           pageHeight={pageHeight}
@@ -733,8 +732,9 @@ const App: React.FC = () => {
           positionMode={gnomonPositionMode}
           position={gnomonPosition}
           horizontalPosition={gnomonHorizontalPosition}
-          wallDeclination={wallDeclination}
-          lockHorizontalToCenter={declinationType !== 'Manual' || Math.abs(rawWallDeclination) < 1e-6}
+          dialInclination={dialInclination}
+          dialDeclination={dialDeclination}
+          lockHorizontalToCenter={declinationType !== 'Manual' || Math.abs(dialDeclination) < 1e-6}
           onChange={useCallback(({ mode, height, gnomonType, positionMode, position, horizontalPosition }) => {
             setGnomonMode(mode);
             setGnomonHeight(height);
@@ -771,7 +771,7 @@ const App: React.FC = () => {
             declinationLines={declinationLines}
             setDeclinationLines={setDeclinationLines}
             dateRange={hourlineDateRange}
-            lat={effectiveLatitude}
+            lat={latitude}
           />
           <HourlineSettings
             dateRange={hourlineDateRange}
