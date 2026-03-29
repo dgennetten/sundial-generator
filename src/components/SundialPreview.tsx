@@ -1875,9 +1875,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Create decline string - show when declination is non-default for the hemisphere
     const defaultDecl = isGeoNorthern ? 'North' : 'South';
     const isNonDefaultDeclination = declinationType !== defaultDecl;
-    const declineString = isNonDefaultDeclination
-      ? `decline: ${declinationDegrees.toFixed(1)}°`
-      : '';
+    const declineString =
+      isNonDefaultDeclination && Math.abs(declinationDegrees) >= 0.05
+        ? `decline: ${declinationDegrees.toFixed(1)}°`
+        : '';
 
     // Check if "Today" declination line is active
     const todayLineActive = declinationLines.some(line => line.active && line.date === 'Today' && isDateStringInRange('Today'));

@@ -65,9 +65,11 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
   const isNorthern = (ctx.latitude ?? 0) >= 0;
   const defaultDecl = isNorthern ? 'North' : 'South';
   const isNonDefaultDeclination = ctx.declinationType && ctx.declinationType !== defaultDecl;
-  const declineString = isNonDefaultDeclination
-    ? `decline: ${(ctx.declinationDegrees ?? 0).toFixed(1)}°`
-    : '';
+  const declDeg = ctx.declinationDegrees ?? 0;
+  const declineString =
+    isNonDefaultDeclination && Math.abs(declDeg) >= 0.05
+      ? `decline: ${declDeg.toFixed(1)}°`
+      : '';
 
   let processedText = template;
   
