@@ -91,6 +91,34 @@
   border-color: #cbd5e0;
 }
 
+/* Primary emphasis for key selects (matches .btn-primary) */
+.form-select.form-select-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.form-select.form-select-primary:hover {
+  border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.form-select.form-select-primary:focus {
+  outline: none;
+  border-color: transparent;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.35), 0 4px 12px rgba(102, 126, 234, 0.25);
+}
+
+.form-select.form-select-primary option {
+  background: #ffffff;
+  color: #1a202c;
+  font-weight: 400;
+}
+
 /* Buttons */
 .btn {
   padding: 0.5rem 1rem;

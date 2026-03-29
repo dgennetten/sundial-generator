@@ -84,10 +84,10 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
             <label className="form-label">Date Range</label>
             <select
-              className="form-select"
+              className="form-select form-select-primary"
               value={dateRange}
               onChange={e => setDateRange(e.target.value as DateRange)}
-              style={{ minWidth: isMobile ? '100px' : 'auto' }}
+              style={{ minWidth: isMobile ? '100px' : 'auto', padding: '0.5rem 0.6rem' }}
             >
               <option value="FullYear">Full Year</option>
               <option value="SummerToFall">Summer - Fall</option>
