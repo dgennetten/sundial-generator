@@ -450,13 +450,21 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               }}
             >
               <option value="North">North</option>
-              <option value="Northeast">Northeast</option>
+              <option value="NNE">NNE</option>
+              <option value="NE">NE</option>
+              <option value="ENE">ENE</option>
               <option value="East">East</option>
-              <option value="Southeast">Southeast</option>
+              <option value="ESE">ESE</option>
+              <option value="SE">SE</option>
+              <option value="SSE">SSE</option>
               <option value="South">South</option>
-              <option value="Southwest">Southwest</option>
+              <option value="SSW">SSW</option>
+              <option value="SW">SW</option>
+              <option value="WSW">WSW</option>
               <option value="West">West</option>
-              <option value="Northwest">Northwest</option>
+              <option value="WNW">WNW</option>
+              <option value="NW">NW</option>
+              <option value="NNW">NNW</option>
               <option value="Manual">Manual</option>
             </select>
           </div>

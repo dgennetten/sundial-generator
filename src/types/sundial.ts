@@ -53,7 +53,7 @@ export type InclineType = 'Horizontal' | 'Vertical' | 'Cancer' | 'Capricorn' | '
 /**
  * Wall declination preset types
  */
-export type DeclinationType = 'North' | 'Northeast' | 'Northwest' | 'East' | 'West' | 'Southeast' | 'Southwest' | 'South' | 'Manual';
+export type DeclinationType = 'North' | 'NNE' | 'NE' | 'ENE' | 'East' | 'ESE' | 'SE' | 'SSE' | 'South' | 'SSW' | 'SW' | 'WSW' | 'West' | 'WNW' | 'NW' | 'NNW' | 'Manual';
 
 /**
  * Gnomon types for sundial shadow casting

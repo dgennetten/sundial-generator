@@ -491,15 +491,22 @@ export function calculateAutoGnomonHeight(
 // ============================================================================
 
 const COMPASS_BEARING: Record<string, number> = {
-  'North': 0, 'Northeast': 45, 'East': 90, 'Southeast': 135,
-  'South': 180, 'Southwest': 225, 'West': 270, 'Northwest': 315,
+  'North': 0,   'NNE': 22.5,  'NE': 45,   'ENE': 67.5,
+  'East': 90,   'ESE': 112.5, 'SE': 135,  'SSE': 157.5,
+  'South': 180, 'SSW': 202.5, 'SW': 225,  'WSW': 247.5,
+  'West': 270,  'WNW': 292.5, 'NW': 315,  'NNW': 337.5,
 };
 
 /**
- * Convert a DeclinationType preset + latitude to the wall declination angle (degrees).
- * The angle is the rotation of the dial from its default orientation (0 = poleward).
- * For NH, poleward = North (0° compass). For SH, poleward = South (180° compass).
- * Positive = clockwise rotation viewed from above.
+ * Convert a DeclinationType preset + latitude to the dial declination angle (degrees).
+ * 0 = poleward-facing (South in NH, North in SH). Positive = declined toward West.
+ *
+ * NH: poleward = South (compass 180). degrees = compassBearing - 180.
+ *   South→0, SW→+45, W→+90, NW→+135, N→±180, NE→-135, E→-90, SE→-45.
+ *
+ * SH: poleward = North (compass 0). Positive West-decline turns the face
+ *   counter-clockwise on the compass. degrees = -compassBearing.
+ *   North→0, NW→+45, W→+90, SW→+135, S→±180, SE→-135, E→-90, NE→-45.
  */
 export function getWallDeclinationForPreset(
   type: DeclinationType,
@@ -507,8 +514,13 @@ export function getWallDeclinationForPreset(
   latitude: number
 ): number {
   if (type === 'Manual') return manualDegrees;
-  const defaultBearing = latitude >= 0 ? 0 : 180;
-  let degrees = (COMPASS_BEARING[type] ?? 0) - defaultBearing;
+  const bearing = COMPASS_BEARING[type] ?? 0;
+  let degrees: number;
+  if (latitude >= 0) {
+    degrees = bearing - 180;   // NH: South is 0
+  } else {
+    degrees = -bearing;        // SH: North is 0, West-decline is positive
+  }
   if (degrees > 180) degrees -= 360;
   if (degrees < -180) degrees += 360;
   return degrees;

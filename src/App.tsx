@@ -60,7 +60,7 @@ const App: React.FC = () => {
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
   const [tiltAngle, setTiltAngle] = useState<number>(90);
-  const [declinationType, setDeclinationType] = useState<DeclinationType>(latitude >= 0 ? 'North' : 'South');
+  const [declinationType, setDeclinationType] = useState<DeclinationType>(latitude >= 0 ? 'South' : 'North');
   const [declinationDegrees, setDeclinationDegrees] = useState<number>(0);
   const [dialOrientation, setDialOrientation] = useState<'North' | 'South'>(latitude >= 0 ? 'North' : 'South');
   const prevHemisphereRef = useRef<'N' | 'S'>(latitude >= 0 ? 'N' : 'S');
@@ -185,7 +185,7 @@ const App: React.FC = () => {
     const currentHemisphere: 'N' | 'S' = latitude >= 0 ? 'N' : 'S';
     if (currentHemisphere !== prevHemisphereRef.current) {
       prevHemisphereRef.current = currentHemisphere;
-      const defaultDeclinationType = latitude >= 0 ? 'North' : 'South';
+      const defaultDeclinationType = latitude >= 0 ? 'South' : 'North';
       setDeclinationType(defaultDeclinationType);
       setDeclinationDegrees(0);
     }
@@ -524,7 +524,7 @@ const App: React.FC = () => {
     if (config.tiltAngle !== undefined) setTiltAngle(config.tiltAngle);
     // Restore declination; fall back to hemisphere default if not saved
     const restoreLatitude = config.latitude !== undefined ? config.latitude : latitude;
-    const defaultDeclinationType = restoreLatitude >= 0 ? 'North' : 'South';
+    const defaultDeclinationType = restoreLatitude >= 0 ? 'South' : 'North';
     if (config.declinationType !== undefined) {
       setDeclinationType(config.declinationType);
     } else {
