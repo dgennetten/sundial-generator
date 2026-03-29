@@ -30,11 +30,11 @@ const translations: Record<Language, Translations> = {
   en: {
     title: 'How to Build Your Custom Sundial',
     steps: {
-      location: { label: 'Location:', text: 'using the dropdown menu, the interactive map, or by entering latitude and longitude directly.' },
-      size: { label: 'Size & Shape:', text: 'Large or Small; whether you prefer a classic rectangle or a graceful oval.' },
+      location: { label: 'Location:', text: 'Use the dropdown menu, the interactive map, or enter latitude and longitude directly.' },
+      size: { label: 'Size & Shape:', text: 'Large or Small; Rectangular or Oval/Circle.' },
       gnomon: { label: 'Gnomon Style:', text: 'Don\'t miss the innovative popup gnomon, perfect for paper dials and hands‑on experimentation.' },
       dateRange: { label: 'Full/Half Year:', text: ': Choose Winter–Spring or Fall–Summer for a cleaner, easier‑to‑read layout.' },
-      specialDates: { label: 'Special Dates:', text: ': Enter Day and Month in Date Lines. Uncheck Today to remove the red line with today\'s date.' },
+      specialDates: { label: 'Special Dates:', text: ': Display any Special Dates. Uncheck \'Today\' to remove the red line with today\'s date.' },
       reset: { label: 'Reset to Defaults:', text: 'Click Reset button to restore defaults and bring back this popup.' },
     },
     dontShowAgain: 'Don\'t show again',
@@ -44,11 +44,11 @@ const translations: Record<Language, Translations> = {
   es: {
     title: 'Cómo Construir Tu Reloj de Sol Personalizado',
     steps: {
-      location: { label: 'Ubicación:', text: ' usando el menú desplegable, el mapa interactivo o ingresando la latitud y longitud directamente.' },
-      size: { label: 'Tamaño y Forma:', text: ' Grande o Pequeño; ya sea que prefieras un rectángulo clásico o un óvalo elegante.' },
+      location: { label: 'Ubicación:', text: ' Usa el menú desplegable, el mapa interactivo o introduce latitud y longitud directamente.' },
+      size: { label: 'Tamaño y Forma:', text: ' Grande o Pequeño; Rectangular u Ovalado/Circular.' },
       gnomon: { label: 'Estilo de Gnomon:', text: ' No te pierdas el innovador gnomon emergente, perfecto para relojes de papel y experimentación práctica.' },
       dateRange: { label: 'Año Completo/Medio:', text: ': Elige Invierno–Primavera u Otoño–Verano para un diseño más limpio y fácil de leer.' },
-      specialDates: { label: 'Fechas Especiales:', text: ': Ingresa Día y Mes en Líneas de Fecha. Desmarca Hoy para eliminar la línea roja con la fecha de hoy.' },
+      specialDates: { label: 'Fechas Especiales:', text: ': Muestra cualquier fecha especial. Desmarca \'Hoy\' para eliminar la línea roja con la fecha de hoy.' },
       reset: { label: 'Restablecer a Predeterminados:', text: 'Haz clic en el botón Restablecer para restaurar los valores predeterminados y volver a mostrar este popup.' },
     },
     dontShowAgain: 'No volver a mostrar',
@@ -58,11 +58,11 @@ const translations: Record<Language, Translations> = {
   fr: {
     title: 'Comment Construire Votre Cadran Solaire Personnalisé',
     steps: {
-      location: { label: 'Emplacement :', text: ' en utilisant le menu déroulant, la carte interactive ou en entrant directement la latitude et la longitude.' },
-      size: { label: 'Taille et Forme :', text: ' Grand ou Petit; que vous préfériez un rectangle classique ou un ovale gracieux.' },
+      location: { label: 'Emplacement :', text: ' Utilisez le menu déroulant, la carte interactive ou saisissez directement la latitude et la longitude.' },
+      size: { label: 'Taille et Forme :', text: ' Grand ou Petit ; rectangulaire ou ovale/circulaire.' },
       gnomon: { label: 'Style de Gnomon :', text: ' Ne manquez pas le gnomon pop-up innovant, parfait pour les cadrans en papier et l\'expérimentation pratique.' },
       dateRange: { label: 'Année Complète/Demi :', text: ': Choisissez Hiver–Printemps ou Automne–Été pour une mise en page plus claire et plus facile à lire.' },
-      specialDates: { label: 'Dates Spéciales :', text: ': Entrez le Jour et le Mois dans les Lignes de Date. Décochez Aujourd\'hui pour supprimer la ligne rouge avec la date d\'aujourd\'hui.' },
+      specialDates: { label: 'Dates Spéciales :', text: ': Affichez toutes les dates spéciales. Décochez « Aujourd\'hui » pour supprimer la ligne rouge avec la date d\'aujourd\'hui.' },
       reset: { label: 'Réinitialiser aux Valeurs par Défaut :', text: 'Cliquez sur le bouton Réinitialiser pour restaurer les paramètres par défaut et réafficher ce popup.' },
     },
     dontShowAgain: 'Ne plus afficher',
@@ -72,11 +72,11 @@ const translations: Record<Language, Translations> = {
   de: {
     title: 'So Bauen Sie Ihre Individuelle Sonnenuhr',
     steps: {
-      location: { label: 'Standort:', text: ', indem Sie das Dropdown-Menü, die interaktive Karte verwenden oder Breiten- und Längengrad direkt eingeben.' },
-      size: { label: 'Größe & Form:', text: ' Groß oder Klein; ob Sie ein klassisches Rechteck oder ein elegantes Oval bevorzugen.' },
+      location: { label: 'Standort:', text: ' Verwenden Sie das Dropdown-Menü, die interaktive Karte oder geben Sie Breiten- und Längengrad direkt ein.' },
+      size: { label: 'Größe & Form:', text: ' Groß oder Klein; rechteckig oder oval/kreisförmig.' },
       gnomon: { label: 'Gnomon-Stil:', text: ' Verpassen Sie nicht den innovativen Pop-up-Gnomon, perfekt für Papieruhren und praktische Experimente.' },
       dateRange: { label: 'Ganzes/Halbes Jahr:', text: ': Wählen Sie Winter–Frühling oder Herbst–Sommer für ein klareres, leichter lesbares Layout.' },
-      specialDates: { label: 'Besondere Daten:', text: ': Geben Sie Tag und Monat in Datumslinien ein. Deaktivieren Sie Heute, um die rote Linie mit dem heutigen Datum zu entfernen.' },
+      specialDates: { label: 'Besondere Daten:', text: ': Zeigen Sie beliebige besondere Daten an. Deaktivieren Sie „Heute“, um die rote Linie mit dem heutigen Datum zu entfernen.' },
       reset: { label: 'Auf Standardwerte Zurücksetzen:', text: 'Klicken Sie auf die Schaltfläche Zurücksetzen, um die Standardeinstellungen wiederherzustellen und dieses Popup erneut anzuzeigen.' },
     },
     dontShowAgain: 'Nicht mehr anzeigen',
@@ -86,11 +86,11 @@ const translations: Record<Language, Translations> = {
   it: {
     title: 'Come Costruire la Tua Meridiana Personalizzata',
     steps: {
-      location: { label: 'Posizione:', text: ' utilizzando il menu a discesa, la mappa interattiva o inserendo direttamente latitudine e longitudine.' },
-      size: { label: 'Dimensione e Forma:', text: ' Grande o Piccola; che tu preferisca un rettangolo classico o un ovale elegante.' },
+      location: { label: 'Posizione:', text: ' Usa il menu a discesa, la mappa interattiva o inserisci direttamente latitudine e longitudine.' },
+      size: { label: 'Dimensione e Forma:', text: ' Grande o Piccola; rettangolare o ovale/circolare.' },
       gnomon: { label: 'Stile dello Gnomone:', text: ' Non perdere l\'innovativo gnomone pop-up, perfetto per meridiane di carta e sperimentazione pratica.' },
       dateRange: { label: 'Anno Intero/Mezzo:', text: ': Scegli Inverno–Primavera o Autunno–Estate per un layout più pulito e facile da leggere.' },
-      specialDates: { label: 'Date Speciali:', text: ': Inserisci Giorno e Mese nelle Linee di Data. Deseleziona Oggi per rimuovere la linea rossa con la data di oggi.' },
+      specialDates: { label: 'Date Speciali:', text: ': Visualizza qualsiasi data speciale. Deseleziona «Oggi» per rimuovere la linea rossa con la data di oggi.' },
       reset: { label: 'Ripristina le Impostazioni Predefinite:', text: 'Clicca il pulsante Ripristina per ripristinare le impostazioni predefinite e riportare questo popup.' },
     },
     dontShowAgain: 'Non mostrare più',
@@ -100,11 +100,11 @@ const translations: Record<Language, Translations> = {
   pt: {
     title: 'Como Construir Seu Relógio de Sol Personalizado',
     steps: {
-      location: { label: 'Localização:', text: ' usando o menu suspenso, o mapa interativo ou inserindo latitude e longitude diretamente.' },
-      size: { label: 'Tamanho e Forma:', text: ' Grande ou Pequeno; se você prefere um retângulo clássico ou um oval gracioso.' },
+      location: { label: 'Localização:', text: ' Use o menu suspenso, o mapa interativo ou insira latitude e longitude diretamente.' },
+      size: { label: 'Tamanho e Forma:', text: ' Grande ou Pequeno; retangular ou oval/circular.' },
       gnomon: { label: 'Estilo do Gnômon:', text: ' Não perca o inovador gnômon pop-up, perfeito para relógios de papel e experimentação prática.' },
       dateRange: { label: 'Ano Completo/Meio:', text: ': Escolha Inverno–Primavera ou Outono–Verão para um layout mais limpo e fácil de ler.' },
-      specialDates: { label: 'Datas Especiais:', text: ': Insira Dia e Mês nas Linhas de Data. Desmarque Hoje para remover a linha vermelha com a data de hoje.' },
+      specialDates: { label: 'Datas Especiais:', text: ': Exiba quaisquer datas especiais. Desmarque «Hoje» para remover a linha vermelha com a data de hoje.' },
       reset: { label: 'Redefinir para Padrões:', text: 'Clique no botão Redefinir para restaurar os padrões e trazer de volta este popup.' },
     },
     dontShowAgain: 'Não mostrar novamente',
@@ -115,10 +115,10 @@ const translations: Record<Language, Translations> = {
     title: '如何制作您的定制日晷',
     steps: {
       location: { label: '位置：', text: '使用下拉菜单、交互式地图或直接输入纬度和经度。' },
-      size: { label: '尺寸和形状：', text: ' 大或小；无论您喜欢经典的矩形还是优雅的椭圆形。' },
+      size: { label: '尺寸和形状：', text: ' 大或小；矩形或椭圆/圆形。' },
       gnomon: { label: '晷针样式：', text: ' 不要错过创新的弹出式晷针，非常适合纸质日晷和动手实验。' },
       dateRange: { label: '全年/半年：', text: '选择冬季–春季或秋季–夏季，以获得更清晰、更易读的布局。' },
-      specialDates: { label: '特殊日期：', text: '在日期线中输入日期和月份。取消选中"今天"以移除带有今天日期的红线。' },
+      specialDates: { label: '特殊日期：', text: ' 显示任意特殊日期。取消选中「今天」以移除带有今天日期的红线。' },
       reset: { label: '重置为默认值：', text: '点击重置按钮以恢复默认设置并重新显示此弹出窗口。' },
     },
     dontShowAgain: '不再显示',
@@ -128,11 +128,11 @@ const translations: Record<Language, Translations> = {
   ja: {
     title: 'カスタム日時計の作り方',
     steps: {
-      location: { label: '位置：', text: 'ドロップダウンメニュー、インタラクティブマップ、または緯度と経度を直接入力して設定します。' },
-      size: { label: 'サイズと形状：', text: ' 大きいまたは小さい；クラシックな長方形または優雅な楕円形のどちらを好むか。' },
+      location: { label: '位置：', text: 'ドロップダウンメニュー、インタラクティブマップを使うか、緯度と経度を直接入力してください。' },
+      size: { label: 'サイズと形状：', text: ' 大きいまたは小さい；長方形または楕円/円形。' },
       gnomon: { label: 'グノモンスタイル：', text: ' 紙の日時計や実践的な実験に最適な革新的なポップアップグノモンをお見逃しなく。' },
       dateRange: { label: '全年/半年：', text: 'よりクリーンで読みやすいレイアウトのために、冬–春または秋–夏を選択します。' },
-      specialDates: { label: '特別な日付：', text: '日付線に日と月を入力します。今日の日付の赤い線を削除するには、「今日」のチェックを外します。' },
+      specialDates: { label: '特別な日付：', text: ' 任意の特別な日付を表示します。「今日」のチェックを外すと、今日の日付の赤い線が削除されます。' },
       reset: { label: 'デフォルトにリセット：', text: 'リセットボタンをクリックしてデフォルト設定に戻し、このポップアップを再表示してください。' },
     },
     dontShowAgain: '再表示しない',
@@ -142,11 +142,11 @@ const translations: Record<Language, Translations> = {
   ko: {
     title: '맞춤형 해시계 만들기',
     steps: {
-      location: { label: '위치:', text: '드롭다운 메뉴, 대화형 지도 또는 위도와 경도를 직접 입력하여 설정합니다.' },
-      size: { label: '크기와 모양:', text: ' 크거나 작은；클래식한 직사각형 또는 우아한 타원형 중 선호하는 것을 선택하세요.' },
+      location: { label: '위치:', text: ' 드롭다운 메뉴, 대화형 지도를 사용하거나 위도와 경도를 직접 입력하세요.' },
+      size: { label: '크기와 모양:', text: ' 크거나 작음; 직사각형 또는 타원/원형.' },
       gnomon: { label: '그노몬 스타일:', text: ' 종이 해시계와 실습 실험에 완벽한 혁신적인 팝업 그노몬을 놓치지 마세요.' },
       dateRange: { label: '전체/반년:', text: '더 깔끔하고 읽기 쉬운 레이아웃을 위해 겨울–봄 또는 가을–여름을 선택합니다.' },
-      specialDates: { label: '특별한 날짜:', text: '날짜선에 일과 월을 입력합니다. 오늘 날짜의 빨간 선을 제거하려면 "오늘"의 체크를 해제하세요.' },
+      specialDates: { label: '특별한 날짜:', text: ' 원하는 특별한 날짜를 표시합니다. \'오늘\'의 체크를 해제하면 오늘 날짜의 빨간 선이 제거됩니다.' },
       reset: { label: '기본값으로 재설정:', text: '재설정 버튼을 클릭하여 기본값을 복원하고 이 팝업을 다시 표시하세요.' },
     },
     dontShowAgain: '다시 표시하지 않음',
@@ -156,11 +156,11 @@ const translations: Record<Language, Translations> = {
   ru: {
     title: 'Как Создать Свой Персональный Солнечные Часы',
     steps: {
-      location: { label: 'Местоположение:', text: ' используя выпадающее меню, интерактивную карту или введя широту и долготу напрямую.' },
-      size: { label: 'Размер и Форма:', text: ' Большие или Маленькие; предпочитаете ли вы классический прямоугольник или изящный овал.' },
+      location: { label: 'Местоположение:', text: ' Используйте выпадающее меню, интерактивную карту или введите широту и долготу напрямую.' },
+      size: { label: 'Размер и Форма:', text: ' Большие или маленькие; прямоугольные или овальные/круглые.' },
       gnomon: { label: 'Стиль Гномона:', text: ' Не пропустите инновационный всплывающий гномон, идеально подходящий для бумажных часов и практических экспериментов.' },
       dateRange: { label: 'Полный/Полугодовой:', text: ': Выберите Зима–Весна или Осень–Лето для более чистого и удобочитаемого макета.' },
-      specialDates: { label: 'Особые Даты:', text: ': Введите День и Месяц в Линиях Даты. Снимите флажок Сегодня, чтобы удалить красную линию с сегодняшней датой.' },
+      specialDates: { label: 'Особые Даты:', text: ': Отображайте любые особые даты. Снимите флажок «Сегодня», чтобы удалить красную линию с сегодняшней датой.' },
       reset: { label: 'Сбросить к Значениям по Умолчанию:', text: 'Нажмите кнопку Сбросить, чтобы восстановить настройки по умолчанию и вернуть это всплывающее окно.' },
     },
     dontShowAgain: 'Больше не показывать',
@@ -170,11 +170,11 @@ const translations: Record<Language, Translations> = {
   ar: {
     title: 'كيفية بناء ساعتك الشمسية المخصصة',
     steps: {
-      location: { label: 'الموقع:', text: ' باستخدام القائمة المنسدلة أو الخريطة التفاعلية أو بإدخال خط العرض وخط الطول مباشرة.' },
-      size: { label: 'الحجم والشكل:', text: ' كبيرة أو صغيرة؛ سواء كنت تفضل مستطيلاً كلاسيكياً أو بيضاوياً أنيقاً.' },
+      location: { label: 'الموقع:', text: ' استخدم القائمة المنسدلة أو الخريطة التفاعلية أو أدخل خط العرض وخط الطول مباشرة.' },
+      size: { label: 'الحجم والشكل:', text: ' كبيرة أو صغيرة؛ مستطيلة أو بيضاوية/دائرية.' },
       gnomon: { label: 'نمط العقرب:', text: ' لا تفوت العقرب المنبثق المبتكر، المثالي للساعات الورقية والتجارب العملية.' },
       dateRange: { label: 'سنة كاملة/نصف سنة:', text: ': اختر الشتاء–الربيع أو الخريف–الصيف للحصول على تخطيط أنظف وأسهل للقراءة.' },
-      specialDates: { label: 'تواريخ خاصة:', text: ': أدخل اليوم والشهر في خطوط التاريخ. قم بإلغاء تحديد "اليوم" لإزالة الخط الأحمر مع تاريخ اليوم.' },
+      specialDates: { label: 'تواريخ خاصة:', text: ': اعرض أي تواريخ خاصة. قم بإلغاء تحديد \'اليوم\' لإزالة الخط الأحمر مع تاريخ اليوم.' },
       reset: { label: 'إعادة التعيين إلى الافتراضيات:', text: 'انقر على زر إعادة التعيين لاستعادة الإعدادات الافتراضية وإعادة عرض هذه النافذة المنبثقة.' },
     },
     dontShowAgain: 'لا تظهر مرة أخرى',
