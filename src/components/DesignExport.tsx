@@ -425,7 +425,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
             flexDirection: 'column'
           }}
         >
-          {/* Reset, Save, Load (left) and Print (right) */}
+          {/* Reset, Save, Load (left) and Export (right) */}
             <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '0.5rem' }}>
               {/* Reset, Save, Load - left aligned */}
               <div className="form-group" style={{ display: 'flex', flexDirection: 'row', gap: '0.4rem', alignItems: 'center', flexWrap: 'nowrap' }}>
@@ -482,11 +482,12 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                   Load
                 </button>
               </div>
-              {/* Print - right aligned */}
+              {/* Export - right aligned */}
               <div className="form-group" style={{ flexShrink: 0 }}>
                 <button
                   className="btn btn-primary"
-                  onClick={handlePrintClick}
+                  onClick={handleExportClick}
+                  disabled={isExporting}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -494,16 +495,20 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                     width: '100px',
                     minWidth: '100px',
                     padding: '0.5rem 0.6rem',
-                    gap: '4px'
+                    gap: '4px',
+                    opacity: isExporting ? 0.7 : 1,
+                    cursor: isExporting ? 'not-allowed' : 'pointer',
+                    transform: isExporting ? 'scale(0.98)' : 'scale(1)',
+                    transition: 'all 0.1s ease',
                   }}
                 >
-                  <Printer size={16} />
-                  Print
+                  <Download size={18} style={{ marginRight: '2px' }} stroke="#fff" strokeWidth={2} />
+                  {isExporting ? 'Exporting...' : 'Export'}
                 </button>
               </div>
             </div>
 
-          {/* Export controls row */}
+          {/* Print + export options row */}
           <div
             className="form-row"
             style={{
@@ -514,7 +519,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
               flexDirection: isMobile ? 'column' : 'row'
             }}
           >
-            {/* Left: Export options */}
+            {/* Left: Export format options */}
             <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.5rem' : '0.5rem', flex: '1 1 auto', minWidth: 0 }}>
               {/* Export Format */}
               <div className="form-group" style={{ flex: isMobile ? '1' : 'auto' }}>
@@ -552,27 +557,23 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
               )}
             </div>
 
-            {/* Right: Export button (aligned with Print above) */}
+            {/* Right: Print button (aligned with Export above) */}
             <div className="form-group" style={{ alignSelf: isMobile ? 'stretch' : 'end', marginLeft: isMobile ? 0 : 'auto', flex: '0 0 auto' }}>
               <button
                 className="btn btn-primary"
-                onClick={handleExportClick}
-                disabled={isExporting}
+                onClick={handlePrintClick}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   width: isMobile ? '100%' : '100px',
                   minWidth: isMobile ? 'auto' : '100px',
-                  opacity: isExporting ? 0.7 : 1,
-                  cursor: isExporting ? 'not-allowed' : 'pointer',
-                  transform: isExporting ? 'scale(0.98)' : 'scale(1)',
-                  transition: 'all 0.1s ease',
-                  padding: '0.5rem 0.6rem'
+                  padding: '0.5rem 0.6rem',
+                  gap: '4px'
                 }}
               >
-                <Download size={18} style={{ marginRight: '6px' }} stroke="#fff" strokeWidth={2} />
-                {isExporting ? 'Exporting...' : 'Export'}
+                <Printer size={16} />
+                Print
               </button>
             </div>
           </div>

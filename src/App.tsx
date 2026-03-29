@@ -18,7 +18,7 @@
 // along with this program. If not, see <https://creativecommons.org/licenses/by-nc-sa/4.0/>.
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { Printer, MapPin, StickyNote, MoveUpRight, Text, Calendar, Clock, PenLine, Map, Info, Undo } from 'lucide-react';
+import { Download, MapPin, StickyNote, MoveUpRight, Text, Calendar, Clock, PenLine, Map, Info, Undo } from 'lucide-react';
 
 import PageSettings, { type InclineType, type DeclinationType, type DialShape } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
@@ -46,7 +46,7 @@ import { log } from './utils/logger';
 const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\nLatitude: {latitude}, Longitude: {longitude}\n{half-year}\n*{incline}{decline}*\n*{gnomon}*\n**{today}**`;
 
 const MOBILE_TABS = [
-  { id: 'card-export',     icon: Printer,     label: 'Export' },
+  { id: 'card-export',     icon: Download,    label: 'Export' },
   { id: 'card-location',   icon: MapPin,      label: 'Location' },
   { id: 'card-page',       icon: StickyNote,  label: 'Page' },
   { id: 'card-gnomon',     icon: MoveUpRight, label: 'Gnomon' },
