@@ -7,7 +7,6 @@ import type { GnomonType, InclineType } from '../types/sundial';
 import { saveDialConfig, loadAllSavedConfigs, deleteSavedConfig, hasSavedConfigs, type SavedDialConfig } from '../utils/dialSaveRestore';
 import SaveDialDialog from './SaveDialDialog';
 import RestoreDialDialog from './RestoreDialDialog';
-import { clearWelcomeDismissed } from './WelcomeDialog';
 import type { HourlineInterval } from './hourlineUtils';
 import type { LineStyle } from './LineSettings';
 import type { DeclinationLine } from './DeclinationLineOptions';
@@ -65,6 +64,7 @@ interface DesignExportProps {
   sundialNotesOffsetHorizontal?: number;
   onRestoreDial?: (config: SavedDialConfig['config']) => void;
   onSetTodayLineActive?: (active: boolean) => void;
+  onResetDefaults: () => void;
 }
 
 
@@ -77,7 +77,8 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST,
   declinationNoonmarks, dialTextBlockFontSize, dialTextBlockFontFamily, sundialNotesPositionMode, sundialNotesOffset, sundialNotesOffsetHorizontal,
   onRestoreDial,
-  onSetTodayLineActive
+  onSetTodayLineActive,
+  onResetDefaults
 }) => {
   const [format, setFormat] = useState<ExportFormat>('PNG');
   const [dpi, setDpi] = useState<number>(600);
@@ -177,23 +178,6 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
     declinationLines, showBackground, backgroundColor, dialTextBlock, dialTextBlockFontSize, dialTextBlockFontFamily,
     sundialNotesMode, sundialNotesPositionMode, sundialNotesOffset, sundialNotesOffsetHorizontal
   ]);
-
-  const handleResetDefaults = useCallback(() => {
-    if (confirm('This will reset all your custom settings (line styles, declination lines, etc.) to defaults. Are you sure?')) {
-      const keysToRemove = [
-        'sundial-line-styles',
-        'sundial-declination-lines',
-        'sundial-hourline-intervals',
-        'sundial-hourline-overrides',
-      ];
-      keysToRemove.forEach(key => localStorage.removeItem(key));
-      clearWelcomeDismissed();
-      document.querySelector<HTMLElement>('.controls-panel')?.scrollTo(0, 0);
-      try { sessionStorage.setItem('sundial-scroll-panel-to-top', '1'); } catch (_) {}
-      window.location.hash = '';
-      window.location.reload();
-    }
-  }, []);
 
   const handleSave = useCallback(() => {
     setSaveDialogOpen(true);
@@ -447,7 +431,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
               <div className="form-group" style={{ display: 'flex', flexDirection: 'row', gap: '0.4rem', alignItems: 'center', flexWrap: 'nowrap' }}>
                 <button
                   className="btn btn-secondary"
-                  onClick={handleResetDefaults}
+                  onClick={onResetDefaults}
                   title="Reset to defaults"
                   style={{
                     display: 'inline-flex',

@@ -18,7 +18,7 @@
 // along with this program. If not, see <https://creativecommons.org/licenses/by-nc-sa/4.0/>.
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { Printer, MapPin, StickyNote, MoveUpRight, Text, Calendar, Clock, PenLine, Map, Info } from 'lucide-react';
+import { Printer, MapPin, StickyNote, MoveUpRight, Text, Calendar, Clock, PenLine, Map, Info, Undo } from 'lucide-react';
 
 import PageSettings, { type InclineType, type DeclinationType, type DialShape } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
@@ -38,7 +38,7 @@ import AboutCard from './components/AboutCard';
 // import VisitorMap from './components/VisitorMap';
 import DialTextBlockSettings from './components/DialTextBlockSettings';
 import PrintedDialsMap from './components/PrintedDialsMap';
-import WelcomeDialog from './components/WelcomeDialog';
+import WelcomeDialog, { clearWelcomeDismissed } from './components/WelcomeDialog';
 import type { SundialPrint } from './types/sundial';
 import { log } from './utils/logger';
 
@@ -58,7 +58,7 @@ const MOBILE_TABS = [
   { id: 'card-about',      icon: Info,        label: 'About' },
 ];
 
-const MobileTabBar: React.FC = () => {
+const MobileTabBar: React.FC<{ onResetDefaults: () => void }> = ({ onResetDefaults }) => {
   const [activeTab, setActiveTab] = React.useState<string | null>(null);
 
   const handleTabClick = (id: string) => {
@@ -74,17 +74,29 @@ const MobileTabBar: React.FC = () => {
 
   return (
     <div className="mobile-tab-bar">
-      {MOBILE_TABS.map(({ id, icon: Icon, label }) => (
-        <button
-          key={id}
-          className={`mobile-tab-btn${activeTab === id ? ' active' : ''}`}
-          onClick={() => handleTabClick(id)}
-          title={label}
-          aria-label={label}
-        >
-          <Icon size={18} />
-        </button>
-      ))}
+      <div className="mobile-tab-bar-tabs">
+        {MOBILE_TABS.map(({ id, icon: Icon, label }) => (
+          <button
+            key={id}
+            type="button"
+            className={`mobile-tab-btn${activeTab === id ? ' active' : ''}`}
+            onClick={() => handleTabClick(id)}
+            title={label}
+            aria-label={label}
+          >
+            <Icon size={18} />
+          </button>
+        ))}
+      </div>
+      <button
+        type="button"
+        className="mobile-tab-btn mobile-tab-bar-reset"
+        onClick={onResetDefaults}
+        title="Reset to defaults"
+        aria-label="Reset to defaults"
+      >
+        <Undo size={18} />
+      </button>
     </div>
   );
 };
@@ -530,6 +542,23 @@ const App: React.FC = () => {
     setPrintedDialsMapRefreshTrigger(prev => prev + 1);
   }, []);
 
+  const handleResetDefaults = useCallback(() => {
+    if (confirm('This will reset all your custom settings (line styles, declination lines, etc.) to defaults. Are you sure?')) {
+      const keysToRemove = [
+        'sundial-line-styles',
+        'sundial-declination-lines',
+        'sundial-hourline-intervals',
+        'sundial-hourline-overrides',
+      ];
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      clearWelcomeDismissed();
+      document.querySelector<HTMLElement>('.controls-panel')?.scrollTo(0, 0);
+      try { sessionStorage.setItem('sundial-scroll-panel-to-top', '1'); } catch (_) {}
+      window.location.hash = '';
+      window.location.reload();
+    }
+  }, []);
+
   // Callback to restore dial configuration from saved config
   const handleRestoreDial = useCallback((config: any) => {
     // Set restore flag to prevent auto-initialization
@@ -689,6 +718,7 @@ const App: React.FC = () => {
           sundialNotesOffsetHorizontal={sundialNotesOffsetHorizontal}
           onRestoreDial={handleRestoreDial}
           onSetTodayLineActive={handleSetTodayLineActive}
+          onResetDefaults={handleResetDefaults}
         /></div>
 
         <div id="card-location"><LocationInputs
@@ -872,7 +902,7 @@ const App: React.FC = () => {
         }}>
           <SundialPreview config={previewConfig} />
         </React.Profiler>
-        <MobileTabBar />
+        <MobileTabBar onResetDefaults={handleResetDefaults} />
       </div>
 
     </div>

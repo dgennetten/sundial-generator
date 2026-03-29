@@ -577,21 +577,19 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
           >
             <button
               type="button"
-              className="form-input"
+              className="btn btn-primary"
+              onClick={() => setMapOpen(true)}
               style={{
-                height: 36,
-                cursor: 'pointer',
-                padding: layoutMode === 'mobile-landscape' ? '0 6px' : '0 12px',
-                width: 'auto',
-                minWidth: layoutMode === 'mobile-landscape' ? '60px' : '80px',
-                whiteSpace: 'nowrap',
-                fontSize: layoutMode === 'mobile-landscape' ? '0.85rem' : '0.9rem',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.35rem'
+                width: layoutMode === 'mobile-landscape' ? 'auto' : '100px',
+                minWidth: layoutMode === 'mobile-landscape' ? '72px' : '100px',
+                padding: '0.5rem 0.6rem',
+                gap: '4px',
+                whiteSpace: 'nowrap',
+                fontSize: layoutMode === 'mobile-landscape' ? '0.85rem' : undefined,
               }}
-              onClick={() => setMapOpen(true)}
             >
               <Map size={16} />
               Map
