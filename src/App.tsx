@@ -54,7 +54,7 @@ const MOBILE_TABS = [
   { id: 'card-datelines',  icon: Calendar,    label: 'Date Lines' },
   { id: 'card-hourlines',  icon: Clock,       label: 'Hour Lines' },
   { id: 'card-linestyles', icon: PenLine,     label: 'Line Styles' },
-  { id: 'card-map',        icon: Map,         label: 'Map' },
+  { id: 'card-map',        icon: Map,         label: 'Recent Prints & Exports. Click to view.' },
   { id: 'card-about',      icon: Info,        label: 'About' },
 ];
 
