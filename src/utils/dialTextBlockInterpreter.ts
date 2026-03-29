@@ -94,16 +94,10 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
 
   // Always expand {today} for email/logging (even if it isn't shown on the dial)
   const todayDate = getTodayDateString();
-  processedText = processedText.replace(/\*?\{today\}\*?/gi, (match) => {
-    if (match.startsWith('*') && match.endsWith('*')) {
-      return `*${todayDate}*`;
-    } else if (match.startsWith('*')) {
-      return `*${todayDate}`;
-    } else if (match.endsWith('*')) {
-      return `${todayDate}*`;
-    }
-    return `*${todayDate}*`;
-  });
+  processedText = processedText
+    .replace(/\*\*\{today\}\*\*/gi, `**${todayDate}**`)
+    .replace(/\*\{today\}\*/gi, `*${todayDate}*`)
+    .replace(/\{today\}/gi, `**${todayDate}**`);
 
   return processedText;
 }

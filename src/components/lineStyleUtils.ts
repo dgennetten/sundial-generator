@@ -41,10 +41,10 @@ export const DEFAULT_LINE_STYLES: LineStyle[] = [
     fixed: true,
   },
   {
-    width: 'hairline',
+    width: '0.5mm',
     color: 'red',
-    style: 'dashed',
-    name: 'red dash hairline',
+    style: 'solid',
+    name: 'Fat Red',
     id: 'red-dashed-hairline',
     fixed: true,
   },

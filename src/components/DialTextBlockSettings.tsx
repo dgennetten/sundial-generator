@@ -178,7 +178,7 @@ const DialTextBlockSettings: React.FC<Props> = ({
               <label className="form-label">
                 <span>Text Content</span>{' '}
                 <span style={{ fontSize: '0.9em', color: '#718096' }}>
-                  (supports {"{location}"}, {"{latitude}"}, {"{longitude}"}, {"{half-year}"}, {"{gnomon}"}, {"{incline}"}, {"{decline}"}, {"{today}"} and some Markup codes)
+                  (supports {"{location}"}, {"{latitude}"}, {"{longitude}"}, {"{half-year}"}, {"{gnomon}"}, {"{incline}"}, {"{decline}"}, {"{today}"} and some Markup codes), or any text you desire.
                 </span>
               </label>
               <textarea

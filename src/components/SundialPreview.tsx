@@ -1914,25 +1914,18 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       .replace(/\{incline\}/gi, inclineString)
       .replace(/\{decline\}/gi, (inclineString && declineString) ? `, ${declineString}` : declineString);
 
-    // Handle {today} placeholder specially - replace with red-colored text
+    // Handle {today} placeholder specially - replace with red-colored text (bold **…** or italic *…*)
     if (todayLineActive) {
       const todayDate = getTodayDateString();
-      // Replace {today} with the date, preserving any surrounding asterisks
-      processedText = processedText.replace(/\*?\{today\}\*?/gi, (match) => {
-        // If the match includes asterisks, preserve them
-        if (match.startsWith('*') && match.endsWith('*')) {
-          return `*${todayDate}*`; // Preserve italic formatting
-        } else if (match.startsWith('*')) {
-          return `*${todayDate}`; // Preserve leading asterisk
-        } else if (match.endsWith('*')) {
-          return `${todayDate}*`; // Preserve trailing asterisk
-        } else {
-          return `*${todayDate}*`; // Add asterisks for italic
-        }
-      });
+      processedText = processedText
+        .replace(/\*\*\{today\}\*\*/gi, `**${todayDate}**`)
+        .replace(/\*\{today\}\*/gi, `*${todayDate}*`)
+        .replace(/\{today\}/gi, `**${todayDate}**`);
     } else {
-      // Remove {today} and any surrounding asterisks
-      processedText = processedText.replace(/\*?\{today\}\*?/gi, '');
+      processedText = processedText
+        .replace(/\*\*\{today\}\*\*/gi, '')
+        .replace(/\*\{today\}\*/gi, '')
+        .replace(/\{today\}/gi, '');
     }
 
     // Custom parsing function that handles color for {today} text
@@ -1991,9 +1984,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
         const markedText = text.slice(markerStart + markerLength, markerEnd);
 
-        // Check if this is the today date text (italic with red color)
-        // The {today} placeholder gets replaced with *${todayDate}*, so we need to check if this text
-        // was generated from the {today} placeholder by checking if it matches today's date
+        // Check if this is the today date text (bold **…** or italic *…*, shown in red)
+        // The {today} placeholder becomes **date** or *date*; match on the expanded date string
         const isTodayText = todayLineActive && markedText === getTodayDateString();
 
         // Add marked text
