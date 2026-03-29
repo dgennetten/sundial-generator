@@ -65,11 +65,14 @@ const MobileTabBar: React.FC<{ onResetDefaults: () => void }> = ({ onResetDefaul
     setActiveTab(id);
     const el = document.getElementById(id);
     if (!el) return;
-    // On mobile portrait the page scrolls; offset by sticky header height
-    const stickyHeader = document.querySelector('.preview-panel') as HTMLElement | null;
-    const offset = stickyHeader ? stickyHeader.offsetHeight : 0;
-    const top = el.getBoundingClientRect().top + window.scrollY - offset;
-    window.scrollTo({ top, behavior: 'smooth' });
+    // controls-panel is the scroll container on mobile portrait
+    const scroller = document.querySelector('.controls-panel') as HTMLElement | null;
+    if (scroller) {
+      const top = el.offsetTop - scroller.offsetTop;
+      scroller.scrollTo({ top, behavior: 'smooth' });
+    } else {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
