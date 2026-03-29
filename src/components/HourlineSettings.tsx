@@ -56,7 +56,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
 }) => {
 
   // Responsive: detect mobile
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
 
 
   const handleChange = (idx: number, field: keyof HourlineInterval, value: string | boolean) => {

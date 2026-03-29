@@ -546,6 +546,12 @@
     overflow-y: auto;
     padding: 0.75rem;
   }
+
+  /* Form rows become left-aligned columns on mobile portrait */
+  .form-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 /* Utility Classes */
