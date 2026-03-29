@@ -187,7 +187,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
           className="form-row"
           style={{
             display: 'flex',
-            alignItems: 'center',
+            alignItems: isMobile ? 'flex-start' : 'center',
             gap: isMobile ? '0.75rem' : '1.25rem',
             flexWrap: 'wrap',
           }}
