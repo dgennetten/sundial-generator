@@ -18,6 +18,7 @@
 // along with this program. If not, see <https://creativecommons.org/licenses/by-nc-sa/4.0/>.
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { Printer, MapPin, StickyNote, MoveUpRight, Text, Calendar, Clock, PenLine, Map, Info } from 'lucide-react';
 
 import PageSettings, { type InclineType, type DeclinationType, type DialShape } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
@@ -43,6 +44,50 @@ import { log } from './utils/logger';
 
 
 const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\nLatitude: {latitude}, Longitude: {longitude}\n{half-year}\n*{incline}{decline}*\n*{gnomon}*\n**{today}**`;
+
+const MOBILE_TABS = [
+  { id: 'card-export',     icon: Printer,     label: 'Export' },
+  { id: 'card-location',   icon: MapPin,      label: 'Location' },
+  { id: 'card-page',       icon: StickyNote,  label: 'Page' },
+  { id: 'card-gnomon',     icon: MoveUpRight, label: 'Gnomon' },
+  { id: 'card-decoration', icon: Text,        label: 'Decoration' },
+  { id: 'card-datelines',  icon: Calendar,    label: 'Date Lines' },
+  { id: 'card-hourlines',  icon: Clock,       label: 'Hour Lines' },
+  { id: 'card-linestyles', icon: PenLine,     label: 'Line Styles' },
+  { id: 'card-map',        icon: Map,         label: 'Map' },
+  { id: 'card-about',      icon: Info,        label: 'About' },
+];
+
+const MobileTabBar: React.FC = () => {
+  const [activeTab, setActiveTab] = React.useState<string | null>(null);
+
+  const handleTabClick = (id: string) => {
+    setActiveTab(id);
+    const el = document.getElementById(id);
+    if (!el) return;
+    // On mobile portrait the page scrolls; offset by sticky header height
+    const stickyHeader = document.querySelector('.preview-panel') as HTMLElement | null;
+    const offset = stickyHeader ? stickyHeader.offsetHeight : 0;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior: 'smooth' });
+  };
+
+  return (
+    <div className="mobile-tab-bar">
+      {MOBILE_TABS.map(({ id, icon: Icon, label }) => (
+        <button
+          key={id}
+          className={`mobile-tab-btn${activeTab === id ? ' active' : ''}`}
+          onClick={() => handleTabClick(id)}
+          title={label}
+          aria-label={label}
+        >
+          <Icon size={18} />
+        </button>
+      ))}
+    </div>
+  );
+};
 
 const App: React.FC = () => {
   const [latitude, setLatitude] = useState(40.5853);
@@ -595,7 +640,7 @@ const App: React.FC = () => {
           <p className="app-subtitle">Create beautiful, accurate sundials for any location</p>
         </div>
 
-        <DesignExport
+        <div id="card-export"><DesignExport
           pageSize={pageSize}
           orientation={orientation}
           customWidth={customWidth}
@@ -644,9 +689,9 @@ const App: React.FC = () => {
           sundialNotesOffsetHorizontal={sundialNotesOffsetHorizontal}
           onRestoreDial={handleRestoreDial}
           onSetTodayLineActive={handleSetTodayLineActive}
-        />
+        /></div>
 
-        <LocationInputs
+        <div id="card-location"><LocationInputs
           latitude={latitude}
           longitude={longitude}
           tzMeridian={tzMeridian}
@@ -678,9 +723,9 @@ const App: React.FC = () => {
               setLocationName(newLocationName);
             }
           }, [])}
-        />
+        /></div>
 
-        <PageSettings
+        <div id="card-page"><PageSettings
           pageSize={pageSize}
           setPageSize={setPageSize}
           orientation={orientation}
@@ -718,9 +763,9 @@ const App: React.FC = () => {
           showBackground={showBackground}
           backgroundColor={backgroundColor}
           onInclineTypeChange={() => setGnomonPositionMode('auto')}
-        />
+        /></div>
 
-        <GnomonSettings
+        <div id="card-gnomon"><GnomonSettings
           mode={gnomonMode}
           height={gnomonHeight}
           latitude={latitude}
@@ -743,9 +788,9 @@ const App: React.FC = () => {
             if (typeof position === 'number') setGnomonPosition(position);
             if (horizontalPosition !== undefined) setGnomonHorizontalPosition(horizontalPosition);
           }, [])}
-        />
+        /></div>
 
-        <DialTextBlockSettings
+        <div id="card-decoration"><DialTextBlockSettings
           dialTextBlock={dialTextBlock}
           setDialTextBlock={setDialTextBlock}
           dialTextBlockFontSize={dialTextBlockFontSize}
@@ -760,20 +805,19 @@ const App: React.FC = () => {
           setSundialNotesOffset={setSundialNotesOffset}
           sundialNotesOffsetHorizontal={sundialNotesOffsetHorizontal}
           setSundialNotesOffsetHorizontal={setSundialNotesOffsetHorizontal}
-        />
+        /></div>
 
         <React.Profiler id="HourlineSettings" onRender={(id, phase, actualDuration) => {
           if (phase === 'update') log.perf(id, phase, actualDuration);
         }}>
-
-          <DeclinationLineOptions
+          <div id="card-datelines"><DeclinationLineOptions
             lineStyles={lineStyles}
             declinationLines={declinationLines}
             setDeclinationLines={setDeclinationLines}
             dateRange={hourlineDateRange}
             lat={latitude}
-          />
-          <HourlineSettings
+          /></div>
+          <div id="card-hourlines"><HourlineSettings
             dateRange={hourlineDateRange}
             setDateRange={handleDateRangeChange}
             lineStyles={lineStyles}
@@ -801,25 +845,24 @@ const App: React.FC = () => {
             fontSize={fontSize}
             useDST={useDST}
             declinationNoonmarks={declinationNoonmarks}
-          />
+          /></div>
         </React.Profiler>
         <React.Profiler id="LineSettings" onRender={(id, phase, actualDuration) => {
           if (phase === 'update') log.perf(id, phase, actualDuration);
         }}>
-
-          <LineSettings
+          <div id="card-linestyles"><LineSettings
             lineStyles={lineStyles}
             setLineStyles={setLineStyles}
             hourlineIntervals={hourlineIntervals}
             declinationLines={declinationLines}
-          />
+          /></div>
         </React.Profiler>
-        <PrintedDialsMap
+        <div id="card-map"><PrintedDialsMap
           onPinClick={handlePinClick}
           refreshTrigger={printedDialsMapRefreshTrigger}
-        />
+        /></div>
         {/* <VisitorMap /> */}
-        <AboutCard />
+        <div id="card-about"><AboutCard /></div>
       </div>
 
       {/* Preview Panel - Right Side (order places it at top on mobile portrait) */}
@@ -829,6 +872,7 @@ const App: React.FC = () => {
         }}>
           <SundialPreview config={previewConfig} />
         </React.Profiler>
+        <MobileTabBar />
       </div>
 
     </div>

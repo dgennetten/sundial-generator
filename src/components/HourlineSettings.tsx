@@ -179,41 +179,50 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
               checked={declinationNoonmarks}
               onChange={(e) => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, e.target.checked)}
             />
-            Declination Noonmarks
+            Noon Date Marks
           </label>
         </div>
 
-        <div className="form-group">
-          <label className="form-checkbox">
-            <input
-              type="checkbox"
-              checked={labelWinterSide}
-              onChange={e => onUpdate(startHour, stopHour, use24Hour, e.target.checked, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
-            />
-            Winter label 
-          </label>
-        </div>
-
-        <div 
-          className="form-row" 
-          style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: isMobile ? '0.5rem' : '1rem',
-            flexDirection: isMobile ? 'column' : 'row'
+        <div
+          className="form-row"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: isMobile ? '0.75rem' : '1.25rem',
+            flexWrap: 'wrap',
           }}
         >
-          <div className="form-group" style={{ width: isMobile ? '100%' : 'auto' }}>
-            <label className="form-checkbox">
-              <input
-                type="checkbox"
-                checked={labelSummerSide}
-                onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, e.target.checked, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
-              />
-             Summer label
-            </label>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: isMobile ? '0.75rem' : '1.25rem',
+              flexWrap: 'nowrap',
+            }}
+          >
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-checkbox">
+                <input
+                  type="checkbox"
+                  checked={labelWinterSide}
+                  onChange={e => onUpdate(startHour, stopHour, use24Hour, e.target.checked, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
+                />
+                Winter label
+              </label>
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-checkbox">
+                <input
+                  type="checkbox"
+                  checked={labelSummerSide}
+                  onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, e.target.checked, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
+                />
+                Summer label
+              </label>
+            </div>
           </div>
-          <div className="form-group" style={{ width: isMobile ? '100%' : 'auto' }}>
+          <div className="form-group" style={{ marginBottom: 0, flex: isMobile ? '1 1 100%' : '0 0 auto' }}>
             <label className="form-checkbox">
               <input
                 type="checkbox"

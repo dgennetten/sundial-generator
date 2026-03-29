@@ -14,7 +14,6 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
   gnomonType,
   gnomonHeight,
   lat = 0,
-  inclineType = 'Horizontal',
   dialInclination = 0,
   fontSize = 20,
   originalLatitude,

@@ -303,9 +303,9 @@ Set the hours to display:
 
 - **Use DST**: Account for daylight saving time adjustments
 
-### Declination Noonmarks
+### Noon Date Marks
 
-- **Show Noonmarks**: Display marks on declination lines at noon
+- **Noon Date Marks**: Display marks on declination lines at solar noon for the relevant calendar dates
 
 ---
 

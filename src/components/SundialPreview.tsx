@@ -1625,9 +1625,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     return elements || [];
   });
 
-  // Create declination noonmarks if enabled
-  log.group('Declination Noonmarks');
-  log.debug(`Declination noonmarks enabled: ${declinationNoonmarks}, scale: ${scale}, viewBoxScaleFactor: ${viewBoxScaleFactor}`);
+  // Create noon date marks on declination lines if enabled
+  log.group('Noon Date Marks');
+  log.debug(`Noon date marks enabled: ${declinationNoonmarks}, scale: ${scale}, viewBoxScaleFactor: ${viewBoxScaleFactor}`);
 
   const declinationNoonmarkElements = declinationNoonmarks ? declinationLines.flatMap((line, idx) => {
 
