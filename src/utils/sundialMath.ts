@@ -68,7 +68,7 @@ export function getDisplayTiltAngle(
 ): number {
   switch (inclineType) {
     case 'Horizontal':
-      return 0;
+      return Math.abs(tiltAngle);
     case 'Cancer':
       return getCancerIncline(latitude);
     case 'Polar':
@@ -97,7 +97,7 @@ export function getRenderTiltAngle(
   const isSouthern = latitude < 0;
   switch (inclineType) {
     case 'Horizontal':
-      return 0;
+      return isSouthern ? -Math.abs(tiltAngle) : Math.abs(tiltAngle);
     case 'Cancer':
       // Negative for Southern hemisphere
       return isSouthern ? -getCancerIncline(latitude) : getCancerIncline(latitude);
@@ -141,7 +141,8 @@ export function computeInclineDegrees(args: {
   if (!inclineType) return null;
   const lat = typeof latitude === 'number' ? latitude : 0;
 
-  if (inclineType === 'Horizontal') return 0;
+  if (inclineType === 'Horizontal')
+    return typeof tiltAngle === 'number' ? Math.abs(tiltAngle) : 0;
   if (inclineType === 'Vertical') return 90;
   if (inclineType === 'Polar') return lat;
   if (inclineType === 'Cancer') return getCancerIncline(lat);

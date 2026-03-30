@@ -58,7 +58,7 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
     tiltAngle: ctx.tiltAngle,
   });
   const inclineString =
-    ctx.inclineType && ctx.inclineType !== 'Horizontal' && typeof inclineDegrees === 'number'
+    ctx.inclineType && typeof inclineDegrees === 'number' && Math.abs(inclineDegrees) >= 0.05
       ? `incline: ${inclineDegrees.toFixed(1)}°`
       : '';
 

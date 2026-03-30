@@ -227,7 +227,9 @@ const App: React.FC = () => {
   // Update tilt angle when incline type changes (not when latitude changes)
   // This prevents issues when switching between locations
   useEffect(() => {
-    if (inclineType !== 'Manual') {
+    if (inclineType === 'Horizontal') {
+      setTiltAngle(0);
+    } else if (inclineType !== 'Manual') {
       const newAngle = getDisplayTiltAngle(inclineType, latitude, tiltAngle);
       setTiltAngle(newAngle);
     }

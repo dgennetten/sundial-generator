@@ -1864,13 +1864,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
   let textBlockLines: Array<Array<{ text: string; bold: boolean; italic: boolean; color?: string }>> = [];
   if (dialTextBlock) {
-    // Create incline string - show for all incline types except Horizontal
-    const effectiveTiltAngle = inclineType === 'Horizontal' ? 0 :
+    // Create incline string when effective tilt is non-zero (including horizontal + tilt)
+    const effectiveTiltAngle = inclineType === 'Horizontal' ? Math.abs(tiltAngle) :
       inclineType === 'Cancer' ? getCancerIncline(originalLatitude || lat || 0) :
         inclineType === 'Polar' ? (originalLatitude || lat || 0) :
           inclineType === 'Capricorn' ? getCapricornIncline(originalLatitude || lat || 0) :
             inclineType === 'Vertical' ? 90 : tiltAngle;
-    const inclineString = (inclineType !== 'Horizontal' && Math.abs(effectiveTiltAngle) >= 0.05) ? `incline: ${effectiveTiltAngle.toFixed(1)}°` : '';
+    const inclineString = Math.abs(effectiveTiltAngle) >= 0.05 ? `incline: ${effectiveTiltAngle.toFixed(1)}°` : '';
 
     // Create decline string - show when declination is non-default for the hemisphere
     const defaultDecl = isGeoNorthern ? 'North' : 'South';

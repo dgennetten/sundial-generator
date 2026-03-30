@@ -7,6 +7,51 @@ import type { LineStyle } from './LineSettings';
 import type { PageSize, PageOrientation as Orientation, InclineType, DeclinationType } from '../types';
 export type { InclineType, DeclinationType };
 
+/** Compass bearing in degrees (N=0, E=90, S=180, W=270). */
+const DECLINATION_COMPASS_DEG: Record<Exclude<DeclinationType, 'Manual'>, number> = {
+  North: 0,
+  NNE: 22.5,
+  NE: 45,
+  ENE: 67.5,
+  East: 90,
+  ESE: 112.5,
+  SE: 135,
+  SSE: 157.5,
+  South: 180,
+  SSW: 202.5,
+  SW: 225,
+  WSW: 247.5,
+  West: 270,
+  WNW: 292.5,
+  NW: 315,
+  NNW: 337.5,
+};
+
+function shortestAngularDiffDeg(a: number, b: number): number {
+  let d = Math.abs(a - b) % 360;
+  if (d > 180) d = 360 - d;
+  return d;
+}
+
+/** Presets within ±90° of default wall normal: NH → South (180°), SH → North (0°), plus Manual. */
+function declinationOptionsForLatitude(latitude: number): DeclinationType[] {
+  const defaultBearing = latitude >= 0 ? 180 : 0;
+  const keys = Object.keys(DECLINATION_COMPASS_DEG) as Exclude<DeclinationType, 'Manual'>[];
+  const allowed = keys.filter(
+    (k) => shortestAngularDiffDeg(DECLINATION_COMPASS_DEG[k], defaultBearing) <= 90 + 1e-6
+  );
+  allowed.sort((a, b) => {
+    const da = DECLINATION_COMPASS_DEG[a];
+    const db = DECLINATION_COMPASS_DEG[b];
+    if (defaultBearing === 180) {
+      return da - db;
+    }
+    const sortKey = (d: number) => (d >= 270 ? d - 270 : d + 90);
+    return sortKey(da) - sortKey(db);
+  });
+  return [...allowed, 'Manual'];
+}
+
 // Utility to convert named color to hex
 function colorToHex(color: string): string {
   const ctx = document.createElement('canvas').getContext('2d');
@@ -131,8 +176,23 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   // Responsive: detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
 
-  // Calculate effective tilt angle for UI display
-  const displayTiltAngle = () => getDisplayTiltAngle(inclineType, latitude, tiltAngle);
+  // Dial Facing (North/South) is only for flat horizontal dials — same ~0.05° threshold as incline labeling
+  const dialFacingEnabled = inclineType === 'Horizontal' && Math.abs(tiltAngle) < 0.05;
+
+  const defaultDeclinationType: DeclinationType = latitude >= 0 ? 'South' : 'North';
+  const declinationOffDefault = declinationType !== defaultDeclinationType;
+
+  const declinationSelectOptions = useMemo(
+    () => declinationOptionsForLatitude(latitude),
+    [latitude]
+  );
+
+  useEffect(() => {
+    if (declinationType === 'Manual') return;
+    if (!declinationSelectOptions.includes(declinationType)) {
+      setDeclinationType(defaultDeclinationType);
+    }
+  }, [declinationType, declinationSelectOptions, defaultDeclinationType, setDeclinationType]);
 
   // Create reordered incline options for Southern hemisphere
   const inclineOptions = useMemo(() => {
@@ -160,8 +220,10 @@ const PageSettings: React.FC<PageSettingsProps> = ({
 
   const handleInclineTypeChange = (newType: InclineType) => {
     setInclineType(newType);
-    // Update tilt angle when changing from Manual to another type
-    if (newType !== 'Manual') {
+    // Preset horizontal dial is 0°; other presets derive angle from latitude / type
+    if (newType === 'Horizontal') {
+      setTiltAngle(0);
+    } else if (newType !== 'Manual') {
       const newAngle = getDisplayTiltAngle(newType, latitude, tiltAngle);
       setTiltAngle(newAngle);
     }
@@ -171,6 +233,19 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     }
   };
 
+  /** Preset canonical tilt (degrees, 0–90); tiltAngle argument ignored for fixed presets. */
+  const presetInclineDegrees = (type: InclineType): number =>
+    getDisplayTiltAngle(type, latitude, 0);
+
+  const handleInclineDegreesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Math.min(90, Math.max(0, parseFloat(e.target.value) || 0));
+    setTiltAngle(val);
+    if (inclineType === 'Manual') return;
+    if (Math.abs(val - presetInclineDegrees(inclineType)) > 0.01) {
+      setInclineType('Manual');
+      if (onInclineTypeChange) onInclineTypeChange();
+    }
+  };
 
   // Handler functions for dial shape and border controls
   const handleDialShapeChange = (newShape: DialShape) => {
@@ -386,16 +461,13 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             <input
               type="number"
               className="form-input"
-              value={inclineType === 'Manual' ? tiltAngle.toFixed(1) : displayTiltAngle().toFixed(1)}
-              onChange={(e) => setTiltAngle(parseFloat(e.target.value) || 0)}
-              disabled={inclineType !== 'Manual'}
+              value={tiltAngle.toFixed(1)}
+              onChange={handleInclineDegreesChange}
               min={0}
               max={90}
               step={inclinationStep}
               style={{
                 width: isMobile ? '70px' : '80px',
-                backgroundColor: inclineType !== 'Manual' ? '#f7fafc' : undefined,
-                color: inclineType !== 'Manual' ? '#a0aec0' : undefined
               }}
             />
           </div>
@@ -447,25 +519,14 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               onChange={(e) => setDeclinationType(e.target.value as DeclinationType)}
               style={{
                 minWidth: isMobile ? '80px' : 'auto',
+                backgroundColor: declinationOffDefault ? '#dbeafe' : undefined,
               }}
             >
-              <option value="North">North</option>
-              <option value="NNE">NNE</option>
-              <option value="NE">NE</option>
-              <option value="ENE">ENE</option>
-              <option value="East">East</option>
-              <option value="ESE">ESE</option>
-              <option value="SE">SE</option>
-              <option value="SSE">SSE</option>
-              <option value="South">South</option>
-              <option value="SSW">SSW</option>
-              <option value="SW">SW</option>
-              <option value="WSW">WSW</option>
-              <option value="West">West</option>
-              <option value="WNW">WNW</option>
-              <option value="NW">NW</option>
-              <option value="NNW">NNW</option>
-              <option value="Manual">Manual</option>
+              {declinationSelectOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
             </select>
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
@@ -530,21 +591,21 @@ const PageSettings: React.FC<PageSettingsProps> = ({
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
             <label className="form-label">Dial Facing</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '14px', color: inclineType !== 'Horizontal' ? '#9ca3af' : (dialOrientation === 'North' ? '#2563eb' : '#6b7280') }}>North</span>
+              <span style={{ fontSize: '14px', color: !dialFacingEnabled ? '#9ca3af' : (dialOrientation === 'North' ? '#2563eb' : '#6b7280') }}>North</span>
               <button
                 type="button"
-                onClick={() => inclineType === 'Horizontal' && setDialOrientation(dialOrientation === 'North' ? 'South' : 'North')}
-                disabled={inclineType !== 'Horizontal'}
+                onClick={() => dialFacingEnabled && setDialOrientation(dialOrientation === 'North' ? 'South' : 'North')}
+                disabled={!dialFacingEnabled}
                 style={{
                   width: '44px',
                   height: '24px',
                   borderRadius: '12px',
                   border: 'none',
-                  backgroundColor: inclineType !== 'Horizontal' ? '#d1d5db' : (dialOrientation === 'South' ? '#2563eb' : '#d1d5db'),
-                  cursor: inclineType !== 'Horizontal' ? 'not-allowed' : 'pointer',
+                  backgroundColor: !dialFacingEnabled ? '#d1d5db' : (dialOrientation === 'South' ? '#2563eb' : '#d1d5db'),
+                  cursor: !dialFacingEnabled ? 'not-allowed' : 'pointer',
                   position: 'relative',
                   transition: 'background-color 0.2s',
-                  opacity: inclineType !== 'Horizontal' ? 0.6 : 1
+                  opacity: !dialFacingEnabled ? 0.6 : 1
                 }}
               >
                 <div
@@ -561,8 +622,8 @@ const PageSettings: React.FC<PageSettingsProps> = ({
                   }}
                 />
               </button>
-              <span style={{ fontSize: '14px', color: inclineType !== 'Horizontal' ? '#9ca3af' : (dialOrientation === 'South' ? '#2563eb' : '#6b7280') }}>South</span>
-              {inclineType !== 'Horizontal' && (
+              <span style={{ fontSize: '14px', color: !dialFacingEnabled ? '#9ca3af' : (dialOrientation === 'South' ? '#2563eb' : '#6b7280') }}>South</span>
+              {!dialFacingEnabled && (
                 <span style={{ fontSize: '12px', color: '#dc2626', marginLeft: '8px' }}>
                   Horizontal dials only.
                 </span>
