@@ -1,6 +1,6 @@
 // src/components/PageSettings.tsx
 import { getDisplayTiltAngle } from '../utils/sundialMath';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { StickyNote } from 'lucide-react';
 import type { LineStyle } from './LineSettings';
 
@@ -193,6 +193,14 @@ const PageSettings: React.FC<PageSettingsProps> = ({
       setDeclinationType(defaultDeclinationType);
     }
   }, [declinationType, declinationSelectOptions, defaultDeclinationType, setDeclinationType]);
+
+  /** Preset/auto inclines track declination; switching decline should freeze tilt as Manual. */
+  const switchInclineToManualWhenDeclinationChanges = useCallback(() => {
+    if (inclineType !== 'Manual') {
+      setInclineType('Manual');
+      onInclineTypeChange?.();
+    }
+  }, [inclineType, setInclineType, onInclineTypeChange]);
 
   // Create reordered incline options for Southern hemisphere
   const inclineOptions = useMemo(() => {
@@ -516,7 +524,10 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             <select
               className="form-select"
               value={declinationType}
-              onChange={(e) => setDeclinationType(e.target.value as DeclinationType)}
+              onChange={(e) => {
+                setDeclinationType(e.target.value as DeclinationType);
+                switchInclineToManualWhenDeclinationChanges();
+              }}
               style={{
                 minWidth: isMobile ? '80px' : 'auto',
                 backgroundColor: declinationOffDefault ? '#dbeafe' : undefined,
@@ -540,6 +551,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
                 if (!isNaN(val)) {
                   setDeclinationDegrees(val);
                   if (declinationType !== 'Manual') setDeclinationType('Manual');
+                  switchInclineToManualWhenDeclinationChanges();
                 }
               }}
               min={-180}
