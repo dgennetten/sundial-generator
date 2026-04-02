@@ -235,6 +235,17 @@ const App: React.FC = () => {
     }
   }, [inclineType]);
 
+  // Until Auto-Incline supports declined surfaces with these presets, keep wall declination at the
+  // hemisphere default (poleward-facing, 0°) for Polar, Cancer, and Capricorn inclines.
+  useEffect(() => {
+    if (inclineType !== 'Cancer' && inclineType !== 'Capricorn' && inclineType !== 'Polar') {
+      return;
+    }
+    const defaultDecl: DeclinationType = latitude >= 0 ? 'South' : 'North';
+    setDeclinationType(defaultDecl);
+    setDeclinationDegrees(getWallDeclinationForPreset(defaultDecl, 0, latitude));
+  }, [inclineType, latitude]);
+
   // Update declination degrees when declination type preset changes
   useEffect(() => {
     if (declinationType !== 'Manual') {

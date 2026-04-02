@@ -1,6 +1,6 @@
 // src/components/DesignExport.tsx
 import React, { useState, useEffect, useCallback } from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM, { flushSync } from 'react-dom';
 import { Printer, Download, Save, FolderUp, Undo } from 'lucide-react';
 import { exportSundial, logPrintActivity, type ExportFormat, type PageSize } from '../utils/exportUtils';
 import type { GnomonType, InclineType } from '../types/sundial';
@@ -388,11 +388,21 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   const handleDialogContinue = async () => {
     const action = pendingAction;
     const shouldHideToday = !includeTodayLine && hasTodayLineActive;
-    setPendingAction(null);
+
+    // Close the modal synchronously so it is removed from the DOM before print/export.
+    // Otherwise window.print() can capture the overlay in the print preview.
+    flushSync(() => {
+      setPendingAction(null);
+    });
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
 
     if (shouldHideToday) {
       onSetTodayLineActive?.(false);
-      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+      });
     }
 
     try {
@@ -646,6 +656,18 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
               />
               Include Today ({todayFormatted}) Date Line?
             </label>
+
+            <p
+              style={{
+                margin: '14px 0 0 0',
+                fontSize: '0.875rem',
+                lineHeight: 1.45,
+                color: '#dc2626',
+              }}
+            >
+              TIP: Your printer may print {'<'} 100% Scale! Include{' '}
+              <strong>Pop-Up Gnomon</strong> to verify.
+            </p>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
               <button

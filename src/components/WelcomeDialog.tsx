@@ -441,15 +441,18 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose }) => {
           v{version} — <a
             href="mailto:support@sundial.gennetten.org?subject=Sundial%20Feedback"
             style={{
-              color: '#9ca3af',
+              color: '#dc2626',
+              fontSize: '0.9rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.02em',
               textDecoration: 'underline',
               cursor: 'pointer',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#718096';
+              e.currentTarget.style.color = '#b91c1c';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#9ca3af';
+              e.currentTarget.style.color = '#dc2626';
             }}
           >
             {translations[language].sendFeedback}
