@@ -144,7 +144,7 @@ const App: React.FC = () => {
           return { ...i, styleId: 'hourline-2-2-day-dash' };
         }
         if (i.id === 'quarter-hour') {
-          return { ...i, active: range !== 'FullYear', styleId: 'hourline-2-2-day-dash' };
+          return { ...i, styleId: 'hourline-2-2-day-dash' };
         }
         if (i.id === '5-minute' || i.id === '2-minute') {
           return { ...i, active: false };
@@ -154,7 +154,7 @@ const App: React.FC = () => {
       // Persist overrides of built-ins so refresh keeps the setting
       saveHourlineOverrides({
         'half-hour': { styleId: 'hourline-2-2-day-dash' },
-        'quarter-hour': { active: range !== 'FullYear', styleId: 'hourline-2-2-day-dash' },
+        'quarter-hour': { styleId: 'hourline-2-2-day-dash' },
         '5-minute': { active: false },
         '2-minute': { active: false },
       });
