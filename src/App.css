@@ -220,6 +220,20 @@
   padding-right: 1rem;
 }
 
+/* Invisible on desktop: inner scroll wrapper + preview slot wrappers */
+.mobile-controls-scroll {
+  display: contents;
+}
+
+.mobile-preview-slot,
+.mobile-preview-slot-inner {
+  display: contents;
+}
+
+.sundial-preview-svg-host {
+  min-height: 400px;
+}
+
 .controls-panel::-webkit-scrollbar {
   width: 6px;
 }
@@ -288,97 +302,7 @@
   }
 }
 
-/* Landscape mobile and small tablets - side-by-side layout */
-@media (max-width: 900px) and (min-height: 500px) and (orientation: landscape) {
-  .app-container {
-    flex-direction: row;
-    padding: 0.75rem;
-    gap: 1rem;
-  }
-  
-  .controls-panel {
-    flex: 0 0 380px;
-    overflow-y: auto;
-    max-height: 100vh;
-    padding-right: 0.5rem;
-  }
-  
-  .preview-panel {
-    flex: 1;
-    height: calc(100vh - 1.5rem);
-    overflow: hidden;
-  }
-  
-  .app-header {
-    margin-bottom: 1rem;
-  }
-  
-  .app-title {
-    font-size: 1.5rem;
-  }
-  
-  .app-subtitle {
-    font-size: 0.85rem;
-  }
-  
-  .card {
-    padding: 0.75rem;
-    margin-bottom: 0.75rem;
-  }
-}
-
-/* Small landscape phones - still use side-by-side but more compact */
-@media (max-width: 900px) and (max-height: 499px) and (orientation: landscape) {
-  .app-container {
-    flex-direction: row;
-    padding: 0.5rem;
-    gap: 0.75rem;
-  }
-  
-  .controls-panel {
-    flex: 0 0 320px;
-    overflow-y: auto;
-    max-height: 100vh;
-    padding-right: 0.25rem;
-  }
-  
-  .preview-panel {
-    flex: 1;
-    height: calc(100vh - 1rem);
-    overflow: hidden;
-  }
-  
-  .app-header {
-    margin-bottom: 0.75rem;
-  }
-  
-  .app-title {
-    font-size: 1.25rem;
-  }
-  
-  .app-subtitle {
-    font-size: 0.8rem;
-  }
-  
-  .card {
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  .card-title {
-    font-size: 1rem;
-  }
-  
-  .form-label {
-    font-size: 0.8rem;
-  }
-  
-  .form-input,
-  .form-select {
-    padding: 0.4rem 0.6rem;
-    font-size: 0.85rem;
-  }
-}
+/* Narrow screens (mobile / small tablet): stacked chrome — preview + tabs fixed, one scroll region below */
 
 /* Contain Leaflet's internal z-indices so the map never overlaps the sticky preview */
 #card-map {
@@ -403,50 +327,154 @@
 }
 
 /* ============================================================
-   Mobile Tab Bar — only visible in portrait mobile layout
+   Mobile Tab Bar — shown only in narrow stacked layout (see max-width: 900px)
    ============================================================ */
 .mobile-tab-bar {
-  display: none; /* hidden by default; shown only in mobile portrait media query */
+  display: none;
 }
 
-/* Portrait tablets and large phones — dock preview + tab bar at top */
-@media (max-width: 900px) and (orientation: portrait) {
-  /* Lock body/html so the viewport itself doesn't scroll — only controls-panel scrolls */
-  html, body {
+@media (max-width: 900px) {
+  /* Viewport is fixed; only .mobile-controls-scroll scrolls */
+  html,
+  body,
+  #root {
     height: 100%;
+    max-height: 100%;
     overflow: hidden;
   }
 
-  /* Container fills the full viewport as a column */
+  body {
+    display: block;
+    min-height: 100dvh;
+  }
+
+  #root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+
   .app-container {
-    height: 100vh;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100dvh;
     overflow: hidden;
     padding: 0;
     gap: 0;
-    flex-direction: column;
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
   }
 
-  /* Preview panel: capped height flex column, no padding/whitespace */
+  /* Preview: full viewport width × height from real page aspect (vars set on .preview-panel in App.tsx).
+     Use 100dvw (actual slot width), not dvmax — dvmax inflated height on portrait-held phones and caused top/bottom gaps. */
   .preview-panel {
-    flex-shrink: 0;
+    --mobile-tab-bar-height: 52px;
+    --mobile-page-aspect-w: 279.4;
+    --mobile-page-aspect-h: 215.9;
+    flex: 0 0 auto;
     order: -1;
     width: 100%;
-    max-height: 411vh;
     display: flex;
     flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    height: auto;
+    max-height: none;
     background: #f8f9fa;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
     z-index: 10;
     padding: 0;
+    padding-top: env(safe-area-inset-top, 0);
+    overflow: visible;
+  }
+
+  /* Landscape-oriented sheet: full width, height from page aspect */
+  .preview-panel[data-mobile-sheet="landscape"] .mobile-preview-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex-shrink: 0;
+    width: 100%;
+    aspect-ratio: var(--mobile-page-aspect-w) / var(--mobile-page-aspect-h);
+    max-height: calc(100dvh - var(--mobile-tab-bar-height) - env(safe-area-inset-top, 0px));
+    overflow: hidden;
+    background: #f8f9fa;
+  }
+
+  .preview-panel[data-mobile-sheet="landscape"] .mobile-preview-slot-inner {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    width: 100%;
     overflow: hidden;
   }
 
-  /* Hide the "Sundial Preview" card-header */
+  /*
+   * Portrait-oriented sheet: cap preview height to the same as a landscape dial at full width
+   * (100dvw × shortSide/longSide). Dial is letterboxed horizontally so controls keep vertical room.
+   */
+  .preview-panel[data-mobile-sheet="portrait"] .mobile-preview-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    flex-shrink: 0;
+    width: 100%;
+    aspect-ratio: unset;
+    height: min(
+      calc(
+        100dvw * min(var(--mobile-page-aspect-w), var(--mobile-page-aspect-h)) /
+          max(var(--mobile-page-aspect-w), var(--mobile-page-aspect-h))
+      ),
+      calc(100dvh - var(--mobile-tab-bar-height) - env(safe-area-inset-top, 0px))
+    );
+    max-height: calc(100dvh - var(--mobile-tab-bar-height) - env(safe-area-inset-top, 0px));
+    overflow: hidden;
+    background: #f8f9fa;
+  }
+
+  .preview-panel[data-mobile-sheet="portrait"] .mobile-preview-slot-inner {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    flex: 0 1 auto;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    aspect-ratio: var(--mobile-page-aspect-w) / var(--mobile-page-aspect-h);
+    overflow: hidden;
+  }
+
+  /* Portrait device + landscape sheet: side gutters when viewport height caps the preview */
+  @media (orientation: portrait) {
+    .preview-panel[data-mobile-sheet="landscape"] .mobile-preview-slot {
+      align-items: center;
+    }
+
+    .preview-panel[data-mobile-sheet="landscape"] .mobile-preview-slot-inner {
+      width: min(
+        100%,
+        calc(
+          (100dvh - var(--mobile-tab-bar-height) - env(safe-area-inset-top, 0px)) *
+            var(--mobile-page-aspect-w) / var(--mobile-page-aspect-h)
+        )
+      );
+      flex: 1;
+    }
+  }
+
   .preview-panel .card-header {
     display: none;
   }
 
-  /* Strip card chrome and make it fill the preview-panel (minus tab bar) */
   .preview-panel .card {
     flex: 1;
     min-height: 0;
@@ -460,27 +488,23 @@
     overflow: hidden;
   }
 
-  /* Remove the hover lift on the preview card */
   .preview-panel .card:hover {
     transform: none;
     box-shadow: none !important;
   }
 
-  /* SVG wrapper: fill the card, override the inline minHeight */
-  .preview-panel .card > div {
+  .preview-panel .card > .sundial-preview-svg-host {
     flex: 1;
     min-height: 0 !important;
     overflow: hidden;
   }
 
-  /* SVG itself: fill its container */
   .preview-panel .card svg {
     display: block;
     width: 100% !important;
     height: 100% !important;
   }
 
-  /* Tab bar: visible strip below preview; tabs scroll, reset stays on the right */
   .mobile-tab-bar {
     display: flex;
     align-items: stretch;
@@ -538,19 +562,93 @@
     color: #2563eb;
   }
 
-  /* Controls panel: takes remaining height and scrolls internally */
+  /* Flex column so .mobile-controls-scroll can flex:1 and receive a bounded height (required for overflow scroll) */
   .controls-panel {
-    flex: 1;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
     min-height: 0;
     width: 100%;
-    overflow-y: auto;
+    max-width: 100%;
+    overflow: hidden;
     padding: 0.75rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0));
   }
 
-  /* Form rows become left-aligned columns on mobile portrait */
+  .mobile-controls-scroll {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-controls-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .mobile-controls-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  .mobile-controls-scroll::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+
   .form-row {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .app-header {
+    margin-bottom: 1rem;
+  }
+
+  .app-title {
+    font-size: 1.5rem;
+  }
+
+  .app-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .card {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 499px) {
+  .app-title {
+    font-size: 1.25rem;
+  }
+
+  .app-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .card {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-title {
+    font-size: 1rem;
+  }
+
+  .form-label {
+    font-size: 0.8rem;
+  }
+
+  .form-input,
+  .form-select {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
   }
 }
 

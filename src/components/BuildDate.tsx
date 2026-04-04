@@ -1,5 +1,6 @@
 import React from 'react';
 import { clearWelcomeDismissed } from './WelcomeDialog';
+import { getControlsScrollerElement } from '../utils/controlsScroller';
 
 const BuildDate: React.FC = () => {
   const handleReset = () => {
@@ -17,7 +18,7 @@ const BuildDate: React.FC = () => {
       });
       
       clearWelcomeDismissed();
-      document.querySelector<HTMLElement>('.controls-panel')?.scrollTo(0, 0);
+      getControlsScrollerElement()?.scrollTo(0, 0);
       try { sessionStorage.setItem('sundial-scroll-panel-to-top', '1'); } catch (_) {}
       window.location.hash = '';
       window.location.reload();

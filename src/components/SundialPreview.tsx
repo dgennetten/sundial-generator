@@ -2096,7 +2096,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       <div className="card-header">
         <h3 className="card-title"><Sun color="#2563eb" size={20} style={{ marginRight: 6 }} /> Sundial Preview ({orientation}, {pageSize})</h3>
       </div>
-      <div style={{ width: '100%', minHeight: '400px', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible' }}>
+      <div className="sundial-preview-svg-host" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible' }}>
         <svg
           key={configHash}
           width="100%"

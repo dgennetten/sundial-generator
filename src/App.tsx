@@ -41,6 +41,7 @@ import PrintedDialsMap from './components/PrintedDialsMap';
 import WelcomeDialog, { clearWelcomeDismissed } from './components/WelcomeDialog';
 import type { SundialPrint } from './types/sundial';
 import { log } from './utils/logger';
+import { getControlsScrollerElement } from './utils/controlsScroller';
 
 
 const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\nLatitude: {latitude}, Longitude: {longitude}\n{half-year}\n*{incline}{decline}*\n*{gnomon}*\n**{today}**`;
@@ -65,10 +66,10 @@ const MobileTabBar: React.FC<{ onResetDefaults: () => void }> = ({ onResetDefaul
     setActiveTab(id);
     const el = document.getElementById(id);
     if (!el) return;
-    // controls-panel is the scroll container on mobile portrait
-    const scroller = document.querySelector('.controls-panel') as HTMLElement | null;
+    const scroller = getControlsScrollerElement();
     if (scroller) {
-      const top = el.offsetTop - scroller.offsetTop;
+      const top =
+        el.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
       scroller.scrollTo({ top, behavior: 'smooth' });
     } else {
       el.scrollIntoView({ behavior: 'smooth' });
@@ -268,7 +269,8 @@ const App: React.FC = () => {
   useEffect(() => {
     try {
       if (!sessionStorage.getItem('sundial-scroll-panel-to-top')) return;
-      const panel = controlsPanelRef.current ?? document.querySelector<HTMLElement>('.controls-panel');
+      const panel =
+        getControlsScrollerElement() ?? controlsPanelRef.current ?? document.querySelector<HTMLElement>('.controls-panel');
       const scroll = () => panel?.scrollTo(0, 0);
       scroll();
       const t = setTimeout(() => {
@@ -568,7 +570,7 @@ const App: React.FC = () => {
       ];
       keysToRemove.forEach(key => localStorage.removeItem(key));
       clearWelcomeDismissed();
-      document.querySelector<HTMLElement>('.controls-panel')?.scrollTo(0, 0);
+      getControlsScrollerElement()?.scrollTo(0, 0);
       try { sessionStorage.setItem('sundial-scroll-panel-to-top', '1'); } catch (_) {}
       window.location.hash = '';
       window.location.reload();
@@ -680,6 +682,7 @@ const App: React.FC = () => {
       
       {/* Controls Panel - Left Side */}
       <div ref={controlsPanelRef} className="controls-panel">
+        <div className="mobile-controls-scroll">
         <div className="app-header">
           <h1 className="app-title">Sundial Generator</h1>
           <p className="app-subtitle">Create beautiful, accurate sundials for any location</p>
@@ -909,15 +912,29 @@ const App: React.FC = () => {
         /></div>
         {/* <VisitorMap /> */}
         <div id="card-about"><AboutCard /></div>
+        </div>
       </div>
 
       {/* Preview Panel - Right Side (order places it at top on mobile portrait) */}
-      <div className="preview-panel">
-        <React.Profiler id="SundialPreview" onRender={(id, phase, actualDuration) => {
-          if (phase === 'update') log.perf(id, phase, actualDuration);
-        }}>
-          <SundialPreview config={previewConfig} />
-        </React.Profiler>
+      <div
+        className="preview-panel"
+        data-mobile-sheet={orientation === 'Portrait' ? 'portrait' : 'landscape'}
+        style={
+          {
+            '--mobile-page-aspect-w': pageWidth,
+            '--mobile-page-aspect-h': pageHeight,
+          } as React.CSSProperties
+        }
+      >
+        <div className="mobile-preview-slot">
+          <div className="mobile-preview-slot-inner">
+            <React.Profiler id="SundialPreview" onRender={(id, phase, actualDuration) => {
+              if (phase === 'update') log.perf(id, phase, actualDuration);
+            }}>
+              <SundialPreview config={previewConfig} />
+            </React.Profiler>
+          </div>
+        </div>
         <MobileTabBar onResetDefaults={handleResetDefaults} />
       </div>
 

@@ -1,7 +1,7 @@
 // src/components/DesignExport.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM, { flushSync } from 'react-dom';
-import { Printer, Download, Save, FolderUp, Undo } from 'lucide-react';
+import { Download, Save, FolderUp, Undo } from 'lucide-react';
 import { exportSundial, logPrintActivity, type ExportFormat, type PageSize } from '../utils/exportUtils';
 import type { GnomonType, InclineType } from '../types/sundial';
 import { saveDialConfig, loadAllSavedConfigs, deleteSavedConfig, hasSavedConfigs, type SavedDialConfig } from '../utils/dialSaveRestore';
@@ -423,7 +423,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title"><Printer color="#2563eb" size={20} style={{ marginRight: 6 }} />Print, Export, and Save</h3>
+        <h3 className="card-title"><Download color="#2563eb" size={20} style={{ marginRight: 6 }} />Print, Export, and Save</h3>
       </div>
       <div className="card-content">
         <div
@@ -582,7 +582,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                   gap: '4px'
                 }}
               >
-                <Printer size={16} />
+                <Download size={18} stroke="#fff" strokeWidth={2} />
                 Print
               </button>
             </div>
@@ -657,17 +657,19 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
               Include Today ({todayFormatted}) Date Line?
             </label>
 
-            <p
-              style={{
-                margin: '14px 0 0 0',
-                fontSize: '0.875rem',
-                lineHeight: 1.45,
-                color: '#dc2626',
-              }}
-            >
-              TIP: Your printer may print {'<'} 100% Scale! Include{' '}
-              <strong>Pop-Up Gnomon</strong> to verify.
-            </p>
+            {pendingAction === 'print' && (
+              <p
+                style={{
+                  margin: '14px 0 0 0',
+                  fontSize: '0.875rem',
+                  lineHeight: 1.45,
+                  color: '#dc2626',
+                }}
+              >
+                TIP: Your printer may print {'<'} 100% Scale! Include{' '}
+                <strong>Pop-Up Gnomon</strong> to verify.
+              </p>
+            )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
               <button
