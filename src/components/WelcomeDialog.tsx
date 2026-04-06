@@ -355,24 +355,24 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose }) => {
           {translations[language].title}
         </h2>
 
-        <div style={{ fontSize: '1rem', lineHeight: '1.6', color: '#4b5563', marginBottom: '24px' }}>
-          <ul style={{ paddingInlineStart: '24px', margin: '0 0 16px 0' }}>
-            <li style={{ marginBottom: '12px' }}>
+        <div style={{ fontSize: '1rem', lineHeight: '1.5', color: '#4b5563', marginBottom: '24px' }}>
+          <ul style={{ paddingInlineStart: '24px', margin: '0 0 12px 0' }}>
+            <li style={{ marginBottom: '5px' }}>
               <strong>{translations[language].steps.location.label}</strong> {translations[language].steps.location.text}
             </li>
-            <li style={{ marginBottom: '12px' }}>
+            <li style={{ marginBottom: '5px' }}>
               <strong>{translations[language].steps.size.label}</strong> {translations[language].steps.size.text}
             </li>
-            <li style={{ marginBottom: '12px' }}>
+            <li style={{ marginBottom: '5px' }}>
               <strong>{translations[language].steps.gnomon.label}</strong> {translations[language].steps.gnomon.text}
             </li>
-            <li style={{ marginBottom: '12px' }}>
+            <li style={{ marginBottom: '5px' }}>
               <strong>{translations[language].steps.dateRange.label}</strong>{translations[language].steps.dateRange.text}
             </li>
-            <li style={{ marginBottom: '12px' }}>
+            <li style={{ marginBottom: '5px' }}>
               <strong>{translations[language].steps.specialDates.label}</strong>{translations[language].steps.specialDates.text}
             </li>
-            <li style={{ marginBottom: '12px' }}>
+            <li style={{ marginBottom: 0 }}>
               <strong>{translations[language].steps.reset.label}</strong>{' '}
               {translations[language].steps.reset.text}
             </li>
