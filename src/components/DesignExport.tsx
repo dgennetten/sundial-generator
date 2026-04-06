@@ -518,21 +518,32 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
               </div>
             </div>
 
-          {/* Print + export options row */}
+          {/* Print + export options row — always one line (Format, DPI, Print) */}
           <div
             className="form-row"
             style={{
               display: 'flex',
-              alignItems: 'center',
+              flexDirection: 'row',
+              flexWrap: 'nowrap',
+              alignItems: 'flex-end',
               justifyContent: 'flex-start',
               gap: '0.5rem',
-              flexDirection: isMobile ? 'column' : 'row'
+              minWidth: 0,
             }}
           >
-            {/* Left: Export format options */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.5rem' : '0.5rem', flex: '1 1 auto', minWidth: 0 }}>
-              {/* Export Format */}
-              <div className="form-group" style={{ flex: isMobile ? '1' : 'auto' }}>
+            {/* Left: Export format + DPI */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                flexWrap: 'nowrap',
+                alignItems: 'flex-end',
+                gap: '0.5rem',
+                flex: '1 1 auto',
+                minWidth: 0,
+              }}
+            >
+              <div className="form-group" style={{ flex: '0 1 auto', minWidth: 0 }}>
                 <label className="form-label">Export Format</label>
                 <select
                   className="form-select"
@@ -541,7 +552,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                     log.debug('Format change:', e.target.value);
                     setFormat(e.target.value as ExportFormat);
                   }}
-                  style={{ width: isMobile ? '100%' : 'auto' }}
+                  style={{ width: 'auto', minWidth: '5.5rem', maxWidth: '100%' }}
                 >
                   <option value="SVG">SVG</option>
                   <option value="PNG">PNG</option>
@@ -549,9 +560,8 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                 </select>
               </div>
 
-              {/* DPI input, only show for PNG */}
               {format === 'PNG' && (
-                <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
+                <div className="form-group" style={{ flex: '0 0 auto' }}>
                   <label className="form-label">DPI</label>
                   <input
                     type="number"
@@ -561,25 +571,28 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                     step={1}
                     value={dpi}
                     onChange={e => setDpi(parseInt(e.target.value) || 600)}
-                    style={{ width: isMobile ? '60px' : '70px' }}
+                    style={{ width: '64px' }}
                   />
                 </div>
               )}
             </div>
 
-            {/* Right: Print button (aligned with Export above) */}
-            <div className="form-group" style={{ alignSelf: isMobile ? 'stretch' : 'end', marginLeft: isMobile ? 0 : 'auto', flex: '0 0 auto' }}>
+            <div className="form-group" style={{ flex: '0 0 auto', marginLeft: 'auto' }}>
+              <label className="form-label" style={{ visibility: 'hidden' }} aria-hidden>
+                {'\u00a0'}
+              </label>
               <button
+                type="button"
                 className="btn btn-primary"
                 onClick={handlePrintClick}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: isMobile ? '100%' : '100px',
-                  minWidth: isMobile ? 'auto' : '100px',
+                  width: '100px',
+                  minWidth: '100px',
                   padding: '0.5rem 0.6rem',
-                  gap: '4px'
+                  gap: '4px',
                 }}
               >
                 <Download size={18} stroke="#fff" strokeWidth={2} />

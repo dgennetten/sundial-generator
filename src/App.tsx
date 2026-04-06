@@ -78,23 +78,21 @@ const MobileTabBar: React.FC<{ onResetDefaults: () => void }> = ({ onResetDefaul
 
   return (
     <div className="mobile-tab-bar">
-      <div className="mobile-tab-bar-tabs">
-        {MOBILE_TABS.map(({ id, icon: Icon, label }) => (
-          <button
-            key={id}
-            type="button"
-            className={`mobile-tab-btn${activeTab === id ? ' active' : ''}`}
-            onClick={() => handleTabClick(id)}
-            title={label}
-            aria-label={label}
-          >
-            <Icon size={18} />
-          </button>
-        ))}
-      </div>
+      {MOBILE_TABS.map(({ id, icon: Icon, label }) => (
+        <button
+          key={id}
+          type="button"
+          className={`mobile-tab-btn${activeTab === id ? ' active' : ''}`}
+          onClick={() => handleTabClick(id)}
+          title={label}
+          aria-label={label}
+        >
+          <Icon size={18} />
+        </button>
+      ))}
       <button
         type="button"
-        className="mobile-tab-btn mobile-tab-bar-reset"
+        className="mobile-tab-btn"
         onClick={onResetDefaults}
         title="Reset to defaults"
         aria-label="Reset to defaults"
