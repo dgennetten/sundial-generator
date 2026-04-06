@@ -80,7 +80,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   onSetTodayLineActive,
   onResetDefaults
 }) => {
-  const [format, setFormat] = useState<ExportFormat>('PNG');
+  const [format, setFormat] = useState<ExportFormat>('PDF');
   const [dpi, setDpi] = useState<number>(600);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);

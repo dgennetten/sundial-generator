@@ -91,6 +91,18 @@
   border-color: #cbd5e0;
 }
 
+/* Number inputs without stepper arrows (e.g. lat/long) */
+.form-input.form-input-no-spin::-webkit-outer-spin-button,
+.form-input.form-input-no-spin::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.form-input.form-input-no-spin {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
 /* Primary emphasis for key selects (matches .btn-primary) */
 .form-select.form-select-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
