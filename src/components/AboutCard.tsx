@@ -100,7 +100,7 @@ algorithm which "enables it to be calculated for any epoch within 30 centuries o
               <Github size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
             </a>
             <a
-              href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
+              href="mailto:douglas@gennetten.org?subject=Sundial%20Feedback"
               title="eMail the Author"
               style={{
                 color: '#2563eb',

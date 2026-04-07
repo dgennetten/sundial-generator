@@ -439,7 +439,7 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose }) => {
           marginBottom: '0px',
         }}>
           v{version} — <a
-            href="mailto:support@sundial.gennetten.org?subject=Sundial%20Feedback"
+            href="mailto:douglas@gennetten.org?subject=Sundial%20Feedback"
             style={{
               color: '#dc2626',
               fontSize: '0.9rem',
