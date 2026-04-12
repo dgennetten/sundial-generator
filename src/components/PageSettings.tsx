@@ -1,5 +1,5 @@
 // src/components/PageSettings.tsx
-import { getDisplayTiltAngle } from '../utils/sundialMath';
+import { getDisplayTiltAngle, getWallDeclinationForPreset } from '../utils/sundialMath';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { StickyNote } from 'lucide-react';
 import type { LineStyle } from './LineSettings';
@@ -236,6 +236,11 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     // Preset horizontal dial is 0°; other presets derive angle from latitude / type
     if (newType === 'Horizontal') {
       setTiltAngle(0);
+      // Dial-plane declination is not used on a horizontal dial; snap back to hemisphere default
+      setDeclinationType(defaultDeclinationType);
+      setDeclinationDegrees(
+        getWallDeclinationForPreset(defaultDeclinationType, 0, latitude)
+      );
     } else if (newType !== 'Manual') {
       const newAngle = getDisplayTiltAngle(newType, latitude, tiltAngle);
       setTiltAngle(newAngle);
@@ -253,6 +258,13 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   const handleInclineDegreesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = Math.min(90, Math.max(0, parseFloat(e.target.value) || 0));
     setTiltAngle(val);
+    // Same ~0° threshold as declination disable: flat dial → default declination for when tilt increases again
+    if (Math.abs(val) < 0.05) {
+      setDeclinationType(defaultDeclinationType);
+      setDeclinationDegrees(
+        getWallDeclinationForPreset(defaultDeclinationType, 0, latitude)
+      );
+    }
     if (inclineType === 'Manual') return;
     if (Math.abs(val - presetInclineDegrees(inclineType)) > 0.01) {
       setInclineType('Manual');

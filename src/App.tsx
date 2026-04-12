@@ -118,7 +118,7 @@ const App: React.FC = () => {
   const isRestoringRef = useRef(false); // Flag to prevent auto-initialization during restore
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
-  const [tiltAngle, setTiltAngle] = useState<number>(90);
+  const [tiltAngle, setTiltAngle] = useState<number>(0);
   const [declinationType, setDeclinationType] = useState<DeclinationType>(latitude >= 0 ? 'South' : 'North');
   const [declinationDegrees, setDeclinationDegrees] = useState<number>(0);
   const [dialOrientation, setDialOrientation] = useState<'North' | 'South'>(latitude >= 0 ? 'North' : 'South');

@@ -145,6 +145,16 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     [width, height] = [height, width];
   }
 
+  // Invalid dimensions (e.g. Custom 0×0) make viewBox scale Infinity/NaN and the preview SVG renders blank
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    const fb = pageSizeMap.Letter;
+    width = fb.width;
+    height = fb.height;
+    if (orientation === 'Landscape') {
+      [width, height] = [height, width];
+    }
+  }
+
   // Convert border margin from inches to mm (moved up to avoid initialization error)
   const borderMarginMm = borderMargin * 25.4;
 
@@ -163,8 +173,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   let viewBoxHeight = height;
   let viewBoxScaleFactor = 1;
 
-  if (Math.min(width, height) < minViewBoxSize) {
-    viewBoxScaleFactor = minViewBoxSize / Math.min(width, height);
+  const minPageDim = Math.min(width, height);
+  if (minPageDim > 0 && minPageDim < minViewBoxSize) {
+    viewBoxScaleFactor = minViewBoxSize / minPageDim;
     viewBoxWidth = width * viewBoxScaleFactor;
     viewBoxHeight = height * viewBoxScaleFactor;
   }
