@@ -179,6 +179,11 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   // Dial Facing (North/South) is only for flat horizontal dials — same ~0.05° threshold as incline labeling
   const dialFacingEnabled = inclineType === 'Horizontal' && Math.abs(tiltAngle) < 0.05;
 
+  /** Wall / dial-plane declination is undefined for a horizontal dial (0° inclination). */
+  const declinationControlsDisabled =
+    inclineType === 'Horizontal' || Math.abs(tiltAngle) < 0.05;
+  const declinationDisabledTitle = 'Inclined Dials Only';
+
   const defaultDeclinationType: DeclinationType = latitude >= 0 ? 'South' : 'North';
   const declinationOffDefault = declinationType !== defaultDeclinationType;
 
@@ -508,21 +513,30 @@ const PageSettings: React.FC<PageSettingsProps> = ({
           </div>
         </div>
 
-        {/* Third row: Declination and Degrees */}
+        {/* Third row: Declination and Degrees (disabled when dial is horizontal / 0° inclination) */}
         <div
           className="form-row"
+          title={declinationControlsDisabled ? declinationDisabledTitle : undefined}
           style={{
             display: 'flex',
             alignItems: 'flex-start',
             gap: isMobile ? '0.5rem' : '1rem',
             flexDirection: 'row',
             marginTop: isMobile ? '8px' : '0',
+            opacity: declinationControlsDisabled ? 0.55 : 1,
+            cursor: declinationControlsDisabled ? 'not-allowed' : undefined,
           }}
         >
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-            <label className="form-label">Declination</label>
+            <label
+              className="form-label"
+              title={declinationControlsDisabled ? declinationDisabledTitle : undefined}
+            >
+              Declination
+            </label>
             <select
               className="form-select"
+              disabled={declinationControlsDisabled}
               value={declinationType}
               onChange={(e) => {
                 setDeclinationType(e.target.value as DeclinationType);
@@ -530,7 +544,12 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               }}
               style={{
                 minWidth: isMobile ? '80px' : 'auto',
-                backgroundColor: declinationOffDefault ? '#dbeafe' : undefined,
+                backgroundColor: declinationControlsDisabled
+                  ? undefined
+                  : declinationOffDefault
+                    ? '#dbeafe'
+                    : undefined,
+                cursor: declinationControlsDisabled ? 'not-allowed' : undefined,
               }}
             >
               {declinationSelectOptions.map((opt) => (
@@ -541,10 +560,16 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             </select>
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
-            <label className="form-label">Degrees</label>
+            <label
+              className="form-label"
+              title={declinationControlsDisabled ? declinationDisabledTitle : undefined}
+            >
+              Degrees
+            </label>
             <input
               type="number"
               className="form-input"
+              disabled={declinationControlsDisabled}
               value={declinationDegrees.toFixed(1)}
               onChange={(e) => {
                 const val = parseFloat(e.target.value);
@@ -559,29 +584,60 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               step={declinationStep}
               style={{
                 width: isMobile ? '70px' : '80px',
+                cursor: declinationControlsDisabled ? 'not-allowed' : undefined,
               }}
             />
           </div>
           <div className="form-group" style={{ flex: '0 0 auto' }}>
-            <label className="form-label" style={{ marginBottom: '0.5rem' }}>Inc/Dec</label>
+            <label
+              className="form-label"
+              style={{ marginBottom: '0.5rem' }}
+              title={declinationControlsDisabled ? declinationDisabledTitle : undefined}
+            >
+              Inc/Dec
+            </label>
             <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', whiteSpace: 'nowrap' }}>
+              <label
+                title={declinationControlsDisabled ? declinationDisabledTitle : undefined}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  fontSize: isMobile ? '0.75rem' : '0.875rem',
+                  whiteSpace: 'nowrap',
+                  cursor: declinationControlsDisabled ? 'not-allowed' : 'pointer',
+                }}
+              >
                 <input
                   type="radio"
                   name="declinationStep"
                   value="1.0"
+                  disabled={declinationControlsDisabled}
                   checked={declinationStep === 1.0}
                   onChange={() => setDeclinationStep(1.0)}
+                  style={{ cursor: declinationControlsDisabled ? 'not-allowed' : 'pointer' }}
                 />
                 1.0
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: isMobile ? '0.75rem' : '0.875rem', whiteSpace: 'nowrap' }}>
+              <label
+                title={declinationControlsDisabled ? declinationDisabledTitle : undefined}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  fontSize: isMobile ? '0.75rem' : '0.875rem',
+                  whiteSpace: 'nowrap',
+                  cursor: declinationControlsDisabled ? 'not-allowed' : 'pointer',
+                }}
+              >
                 <input
                   type="radio"
                   name="declinationStep"
                   value="0.1"
+                  disabled={declinationControlsDisabled}
                   checked={declinationStep === 0.1}
                   onChange={() => setDeclinationStep(0.1)}
+                  style={{ cursor: declinationControlsDisabled ? 'not-allowed' : 'pointer' }}
                 />
                 0.1
               </label>
