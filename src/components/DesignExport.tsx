@@ -679,8 +679,9 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                   color: '#dc2626',
                 }}
               >
-                TIP: Your printer may print {'<'} 100% Scale! Include{' '}
-                <strong>Pop-Up Gnomon</strong> to verify.
+                <strong>TIP:</strong> Your printer may print {'<'} 100% Scale! Include{' '}
+                <strong>Pop-Up Gnomon</strong> to check scaling, or match your gnomon height to the distance
+                between the two dots just above the bottom border.
               </p>
             )}
 

@@ -1862,6 +1862,29 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     )
   ) : null;
 
+  // Two registration dots: 0.5 mm above inner bottom border, centered, center-to-center = gnomon height (paper craft)
+  const innerBottomY = scaledHeight / 2 - scaledBorderMargin;
+  const gnomonHeightGuideDotY = innerBottomY - 0.5 * viewBoxScaleFactor;
+  const gnomonHeightGuideHalfSpacing = (gnomonHeight / 2) * viewBoxScaleFactor;
+  const gnomonHeightGuideDotR = 0.25 * viewBoxScaleFactor;
+  const gnomonHeightGuideDots =
+    gnomonHeight > 0 ? (
+      <g aria-hidden="true" className="gnomon-height-guide-dots">
+        <circle
+          cx={-gnomonHeightGuideHalfSpacing}
+          cy={gnomonHeightGuideDotY}
+          r={gnomonHeightGuideDotR}
+          fill="#111"
+        />
+        <circle
+          cx={gnomonHeightGuideHalfSpacing}
+          cy={gnomonHeightGuideDotY}
+          r={gnomonHeightGuideDotR}
+          fill="#111"
+        />
+      </g>
+    ) : null;
+
   // --- Text Block Logic ---
   let locationString = locationName || '';
   const displayLat = typeof originalLatitude === 'number' ? originalLatitude : lat;
@@ -2138,6 +2161,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           </defs>
           {borderRect}
           {clippingBoundary}
+          {gnomonHeightGuideDots}
           {/* Main content group — North-facing dials rotate 180° so noon shadow points up */}
           <g
             transform={`${effectiveDialOrientation === 'North' ? 'rotate(180) ' : ''}scale(${viewBoxScaleFactor})`}
