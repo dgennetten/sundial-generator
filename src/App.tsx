@@ -18,6 +18,7 @@
 // along with this program. If not, see <https://creativecommons.org/licenses/by-nc-sa/4.0/>.
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Download, MapPin, StickyNote, MoveUpRight, Text, Calendar, Clock, PenLine, Map, Info, Undo } from 'lucide-react';
 
 import PageSettings, { type InclineType, type DeclinationType, type DialShape } from './components/PageSettings';
@@ -116,6 +117,7 @@ const App: React.FC = () => {
   const [customUnits, setCustomUnits] = useState<'in' | 'cm'>('in');
   const [previousPageSize, setPreviousPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom'>('Letter');
   const isRestoringRef = useRef(false); // Flag to prevent auto-initialization during restore
+  const [restoreCompleteTick, setRestoreCompleteTick] = useState(0);
   const [orientation, setOrientation] = useState<'Landscape' | 'Portrait'>('Landscape');
   const [inclineType, setInclineType] = useState<InclineType>('Horizontal');
   const [tiltAngle, setTiltAngle] = useState<number>(0);
@@ -608,6 +610,7 @@ const App: React.FC = () => {
     // Clear restore flag after a short delay to allow state updates to complete
     setTimeout(() => {
       isRestoringRef.current = false;
+      setRestoreCompleteTick((t) => t + 1);
     }, 100);
     if (config.orientation !== undefined) setOrientation(config.orientation);
     if (config.inclineType !== undefined) setInclineType(config.inclineType);
@@ -673,10 +676,140 @@ const App: React.FC = () => {
     ));
   }, []);
 
+  const [highLatVerticalNudgeOpen, setHighLatVerticalNudgeOpen] = useState(false);
+  const suppressHighLatVerticalNudgeRef = useRef(false);
+
+  const highLatFlatHorizontalEligible =
+    Math.abs(latitude) >= 55 &&
+    inclineType === 'Horizontal' &&
+    Math.abs(tiltAngle) < 0.05;
+
+  useEffect(() => {
+    if (!highLatFlatHorizontalEligible) {
+      suppressHighLatVerticalNudgeRef.current = false;
+      setHighLatVerticalNudgeOpen(false);
+      return;
+    }
+    if (isRestoringRef.current) return;
+    if (!suppressHighLatVerticalNudgeRef.current) {
+      setHighLatVerticalNudgeOpen(true);
+    }
+  }, [highLatFlatHorizontalEligible, latitude, inclineType, tiltAngle, restoreCompleteTick]);
+
+  const confirmHighLatVertical = useCallback(() => {
+    setInclineType('Vertical');
+    setGnomonPositionMode('auto');
+    suppressHighLatVerticalNudgeRef.current = true;
+    setHighLatVerticalNudgeOpen(false);
+  }, []);
+
+  const cancelHighLatVertical = useCallback(() => {
+    suppressHighLatVerticalNudgeRef.current = true;
+    setHighLatVerticalNudgeOpen(false);
+  }, []);
+
+  const highLatVerticalNudgeBody =
+    latitude >= 0 ? (
+      <>
+        At northern latitudes of <strong>55°N</strong> or poleward, a <strong>vertical</strong> dial is much more
+        readable than a horizontal one. Would you like me to set the inclination to <strong>Vertical</strong>?
+      </>
+    ) : (
+      <>
+        At southern latitudes of <strong>55°S</strong> or poleward, a <strong>vertical</strong> dial is much more
+        readable than a horizontal one. Would you like me to set the inclination to <strong>Vertical</strong>?
+      </>
+    );
+
   return (
     <div className="app-container">
       {/* Welcome Dialog */}
       <WelcomeDialog />
+
+      {highLatVerticalNudgeOpen &&
+        createPortal(
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="high-lat-vertical-nudge-title"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.45)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1100,
+              fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+            }}
+            onClick={cancelHighLatVertical}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') cancelHighLatVertical();
+            }}
+          >
+            <div
+              style={{
+                background: '#fff',
+                borderRadius: 8,
+                padding: 24,
+                minWidth: 320,
+                maxWidth: 'min(440px, 92vw)',
+                boxShadow: '0 2px 16px rgba(0,0,0,0.2)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2
+                id="high-lat-vertical-nudge-title"
+                style={{ margin: '0 0 12px 0', fontSize: '1.05rem', color: '#111827' }}
+              >
+                Vertical dial recommended
+              </h2>
+              <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: 1.5, color: '#374151' }}>
+                {highLatVerticalNudgeBody}
+              </p>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  gap: 10,
+                  marginTop: 20,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={confirmHighLatVertical}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#2563eb',
+                    border: '1px solid #2563eb',
+                    color: 'white',
+                    cursor: 'pointer',
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  Yes
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelHighLatVertical}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#f3f4f6',
+                    border: '1px solid #d1d5db',
+                    color: '#374151',
+                    cursor: 'pointer',
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
       
       {/* Controls Panel - Left Side */}
       <div ref={controlsPanelRef} className="controls-panel">
