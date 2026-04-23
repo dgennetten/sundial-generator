@@ -39,13 +39,22 @@ function applyOverrides(builtins: HourlineInterval[], overrides: OverrideMap): H
 
 export function saveHourlineOverrides(overrides: OverrideMap) {
   const existing = loadOverrides();
-  const merged: OverrideMap = { ...existing, ...overrides };
+  const merged: OverrideMap = { ...existing };
+  for (const [id, patch] of Object.entries(overrides)) {
+    merged[id] = { ...(existing[id] ?? {}), ...patch };
+  }
   localStorage.setItem(OVERRIDES_KEY, JSON.stringify(merged));
 }
 
 export function loadHourlineIntervals(): HourlineInterval[] {
   const overrides = loadOverrides();
-  const builtIns = applyOverrides(BUILTIN_HOURLINE_INTERVALS, overrides);
+  const mergedBuiltins = applyOverrides(BUILTIN_HOURLINE_INTERVALS, overrides);
+  // Quarter-hour is off unless the user has explicitly saved active: true (default unchecked)
+  const builtIns = mergedBuiltins.map((i) =>
+    i.id === 'quarter-hour'
+      ? { ...i, active: overrides['quarter-hour']?.active === true }
+      : i
+  );
 
   const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
   if (!raw) return builtIns;

@@ -1,7 +1,7 @@
 import React from 'react';
 import type { LineStyle } from './LineSettings';
 import { Clock } from 'lucide-react';
-import { saveHourlineIntervals, type HourlineInterval } from './hourlineUtils';
+import { saveHourlineIntervals, saveHourlineOverrides, type HourlineInterval } from './hourlineUtils';
 
 type DateRange = 'FullYear' | 'SummerToFall' | 'WinterToSpring';
 
@@ -64,6 +64,14 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
     updated[idx] = { ...updated[idx], [field]: value };
     setHourlineIntervals(updated);
     saveHourlineIntervals(updated);
+    const it = updated[idx];
+    if (it.fixed && (field === 'active' || field === 'styleId')) {
+      if (field === 'active') {
+        saveHourlineOverrides({ [it.id]: { active: !!value } });
+      } else {
+        saveHourlineOverrides({ [it.id]: { styleId: value as string } });
+      }
+    }
   };
 
   return (

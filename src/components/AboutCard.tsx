@@ -22,14 +22,19 @@ const AboutCard: React.FC = () => {
             fontWeight: '500',
           }}
         >
-          My other works can be found here:{' '}
+          HOW can I improve this app for you? {'\u2014'}{' '}
           <a
-            href="https://douglas.gennetten.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: '#7c2d12', textDecoration: 'underline' }}
+            href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
+            title="eMail the Author"
+            style={{
+              color: '#7c2d12',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              verticalAlign: 'middle',
+            }}
           >
-            douglas.gennetten.com
+            <Mail size={16} color="#7c2d12" />
           </a>
         </div>
         <div
