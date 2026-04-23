@@ -199,8 +199,10 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     }
   }, [declinationType, declinationSelectOptions, defaultDeclinationType, setDeclinationType]);
 
-  /** Preset/auto inclines track declination; switching decline should freeze tilt as Manual. */
+  /** Preset/auto inclines track declination; switching decline should freeze tilt as Manual.
+   *  Cancer and Capricorn are excluded — they re-adjust tilt automatically via App useEffect. */
   const switchInclineToManualWhenDeclinationChanges = useCallback(() => {
+    if (inclineType === 'Cancer' || inclineType === 'Capricorn') return;
     if (inclineType !== 'Manual') {
       setInclineType('Manual');
       onInclineTypeChange?.();
@@ -266,6 +268,15 @@ const PageSettings: React.FC<PageSettingsProps> = ({
       );
     }
     if (inclineType === 'Manual') return;
+    // Cancer/Capricorn: compare against current tiltAngle (already declination-adjusted);
+    // any genuine change switches to Manual.
+    if (inclineType === 'Cancer' || inclineType === 'Capricorn') {
+      if (Math.abs(val - tiltAngle) > 0.01) {
+        setInclineType('Manual');
+        if (onInclineTypeChange) onInclineTypeChange();
+      }
+      return;
+    }
     if (Math.abs(val - presetInclineDegrees(inclineType)) > 0.01) {
       setInclineType('Manual');
       if (onInclineTypeChange) onInclineTypeChange();

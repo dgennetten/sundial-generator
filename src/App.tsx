@@ -34,7 +34,7 @@ import type { LineStyle } from './components/LineSettings';
 import DeclinationLineOptions from './components/DeclinationLineOptions';
 import { loadDeclinationLines } from './components/declinationLineUtils';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
-import { getDisplayTiltAngle, calculateAutoGnomonHeight, getWallDeclinationForPreset } from './utils/sundialMath';
+import { getDisplayTiltAngle, calculateAutoGnomonHeight, getWallDeclinationForPreset, getCancerInclineWithDeclination, getCapricornInclineWithDeclination } from './utils/sundialMath';
 import AboutCard from './components/AboutCard';
 // import VisitorMap from './components/VisitorMap';
 import DialTextBlockSettings from './components/DialTextBlockSettings';
@@ -225,23 +225,21 @@ const App: React.FC = () => {
     }
   }, [latitude]); // Only depend on latitude, not dialOrientation to avoid loops
 
-  // Update tilt angle when incline type changes (not when latitude changes)
-  // This prevents issues when switching between locations
+  // Update tilt angle when incline type changes (not when latitude changes).
+  // Cancer and Capricorn are handled by a separate effect that also tracks dialDeclination.
   useEffect(() => {
     if (inclineType === 'Horizontal') {
       setTiltAngle(0);
-    } else if (inclineType !== 'Manual') {
+    } else if (inclineType !== 'Manual' && inclineType !== 'Cancer' && inclineType !== 'Capricorn') {
       const newAngle = getDisplayTiltAngle(inclineType, latitude, tiltAngle);
       setTiltAngle(newAngle);
     }
   }, [inclineType]);
 
-  // Until Auto-Incline supports declined surfaces with these presets, keep wall declination at the
-  // hemisphere default (poleward-facing, 0°) for Polar, Cancer, and Capricorn inclines.
+  // Keep wall declination at the hemisphere default for Polar only.
+  // Cancer and Capricorn now support arbitrary wall declination and re-adjust tilt automatically.
   useEffect(() => {
-    if (inclineType !== 'Cancer' && inclineType !== 'Capricorn' && inclineType !== 'Polar') {
-      return;
-    }
+    if (inclineType !== 'Polar') return;
     const defaultDecl: DeclinationType = latitude >= 0 ? 'South' : 'North';
     setDeclinationType(defaultDecl);
     setDeclinationDegrees(getWallDeclinationForPreset(defaultDecl, 0, latitude));
@@ -286,6 +284,16 @@ const App: React.FC = () => {
     getWallDeclinationForPreset(declinationType, declinationDegrees, latitude),
     [declinationType, declinationDegrees, latitude]
   );
+
+  // When Cancer or Capricorn is active, recompute tiltAngle to keep the gnomon on the solstice
+  // line as latitude or wall declination changes.
+  useEffect(() => {
+    if (inclineType === 'Cancer') {
+      setTiltAngle(getCancerInclineWithDeclination(latitude, dialDeclination));
+    } else if (inclineType === 'Capricorn') {
+      setTiltAngle(getCapricornInclineWithDeclination(latitude, dialDeclination));
+    }
+  }, [inclineType, latitude, dialDeclination]);
 
   // Debug: log declinationLines before filtering
   React.useEffect(() => {
@@ -345,11 +353,13 @@ const App: React.FC = () => {
     [pageWidth, pageHeight] = [pageHeight, pageWidth];
   }
 
-  // Dial inclination: tilt from horizontal in degrees (0 = flat, 90 = vertical)
-  const dialInclination = useMemo(() =>
-    getDisplayTiltAngle(inclineType, latitude, tiltAngle),
-    [inclineType, latitude, tiltAngle]
-  );
+  // Dial inclination: tilt from horizontal in degrees (0 = flat, 90 = vertical).
+  // Cancer and Capricorn use the declination-aware formula so the gnomon stays on the solstice line.
+  const dialInclination = useMemo(() => {
+    if (inclineType === 'Cancer') return getCancerInclineWithDeclination(latitude, dialDeclination);
+    if (inclineType === 'Capricorn') return getCapricornInclineWithDeclination(latitude, dialDeclination);
+    return getDisplayTiltAngle(inclineType, latitude, tiltAngle);
+  }, [inclineType, latitude, tiltAngle, dialDeclination]);
 
   const autoGnomonHeight = useCallback((pageHeight: number): number => {
     return calculateAutoGnomonHeight(latitude, longitude, tzMeridian, pageHeight, dialInclination, dialDeclination);

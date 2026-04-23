@@ -51,6 +51,66 @@ export function getCapricornIncline(lat: number): number {
 }
 
 /**
+ * Private helper: find inclination (degrees) placing the gnomon on a given solstice line,
+ * accounting for wall declination.
+ *
+ * Derivation: the gnomon root (0,0) lies on the solstice date curve when the sun is exactly
+ * perpendicular to the dial face at some moment during that solstice day. That perpendicularity
+ * condition requires altitude = 90°−t at azimuth 180°+D (NH) / 360°−D (SH), and inserting
+ * those values into the solar azimuth formula yields:
+ *   sin(δ) = sin(φ)·cos(t) − hemi·cos(φ)·sin(t)·cos(D)
+ * which is solved analytically for t. Falls back to the D=0 formula when no solution in [0°,90°].
+ */
+function solveSolsticeInclination(
+  lat: number,
+  wallDeclinationDeg: number,
+  tropicDeg: number,
+  fallback: number
+): number {
+  const hemi = lat >= 0 ? 1 : -1;
+  const latRad = degreesToRadians(lat);
+  const D = degreesToRadians(wallDeclinationDeg);
+  const sinTarget = Math.sin(degreesToRadians(tropicDeg));
+
+  // A·cos(t) + B·sin(t) = sinTarget
+  const A = Math.sin(latRad);
+  const B = -hemi * Math.cos(latRad) * Math.cos(D);
+  const R = Math.sqrt(A * A + B * B);
+
+  if (R < 1e-9 || Math.abs(sinTarget / R) > 1) return fallback;
+
+  const alpha = Math.atan2(B, A);
+  const phi = Math.acos(sinTarget / R);
+
+  const t1 = radiansToDegrees(alpha + phi);
+  const t2 = radiansToDegrees(alpha - phi);
+
+  const inRange = (v: number) => v >= -0.5 && v <= 90.5;
+  const clamp  = (v: number) => Math.max(0, Math.min(90, v));
+
+  if (inRange(t1) && !inRange(t2)) return clamp(t1);
+  if (inRange(t2) && !inRange(t1)) return clamp(t2);
+  if (inRange(t1) && inRange(t2)) return clamp(Math.min(t1, t2));
+  return fallback;
+}
+
+/**
+ * Inclination (degrees) that places the gnomon on the Cancer (summer solstice) date line,
+ * accounting for wall declination. Generalises getCancerIncline() to D ≠ 0.
+ */
+export function getCancerInclineWithDeclination(lat: number, wallDeclinationDeg: number): number {
+  return solveSolsticeInclination(lat, wallDeclinationDeg, TROPIC_OF_CANCER, getCancerIncline(lat));
+}
+
+/**
+ * Inclination (degrees) that places the gnomon on the Capricorn (winter solstice) date line,
+ * accounting for wall declination. Generalises getCapricornIncline() to D ≠ 0.
+ */
+export function getCapricornInclineWithDeclination(lat: number, wallDeclinationDeg: number): number {
+  return solveSolsticeInclination(lat, wallDeclinationDeg, TROPIC_OF_CAPRICORN, getCapricornIncline(lat));
+}
+
+/**
  * Check if latitude is within the tropics
  */
 export function isInTropics(lat: number): boolean {

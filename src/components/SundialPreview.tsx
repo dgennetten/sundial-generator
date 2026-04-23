@@ -1,6 +1,6 @@
 import React from 'react';
 import type { JSX } from 'react';
-import { getAnalemmaPointsProjected, degreesToRadians, getSolarDeclination, computeShadowPoint, getCancerIncline, getCapricornIncline } from '../utils/sundialMath';
+import { getAnalemmaPointsProjected, degreesToRadians, getSolarDeclination, computeShadowPoint } from '../utils/sundialMath';
 import type { DeclinationLine } from './DeclinationLineOptions';
 import type { LineStyle } from './LineSettings';
 import type { HourlineInterval } from './hourlineUtils';
@@ -1898,12 +1898,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
   let textBlockLines: Array<Array<{ text: string; bold: boolean; italic: boolean; color?: string }>> = [];
   if (dialTextBlock) {
-    // Create incline string when effective tilt is non-zero (including horizontal + tilt)
-    const effectiveTiltAngle = inclineType === 'Horizontal' ? Math.abs(tiltAngle) :
-      inclineType === 'Cancer' ? getCancerIncline(originalLatitude || lat || 0) :
-        inclineType === 'Polar' ? (originalLatitude || lat || 0) :
-          inclineType === 'Capricorn' ? getCapricornIncline(originalLatitude || lat || 0) :
-            inclineType === 'Vertical' ? 90 : tiltAngle;
+    // Create incline string when effective tilt is non-zero (including horizontal + tilt).
+    // tiltAngle is already kept in sync by App.tsx for Cancer/Capricorn (declination-adjusted).
+    const effectiveTiltAngle = inclineType === 'Polar' ? (originalLatitude || lat || 0) :
+      inclineType === 'Vertical' ? 90 : Math.abs(tiltAngle);
     const inclineString = Math.abs(effectiveTiltAngle) >= 0.05 ? `incline: ${effectiveTiltAngle.toFixed(1)}°` : '';
 
     // Create decline string - show when declination is non-default for the hemisphere
