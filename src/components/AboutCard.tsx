@@ -22,20 +22,62 @@ const AboutCard: React.FC = () => {
             fontWeight: '500',
           }}
         >
-          HOW can I improve this app for you? {'\u2014'}{' '}
-          <a
-            href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
-            title="eMail the Author"
+          <div>
+            HOW can I improve this app for you? {'\u2014'}{' '}
+            <a
+              href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
+              title="eMail the Author"
+              style={{
+                color: '#7c2d12',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                verticalAlign: 'middle',
+              }}
+            >
+              <Mail size={16} color="#7c2d12" />
+            </a>
+          </div>
+          <p
             style={{
-              color: '#7c2d12',
-              textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              verticalAlign: 'middle',
+              margin: '10px 0 0 0',
+              fontSize: '13px',
+              fontWeight: 500,
+              lineHeight: 1.45,
             }}
           >
-            <Mail size={16} color="#7c2d12" />
-          </a>
+            My recently recorded talk for the{' '}
+            <a
+              href="https://www.youtube.com/playlist?list=PLXnHqH5AQBFzrIZiU6j2GuJqNQylxht3w"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#b45309', textDecoration: 'underline', fontWeight: 600 }}
+            >
+              World Sundial Day / Global Sundial Day online conference
+            </a>{' '}
+            is available in the official YouTube playlist.
+          </p>
+          <p
+            style={{
+              margin: '10px 0 0 0',
+              fontSize: '13px',
+              fontWeight: 500,
+              lineHeight: 1.45,
+            }}
+          >
+            I will be presenting the talk: &lsquo;
+            <strong>Public Nodus</strong>
+            : Why Everything You Know about Precision is Pointless.&rsquo; at the June{' '}
+            <a
+              href="https://sundials.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#b45309', textDecoration: 'underline', fontWeight: 600 }}
+            >
+              NASS conference
+            </a>
+            .
+          </p>
         </div>
         <div
           dangerouslySetInnerHTML={{
@@ -53,10 +95,6 @@ const AboutCard: React.FC = () => {
   like a caffinated Da Vinci, I scribbled out two pages of hand-drawn 
   <a href="https://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf" target="_blank" rel="noopener noreferrer">instructional</a>,
   <a href="https://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf" target="_blank" rel="noopener noreferrer">illustrations</a>.
-   Here's an example 
-  <a href="https://sundial.gennetten.org/docs/Tabloid-sizeDial.pdf" target="_blank" rel="noopener noreferrer">11x17 inch sundial</a>,
- plotted using an 
-  <a href="https://www.hpmuseum.net/display_item.php?hw=79" target="_blank" rel="noopener noreferrer">HP9872 plotter</a>.
 </p>
 <p>The sundial generator uses the 
 <a href="https://academic.oup.com/mnras/article/238/4/1529/1037665" target="_blank" rel="noopener noreferrer">Hughes, Yallop & Hohenkerk</a>
