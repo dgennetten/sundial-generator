@@ -1,6 +1,6 @@
 {
   "name": "sundial-generator",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "license": "CC-BY-NC-SA-4.0",
   "type": "module",
   "scripts": {
@@ -15,7 +15,7 @@
     "debug-logs": "node scripts/debugLogProcessing.js",
     "debug-logs-90d": "node scripts/debugLogProcessing.js 90",
     "deploy-sftp": "node deploy-sftp.js",
-    "build-and-deploy": "powershell -ExecutionPolicy Bypass -File scripts/build-and-deploy.ps1"
+    "build-and-deploy": "node build-and-deploy.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.90.1",

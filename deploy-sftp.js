@@ -3,11 +3,32 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
-import dotenv from 'dotenv';
 
-// Load environment variables from .env and .env.local files
-dotenv.config();
-dotenv.config({ path: '.env.local' });
+// Parse env files directly — bypasses dotenv/Windows env conflicts.
+// Handles both UTF-8 and UTF-16 LE (with or without BOM) since Windows
+// editors (VS Code, Notepad) often save as UTF-16 LE.
+function loadEnvFile(filePath) {
+  if (!fs.existsSync(filePath)) return;
+  const buf = fs.readFileSync(filePath);
+  let content;
+  if (buf[0] === 0xFF && buf[1] === 0xFE) {
+    content = buf.slice(2).toString('utf16le'); // UTF-16 LE with BOM
+  } else if (buf.length > 1 && buf[1] === 0x00) {
+    content = buf.toString('utf16le');           // UTF-16 LE without BOM
+  } else {
+    content = buf.toString('utf8');
+  }
+  for (const line of content.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eq = trimmed.indexOf('=');
+    if (eq < 1) continue;
+    process.env[trimmed.slice(0, eq).trim()] = trimmed.slice(eq + 1).trim();
+  }
+}
+
+loadEnvFile('.env');
+loadEnvFile('.env.local');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,7 +52,7 @@ if (!config.host || !config.username || !config.password) {
 }
 
 const localPath = path.join(__dirname, 'dist');
-const phpFiles = ['export-logger.php', '.htaccess']; // PHP and config files to deploy alongside the app
+const phpFiles = ['export-logger.php', '.htaccess', 'email-config.php']; // PHP and config files to deploy alongside the app
 const docsPath = path.join(__dirname, 'public', 'docs'); // Documents directory
 
 console.log('🚀 Starting SFTP deployment...');
@@ -155,7 +176,7 @@ async function deployWithSFTP() {
     }
 
     // Files/directories to preserve on the server during cleanup
-    const preserveOnServer = new Set(['.', '..', 'docs', 'config.php', 'notify.php', 'client-snippet-php.js']);
+    const preserveOnServer = new Set(['.', '..', 'docs', 'config.php', 'notify.php', 'client-snippet-php.js', 'email-config.php']);
 
     // Delete existing files (except preserved files)
     for (const file of existingFiles) {

@@ -64,11 +64,33 @@ All state flows down to `SundialPreview.tsx` as individual props. SundialPreview
 
 ## Environment Variables
 
-Copy `.env.example` to `.env`. Supabase vars are optional (analytics only). SFTP vars are only needed for deployment.
+Copy `.env.example` to `.env.local` and fill in real values. `.env.local` is gitignored. Supabase vars are optional (analytics only). SFTP vars are needed for deployment.
+
+**Windows encoding gotcha:** Windows editors (VS Code, Notepad) often save `.env.local` as UTF-16 LE. The deploy and upload scripts detect this automatically, so it does not need to be fixed manually.
 
 ## Deployment
 
 ```bash
-npm run deploy-sftp         # Node SFTP upload script
-npm run build-and-deploy    # PowerShell build + deploy script
+npm run deploy-sftp              # Node SFTP upload script (build first)
+npm run build-and-deploy         # PowerShell build + deploy script
+node scripts/upload-email-config.js  # Upload email-config.php only (no full deploy needed)
+node scripts/test-notification.js    # Smoke-test the export notification email
 ```
+
+### Server-side files managed by deployment
+
+`deploy-sftp.js` clears the remote directory on each deploy and re-uploads everything. The following files are **preserved** (never deleted):
+
+| File | Purpose |
+|------|---------|
+| `email-config.php` | SMTP credentials for export notifications — gitignored, lives only on server |
+| `config.php` | Another app sharing the directory |
+| `notify.php` | Another app sharing the directory |
+| `client-snippet-php.js` | Another app sharing the directory |
+| `docs/` | Documentation directory |
+
+`email-config.php` is also in the `phpFiles` upload list, so if you have it locally (copied from `email-config.example.php` with real credentials) it will be uploaded during deploy. It is gitignored and must never be committed.
+
+### Export notification system
+
+Exports and prints POST to `export-logger.php` on the production server, which logs to `./logs/export.log` and sends an email via PHPMailer/SMTP. Credentials come from `email-config.php` (loaded by the PHP script at runtime). If that file is missing, email silently fails — use `node scripts/test-notification.js` to diagnose.

@@ -12,7 +12,8 @@
       "WebFetch(domain:www.ens-lyon.fr)",
       "WebFetch(domain:sundials.co)",
       "Bash(npx vitest:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(node *)"
     ]
   }
 }
