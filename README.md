@@ -1,6 +1,6 @@
 # Sundial Generator
 
-A web-based application for generating and customizing sundials. Create beautiful, accurate sundials for any location on Earth with customizable styles and export options. Currently running at http://sundial.gennetten.org
+A web-based application for generating and customizing sundials. Create beautiful, accurate sundials for any location on Earth with customizable styles and export options. Currently running at https://precisionsundial.com
 
 ## Features
 

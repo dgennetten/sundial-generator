@@ -36,12 +36,12 @@ composer require phpmailer/phpmailer
    ```php
    <?php
    $_ENV['SMTP_HOST']           = 'smtp.dreamhost.com';
-   $_ENV['SMTP_USERNAME']       = 'info@sundial.gennetten.org';   // full email address
+   $_ENV['SMTP_USERNAME']       = 'info@precisionsundial.com';   // full email address
    $_ENV['SMTP_PASSWORD']       = 'your_actual_email_password';
-   $_ENV['SMTP_FROM_EMAIL']     = 'info@sundial.gennetten.org';
+   $_ENV['SMTP_FROM_EMAIL']     = 'info@precisionsundial.com';
    $_ENV['NOTIFICATION_EMAIL']  = 'douglas@gennetten.com';
    ```
-3. Deploy: upload `email-config.php` to the server next to `export-logger.php` (e.g. `/home/dgennetten/sundial.gennetten.org/email-config.php`). Do not commit `email-config.php`; it is in `.gitignore`.
+3. Deploy: upload `email-config.php` to the server next to `export-logger.php` (e.g. `/home/dgennetten/precisionsundial.com/email-config.php`). Do not commit `email-config.php`; it is in `.gitignore`.
 
 Both `export-logger.php` and `test-email-system.php` load this file automatically if it exists.
 
@@ -54,7 +54,7 @@ For Dreamhost or when Apache passes env to PHP, create a `.htaccess` file in you
 SetEnv SMTP_HOST "smtp.dreamhost.com"
 SetEnv SMTP_USERNAME "sundial@gennetten.com"
 SetEnv SMTP_PASSWORD "your_email_password_here"
-SetEnv SMTP_FROM_EMAIL "info@sundial.gennetten.org"
+SetEnv SMTP_FROM_EMAIL "info@precisionsundial.com"
 SetEnv NOTIFICATION_EMAIL "douglas@gennetten.com"
 ```
 
@@ -86,7 +86,7 @@ Use the test script (see `test-email-system.php` below) to verify everything wor
 
 ### 3. SMTP Authentication Errors ("Could not authenticate")
 - **Rotate your password**: If you ever shared the SMTP password (e.g. in a chat or ticket), change it in the Dreamhost panel and update `email-config.php`.
-- For Dreamhost, use the **full email address** as `SMTP_USERNAME` (e.g. `info@sundial.gennetten.org`).
+- For Dreamhost, use the **full email address** as `SMTP_USERNAME` (e.g. `info@precisionsundial.com`).
 - In Dreamhost panel: confirm the mail account exists, is active, and that **SMTP / external sending** is allowed for that account.
 - If the account has 2FA or “app passwords,” use an **app-specific password** in `SMTP_PASSWORD`, not the main account password.
 - Passwords with special characters (`!`, `$`, `"`, etc.): keep the value in **single quotes** in PHP (e.g. `'your!pass'`). Ensure there is **no space or newline** inside the quotes or after the line in `email-config.php`.

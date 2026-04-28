@@ -37,7 +37,7 @@ const config = {
   host: process.env.SFTP_HOST || process.env.FTP_HOST,
   username: process.env.SFTP_USERNAME || process.env.FTP_USER,
   password: process.env.SFTP_PASSWORD || process.env.FTP_PASSWORD,
-  remotePath: process.env.FTP_REMOTE_PATH || '/home/dgennetten/sundial.gennetten.org/',
+  remotePath: process.env.FTP_REMOTE_PATH || '/home/dgennetten/precisionsundial.com/',
   port: 22
 };
 

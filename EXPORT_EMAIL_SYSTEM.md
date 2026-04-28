@@ -23,7 +23,7 @@ The export email system is fully operational as of August 30, 2025.
 
 ### Backend Components
 - `export-logger.php` - Main PHP script that handles logging and email sending
-- Server logs stored at: `/home/dgennetten/sundial.gennetten.org/logs/export.log`
+- Server logs stored at: `/home/dgennetten/precisionsundial.com/logs/export.log`
 
 ### Deployment Scripts
 - `deploy.js` - Main deployment script (now includes PHP files)
@@ -81,7 +81,7 @@ Each email includes:
 ### Problem: Export/print email "recently stopped working"
 
 1. **Run the diagnostic script on the server** (fastest check):
-   - Open `https://sundial.gennetten.org/test-email-system.php?allow=1` in a browser.
+   - Open `https://precisionsundial.com/test-email-system.php?allow=1` in a browser.
    - It will show: PHPMailer found, env vars (SMTP_PASSWORD set?), and a live send test.
    - If **SMTP password not configured** appears, the server no longer has `SMTP_PASSWORD` (e.g. env cleared after deploy, .htaccess not deployed, or hosting changed how env is set).
 
@@ -112,7 +112,7 @@ Each email includes:
    ```
 
 3. **Check server logs** (if you have server access):
-   - Log file: `/home/dgennetten/sundial.gennetten.org/logs/export.log`
+   - Log file: `/home/dgennetten/precisionsundial.com/logs/export.log`
    - PHP error logs on the server
 
 ### Problem: Emails sent but logging fails
@@ -130,7 +130,7 @@ This indicates an SMTP configuration issue. Check:
 
 The system automatically detects the environment:
 
-- **Development**: Uses `https://sundial.gennetten.org/export-logger.php`
+- **Development**: Uses `https://precisionsundial.com/export-logger.php`
 - **Production**: Uses `/export-logger.php` (relative path)
 
 This allows testing during development while ensuring production deployments work correctly.

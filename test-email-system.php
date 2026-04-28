@@ -191,15 +191,15 @@ if (!$phpmailerFound) {
         
         // Get SMTP settings with fallbacks and trim to handle whitespace issues
         $smtpHost = trim($_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?? 'smtp.dreamhost.com');
-        $smtpUsername = trim($_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'info@sundial.gennetten.org');
+        $smtpUsername = trim($_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'info@precisionsundial.com');
         $smtpPassword = trim($_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? '');
-        $smtpFromEmail = trim($_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL') ?? 'info@sundial.gennetten.org');
+        $smtpFromEmail = trim($_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL') ?? 'info@precisionsundial.com');
         $notificationEmail = trim($_ENV['NOTIFICATION_EMAIL'] ?? getenv('NOTIFICATION_EMAIL') ?? 'douglas@gennetten.com');
         
         // Validate that email addresses are not empty after trimming
         if (empty($smtpFromEmail)) {
-            echo "<div style='color: orange;'>⚠️ SMTP_FROM_EMAIL is empty, using default: info@sundial.gennetten.org</div>";
-            $smtpFromEmail = 'info@sundial.gennetten.org';
+            echo "<div style='color: orange;'>⚠️ SMTP_FROM_EMAIL is empty, using default: info@precisionsundial.com</div>";
+            $smtpFromEmail = 'info@precisionsundial.com';
         }
         
         if (empty($notificationEmail)) {

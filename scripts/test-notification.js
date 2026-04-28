@@ -6,7 +6,7 @@
  * Usage:  node scripts/test-notification.js
  */
 
-const ENDPOINT = 'https://sundial.gennetten.org/export-logger.php';
+const ENDPOINT = 'https://precisionsundial.com/export-logger.php';
 
 const payload = {
   exportFormat: 'TEST',

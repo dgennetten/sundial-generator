@@ -307,14 +307,14 @@ $emailError = '';
 try {
     // Get SMTP settings - try multiple sources and trim to handle whitespace issues
     $smtpHost = trim($_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?? 'smtp.dreamhost.com');
-    $smtpUsername = trim($_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'info@sundial.gennetten.org');
+    $smtpUsername = trim($_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'info@precisionsundial.com');
     $smtpPassword = trim($_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? '');
-    $smtpFromEmail = trim($_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL') ?? 'info@sundial.gennetten.org');
+    $smtpFromEmail = trim($_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL') ?? 'info@precisionsundial.com');
     $notificationEmail = trim($_ENV['NOTIFICATION_EMAIL'] ?? getenv('NOTIFICATION_EMAIL') ?? 'douglas@gennetten.com');
 
     // Validate that email addresses are not empty after trimming
     if (empty($smtpFromEmail)) {
-        $smtpFromEmail = 'info@sundial.gennetten.org';
+        $smtpFromEmail = 'info@precisionsundial.com';
     }
     if (empty($notificationEmail)) {
         $notificationEmail = 'douglas@gennetten.com';

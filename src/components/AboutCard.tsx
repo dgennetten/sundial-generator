@@ -83,7 +83,7 @@ const AboutCard: React.FC = () => {
           dangerouslySetInnerHTML={{
             __html: `
   This App traces its origins back to a gloriously nerdy gem—the 
-  <a href="https://sundial.gennetten.org/docs/1980-12-SundialArticle.pdf" target="_blank" rel="noopener noreferrer">Amateur Scientist column</a>
+  <a href="https://precisionsundial.com/docs/1980-12-SundialArticle.pdf" target="_blank" rel="noopener noreferrer">Amateur Scientist column</a>
   from the December 1980 issue of Scientific American. 
   Back then, my first sundial app was coded with love (and 
   <a href="https://www.hp9845.net/9845/software/basic/" target="_blank" rel="noopener noreferrer">Rocky Mountain Basic</a>
@@ -93,8 +93,8 @@ const AboutCard: React.FC = () => {
 
   Not content with digital wizardry alone, 
   like a caffinated Da Vinci, I scribbled out two pages of hand-drawn 
-  <a href="https://sundial.gennetten.org/docs/AnalemmaIllustrationFromJune1985.pdf" target="_blank" rel="noopener noreferrer">instructional</a>,
-  <a href="https://sundial.gennetten.org/docs/SundialIllustrationFromJune1985.pdf" target="_blank" rel="noopener noreferrer">illustrations</a>.
+  <a href="https://precisionsundial.com/docs/AnalemmaIllustrationFromJune1985.pdf" target="_blank" rel="noopener noreferrer">instructional</a>,
+  <a href="https://precisionsundial.com/docs/SundialIllustrationFromJune1985.pdf" target="_blank" rel="noopener noreferrer">illustrations</a>.
 </p>
 <p>The sundial generator uses the 
 <a href="https://academic.oup.com/mnras/article/238/4/1529/1037665" target="_blank" rel="noopener noreferrer">Hughes, Yallop & Hohenkerk</a>

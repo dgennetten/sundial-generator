@@ -143,7 +143,7 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
     // Use production URL in development since Vite doesn't handle PHP
     const isDevelopment = import.meta.env.DEV;
     const loggerUrl = isDevelopment 
-      ? 'https://sundial.gennetten.org/export-logger.php'
+      ? 'https://precisionsundial.com/export-logger.php'
       : '/export-logger.php';
 
     log.debug('Using logger URL:', loggerUrl);
@@ -291,7 +291,7 @@ export async function logPrintActivity(options: {
     // Use production URL in development since Vite doesn't handle PHP
     const isDevelopment = import.meta.env.DEV;
     const loggerUrl = isDevelopment 
-      ? 'https://sundial.gennetten.org/export-logger.php'
+      ? 'https://precisionsundial.com/export-logger.php'
       : '/export-logger.php';
 
     log.debug('Using logger URL:', loggerUrl);

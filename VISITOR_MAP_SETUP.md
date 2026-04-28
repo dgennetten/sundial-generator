@@ -66,7 +66,7 @@ node src/utils/logParser.js ./logs/access.log ./public/visitor-data.json 30
 Your SFTP settings are already configured in `scripts/fetchLogs.js`:
 - Host: gennetten.org
 - Username: dgennetten@gennetten.org
-- Log path: /home/_domain_logs/dgennetten/sundial.gennetten.org/https.54243421/
+- Log path: /home/_domain_logs/dgennetten/precisionsundial.com/https.54243421/
 
 ## 🎯 Features
 
