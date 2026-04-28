@@ -1,6 +1,6 @@
 // src/App.tsx
 //
-// Sundial Generator - A web-based sundial design application
+// Precision Sundial - A web-based sundial design application
 // Copyright (c) 2025 Sundial Generator
 //
 // This program is free software: you can redistribute it and/or modify
@@ -825,7 +825,7 @@ const App: React.FC = () => {
       <div ref={controlsPanelRef} className="controls-panel">
         <div className="mobile-controls-scroll">
         <div className="app-header">
-          <h1 className="app-title">Sundial Generator</h1>
+          <h1 className="app-title">Precision Sundial</h1>
           <p className="app-subtitle">Create beautiful, accurate sundials for any location</p>
         </div>
 

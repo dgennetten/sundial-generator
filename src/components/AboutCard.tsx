@@ -1,5 +1,5 @@
 import React from 'react';
-import { Info, Instagram, Mail, Coffee, Github } from 'lucide-react';
+import { Info, Instagram, Mail, Coffee, Github, Globe } from 'lucide-react';
 import BuildDate from './BuildDate';
 
 const AboutCard: React.FC = () => {
@@ -141,6 +141,20 @@ algorithm which "enables it to be calculated for any epoch within 30 centuries o
               }}
             >
               <Github size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
+            </a>
+            <a
+              href="https://douglas.gennetten.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Douglas Gennetten — douglas.gennetten.com"
+              style={{
+                color: '#2563eb',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+              }}
+            >
+              <Globe size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
             </a>
             <a
               href="mailto:douglas@gennetten.org?subject=Sundial%20Feedback"
