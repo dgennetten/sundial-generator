@@ -173,17 +173,6 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
           </table>
         </div>
 
-        <div className="form-group">
-          <label className="form-checkbox">
-            <input
-              type="checkbox"
-              checked={use24Hour}
-              onChange={(e) => onUpdate(startHour, stopHour, e.target.checked, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
-            />
-            24-hour time
-          </label>
-        </div>
-
         <div
           className="form-group"
           style={{
@@ -234,6 +223,10 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
               alignItems: 'center',
               gap: isMobile ? '0.75rem' : '1.25rem',
               flexWrap: 'nowrap',
+              whiteSpace: 'nowrap',
+              minWidth: 0,
+              overflowX: 'auto',
+              WebkitOverflowScrolling: 'touch',
             }}
           >
             <div className="form-group" style={{ marginBottom: 0 }}>
@@ -243,7 +236,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
                   checked={labelWinterSide}
                   onChange={e => onUpdate(startHour, stopHour, use24Hour, e.target.checked, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
                 />
-                Winter label
+                Winter
               </label>
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
@@ -253,7 +246,17 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
                   checked={labelSummerSide}
                   onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, e.target.checked, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
                 />
-                Summer label
+                Summer
+              </label>
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-checkbox">
+                <input
+                  type="checkbox"
+                  checked={use24Hour}
+                  onChange={(e) => onUpdate(startHour, stopHour, e.target.checked, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
+                />
+                24 hr
               </label>
             </div>
           </div>

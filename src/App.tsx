@@ -136,31 +136,6 @@ const App: React.FC = () => {
   const [declinationLines, setDeclinationLines] = useState<DeclinationLine[]>(() => {
     return loadDeclinationLines();
   });
-  const handleDateRangeChange = useCallback((range: 'FullYear' | 'SummerToFall' | 'WinterToSpring') => {
-    setHourlineDateRange(range);
-    setHourlineIntervals(prev => {
-      const updated = prev.map(i => {
-        if (i.id === 'half-hour') {
-          return { ...i, styleId: 'hourline-2-2-day-dash' };
-        }
-        if (i.id === 'quarter-hour') {
-          return { ...i, styleId: 'hourline-2-2-day-dash' };
-        }
-        if (i.id === '5-minute' || i.id === '2-minute') {
-          return { ...i, active: false };
-        }
-        return i;
-      });
-      // Persist overrides of built-ins so refresh keeps the setting
-      saveHourlineOverrides({
-        'half-hour': { styleId: 'hourline-2-2-day-dash' },
-        'quarter-hour': { styleId: 'hourline-2-2-day-dash' },
-        '5-minute': { active: false },
-        '2-minute': { active: false },
-      });
-      return updated;
-    });
-  }, []);
 
   const [startHour, setStartHour] = useState<number>(4);
   const [stopHour, setStopHour] = useState<number>(20);
