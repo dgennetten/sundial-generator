@@ -172,6 +172,7 @@ const App: React.FC = () => {
   const [fontSize, setFontSize] = useState<number>(pageSize === '10x15cm Postcard' ? 12 : 20);
   const [useDST, setUseDST] = useState<boolean>(true);
   const [declinationNoonmarks, setDeclinationNoonmarks] = useState<boolean>(true);
+  const [showFullYearOnNoon, setShowFullYearOnNoon] = useState<boolean>(false);
   const [dialShape, setDialShape] = useState<DialShape>('Rectangle');
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
   const [borderMargin, setBorderMargin] = useState<number>(pageSize === '10x15cm Postcard' ? 0.1 : 0.236); // in inches (6mm default)
@@ -481,6 +482,7 @@ const App: React.FC = () => {
     declinationType,
     declinationDegrees,
     declinationNoonmarks,
+    showFullYearOnNoon,
     originalLatitude: latitude,
     dialInclination,
     dialDeclination,
@@ -526,6 +528,7 @@ const App: React.FC = () => {
     declinationType,
     declinationDegrees,
     declinationNoonmarks,
+    showFullYearOnNoon,
     activeHourlineIntervals,
     normalizedDeclinationLines,
     dialInclination,
@@ -659,7 +662,8 @@ const App: React.FC = () => {
     if (config.fontSize !== undefined) setFontSize(config.fontSize);
     if (config.useDST !== undefined) setUseDST(config.useDST);
     if (config.declinationNoonmarks !== undefined) setDeclinationNoonmarks(config.declinationNoonmarks);
-    
+    if (config.showFullYearOnNoon !== undefined) setShowFullYearOnNoon(config.showFullYearOnNoon);
+
     // Lines - restore these carefully to maintain references
     if (config.lineStyles !== undefined && Array.isArray(config.lineStyles)) {
       setLineStyles(config.lineStyles);
@@ -871,6 +875,7 @@ const App: React.FC = () => {
           fontSize={fontSize}
           useDST={useDST}
           declinationNoonmarks={declinationNoonmarks}
+          showFullYearOnNoon={showFullYearOnNoon}
           dialTextBlockFontSize={dialTextBlockFontSize}
           dialTextBlockFontFamily={dialTextBlockFontFamily}
           sundialNotesPositionMode={sundialNotesPositionMode}
@@ -1035,6 +1040,8 @@ const App: React.FC = () => {
             fontSize={fontSize}
             useDST={useDST}
             declinationNoonmarks={declinationNoonmarks}
+            showFullYearOnNoon={showFullYearOnNoon}
+            setShowFullYearOnNoon={setShowFullYearOnNoon}
           /></div>
         </React.Profiler>
         <React.Profiler id="LineSettings" onRender={(id, phase, actualDuration) => {

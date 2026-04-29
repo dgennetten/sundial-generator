@@ -62,6 +62,8 @@ type Props = {
   declinationType?: string;
   declinationDegrees?: number;
   declinationNoonmarks?: boolean;
+  /** Half-year modes only: dotted noon trace for days outside the selected range */
+  showFullYearOnNoon?: boolean;
   originalLatitude?: number;
   dialInclination?: number;   // dial tilt from horizontal, degrees (0 = flat, 90 = vertical)
   dialDeclination?: number;   // dial rotation from poleward, degrees (+West / −East)
@@ -118,6 +120,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     declinationType = 'North',
     declinationDegrees = 0,
     declinationNoonmarks = true,
+    showFullYearOnNoon = false,
     originalLatitude,
     dialInclination = 0,
     dialDeclination = 0,
@@ -1301,6 +1304,74 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       return elements;
     });
 
+  /** Split noon complement points into contiguous day-index runs for separate paths */
+  function splitContiguousDayRuns(
+    pts: { day: number; x: number; y: number }[]
+  ): { day: number; x: number; y: number }[][] {
+    if (pts.length === 0) return [];
+    const sorted = [...pts].sort((a, b) => a.day - b.day);
+    const runs: { day: number; x: number; y: number }[][] = [];
+    let run = [sorted[0]];
+    for (let i = 1; i < sorted.length; i++) {
+      const prev = sorted[i - 1].day;
+      const d = sorted[i].day;
+      if (d === prev + 1) {
+        run.push(sorted[i]);
+      } else {
+        runs.push(run);
+        run = [sorted[i]];
+      }
+    }
+    runs.push(run);
+    return runs;
+  }
+
+  const noonComplementElements: JSX.Element[] = [];
+  if (
+    showFullYearOnNoon &&
+    dateRange !== 'FullYear' &&
+    startHour <= 12 &&
+    stopHour >= 12
+  ) {
+    const hourInterval = hourlineIntervals.find((i) => i.active && i.name === 'Hour');
+    const complementStyle =
+      (hourInterval &&
+        lineStyles.find((s) => s.id === hourInterval.styleId || s.name === hourInterval.styleId)) ||
+      lineStyles.find((s) => s.id === '0.5mm-black');
+    if (complementStyle) {
+      const fullNoon = getAnalemmaPointsProjected({
+        lat,
+        lng,
+        tzMeridian,
+        hour: 12,
+        styleHeight: gnomonHeight,
+        dialInclination,
+        dialDeclination,
+      });
+      const complementPts = fullNoon
+        .filter((p) => !isDayInRange(p.day, dateRange))
+        .sort((a, b) => a.day - b.day);
+      const runs = splitContiguousDayRuns(complementPts);
+      runs.forEach((run, ri) => {
+        const pathData = clipPathData(run);
+        if (pathData) {
+          noonComplementElements.push(
+            <g key={`noon-off-half-${ri}`}>
+              <path
+                d={pathData}
+                stroke={complementStyle.color || '#374151'}
+                fill="none"
+                strokeWidth={getStrokeWidth('hairline')}
+                vectorEffect="non-scaling-stroke"
+                opacity={0.9}
+              />
+            </g>
+          );
+        }
+      });
+    }
+  }
+
   // Helper to get declination for a declination line
   function getDeclinationForLine(line: DeclinationLine): number | null {
     if (line.date === 'Equinox') return 0;
@@ -2182,6 +2253,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
               {declinationLineElements}
               {hourlineElements.flat()}
+              {noonComplementElements}
               {declinationNoonmarkElements}
 
 

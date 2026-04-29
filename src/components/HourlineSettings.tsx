@@ -22,6 +22,8 @@ interface HourlineSettingsProps {
   fontSize: number;
   useDST: boolean;
   declinationNoonmarks: boolean;
+  showFullYearOnNoon: boolean;
+  setShowFullYearOnNoon: (v: boolean) => void;
   onUpdate: (
     start: number,
     stop: number,
@@ -52,6 +54,8 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
   fontSize,
   useDST,
   declinationNoonmarks,
+  showFullYearOnNoon,
+  setShowFullYearOnNoon,
   onUpdate,
 }) => {
 
@@ -180,8 +184,21 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
           </label>
         </div>
 
-        <div className="form-group">
-          <label className="form-checkbox">
+        <div
+          className="form-group"
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'nowrap',
+            alignItems: 'center',
+            columnGap: isMobile ? '0.75rem' : '1.25rem',
+            rowGap: 0,
+            whiteSpace: 'nowrap',
+            overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
+          <label className="form-checkbox" style={{ marginBottom: 0 }}>
             <input
               type="checkbox"
               checked={declinationNoonmarks}
@@ -189,6 +206,16 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
             />
             Noon Date Marks
           </label>
+          {dateRange !== 'FullYear' && (
+            <label className="form-checkbox" style={{ marginBottom: 0 }}>
+              <input
+                type="checkbox"
+                checked={showFullYearOnNoon}
+                onChange={(e) => setShowFullYearOnNoon(e.target.checked)}
+              />
+              Full Year Noon
+            </label>
+          )}
         </div>
 
         <div

@@ -52,7 +52,9 @@ export interface SavedDialConfig {
     fontSize: number;
     useDST: boolean;
     declinationNoonmarks: boolean;
-    
+    /** When date range is half-year, draw dotted noon analemma for the excluded half-year */
+    showFullYearOnNoon?: boolean;
+
     // Lines
     lineStyles: LineStyle[];
     declinationLines: DeclinationLine[];
