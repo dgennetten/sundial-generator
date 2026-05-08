@@ -17,7 +17,11 @@ const DeclinationLineOptions: React.FC<{
   setDeclinationLines: (lines: DeclinationLine[]) => void;
   dateRange?: 'FullYear' | 'SummerToFall' | 'WinterToSpring';
   lat?: number;
-}> = ({ lineStyles, declinationLines, setDeclinationLines, dateRange = 'FullYear', lat = 0 }) => {
+  showBelowHorizonDateLines?: boolean;
+  setShowBelowHorizonDateLines?: (v: boolean) => void;
+  syncBelowHorizon?: boolean;
+  setSyncBelowHorizon?: (v: boolean) => void;
+}> = ({ lineStyles, declinationLines, setDeclinationLines, dateRange = 'FullYear', lat = 0, showBelowHorizonDateLines = false, setShowBelowHorizonDateLines, syncBelowHorizon = false, setSyncBelowHorizon }) => {
   const [draftDate, setDraftDate] = React.useState('');
   const [draftStyle, setDraftStyle] = React.useState('red-dashed-hairline');
   const lastInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -398,6 +402,28 @@ const DeclinationLineOptions: React.FC<{
             </tbody>
           </table>
         </div>
+        {setShowBelowHorizonDateLines && (
+          <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: '1.25rem', marginTop: '0.5rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
+              <input
+                type="checkbox"
+                checked={showBelowHorizonDateLines}
+                onChange={e => setShowBelowHorizonDateLines(e.target.checked)}
+              />
+              Show below-horizon date lines
+            </label>
+            {setSyncBelowHorizon && (
+              <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
+                <input
+                  type="checkbox"
+                  checked={syncBelowHorizon}
+                  onChange={e => setSyncBelowHorizon(e.target.checked)}
+                />
+                Sync hour lines
+              </label>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

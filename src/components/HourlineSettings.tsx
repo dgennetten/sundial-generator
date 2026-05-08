@@ -24,6 +24,10 @@ interface HourlineSettingsProps {
   declinationNoonmarks: boolean;
   showFullYearOnNoon: boolean;
   setShowFullYearOnNoon: (v: boolean) => void;
+  showBelowHorizonHourLines: boolean;
+  setShowBelowHorizonHourLines: (v: boolean) => void;
+  syncBelowHorizon: boolean;
+  setSyncBelowHorizon: (v: boolean) => void;
   onUpdate: (
     start: number,
     stop: number,
@@ -56,6 +60,10 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
   declinationNoonmarks,
   showFullYearOnNoon,
   setShowFullYearOnNoon,
+  showBelowHorizonHourLines,
+  setShowBelowHorizonHourLines,
+  syncBelowHorizon,
+  setSyncBelowHorizon,
   onUpdate,
 }) => {
 
@@ -173,95 +181,55 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
           </table>
         </div>
 
-        <div
-          className="form-group"
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            flexWrap: 'nowrap',
-            alignItems: 'center',
-            columnGap: isMobile ? '0.75rem' : '1.25rem',
-            rowGap: 0,
-            whiteSpace: 'nowrap',
-            overflowX: 'auto',
-            WebkitOverflowScrolling: 'touch',
-          }}
-        >
-          <label className="form-checkbox" style={{ marginBottom: 0 }}>
-            <input
-              type="checkbox"
-              checked={declinationNoonmarks}
-              onChange={(e) => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, e.target.checked)}
-            />
-            Noon Date Marks
-          </label>
-          {dateRange !== 'FullYear' && (
-            <label className="form-checkbox" style={{ marginBottom: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: isMobile ? '0.75rem' : '1.25rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
               <input
                 type="checkbox"
-                checked={showFullYearOnNoon}
-                onChange={(e) => setShowFullYearOnNoon(e.target.checked)}
+                checked={declinationNoonmarks}
+                onChange={(e) => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, e.target.checked)}
               />
-              Full Year Noon
+              Noon Date Marks
             </label>
-          )}
-        </div>
-
-        <div
-          className="form-row"
-          style={{
-            display: 'flex',
-            alignItems: isMobile ? 'flex-start' : 'center',
-            gap: isMobile ? '0.75rem' : '1.25rem',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: isMobile ? '0.75rem' : '1.25rem',
-              flexWrap: 'nowrap',
-              whiteSpace: 'nowrap',
-              minWidth: 0,
-              overflowX: 'auto',
-              WebkitOverflowScrolling: 'touch',
-            }}
-          >
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-checkbox">
+            {dateRange !== 'FullYear' && (
+              <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
                 <input
                   type="checkbox"
-                  checked={labelWinterSide}
-                  onChange={e => onUpdate(startHour, stopHour, use24Hour, e.target.checked, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
+                  checked={showFullYearOnNoon}
+                  onChange={(e) => setShowFullYearOnNoon(e.target.checked)}
                 />
-                Winter
+                Full Year Noon
               </label>
-            </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-checkbox">
-                <input
-                  type="checkbox"
-                  checked={labelSummerSide}
-                  onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, e.target.checked, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
-                />
-                Summer
-              </label>
-            </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-checkbox">
-                <input
-                  type="checkbox"
-                  checked={use24Hour}
-                  onChange={(e) => onUpdate(startHour, stopHour, e.target.checked, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
-                />
-                24 hr
-              </label>
-            </div>
+            )}
           </div>
-          <div className="form-group" style={{ marginBottom: 0, flex: isMobile ? '1 1 100%' : '0 0 auto' }}>
-            <label className="form-checkbox">
+          <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: isMobile ? '0.75rem' : '1.25rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
+              <input
+                type="checkbox"
+                checked={labelWinterSide}
+                onChange={e => onUpdate(startHour, stopHour, use24Hour, e.target.checked, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
+              />
+              Winter
+            </label>
+            <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
+              <input
+                type="checkbox"
+                checked={labelSummerSide}
+                onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, e.target.checked, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
+              />
+              Summer
+            </label>
+            <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
+              <input
+                type="checkbox"
+                checked={use24Hour}
+                onChange={(e) => onUpdate(startHour, stopHour, e.target.checked, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
+              />
+              24 hr
+            </label>
+          </div>
+          <div>
+            <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
               <input
                 type="checkbox"
                 checked={useDST}
@@ -270,6 +238,24 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
                 title="Automatically controlled by location timezone"
               />
               Daylight/Summer Time (Auto)
+            </label>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: isMobile ? '0.75rem' : '1.25rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
+              <input
+                type="checkbox"
+                checked={showBelowHorizonHourLines}
+                onChange={e => setShowBelowHorizonHourLines(e.target.checked)}
+              />
+              Show below-horizon hour lines
+            </label>
+            <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
+              <input
+                type="checkbox"
+                checked={syncBelowHorizon}
+                onChange={e => setSyncBelowHorizon(e.target.checked)}
+              />
+              Sync date lines
             </label>
           </div>
         </div>

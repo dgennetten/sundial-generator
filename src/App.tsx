@@ -176,6 +176,9 @@ const App: React.FC = () => {
   const [useDST, setUseDST] = useState<boolean>(true);
   const [declinationNoonmarks, setDeclinationNoonmarks] = useState<boolean>(true);
   const [showFullYearOnNoon, setShowFullYearOnNoon] = useState<boolean>(false);
+  const [showBelowHorizonHourLines, setShowBelowHorizonHourLines] = useState<boolean>(true);
+  const [showBelowHorizonDateLines, setShowBelowHorizonDateLines] = useState<boolean>(true);
+  const [syncBelowHorizon, setSyncBelowHorizon] = useState<boolean>(true);
   const [dialShape, setDialShape] = useState<DialShape>('Rectangle');
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
   const [borderMargin, setBorderMargin] = useState<number>(pageSize === '10x15cm Postcard' ? 0.1 : 0.236); // in inches (6mm default)
@@ -490,6 +493,8 @@ const App: React.FC = () => {
     dialInclination,
     dialDeclination,
     dialOrientation,
+    showBelowHorizonHourLines,
+    showBelowHorizonDateLines,
   }), [
     latitude,
     longitude,
@@ -537,6 +542,8 @@ const App: React.FC = () => {
     dialInclination,
     dialDeclination,
     dialOrientation,
+    showBelowHorizonHourLines,
+    showBelowHorizonDateLines,
   ]);
 
   // Callback to restore settings from a printed dial record
@@ -1014,6 +1021,16 @@ const App: React.FC = () => {
             setDeclinationLines={setDeclinationLines}
             dateRange={hourlineDateRange}
             lat={latitude}
+            showBelowHorizonDateLines={showBelowHorizonDateLines}
+            setShowBelowHorizonDateLines={(v) => {
+              setShowBelowHorizonDateLines(v);
+              if (syncBelowHorizon) setShowBelowHorizonHourLines(v);
+            }}
+            syncBelowHorizon={syncBelowHorizon}
+            setSyncBelowHorizon={(v) => {
+              setSyncBelowHorizon(v);
+              if (v) setShowBelowHorizonDateLines(showBelowHorizonHourLines);
+            }}
           /></div>
           <div id="card-hourlines"><HourlineSettings
             dateRange={hourlineDateRange}
@@ -1045,6 +1062,16 @@ const App: React.FC = () => {
             declinationNoonmarks={declinationNoonmarks}
             showFullYearOnNoon={showFullYearOnNoon}
             setShowFullYearOnNoon={setShowFullYearOnNoon}
+            showBelowHorizonHourLines={showBelowHorizonHourLines}
+            setShowBelowHorizonHourLines={(v) => {
+              setShowBelowHorizonHourLines(v);
+              if (syncBelowHorizon) setShowBelowHorizonDateLines(v);
+            }}
+            syncBelowHorizon={syncBelowHorizon}
+            setSyncBelowHorizon={(v) => {
+              setSyncBelowHorizon(v);
+              if (v) setShowBelowHorizonDateLines(showBelowHorizonHourLines);
+            }}
           /></div>
         </React.Profiler>
         <React.Profiler id="LineSettings" onRender={(id, phase, actualDuration) => {

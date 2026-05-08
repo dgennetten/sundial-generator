@@ -467,36 +467,37 @@ export interface AnalemmaParams {
   styleHeight: number;       // perpendicular height of style tip above dial surface (mm)
   dialInclination: number;   // dial tilt from horizontal, degrees (0 = flat, 90 = vertical)
   dialDeclination?: number;  // dial rotation from poleward, degrees (+West / −East); default 0
+  showBelowHorizon?: boolean; // include days where sun is below horizon but dial still illuminated
 }
 
 export interface AnalemmaPoint {
   day: number;
   x: number;
   y: number;
+  aboveHorizon?: boolean; // true when sun above horizon; undefined treated as true (legacy points)
 }
 
 /**
  * Calculate analemma points projected onto a sundial surface for a given hour.
- * Returns one point per visible day (sun above horizon and illuminating the dial face).
- * The last point duplicates the first to close the analemma loop for rendering.
+ * By default returns only above-horizon days. When showBelowHorizon is true, also
+ * includes below-horizon days where the dial face is still geometrically illuminated
+ * (relevant for steeply inclined/declined dials). The last point duplicates the first
+ * to close the analemma loop for rendering.
  */
 export function getAnalemmaPointsProjected(params: AnalemmaParams): AnalemmaPoint[] {
-  const { lat, lng, tzMeridian, hour, styleHeight, dialInclination, dialDeclination = 0 } = params;
+  const { lat, lng, tzMeridian, hour, styleHeight, dialInclination, dialDeclination = 0, showBelowHorizon = false } = params;
   const points: AnalemmaPoint[] = [];
 
   for (let day = 1; day <= 365; day++) {
     const { altitude, azimuth } = getSolarPosition(day, lat, lng, tzMeridian, hour);
-    if (altitude <= 0) continue;
+    const aboveHorizon = altitude > 0;
+
+    if (!aboveHorizon && !showBelowHorizon) continue;
 
     const coords = computeShadowPoint(altitude, azimuth, styleHeight, lat, dialInclination, dialDeclination);
-    if (coords === null) continue; // sun behind the dial face
+    if (coords === null) continue; // sun behind or parallel to dial face
 
-    points.push({ day, x: coords.x, y: coords.y });
-  }
-
-  // Close the loop for rendering
-  if (points.length > 1) {
-    points.push({ ...points[0] });
+    points.push({ day, x: coords.x, y: coords.y, aboveHorizon });
   }
 
   return points;

@@ -68,6 +68,8 @@ type Props = {
   dialInclination?: number;   // dial tilt from horizontal, degrees (0 = flat, 90 = vertical)
   dialDeclination?: number;   // dial rotation from poleward, degrees (+West / −East)
   dialOrientation?: 'North' | 'South';
+  showBelowHorizonHourLines?: boolean;
+  showBelowHorizonDateLines?: boolean;
 };
 // Note: App now prefers passing a single `config` prop. To keep JSX happy where only `config` is provided,
 // we use a union props type here and normalize to a single `p` object.
@@ -125,6 +127,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     dialInclination = 0,
     dialDeclination = 0,
     dialOrientation,
+    showBelowHorizonHourLines = false,
+    showBelowHorizonDateLines = false,
   } = p;
 
   const geoLat = originalLatitude ?? lat;
@@ -497,6 +501,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const right = width / 2 - borderMarginMm;
     const bottom = height / 2 - borderMarginMm - transformY;
 
+    const altLimit = showBelowHorizonDateLines ? -45 * Math.PI / 180 : 0;
+
     // Generate dots every 2 minutes from startHour to stopHour
     for (let h = startHour; h <= stopHour; h += 2 / 60) { // 2-minute intervals
       const latRad = degreesToRadians(lat);
@@ -506,7 +512,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const altitude = Math.asin(sinAlt);
 
       // Same altitude filtering as dash segments
-      if (altitude > -15 * Math.PI / 180) {
+      if (altitude > altLimit) {
         let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
@@ -552,6 +558,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const right = width / 2 - borderMarginMm;
     const bottom = height / 2 - borderMarginMm - transformY;
 
+    const altLimit = showBelowHorizonDateLines ? -45 * Math.PI / 180 : 0;
+
     // Generate dots every 5 minutes from startHour to stopHour
     for (let h = startHour; h <= stopHour; h += 5 / 60) { // 5-minute intervals
       const latRad = degreesToRadians(lat);
@@ -561,7 +569,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const altitude = Math.asin(sinAlt);
 
       // Same altitude filtering as other calculated styles
-      if (altitude > -15 * Math.PI / 180) {
+      if (altitude > altLimit) {
         let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
@@ -607,7 +615,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     let previousPoint: { x: number; y: number } | null = null;
     let pointIndex = 0; // counts only in-bounds points to keep the 2/2 cadence
 
-    const ALT_LIMIT = -15 * Math.PI / 180; // match dots altitude filtering
+    const ALT_LIMIT = showBelowHorizonDateLines ? -45 * Math.PI / 180 : 0;
 
     // Precompute bounds once (same logic as dots)
     const transformY = (gnomonPosition ?? 0) - (height / 2);
@@ -698,25 +706,24 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     return { nx: -dy / len, ny: dx / len };
   }
 
-  // Build an SVG path from a series of points, breaking only on genuine
-  // discontinuities (sun crossing below horizon between adjacent days).
+  // Build an SVG path from a series of points, breaking on genuine horizon-crossing
+  // gaps. For analemma points (with .day field), uses day-based detection: a gap of
+  // more than 1 day means the sun was below the horizon for those intermediate days.
+  // For other paths (declination lines without .day), falls back to distance threshold.
   // Boundary clipping is handled by the SVG clipPath on the parent group.
-  function clipPathData(points: { x: number; y: number }[]): string | null {
+  function clipPathData(points: { day?: number; x: number; y: number }[]): string | null {
     if (points.length < 2) return null;
 
-    // Uniform threshold: break a segment when consecutive points jump more
-    // than 3× the dial diagonal — this catches horizon-crossing gaps without
-    // triggering on geometrically valid declined/inclined arcs near the border.
     const dialDiagonal = Math.sqrt(width * width + height * height);
     const maxSegLen = dialDiagonal * 3;
 
     const segments: string[] = [];
-    let current: { x: number; y: number }[] = [];
+    let current: { day?: number; x: number; y: number }[] = [];
 
     const flush = () => {
       if (current.length > 1) {
         segments.push(
-          current.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(' ')
+          current.map((pt, i) => `${i === 0 ? 'M' : 'L'} ${pt.x.toFixed(2)} ${pt.y.toFixed(2)}`).join(' ')
         );
       }
       current = [];
@@ -727,19 +734,39 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
       if (current.length > 0) {
         const prev = current[current.length - 1];
-        const dx = p.x - prev.x;
-        const dy = p.y - prev.y;
-        const segLen = Math.sqrt(dx * dx + dy * dy);
 
-        if (segLen > maxSegLen) {
-          // Allow year-wrap closing (last point ≈ first point)
-          const first = current[0];
-          const distToFirst = Math.sqrt((p.x - first.x) ** 2 + (p.y - first.y) ** 2);
-          if (distToFirst < maxSegLen * 0.2) {
-            current.push(p);
-            continue;
+        if (p.day !== undefined && prev.day !== undefined) {
+          const dayGap = p.day - prev.day;
+          if (dayGap > 1) {
+            // Inner horizon gap: break the path
+            flush();
+          } else if (dayGap <= 0) {
+            // Year-wrap (closing duplicate): use distance check so a large year-end
+            // gap (many months below horizon) doesn't create a spurious crossing line.
+            const dx = p.x - prev.x;
+            const dy = p.y - prev.y;
+            if (Math.sqrt(dx * dx + dy * dy) > maxSegLen) {
+              const first = current[0];
+              if (Math.sqrt((p.x - first.x) ** 2 + (p.y - first.y) ** 2) < maxSegLen * 0.2) {
+                current.push(p);
+                continue;
+              }
+              flush();
+            }
           }
-          flush();
+          // dayGap === 1: adjacent days, fall through to push
+        } else {
+          // No day info (declination lines): distance-based fallback
+          const dx = p.x - prev.x;
+          const dy = p.y - prev.y;
+          if (Math.sqrt(dx * dx + dy * dy) > maxSegLen) {
+            const first = current[0];
+            if (Math.sqrt((p.x - first.x) ** 2 + (p.y - first.y) ** 2) < maxSegLen * 0.2) {
+              current.push(p);
+              continue;
+            }
+            flush();
+          }
         }
       }
 
@@ -825,7 +852,17 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           styleHeight: gnomonHeight,
           dialInclination,
           dialDeclination,
+          showBelowHorizon: showBelowHorizonHourLines,
         });
+        if (!showBelowHorizonHourLines) {
+          points = points.filter(p => p.aboveHorizon !== false);
+          // Eliminate labels for clipped (partial) hour lines
+          if (points.length > 0) {
+            const firstDay = points[0].day ?? 0;
+            const lastDay = points[points.length - 1].day ?? 0;
+            if (firstDay > 2 || lastDay < 364) continue;
+          }
+        }
         // Filter points by date range
         const isNorthernHemisphere = isGeoNorthern;
         const needsSplitting = (dateRange === 'WinterToSpring' && isNorthernHemisphere) ||
@@ -1078,6 +1115,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           styleHeight: gnomonHeight,
           dialInclination,
           dialDeclination,
+          showBelowHorizon: showBelowHorizonHourLines,
         });
         // Filter points by date range
         const isNorthernHemisphere = isGeoNorthern;
@@ -1104,14 +1142,6 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             if (idx === 1 && seg1.length > 0) {
               const lastSeg1Point = [...seg1].sort((a, b) => a.day - b.day)[seg1.length - 1];
               sortedSegment = [lastSeg1Point, ...sortedSegment];
-            }
-
-            // Optimize for performance: if segment has too many points, reduce them
-            // Skip optimization for calculated styles that need daily resolution
-            if (sortedSegment.length > 100 &&
-              !(style.style === 'calculated' && (style.calculatedType === 'hourline-5-2-day-dash' || style.calculatedType === 'hourline-2-5-day-dash' || style.calculatedType === 'hourline-2-2-day-dash'))) {
-              const step = Math.ceil(sortedSegment.length / 50); // Keep ~50 points max
-              sortedSegment = sortedSegment.filter((_, index) => index % step === 0);
             }
 
             // Handle calculated styles differently
@@ -1196,23 +1226,16 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           points = points.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
           if (points.length === 0) continue;
 
-          // Optimize for performance only for half-year views; keep full-year at 1 point/day
-          // Skip optimization for calculated styles that need daily resolution
-          if (dateRange !== 'FullYear' && points.length > 100 &&
-            !(style.style === 'calculated' && (style.calculatedType === 'hourline-5-2-day-dash' || style.calculatedType === 'hourline-2-5-day-dash' || style.calculatedType === 'hourline-2-2-day-dash'))) {
-            const step = Math.ceil(points.length / 50); // Keep ~50 points max
-            points = points.filter((_, index) => index % step === 0);
-          }
-
           // For full-year, sort strictly by day to ensure smooth loop and one vertex per day
           if (dateRange === 'FullYear') {
             points = [...points].sort((a, b) => (a.day ?? 0) - (b.day ?? 0));
-            // Close the loop: path is 1→2→…→365; append day 1 so we draw 365→1 (no gap)
-            if (points.length > 1 && points[0].day !== undefined) {
-              const first = points[0];
-              const last = points[points.length - 1];
-              if (last.day !== first.day) {
-                points = [...points, { day: first.day, x: first.x, y: first.y }];
+            // Close the year-loop only when the analemma spans the full year (no large gap).
+            // A partial analemma must NOT be closed or it draws a spurious straight line.
+            if (points.length > 1) {
+              const firstDay = points[0].day ?? 0;
+              const lastDay = points[points.length - 1].day ?? 0;
+              if (firstDay <= 2 && lastDay >= 364) {
+                points = [...points, { ...points[0] }];
               }
             }
           }
@@ -1587,6 +1610,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         const hourAngle = degreesToRadians(15 * (h - 12));
         const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
         const altitude = Math.asin(sinAlt);
+        if (!showBelowHorizonDateLines && altitude <= 0) continue;
         let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
@@ -1624,7 +1648,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const hourAngle = degreesToRadians(15 * (h - 12));
       const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
       const altitude = Math.asin(sinAlt);
-      if (altitude > 0) {
+      if (altitude > 0 || showBelowHorizonDateLines) {
         let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
