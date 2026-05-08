@@ -18,7 +18,7 @@ if (Test-Path ".env.local") {
     Write-Host "     SFTP_HOST=your-sftp-host" -ForegroundColor Gray
     Write-Host "     SFTP_USERNAME=your-username" -ForegroundColor Gray
     Write-Host "     SFTP_PASSWORD=your-password" -ForegroundColor Gray
-    Write-Host "     FTP_REMOTE_PATH=/path/to/your/site" -ForegroundColor Gray
+    Write-Host "     (deploy path: /home/dgennetten/precisionsundial.com — see deploy-remote-path.js)" -ForegroundColor Gray
 }
 
 # Verify .env.local is in .gitignore

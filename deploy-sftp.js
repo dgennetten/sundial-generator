@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
+import { DEPLOY_REMOTE_ROOT } from './deploy-remote-path.js';
 
 // Parse env files directly — bypasses dotenv/Windows env conflicts.
 // Handles both UTF-8 and UTF-16 LE (with or without BOM) since Windows
@@ -37,7 +38,7 @@ const config = {
   host: process.env.SFTP_HOST || process.env.FTP_HOST,
   username: process.env.SFTP_USERNAME || process.env.FTP_USER,
   password: process.env.SFTP_PASSWORD || process.env.FTP_PASSWORD,
-  remotePath: process.env.FTP_REMOTE_PATH || '/home/dgennetten/precisionsundial.com/',
+  remotePath: DEPLOY_REMOTE_ROOT,
   port: 22
 };
 

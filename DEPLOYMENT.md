@@ -13,10 +13,10 @@ This document explains how to deploy the Sundial Generator application.
 1. Copy `.env.example` to `.env`
 2. Fill in your actual credentials:
    - `VITE_GOOGLE_MAPS_API_KEY`: Your Google Maps API key
-   - `FTP_HOST`: Your FTP server hostname
-   - `FTP_USER`: Your FTP username
-   - `FTP_PASSWORD`: Your FTP password
-   - `FTP_REMOTE_PATH`: Your remote directory path
+   - `FTP_HOST` / `SFTP_HOST`: Your server hostname
+   - `FTP_USER` / `SFTP_USERNAME`: Your username
+   - `FTP_PASSWORD` / `SFTP_PASSWORD`: Your password
+   - SFTP deploy target directory is fixed in `deploy-remote-path.js` (`/home/dgennetten/precisionsundial.com`).
 
 ## Deployment Steps
 

@@ -9,6 +9,7 @@ import Client from 'ssh2-sftp-client';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { DEPLOY_REMOTE_ROOT } from '../deploy-remote-path.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -38,7 +39,7 @@ loadEnvFile(path.join(__dirname, '..', '.env'));
 loadEnvFile(path.join(__dirname, '..', '.env.local'));
 
 const LOCAL_FILE = path.join(__dirname, '..', 'email-config.php');
-const REMOTE_PATH = (process.env.FTP_REMOTE_PATH || '/home/dgennetten/precisionsundial.com/') + 'email-config.php';
+const REMOTE_PATH = path.posix.join(DEPLOY_REMOTE_ROOT, 'email-config.php');
 
 const config = {
   host: process.env.SFTP_HOST || process.env.FTP_HOST,
