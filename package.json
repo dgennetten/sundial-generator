@@ -1,6 +1,6 @@
 {
   "name": "sundial-generator",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "license": "CC-BY-NC-SA-4.0",
   "type": "module",
   "scripts": {
@@ -18,7 +18,6 @@
     "build-and-deploy": "node build-and-deploy.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.90.1",
     "@types/leaflet": "^1.9.20",
     "dotenv": "^17.2.1",
     "html2canvas": "^1.4.1",

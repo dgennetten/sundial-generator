@@ -10,6 +10,7 @@ logs/
 *.log
 .htaccess
 email-config.php
+db-config.php
 
 # Personal/deployment files
 deploy.js

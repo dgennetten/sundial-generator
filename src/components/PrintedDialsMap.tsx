@@ -246,7 +246,7 @@ const PrintedDialsMap: React.FC<SundialPrintMapProps> = ({
           }}>
             Error: {error}
             <div style={{ marginTop: '8px', fontSize: '12px', color: '#6b7280' }}>
-              Make sure the sundial_prints table exists in Supabase. See supabase_sundial_prints_table.sql
+              Make sure the sundial_prints table exists in MySQL. See mysql_sundial_prints_table.sql
             </div>
           </div>
         ) : (

@@ -53,7 +53,7 @@ if (!config.host || !config.username || !config.password) {
 }
 
 const localPath = path.join(__dirname, 'dist');
-const phpFiles = ['export-logger.php', '.htaccess', 'email-config.php']; // PHP and config files to deploy alongside the app
+const phpFiles = ['export-logger.php', '.htaccess', 'email-config.php', 'sundial-prints-api.php']; // PHP and config files to deploy alongside the app
 const docsPath = path.join(__dirname, 'public', 'docs'); // Documents directory
 
 console.log('🚀 Starting SFTP deployment...');
@@ -177,7 +177,7 @@ async function deployWithSFTP() {
     }
 
     // Files/directories to preserve on the server during cleanup
-    const preserveOnServer = new Set(['.', '..', 'docs', 'config.php', 'notify.php', 'client-snippet-php.js', 'email-config.php']);
+    const preserveOnServer = new Set(['.', '..', 'docs', 'config.php', 'notify.php', 'client-snippet-php.js', 'email-config.php', 'db-config.php']);
 
     // Delete existing files (except preserved files)
     for (const file of existingFiles) {
