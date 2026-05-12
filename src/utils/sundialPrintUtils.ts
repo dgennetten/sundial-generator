@@ -7,8 +7,8 @@ export { computeInclinationDegrees };
 
 const API_URL =
   window.location.hostname === 'localhost'
-    ? 'https://precisionsundial.com/sundial-prints-api.php'
-    : '/sundial-prints-api.php';
+    ? 'https://precisionsundial.com/sundial-prints-api.php?v=2'
+    : '/sundial-prints-api.php?v=2';
 
 export async function saveSundialPrint(print: Omit<SundialPrint, 'id' | 'created_at'>): Promise<void> {
   try {
