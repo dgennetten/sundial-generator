@@ -1,6 +1,6 @@
 import React from 'react';
 import type { JSX } from 'react';
-import { getAnalemmaPointsProjected, degreesToRadians, getSolarDeclination, computeShadowPoint } from '../utils/sundialMath';
+import { getAnalemmaPointsProjected, degreesToRadians, getSolarDeclination, getEquationOfTime, computeShadowPoint } from '../utils/sundialMath';
 import type { DeclinationLine } from './DeclinationLineOptions';
 import type { LineStyle } from './LineSettings';
 import type { HourlineInterval } from './hourlineUtils';
@@ -487,6 +487,45 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     return segments;
   }
 
+  // Returns the total civil-time correction (EoT + longitude offset) in hours for the day
+  // in the shown date range whose solar declination best matches decl.
+  // The analemma uses getSolarPosition which applies this same correction, so subtracting
+  // it from any hour h gives the true solar time needed to align dot/dash patterns with
+  // the civil-time hour line crossings.
+  function getAlignmentTotalCorr(decl: number): number {
+    // Build the set of days to search based on the active date range and hemisphere.
+    // For FullYear, use the winter-spring half so the phase matches its analemma arc.
+    const useWinterSpring = dateRange === 'WinterToSpring' || dateRange === 'FullYear';
+    const searchDays: number[] = [];
+    if (useWinterSpring) {
+      if (isGeoNorthern) {
+        for (let d = 355; d <= 365; d++) searchDays.push(d);
+        for (let d = 1; d <= 172; d++) searchDays.push(d);
+      } else {
+        for (let d = 172; d <= 355; d++) searchDays.push(d);
+      }
+    } else { // SummerToFall
+      if (isGeoNorthern) {
+        for (let d = 172; d <= 355; d++) searchDays.push(d);
+      } else {
+        for (let d = 355; d <= 365; d++) searchDays.push(d);
+        for (let d = 1; d <= 172; d++) searchDays.push(d);
+      }
+    }
+
+    // Find the day whose solar declination best matches decl.
+    let bestDay = searchDays[0] ?? 1;
+    let bestDiff = Infinity;
+    for (const day of searchDays) {
+      const diff = Math.abs(getSolarDeclination(day) - decl);
+      if (diff < bestDiff) { bestDiff = diff; bestDay = day; }
+    }
+
+    const eotMinutes = getEquationOfTime(bestDay);
+    const longCorrMinutes = 4 * (lng - tzMeridian);
+    return (eotMinutes + longCorrMinutes) / 60;
+  }
+
   // Helper to create dots at 2-minute intervals for declination lines
   function create2MinuteDots(decl: number, style: LineStyle | undefined): JSX.Element[] {
     if (!style) return [];
@@ -503,8 +542,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     const altLimit = showBelowHorizonDateLines ? -45 * Math.PI / 180 : 0;
 
-    // Generate dots every 2 minutes from startHour to stopHour
-    for (let h = startHour; h <= stopHour; h += 2 / 60) { // 2-minute intervals
+    // Phase-shift the loop so dots land on the civil-time hour line intersections.
+    const dotInterval = 2 / 60;
+    const totalCorrHours = getAlignmentTotalCorr(decl);
+    const phaseShift = ((totalCorrHours % dotInterval) + dotInterval) % dotInterval;
+    const firstH = phaseShift + Math.ceil((startHour - phaseShift) / dotInterval) * dotInterval;
+
+    for (let h = firstH; h <= stopHour; h += dotInterval) {
       const latRad = degreesToRadians(lat);
       const declRad = degreesToRadians(decl);
       const hourAngle = degreesToRadians(15 * (h - 12));
@@ -560,8 +604,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     const altLimit = showBelowHorizonDateLines ? -45 * Math.PI / 180 : 0;
 
-    // Generate dots every 5 minutes from startHour to stopHour
-    for (let h = startHour; h <= stopHour; h += 5 / 60) { // 5-minute intervals
+    // Phase-shift the loop so dots land on the civil-time hour line intersections.
+    const dotInterval = 5 / 60;
+    const totalCorrHours = getAlignmentTotalCorr(decl);
+    const phaseShift = ((totalCorrHours % dotInterval) + dotInterval) % dotInterval;
+    const firstH = phaseShift + Math.ceil((startHour - phaseShift) / dotInterval) * dotInterval;
+
+    for (let h = firstH; h <= stopHour; h += dotInterval) {
       const latRad = degreesToRadians(lat);
       const declRad = degreesToRadians(decl);
       const hourAngle = degreesToRadians(15 * (h - 12));
@@ -613,7 +662,6 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     // Maintain continuity only within valid, in-bounds neighbors
     let previousPoint: { x: number; y: number } | null = null;
-    let pointIndex = 0; // counts only in-bounds points to keep the 2/2 cadence
 
     const ALT_LIMIT = showBelowHorizonDateLines ? -45 * Math.PI / 180 : 0;
 
@@ -624,8 +672,15 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const right = width / 2 - borderMarginMm;
     const bottom = height / 2 - borderMarginMm - transformY;
 
-    // Use the same 2-minute sampling as dots
-    for (let h = startHour; h <= stopHour; h += 2 / 60) {
+    // Phase-shift the loop so dash boundaries align with civil-time hour line intersections.
+    // Use a global index keyed to totalCorrHours so the dash-on/off parity is consistent
+    // across all declination lines (integer hour crossings are always at even indices).
+    const dotInterval = 2 / 60;
+    const totalCorrHours = getAlignmentTotalCorr(decl);
+    const phaseShift = ((totalCorrHours % dotInterval) + dotInterval) % dotInterval;
+    const firstH = phaseShift + Math.ceil((startHour - phaseShift) / dotInterval) * dotInterval;
+
+    for (let h = firstH; h <= stopHour; h += dotInterval) {
       const latRad = degreesToRadians(lat);
       const declRad = degreesToRadians(decl);
       const hourAngle = degreesToRadians(15 * (h - 12));
@@ -653,8 +708,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         continue;
       }
 
-      // Create dashes with 2-minute segments and 2-minute gaps
-      const cyclePosition = pointIndex % 2;
+      // Global index keyed to totalCorrHours: integer hours H satisfy H/dotInterval = H*30
+      // (always even), so parity is 0 (gap) at every hour crossing on every declination line.
+      const globalIndex = Math.round((h - totalCorrHours) / dotInterval);
+      const cyclePosition = ((globalIndex % 2) + 2) % 2;
       if (previousPoint && cyclePosition === 1) {
         // Guard against accidental long connections across numerical jumps
         const dx = currentPoint.x - previousPoint.x;
@@ -679,7 +736,85 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       }
 
       previousPoint = currentPoint;
-      pointIndex++;
+    }
+
+    return segments;
+  }
+
+  // Helper to create 5/5 minute dash segments for declination lines
+  function create5MinuteDashSegments(decl: number, style: LineStyle | undefined): JSX.Element[] {
+    if (!style) return [];
+
+    const segments: JSX.Element[] = [];
+    const strokeWidth = getStrokeWidth(style.width);
+
+    let segmentIndex = 0;
+    let previousPoint: { x: number; y: number } | null = null;
+
+    const ALT_LIMIT = showBelowHorizonDateLines ? -45 * Math.PI / 180 : 0;
+
+    const transformY = (gnomonPosition ?? 0) - (height / 2);
+    const left = -width / 2 + borderMarginMm;
+    const top = -height / 2 + borderMarginMm - transformY;
+    const right = width / 2 - borderMarginMm;
+    const bottom = height / 2 - borderMarginMm - transformY;
+
+    const dotInterval = 5 / 60;
+    const totalCorrHours = getAlignmentTotalCorr(decl);
+    const phaseShift = ((totalCorrHours % dotInterval) + dotInterval) % dotInterval;
+    const firstH = phaseShift + Math.ceil((startHour - phaseShift) / dotInterval) * dotInterval;
+
+    for (let h = firstH; h <= stopHour; h += dotInterval) {
+      const latRad = degreesToRadians(lat);
+      const declRad = degreesToRadians(decl);
+      const hourAngle = degreesToRadians(15 * (h - 12));
+      const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
+      const altitude = Math.asin(sinAlt);
+
+      if (altitude <= ALT_LIMIT) {
+        previousPoint = null;
+        continue;
+      }
+
+      let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
+      cosAz = Math.max(-1, Math.min(1, cosAz));
+      let azimuth = Math.acos(cosAz);
+      if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
+      const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination);
+      if (!coords) { previousPoint = null; continue; }
+
+      const currentPoint = { x: scale * coords.x, y: scale * coords.y };
+
+      if (!(currentPoint.x >= left && currentPoint.x <= right && currentPoint.y >= top && currentPoint.y <= bottom)) {
+        previousPoint = null;
+        continue;
+      }
+
+      const globalIndex = Math.round((h - totalCorrHours) / dotInterval);
+      const cyclePosition = ((globalIndex % 2) + 2) % 2;
+      if (previousPoint && cyclePosition === 1) {
+        const dx = currentPoint.x - previousPoint.x;
+        const dy = currentPoint.y - previousPoint.y;
+        const maxSegLen = Math.hypot(width, height) * 0.2;
+        if ((dx * dx + dy * dy) <= (maxSegLen * maxSegLen)) {
+          segments.push(
+            <line
+              key={`declination-5min-dash-${decl}-${segmentIndex}`}
+              x1={previousPoint.x}
+              y1={previousPoint.y}
+              x2={currentPoint.x}
+              y2={currentPoint.y}
+              stroke={style.color || 'black'}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          );
+          segmentIndex++;
+        }
+      }
+
+      previousPoint = currentPoint;
     }
 
     return segments;
@@ -1599,6 +1734,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Handle calculated 2-minute dash style
     if (style?.style === 'calculated' && style?.calculatedType === 'declination-2min-dash') {
       return create2MinuteDashSegments(decl, style);
+    }
+
+    // Handle calculated 5-minute dash style
+    if (style?.style === 'calculated' && style?.calculatedType === 'declination-5min-dash') {
+      return create5MinuteDashSegments(decl, style);
     }
 
     if (decl === 0) {
