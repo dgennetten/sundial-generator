@@ -1268,21 +1268,44 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           }
 
           const [seg1, seg2] = segments;
+          const sortedSeg1 = [...seg1].sort((a, b) => a.day - b.day);
+          const sortedSeg2 = [...seg2].sort((a, b) => a.day - b.day);
+          const yearBoundaryBridge =
+            seg1.length > 0 && seg2.length > 0
+              ? (() => {
+                  const lastP = sortedSeg1[sortedSeg1.length - 1];
+                  const firstP = sortedSeg2[0];
+                  if (
+                    lastP &&
+                    firstP &&
+                    typeof lastP.day === 'number' &&
+                    typeof firstP.day === 'number' &&
+                    lastP.day >= 364 &&
+                    firstP.day <= 2
+                  ) {
+                    return clipPathData([lastP, firstP]);
+                  }
+                  return null;
+                })()
+              : null;
+
           [seg1, seg2].forEach((segment, idx) => {
             if (segment.length === 0) return;
 
-            // For the second segment (idx === 1), add the last point of seg1 to maintain continuity
-            // This prevents a gap at the year boundary for WinterToSpring/SummerToFall date ranges
-            let sortedSegment = [...segment].sort((a, b) => a.day - b.day);
-            if (idx === 1 && seg1.length > 0) {
-              const lastSeg1Point = [...seg1].sort((a, b) => a.day - b.day)[seg1.length - 1];
-              sortedSegment = [lastSeg1Point, ...sortedSegment];
-            }
+            const sortedByDay = [...segment].sort((a, b) => a.day - b.day);
+            // For solid / strokeDasharray hour lines: prepend seg1's last point onto seg2 so
+            // clipPathData draws Dec 31 → Jan 1 along the analemma (no one-day gap).
+            // Do NOT prepend for calculated dash builders — they re-sort by day and would
+            // place day ~365 after the summer range, producing a spurious chord on PDF.
+            const orderedForSolidPath =
+              idx === 1 && seg1.length > 0
+                ? [sortedSeg1[sortedSeg1.length - 1], ...sortedByDay]
+                : sortedByDay;
 
             // Handle calculated styles differently
             if (style.style === 'calculated' && style.calculatedType === 'hourline-5-2-day-dash') {
               // Create 5-day segments with 2-day gaps
-              const dashSegments = create5Day2GapSegments(sortedSegment);
+              const dashSegments = create5Day2GapSegments(sortedByDay);
               dashSegments.forEach((segment, segIdx) => {
                 const pathData = clipPathData(segment);
                 if (pathData) {
@@ -1301,7 +1324,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               });
             } else if (style.style === 'calculated' && style.calculatedType === 'hourline-2-5-day-dash') {
               // Create 2-day segments with 5-day gaps
-              const dashSegments = create2Day5GapSegments(sortedSegment);
+              const dashSegments = create2Day5GapSegments(sortedByDay);
               dashSegments.forEach((segment, segIdx) => {
                 const pathData = clipPathData(segment);
                 if (pathData) {
@@ -1320,7 +1343,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               });
             } else if (style.style === 'calculated' && style.calculatedType === 'hourline-2-2-day-dash') {
               // Create 2-day segments with 2-day gaps
-              const dashSegments = create2Day2GapSegments(sortedSegment);
+              const dashSegments = create2Day2GapSegments(sortedByDay);
               dashSegments.forEach((segment, segIdx) => {
                 const pathData = clipPathData(segment);
                 if (pathData) {
@@ -1339,7 +1362,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               });
             } else {
               // Regular rendering for non-calculated styles
-              const pathData = clipPathData(sortedSegment);
+              const pathData = clipPathData(orderedForSolidPath);
               if (pathData) {
                 elements.push(
                   <g key={`${h}-${interval.id}-seg${idx}`}>
@@ -1357,6 +1380,26 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               }
             }
           });
+
+          if (
+            yearBoundaryBridge &&
+            style.style === 'calculated' &&
+            (style.calculatedType === 'hourline-5-2-day-dash' ||
+              style.calculatedType === 'hourline-2-5-day-dash' ||
+              style.calculatedType === 'hourline-2-2-day-dash')
+          ) {
+            elements.push(
+              <g key={`${h}-${interval.id}-year-bridge`}>
+                <path
+                  d={yearBoundaryBridge}
+                  stroke={style.color || 'black'}
+                  fill="none"
+                  strokeWidth={getStrokeWidth(style.width)}
+                  vectorEffect="non-scaling-stroke"
+                />
+              </g>
+            );
+          }
         } else {
           points = points.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
           if (points.length === 0) continue;

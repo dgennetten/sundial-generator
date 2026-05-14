@@ -637,10 +637,6 @@ function processNorthPointForPdf(svgEl: SVGSVGElement) {
 
 
 
-
-
-
-
 /**
  * Exports as PNG using html2canvas (dynamically imported)
  */
