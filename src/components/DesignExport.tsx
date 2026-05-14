@@ -63,6 +63,10 @@ interface DesignExportProps {
   sundialNotesPositionMode?: 'auto' | 'manual';
   sundialNotesOffset?: number;
   sundialNotesOffsetHorizontal?: number;
+  dialOrientation?: 'North' | 'South';
+  showBelowHorizonHourLines?: boolean;
+  showBelowHorizonDateLines?: boolean;
+  syncBelowHorizon?: boolean;
   onRestoreDial?: (config: SavedDialConfig['config']) => void;
   onSetTodayLineActive?: (active: boolean) => void;
   onResetDefaults: () => void;
@@ -70,13 +74,14 @@ interface DesignExportProps {
 
 
 
-const DesignExport: React.FC<DesignExportProps> = React.memo(({ 
-  pageSize, orientation, customWidth, customHeight, dateRange, gnomonType, locationName, showBackground, backgroundColor, 
+const DesignExport: React.FC<DesignExportProps> = React.memo(({
+  pageSize, orientation, customWidth, customHeight, dateRange, gnomonType, locationName, showBackground, backgroundColor,
   sundialNotesMode, dialTextBlock, latitude, longitude, gnomonHeight, inclineType, tiltAngle, onLogComplete,
   tzMeridian, gnomonMode, gnomonPosition, gnomonPositionMode, gnomonHorizontalPosition, customUnits, declinationType, declinationDegrees,
   dialShape, borderStyle, borderMargin, hourlineIntervals, lineStyles, declinationLines,
   startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST,
   declinationNoonmarks, showFullYearOnNoon, dialTextBlockFontSize, dialTextBlockFontFamily, sundialNotesPositionMode, sundialNotesOffset, sundialNotesOffsetHorizontal,
+  dialOrientation, showBelowHorizonHourLines, showBelowHorizonDateLines, syncBelowHorizon,
   onRestoreDial,
   onSetTodayLineActive,
   onResetDefaults
@@ -171,6 +176,10 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       sundialNotesPositionMode: sundialNotesPositionMode ?? 'auto',
       sundialNotesOffset: sundialNotesOffset ?? 0,
       sundialNotesOffsetHorizontal: sundialNotesOffsetHorizontal ?? 0,
+      dialOrientation: dialOrientation,
+      showBelowHorizonHourLines: showBelowHorizonHourLines ?? true,
+      showBelowHorizonDateLines: showBelowHorizonDateLines ?? true,
+      syncBelowHorizon: syncBelowHorizon ?? true,
     };
   }, [
     latitude, longitude, tzMeridian, locationName, gnomonMode, gnomonHeight, gnomonType, gnomonPosition, gnomonPositionMode, gnomonHorizontalPosition,
@@ -178,7 +187,8 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
     dialShape, borderStyle, borderMargin, dateRange, hourlineIntervals, startHour, stopHour, use24Hour,
     labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks, showFullYearOnNoon, lineStyles,
     declinationLines, showBackground, backgroundColor, dialTextBlock, dialTextBlockFontSize, dialTextBlockFontFamily,
-    sundialNotesMode, sundialNotesPositionMode, sundialNotesOffset, sundialNotesOffsetHorizontal
+    sundialNotesMode, sundialNotesPositionMode, sundialNotesOffset, sundialNotesOffsetHorizontal,
+    dialOrientation, showBelowHorizonHourLines, showBelowHorizonDateLines, syncBelowHorizon
   ]);
 
   const handleSave = useCallback(() => {
@@ -307,6 +317,8 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         tiltAngle,
         declinationType: declinationType as import('../types').DeclinationType | undefined,
         declinationDegrees,
+        todayLineActive: hasTodayLineActive,
+        configJson: JSON.stringify(collectCurrentConfig()),
       });
       log.info('Print activity logged successfully');
       onLogComplete?.(); // Trigger map refresh
@@ -352,6 +364,10 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         gnomonHeight,
         inclineType,
         tiltAngle,
+        declinationType: declinationType as import('../types/sundial').DeclinationType | undefined,
+        declinationDegrees,
+        todayLineActive: hasTodayLineActive,
+        configJson: JSON.stringify(collectCurrentConfig()),
       });
       log.info('Export completed successfully');
       onLogComplete?.(); // Trigger map refresh

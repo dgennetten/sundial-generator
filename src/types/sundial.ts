@@ -168,6 +168,8 @@ export interface ExportOptions {
   tiltAngle?: number;
   declinationType?: DeclinationType;
   declinationDegrees?: number;
+  todayLineActive?: boolean;
+  configJson?: string;
 }
 
 /**
@@ -209,7 +211,7 @@ export interface TextBlockConfig {
 }
 
 /**
- * Sundial print/export record from Supabase
+ * Sundial print/export record from MySQL
  */
 export interface SundialPrint {
   id?: number;
@@ -221,6 +223,8 @@ export interface SundialPrint {
   gnomon_type: string;
   notes_type: string;
   date_range: string;
+  today_line_active?: boolean;
+  config_json?: string;
   created_at?: string;
 }
 

@@ -66,7 +66,7 @@ const PrintedDialsMap: React.FC<SundialPrintMapProps> = ({
     };
   }, [loading, error]);
 
-  // Fetch data from Supabase
+  // Fetch data from MySQL
   useEffect(() => {
     const loadPrints = async () => {
       setLoading(true);

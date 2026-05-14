@@ -174,7 +174,7 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
       log.debug('Export logged (non-JSON response):', text.substring(0, 200));
     }
 
-    // Also save to Supabase (wait for it to complete for refresh trigger, but don't throw on error)
+    // Also save to MySQL (wait for it to complete for refresh trigger, but don't throw on error)
     if (options.latitude !== undefined && options.longitude !== undefined) {
       const inclination = computeInclinationDegrees({
         inclineType: options.inclineType,
@@ -188,14 +188,16 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
           latitude: options.latitude,
           longitude: options.longitude,
           inclination,
-          declination: 0, // Store 0 for now (not yet implemented)
+          declination: options.declinationDegrees ?? 0,
           gnomon_type: options.gnomonType || 'Unknown',
           notes_type: options.sundialNotesMode || 'Unknown',
           date_range: options.dateRange || 'Unknown',
+          today_line_active: options.todayLineActive ?? false,
+          config_json: options.configJson,
         });
       } catch (error) {
-        log.warn('Failed to save export to Supabase:', error);
-        // Don't throw - Supabase failures shouldn't prevent export
+        log.warn('Failed to save export to MySQL:', error);
+        // Don't throw - MySQL failures shouldn't prevent export
       }
     }
   } catch (error) {
@@ -259,6 +261,8 @@ export async function logPrintActivity(options: {
   tiltAngle?: number;
   declinationType?: import('../types').DeclinationType;
   declinationDegrees?: number;
+  todayLineActive?: boolean;
+  configJson?: string;
 }): Promise<void> {
   try {
     const dialTextBlockInterpreted = interpretDialTextBlockForEmail(options.dialTextBlock || '', {
@@ -322,7 +326,7 @@ export async function logPrintActivity(options: {
       log.debug('Print logged (non-JSON response):', text.substring(0, 200));
     }
 
-    // Also save to Supabase (wait for it to complete for refresh trigger, but don't throw on error)
+    // Also save to MySQL (wait for it to complete for refresh trigger, but don't throw on error)
     if (options.latitude !== undefined && options.longitude !== undefined) {
       const inclination = computeInclinationDegrees({
         inclineType: options.inclineType,
@@ -336,14 +340,16 @@ export async function logPrintActivity(options: {
           latitude: options.latitude,
           longitude: options.longitude,
           inclination,
-          declination: 0, // Store 0 for now (not yet implemented)
+          declination: options.declinationDegrees ?? 0,
           gnomon_type: options.gnomonType || 'Unknown',
           notes_type: options.sundialNotesMode || 'Unknown',
           date_range: options.dateRange || 'Unknown',
+          today_line_active: options.todayLineActive ?? false,
+          config_json: options.configJson,
         });
       } catch (error) {
-        log.warn('Failed to save print to Supabase:', error);
-        // Don't throw - Supabase failures shouldn't prevent printing
+        log.warn('Failed to save print to MySQL:', error);
+        // Don't throw - MySQL failures shouldn't prevent printing
       }
     }
   } catch (error) {

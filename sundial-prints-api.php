@@ -51,7 +51,10 @@ if ($method === 'GET') {
     $stmt = $pdo->query(
         'SELECT id, location, latitude + 0 AS latitude, longitude + 0 AS longitude,
                 inclination + 0 AS inclination, declination + 0 AS declination,
-                gnomon_type, notes_type, date_range, created_at
+                gnomon_type, notes_type, date_range,
+                COALESCE(today_line_active, 0) AS today_line_active,
+                config_json,
+                created_at
          FROM sundial_prints
          ORDER BY created_at DESC
          LIMIT 200'
@@ -60,11 +63,12 @@ if ($method === 'GET') {
 
     // Cast numeric columns to float
     foreach ($rows as &$row) {
-        $row['latitude']    = (float) $row['latitude'];
-        $row['longitude']   = (float) $row['longitude'];
-        $row['inclination'] = (float) $row['inclination'];
-        $row['declination'] = (float) $row['declination'];
-        $row['id']          = (int)   $row['id'];
+        $row['latitude']          = (float) $row['latitude'];
+        $row['longitude']         = (float) $row['longitude'];
+        $row['inclination']       = (float) $row['inclination'];
+        $row['declination']       = (float) $row['declination'];
+        $row['id']                = (int)   $row['id'];
+        $row['today_line_active'] = (bool)  $row['today_line_active'];
     }
     unset($row);
 
@@ -82,14 +86,16 @@ if ($method === 'POST') {
         exit;
     }
 
-    $latitude    = isset($data['latitude'])    && is_numeric($data['latitude'])    ? (float) $data['latitude']    : null;
-    $longitude   = isset($data['longitude'])   && is_numeric($data['longitude'])   ? (float) $data['longitude']   : null;
-    $inclination = isset($data['inclination']) && is_numeric($data['inclination']) ? (float) $data['inclination'] : null;
-    $declination = isset($data['declination']) && is_numeric($data['declination']) ? (float) $data['declination'] : 0.0;
-    $gnomon_type = isset($data['gnomon_type']) ? (string) $data['gnomon_type'] : null;
-    $notes_type  = isset($data['notes_type'])  ? (string) $data['notes_type']  : null;
-    $date_range  = isset($data['date_range'])  ? (string) $data['date_range']  : null;
-    $location    = isset($data['location'])    ? (string) $data['location']    : null;
+    $latitude          = isset($data['latitude'])          && is_numeric($data['latitude'])    ? (float) $data['latitude']    : null;
+    $longitude         = isset($data['longitude'])         && is_numeric($data['longitude'])   ? (float) $data['longitude']   : null;
+    $inclination       = isset($data['inclination'])       && is_numeric($data['inclination']) ? (float) $data['inclination'] : null;
+    $declination       = isset($data['declination'])       && is_numeric($data['declination']) ? (float) $data['declination'] : 0.0;
+    $gnomon_type       = isset($data['gnomon_type'])       ? (string) $data['gnomon_type']     : null;
+    $notes_type        = isset($data['notes_type'])        ? (string) $data['notes_type']      : null;
+    $date_range        = isset($data['date_range'])        ? (string) $data['date_range']      : null;
+    $location          = isset($data['location'])          ? (string) $data['location']        : null;
+    $today_line_active = isset($data['today_line_active']) ? (int) (bool) $data['today_line_active'] : 0;
+    $config_json       = isset($data['config_json']) && is_string($data['config_json']) ? $data['config_json'] : null;
 
     if ($latitude === null || $longitude === null || $inclination === null ||
         $gnomon_type === null || $notes_type === null || $date_range === null) {
@@ -99,18 +105,20 @@ if ($method === 'POST') {
     }
 
     $stmt = $pdo->prepare(
-        'INSERT INTO sundial_prints (location, latitude, longitude, inclination, declination, gnomon_type, notes_type, date_range)
-         VALUES (:location, :latitude, :longitude, :inclination, :declination, :gnomon_type, :notes_type, :date_range)'
+        'INSERT INTO sundial_prints (location, latitude, longitude, inclination, declination, gnomon_type, notes_type, date_range, today_line_active, config_json)
+         VALUES (:location, :latitude, :longitude, :inclination, :declination, :gnomon_type, :notes_type, :date_range, :today_line_active, :config_json)'
     );
     $stmt->execute([
-        ':location'    => $location,
-        ':latitude'    => $latitude,
-        ':longitude'   => $longitude,
-        ':inclination' => $inclination,
-        ':declination' => $declination,
-        ':gnomon_type' => $gnomon_type,
-        ':notes_type'  => $notes_type,
-        ':date_range'  => $date_range,
+        ':location'          => $location,
+        ':latitude'          => $latitude,
+        ':longitude'         => $longitude,
+        ':inclination'       => $inclination,
+        ':declination'       => $declination,
+        ':gnomon_type'       => $gnomon_type,
+        ':notes_type'        => $notes_type,
+        ':date_range'        => $date_range,
+        ':today_line_active' => $today_line_active,
+        ':config_json'       => $config_json,
     ]);
 
     echo json_encode(['success' => true]);

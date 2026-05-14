@@ -54,6 +54,9 @@ export interface SavedDialConfig {
     declinationNoonmarks: boolean;
     /** When date range is half-year, draw dotted noon analemma for the excluded half-year */
     showFullYearOnNoon?: boolean;
+    showBelowHorizonHourLines?: boolean;
+    showBelowHorizonDateLines?: boolean;
+    syncBelowHorizon?: boolean;
 
     // Lines
     lineStyles: LineStyle[];
@@ -69,6 +72,7 @@ export interface SavedDialConfig {
     sundialNotesPositionMode: 'auto' | 'manual';
     sundialNotesOffset: number;
     sundialNotesOffsetHorizontal: number;
+    dialOrientation?: 'North' | 'South';
   };
 }
 

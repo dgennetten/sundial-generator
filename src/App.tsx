@@ -546,71 +546,17 @@ const App: React.FC = () => {
     showBelowHorizonDateLines,
   ]);
 
-  // Callback to restore settings from a printed dial record
-  const handlePinClick = useCallback((print: SundialPrint) => {
-    setLatitude(print.latitude);
-    setLongitude(print.longitude);
-    // Estimate timezone standard meridian from longitude (nearest 15° = 1 hour)
-    setTzMeridian(Math.round(print.longitude / 15) * 15);
-    setTiltAngle(print.inclination);
-    setInclineType('Manual'); // Set to Manual since we're restoring a specific angle
-    setGnomonType(print.gnomon_type as typeof gnomonType);
-    setSundialNotesMode(print.notes_type);
-    setHourlineDateRange(print.date_range as typeof hourlineDateRange);
-    setDeclinationDegrees(print.declination);
-    
-    // Restore location from saved record
-    if (print.location) {
-      setLocationName(print.location);
-      
-      // Ensure {location} placeholder exists in dialTextBlock (restore it if it was cleared)
-      setDialTextBlock(prev => {
-        // If {location} placeholder doesn't exist, add it at the beginning
-        if (!prev.includes('{location}')) {
-          // Add **{location}** as the first line (matching default format)
-          return `**{location}**\n${prev}`;
-        }
-        // If it already exists, keep it as is (it will be replaced at render time with locationName)
-        return prev;
-      });
-    }
-    // If no location saved, leave dialTextBlock as-is (don't clear {location} placeholder)
-  }, []);
-
-  // Callback to trigger map refresh after logging
-  const handleLogComplete = useCallback(() => {
-    // Increment refresh trigger to cause map to refresh
-    setPrintedDialsMapRefreshTrigger(prev => prev + 1);
-  }, []);
-
-  const handleResetDefaults = useCallback(() => {
-    if (confirm('This will reset all your custom settings (line styles, declination lines, etc.) to defaults. Are you sure?')) {
-      const keysToRemove = [
-        'sundial-line-styles',
-        'sundial-declination-lines',
-        'sundial-hourline-intervals',
-        'sundial-hourline-overrides',
-      ];
-      keysToRemove.forEach(key => localStorage.removeItem(key));
-      clearWelcomeDismissed();
-      getControlsScrollerElement()?.scrollTo(0, 0);
-      try { sessionStorage.setItem('sundial-scroll-panel-to-top', '1'); } catch (_) {}
-      window.location.hash = '';
-      window.location.reload();
-    }
-  }, []);
-
   // Callback to restore dial configuration from saved config
   const handleRestoreDial = useCallback((config: any) => {
     // Set restore flag to prevent auto-initialization
     isRestoringRef.current = true;
-    
+
     // Location
     if (config.latitude !== undefined) setLatitude(config.latitude);
     if (config.longitude !== undefined) setLongitude(config.longitude);
     if (config.tzMeridian !== undefined) setTzMeridian(config.tzMeridian);
     if (config.locationName !== undefined) setLocationName(config.locationName);
-    
+
     // Gnomon
     if (config.gnomonMode !== undefined) setGnomonMode(config.gnomonMode);
     if (config.gnomonHeight !== undefined) setGnomonHeight(config.gnomonHeight);
@@ -624,12 +570,12 @@ const App: React.FC = () => {
     if (config.customWidth !== undefined) setCustomWidth(config.customWidth);
     if (config.customHeight !== undefined) setCustomHeight(config.customHeight);
     if (config.customUnits !== undefined) setCustomUnits(config.customUnits);
-    
+
     // Now set pageSize (this will trigger the useEffect, but our flag prevents overwriting)
     if (config.pageSize !== undefined) {
       setPageSize(config.pageSize);
     }
-    
+
     // Clear restore flag after a short delay to allow state updates to complete
     setTimeout(() => {
       isRestoringRef.current = false;
@@ -654,7 +600,7 @@ const App: React.FC = () => {
     if (config.dialShape !== undefined) setDialShape(config.dialShape);
     if (config.borderStyle !== undefined) setBorderStyle(config.borderStyle);
     if (config.borderMargin !== undefined) setBorderMargin(config.borderMargin);
-    
+
     // Hour lines
     if (config.hourlineDateRange !== undefined) {
       handleDateRangeChange(config.hourlineDateRange);
@@ -673,6 +619,9 @@ const App: React.FC = () => {
     if (config.useDST !== undefined) setUseDST(config.useDST);
     if (config.declinationNoonmarks !== undefined) setDeclinationNoonmarks(config.declinationNoonmarks);
     if (config.showFullYearOnNoon !== undefined) setShowFullYearOnNoon(config.showFullYearOnNoon);
+    if (config.showBelowHorizonHourLines !== undefined) setShowBelowHorizonHourLines(config.showBelowHorizonHourLines);
+    if (config.showBelowHorizonDateLines !== undefined) setShowBelowHorizonDateLines(config.showBelowHorizonDateLines);
+    if (config.syncBelowHorizon !== undefined) setSyncBelowHorizon(config.syncBelowHorizon);
 
     // Lines - restore these carefully to maintain references
     if (config.lineStyles !== undefined && Array.isArray(config.lineStyles)) {
@@ -681,7 +630,7 @@ const App: React.FC = () => {
     if (config.declinationLines !== undefined && Array.isArray(config.declinationLines)) {
       setDeclinationLines(config.declinationLines);
     }
-    
+
     // Background/Text
     if (config.showBackground !== undefined) setShowBackground(config.showBackground);
     if (config.backgroundColor !== undefined) setBackgroundColor(config.backgroundColor);
@@ -692,7 +641,73 @@ const App: React.FC = () => {
     if (config.sundialNotesPositionMode !== undefined) setSundialNotesPositionMode(config.sundialNotesPositionMode);
     if (config.sundialNotesOffset !== undefined) setSundialNotesOffset(config.sundialNotesOffset);
     if (config.sundialNotesOffsetHorizontal !== undefined) setSundialNotesOffsetHorizontal(config.sundialNotesOffsetHorizontal);
+    if (config.dialOrientation !== undefined) setDialOrientation(config.dialOrientation);
   }, [handleDateRangeChange]);
+
+  // Callback to restore settings from a printed dial record
+  const handlePinClick = useCallback((print: SundialPrint) => {
+    // If a full config snapshot was stored, do a complete restore and return early
+    if (print.config_json) {
+      try {
+        const fullConfig = JSON.parse(print.config_json);
+        handleRestoreDial(fullConfig);
+        return;
+      } catch {
+        // Fall through to partial restore if JSON is malformed
+      }
+    }
+
+    // Partial restore for legacy records without config_json
+    setLatitude(print.latitude);
+    setLongitude(print.longitude);
+    // Estimate timezone standard meridian from longitude (nearest 15° = 1 hour)
+    setTzMeridian(Math.round(print.longitude / 15) * 15);
+    setTiltAngle(print.inclination);
+    setInclineType('Manual');
+    setDeclinationType('Manual'); // Required so declinationDegrees is used, not a preset
+    setGnomonType(print.gnomon_type as typeof gnomonType);
+    setSundialNotesMode(print.notes_type);
+    setHourlineDateRange(print.date_range as typeof hourlineDateRange);
+    setDeclinationDegrees(print.declination);
+
+    if (print.location) {
+      setLocationName(print.location);
+      setDialTextBlock(prev => {
+        if (!prev.includes('{location}')) {
+          return `**{location}**\n${prev}`;
+        }
+        return prev;
+      });
+    }
+    if (print.today_line_active !== undefined) {
+      setDeclinationLines(prev => prev.map(line =>
+        line.id === 'today' ? { ...line, active: !!print.today_line_active } : line
+      ));
+    }
+  }, [handleRestoreDial]);
+
+  // Callback to trigger map refresh after logging
+  const handleLogComplete = useCallback(() => {
+    // Increment refresh trigger to cause map to refresh
+    setPrintedDialsMapRefreshTrigger(prev => prev + 1);
+  }, []);
+
+  const handleResetDefaults = useCallback(() => {
+    if (confirm('This will reset all your custom settings (line styles, declination lines, etc.) to defaults. Are you sure?')) {
+      const keysToRemove = [
+        'sundial-line-styles',
+        'sundial-declination-lines',
+        'sundial-hourline-intervals',
+        'sundial-hourline-overrides',
+      ];
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      clearWelcomeDismissed();
+      getControlsScrollerElement()?.scrollTo(0, 0);
+      try { sessionStorage.setItem('sundial-scroll-panel-to-top', '1'); } catch (_) {}
+      window.location.hash = '';
+      window.location.reload();
+    }
+  }, []);
 
   const handleSetTodayLineActive = useCallback((active: boolean) => {
     setDeclinationLines(prev => prev.map(line =>
@@ -891,6 +906,10 @@ const App: React.FC = () => {
           sundialNotesPositionMode={sundialNotesPositionMode}
           sundialNotesOffset={sundialNotesOffset}
           sundialNotesOffsetHorizontal={sundialNotesOffsetHorizontal}
+          dialOrientation={dialOrientation}
+          showBelowHorizonHourLines={showBelowHorizonHourLines}
+          showBelowHorizonDateLines={showBelowHorizonDateLines}
+          syncBelowHorizon={syncBelowHorizon}
           onRestoreDial={handleRestoreDial}
           onSetTodayLineActive={handleSetTodayLineActive}
           onResetDefaults={handleResetDefaults}

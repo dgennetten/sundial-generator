@@ -42,7 +42,7 @@ All state flows down to `SundialPreview.tsx` as individual props. SundialPreview
 | `src/utils/sundialMath.ts` | Core astronomical math: solar declination, azimuth/elevation, shadow projections, analemma points |
 | `src/utils/dialSaveRestore.ts` | localStorage save/load for user dial configurations |
 | `src/utils/exportUtils.ts` / `svgExportUtils.ts` / `simpleSvgExport.ts` | Export to PNG/SVG/PDF (html2canvas + jsPDF) |
-| `src/utils/sundialPrintUtils.ts` | Optional Supabase analytics logging on export |
+| `src/utils/sundialPrintUtils.ts` | MySQL analytics logging on export (via sundial-prints-api.php) |
 | `src/utils/geoipLocal.js` | Offline city→timezone lookup (~1000 cities, no API needed) |
 | `src/utils/lineStyleUtils.ts` | Line stroke style management |
 | `src/utils/hourlineUtils.ts` | Hour line interval configurations |
@@ -53,18 +53,17 @@ All state flows down to `SundialPreview.tsx` as individual props. SundialPreview
 ### Persistence
 
 - **localStorage**: User-saved dial configurations via `dialSaveRestore.ts`
-- **Supabase**: Optional analytics logging of exports (configured via `.env` — see `.env.example`)
+- **MySQL**: Analytics logging of exports via `sundial-prints-api.php` (credentials in `db-config.php`)
 - **sessionStorage**: Temporary flags (e.g., scroll position on reset)
 
 ### Dependencies Worth Knowing
 
 - **Leaflet** (via `react-leaflet`): OpenStreetMap-based location picker
 - **jsPDF + html2canvas**: PDF and PNG export
-- **Supabase JS client**: Optional print logging
 
 ## Environment Variables
 
-Copy `.env.example` to `.env.local` and fill in real values. `.env.local` is gitignored. Supabase vars are optional (analytics only). SFTP vars are needed for deployment.
+Copy `.env.example` to `.env.local` and fill in real values. `.env.local` is gitignored. SFTP vars are needed for deployment. MySQL credentials go in `db-config.php` (gitignored).
 
 **Windows encoding gotcha:** Windows editors (VS Code, Notepad) often save `.env.local` as UTF-16 LE. The deploy and upload scripts detect this automatically, so it does not need to be fixed manually.
 
