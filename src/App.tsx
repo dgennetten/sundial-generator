@@ -1108,7 +1108,7 @@ const App: React.FC = () => {
           refreshTrigger={printedDialsMapRefreshTrigger}
         /></div>
         {/* <VisitorMap /> */}
-        <div id="card-about"><AboutCard /></div>
+        <div id="card-about"><AboutCard latitude={latitude} longitude={longitude} locationName={locationName} /></div>
         </div>
       </div>
 

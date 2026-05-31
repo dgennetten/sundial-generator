@@ -45,6 +45,10 @@
   gap: 0.75rem;
 }
 
+.card-content form {
+  font-size: inherit;
+}
+
 /* Form Controls */
 .form-group {
   display: flex;
@@ -101,6 +105,16 @@
 .form-input.form-input-no-spin {
   appearance: textfield;
   -moz-appearance: textfield;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 3.5rem;
+  line-height: 1.45;
+  font-family: inherit;
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
 }
 
 /* Primary emphasis for key selects (matches .btn-primary) */

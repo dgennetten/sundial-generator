@@ -1,8 +1,46 @@
-import React from 'react';
-import { Info, Instagram, Mail, Coffee, Github, Globe } from 'lucide-react';
+import React, { useState } from 'react';
+import { Info, Instagram, Mail, Coffee, Github, Globe, Send } from 'lucide-react';
 import BuildDate from './BuildDate';
+import { sendFeedback } from '../utils/feedbackUtils';
 
-const AboutCard: React.FC = () => {
+interface AboutCardProps {
+  latitude: number;
+  longitude: number;
+  locationName: string;
+}
+
+const FEEDBACK_PLACEHOLDER =
+  "Tell me what you like, want to see, etc. Include your email if you'd like to start up a conversation.";
+
+const AboutCard: React.FC<AboutCardProps> = ({ latitude, longitude, locationName }) => {
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [feedbackError, setFeedbackError] = useState('');
+
+  const handleFeedbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = feedbackMessage.trim();
+    if (!trimmed) return;
+
+    setFeedbackStatus('sending');
+    setFeedbackError('');
+
+    const result = await sendFeedback({
+      message: trimmed,
+      latitude,
+      longitude,
+      locationName,
+    });
+
+    if (result.success) {
+      setFeedbackMessage('');
+      setFeedbackStatus('success');
+    } else {
+      setFeedbackStatus('error');
+      setFeedbackError(result.error || 'Failed to send feedback.');
+    }
+  };
+
   return (
     <div className="card">
       <div className="card-header">
@@ -11,6 +49,65 @@ const AboutCard: React.FC = () => {
         </h3>
       </div>
       <div className="card-content">
+        <form
+          onSubmit={handleFeedbackSubmit}
+          style={{
+            width: '100%',
+            marginBottom: '1rem',
+            paddingBottom: '1rem',
+            borderBottom: '1px solid #e2e8f0',
+            boxSizing: 'border-box',
+          }}
+        >
+          <div className="form-group" style={{ width: '100%' }}>
+            <label className="form-label" htmlFor="feedback-message">
+              Send Feedback
+            </label>
+            <textarea
+              id="feedback-message"
+              className="form-input form-textarea"
+              rows={2}
+              value={feedbackMessage}
+              onChange={(e) => {
+                setFeedbackMessage(e.target.value);
+                if (feedbackStatus === 'success' || feedbackStatus === 'error') {
+                  setFeedbackStatus('idle');
+                  setFeedbackError('');
+                }
+              }}
+              placeholder={FEEDBACK_PLACEHOLDER}
+              disabled={feedbackStatus === 'sending'}
+              maxLength={5000}
+            />
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginTop: '0.5rem',
+              gap: '0.75rem',
+            }}
+          >
+            <div style={{ fontSize: '0.8rem', color: '#718096', minHeight: '1.25rem' }}>
+              {feedbackStatus === 'success' && (
+                <span style={{ color: '#059669' }}>Thanks — your feedback was sent.</span>
+              )}
+              {feedbackStatus === 'error' && (
+                <span style={{ color: '#dc2626' }}>{feedbackError}</span>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={feedbackStatus === 'sending' || !feedbackMessage.trim()}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+            >
+              <Send size={16} />
+              {feedbackStatus === 'sending' ? 'Sending…' : 'Send'}
+            </button>
+          </div>
+        </form>
         <div
           style={{
             backgroundColor: '#fefce8',
@@ -22,25 +119,9 @@ const AboutCard: React.FC = () => {
             fontWeight: '500',
           }}
         >
-          <div>
-            HOW can I improve this app for you? {'\u2014'}{' '}
-            <a
-              href="mailto:sundial@gennetten.com?subject=Sundial%20Feedback"
-              title="eMail the Author"
-              style={{
-                color: '#7c2d12',
-                textDecoration: 'none',
-                display: 'inline-flex',
-                alignItems: 'center',
-                verticalAlign: 'middle',
-              }}
-            >
-              <Mail size={16} color="#7c2d12" />
-            </a>
-          </div>
           <p
             style={{
-              margin: '10px 0 0 0',
+              margin: 0,
               fontSize: '13px',
               fontWeight: 500,
               lineHeight: 1.45,
