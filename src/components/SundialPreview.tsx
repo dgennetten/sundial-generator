@@ -165,11 +165,6 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Convert border margin from inches to mm (moved up to avoid initialization error)
   const borderMarginMm = borderMargin * 25.4;
 
-  // Calculate standard time meridian (no DST adjustment) for seasons guide
-  // The seasons guide should remain fixed regardless of DST changes
-  // Standard meridian is based on longitude: round to nearest 15° (1 hour)
-  const standardTzMeridian = Math.round(lng / 15) * 15;
-
   // Calculate normalized viewBox for consistent preview scaling
   // Use a minimum viewBox size to prevent tiny pages from appearing too zoomed in
   const minViewBoxSize = 200; // mm
@@ -2513,17 +2508,21 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               {/* --- Seasons Guide --- */}
 
               {sundialNotesMode === 'seasonsGuide' && (() => {
-                // Generate noon analemma using the EXACT same logic as the main sundial hourlines
-                // Use standardTzMeridian (no DST) to keep seasons guide fixed throughout the year
-                const seasonsNoonPoints = getAnalemmaPointsProjected({
+                // Same dial geometry as the main dial, but tzMeridian = lng so clock noon
+                // aligns with local solar noon (no longitude-correction tilt in the figure).
+                const seasonsGuideScale = 0.55 * 0.8; // 80% of prior 55% scale
+                const seasonsGuideAnalemmaBase = {
                   lat,
                   lng,
-                  tzMeridian: standardTzMeridian,
-                  hour: 12, // Noon hour
+                  tzMeridian: lng,
                   styleHeight: gnomonHeight,
                   dialInclination,
                   dialDeclination,
-                });
+                };
+                const getSeasonsGuidePoints = (hour: number) =>
+                  getAnalemmaPointsProjected({ ...seasonsGuideAnalemmaBase, hour });
+
+                const seasonsNoonPoints = getSeasonsGuidePoints(12);
 
                 // Calculate the bounding box of the original analemma for proper centering
                 const calculateBoundingBox = (points: { x: number; y: number }[]) => {
@@ -2540,9 +2539,6 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                     centerY: (minY + maxY) / 2
                   };
                 };
-
-                // Scale by 55% and center at text block position
-                const seasonsGuideScale = 0.55;
 
                 // Generate path data with simple boundary filtering to avoid clipping artifacts
                 const generateSeasonsGuidePath = (points: { x: number; y: number }[]): string | null => {
@@ -2600,16 +2596,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       // Spring equinox is around day 80 (March 21)
                       const equinoxDay = 80;
 
-                      // Get equinox position at noon (hour 12) - use same orientation as main dial
-                      const equinoxNoonPoint = getAnalemmaPointsProjected({
-                        lat,
-                        lng,
-                        tzMeridian: standardTzMeridian,
-                        hour: 12,
-                        styleHeight: gnomonHeight,
-                        dialInclination,
-                        dialDeclination,
-                      }).find(p => Math.abs(p.day - equinoxDay) < 1);
+                      const equinoxNoonPoint = getSeasonsGuidePoints(12).find(p => Math.abs(p.day - equinoxDay) < 1);
 
                       if (!equinoxNoonPoint) return null;
 
@@ -2622,25 +2609,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
                       // Create horizontal line with 1-hour width
                       // 1 hour = ±30 minutes, so we need points at 11:30 and 12:30
-                      const leftHourPoint = getAnalemmaPointsProjected({
-                        lat,
-                        lng,
-                        tzMeridian: standardTzMeridian,
-                        hour: 11.5, // 11:30
-                        styleHeight: gnomonHeight,
-                        dialInclination,
-                        dialDeclination,
-                      }).find(p => Math.abs(p.day - equinoxDay) < 1);
+                      const leftHourPoint = getSeasonsGuidePoints(11.5).find(p => Math.abs(p.day - equinoxDay) < 1);
 
-                      const rightHourPoint = getAnalemmaPointsProjected({
-                        lat,
-                        lng,
-                        tzMeridian: standardTzMeridian,
-                        hour: 12.5, // 12:30
-                        styleHeight: gnomonHeight,
-                        dialInclination,
-                        dialDeclination,
-                      }).find(p => Math.abs(p.day - equinoxDay) < 1);
+                      const rightHourPoint = getSeasonsGuidePoints(12.5).find(p => Math.abs(p.day - equinoxDay) < 1);
 
                       if (!leftHourPoint || !rightHourPoint) return null;
 
@@ -2731,16 +2702,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       // Spring equinox is around day 80 (March 21)
                       const equinoxDay = 80;
 
-                      // Get equinox position at noon (hour 12) - use same orientation as main dial
-                      const equinoxNoonPoint = getAnalemmaPointsProjected({
-                        lat,
-                        lng,
-                        tzMeridian: standardTzMeridian,
-                        hour: 12,
-                        styleHeight: gnomonHeight,
-                        dialInclination,
-                        dialDeclination,
-                      }).find(p => Math.abs(p.day - equinoxDay) < 1);
+                      // Get equinox position at noon — no longitude correction (tzMeridian = lng)
+                      const equinoxNoonPoint = getSeasonsGuidePoints(12).find(p => Math.abs(p.day - equinoxDay) < 1);
 
                       if (!equinoxNoonPoint) return null;
 
@@ -2753,25 +2716,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
                       // Create horizontal line with 1-hour width
                       // 1 hour = ±30 minutes, so we need points at 11:30 and 12:30
-                      const leftHourPoint = getAnalemmaPointsProjected({
-                        lat,
-                        lng,
-                        tzMeridian: standardTzMeridian,
-                        hour: 11.5, // 11:30
-                        styleHeight: gnomonHeight,
-                        dialInclination,
-                        dialDeclination,
-                      }).find(p => Math.abs(p.day - equinoxDay) < 1);
+                      const leftHourPoint = getSeasonsGuidePoints(11.5).find(p => Math.abs(p.day - equinoxDay) < 1);
 
-                      const rightHourPoint = getAnalemmaPointsProjected({
-                        lat,
-                        lng,
-                        tzMeridian: standardTzMeridian,
-                        hour: 12.5, // 12:30
-                        styleHeight: gnomonHeight,
-                        dialInclination,
-                        dialDeclination,
-                      }).find(p => Math.abs(p.day - equinoxDay) < 1);
+                      const rightHourPoint = getSeasonsGuidePoints(12.5).find(p => Math.abs(p.day - equinoxDay) < 1);
 
                       if (!leftHourPoint || !rightHourPoint) return null;
 
@@ -2920,11 +2867,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
               {sundialNotesMode === 'northPoint' && (() => {
                 // Generate noon analemma to calculate the replica height for scaling
+                // Same projection as seasons guide for consistent replica height
                 const noonPoints = getAnalemmaPointsProjected({
                   lat,
                   lng,
-                  tzMeridian,
-                  hour: 12, // Noon hour
+                  tzMeridian: lng,
+                  hour: 12,
                   styleHeight: gnomonHeight,
                   dialInclination,
                   dialDeclination,
@@ -2948,7 +2896,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 const bbox = calculateBoundingBox(noonPoints);
 
                 // Calculate the replica analemma height (same scaling as seasons guide)
-                const seasonsGuideScale = 0.55;
+                const seasonsGuideScale = 0.55 * 0.8;
                 const replicaAnalemmaHeight = bbox.height * scale * seasonsGuideScale;
 
                 // Scale North Point SVG to 82.5% of replica analemma height (75% * 1.1 for 10% larger)
