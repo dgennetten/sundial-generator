@@ -103,6 +103,8 @@ interface PageSettingsProps {
   backgroundColor?: string;
   // Callback when incline type changes
   onInclineTypeChange?: () => void;
+  /** When true, the inclination row is grayed out and non-interactive */
+  disableInclination?: boolean;
 }
 
 const PageSettings: React.FC<PageSettingsProps> = ({
@@ -136,6 +138,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   showBackground: showBackgroundProp,
   backgroundColor: backgroundColorProp,
   onInclineTypeChange,
+  disableInclination = false,
 }) => {
   // State for dial shape, border and background controls
   const [dialShape, setDialShape] = useState<DialShape>(dialShapeProp ?? 'Rectangle');
@@ -464,6 +467,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
         )}
 
         {/* Second row: Inclination and Degrees */}
+        <div style={disableInclination ? { opacity: 0.4, pointerEvents: 'none' } : undefined}>
         <div
           className="form-row"
           style={{
@@ -534,6 +538,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               </label>
             </div>
           </div>
+        </div>
         </div>
 
         {/* Third row: Declination and Degrees (disabled when dial is horizontal / 0° inclination) */}

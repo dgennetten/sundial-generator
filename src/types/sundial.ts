@@ -58,7 +58,7 @@ export type DeclinationType = 'North' | 'NNE' | 'NE' | 'ENE' | 'East' | 'ESE' | 
 /**
  * Gnomon types for sundial shadow casting
  */
-export type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height';
+export type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'popup-greeting-card';
 
 /**
  * Gnomon configuration

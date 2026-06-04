@@ -110,7 +110,7 @@ const App: React.FC = () => {
   const [tzMeridian, setTzMeridian] = useState(-105); // Mountain Standard Time meridian (MST = UTC-7 = -105°)
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
-  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height'>('popup-with-brace');
+  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'popup-greeting-card'>('popup-with-brace');
   const [pageSize, setPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom'>('Letter');
   const [customWidth, setCustomWidth] = useState<number>(8.5 * 25.4); // Store in mm
   const [customHeight, setCustomHeight] = useState<number>(11 * 25.4); // Store in mm
@@ -363,10 +363,11 @@ const App: React.FC = () => {
   // Dial inclination: tilt from horizontal in degrees (0 = flat, 90 = vertical).
   // Cancer and Capricorn use the declination-aware formula so the gnomon stays on the solstice line.
   const dialInclination = useMemo(() => {
+    if (gnomonType === 'popup-greeting-card') return 0;
     if (inclineType === 'Cancer') return getCancerInclineWithDeclination(latitude, dialDeclination);
     if (inclineType === 'Capricorn') return getCapricornInclineWithDeclination(latitude, dialDeclination);
     return getDisplayTiltAngle(inclineType, latitude, tiltAngle);
-  }, [inclineType, latitude, tiltAngle, dialDeclination]);
+  }, [gnomonType, inclineType, latitude, tiltAngle, dialDeclination]);
 
   const autoGnomonHeight = useCallback((pageHeight: number): number => {
     return calculateAutoGnomonHeight(latitude, longitude, tzMeridian, pageHeight, dialInclination, dialDeclination);
@@ -987,6 +988,7 @@ const App: React.FC = () => {
           showBackground={showBackground}
           backgroundColor={backgroundColor}
           onInclineTypeChange={() => setGnomonPositionMode('auto')}
+          disableInclination={gnomonType === 'popup-greeting-card'}
         /></div>
 
         <div id="card-gnomon"><GnomonSettings

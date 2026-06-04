@@ -5,7 +5,7 @@ import { calculateAutoGnomonHeight as calcAutoHeight } from '../utils/sundialMat
 import { MoveUpRight } from 'lucide-react';
 
 type Mode = 'auto' | 'manual';
-type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height';
+type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'popup-greeting-card';
 type PositionMode = 'auto' | 'manual';
 
 interface Props {
@@ -167,6 +167,7 @@ const GnomonSettings: React.FC<Props> = ({
               <option value="crosshair-with-height">Crosshair + Height</option>
               <option value="popup">Popup</option>
               <option value="popup-with-brace">Popup with Brace</option>
+              <option value="popup-greeting-card">Popup Greeting Card [beta]</option>
             </select>
           </div>
         </div>

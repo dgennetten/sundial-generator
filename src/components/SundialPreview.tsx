@@ -24,7 +24,7 @@ type Props = {
   tzMeridian: number;
   scale: number;
   gnomonHeight: number;
-  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height';
+  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'popup-greeting-card';
   startHour: number;
   stopHour: number;
   use24Hour: boolean;
@@ -2140,6 +2140,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const gnomonHeightGuideDotY = innerBottomY - 0.5 * viewBoxScaleFactor;
   const gnomonHeightGuideHalfSpacing = (gnomonHeight / 2) * viewBoxScaleFactor;
   const gnomonHeightGuideDotR = 0.25 * viewBoxScaleFactor;
+  const innerTopY = -(scaledHeight / 2 - scaledBorderMargin);
   const gnomonHeightGuideDots =
     gnomonHeight > 0 ? (
       <g aria-hidden="true" className="gnomon-height-guide-dots">
@@ -2155,6 +2156,24 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           r={gnomonHeightGuideDotR}
           fill="#111"
         />
+        {gnomonType === 'popup-greeting-card' && (
+          <>
+            {/* Center dot between the two bottom dots */}
+            <circle
+              cx={0}
+              cy={gnomonHeightGuideDotY}
+              r={gnomonHeightGuideDotR}
+              fill="#111"
+            />
+            {/* Top border dot — symmetric with the bottom dots, just inside the inner top border */}
+            <circle
+              cx={0}
+              cy={innerTopY + 0.5 * viewBoxScaleFactor}
+              r={gnomonHeightGuideDotR}
+              fill="#111"
+            />
+          </>
+        )}
       </g>
     ) : null;
 
