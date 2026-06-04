@@ -272,42 +272,73 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
   if (gnomonType === 'glued-popup-base') {
     // Same triangle as 'popup' but all lines dashed, plus a vertical center line
     // from the tip (0,0) to the base midpoint (0, -H/√2).
+    // Labels A (left half) and B (right half) at each half-triangle's centroid.
     const flipTransform = popupOrientation === 'up' ? 'scale(1, -1)' : '';
+    // Centroid of each half-triangle: x = ±H/(3√2), y = −2H/(3√2).
+    // Text is outside the flip group so glyphs stay upright; y sign tracks orientation.
+    // NH dials default to dialOrientation='North' which rotates the content group 180°,
+    // so swap A/B x-positions and counter-rotate glyphs to compensate.
+    const isNH = (originalLatitude ?? lat) >= 0;
+    const labelX = gnomonHeight / (3 * Math.SQRT2);
+    const labelY = (popupOrientation === 'up' ? 1 : -1) * 2 * gnomonHeight / (3 * Math.SQRT2);
+    const labelFontSize = gnomonHeight * 0.1875; // 25% smaller than gnomonHeight/4
+    const aX = isNH ? labelX : -labelX;
+    const bX = isNH ? -labelX : labelX;
     return (
-      <g transform={flipTransform || undefined}>
-        {/* Right side */}
-        <line
-          x1={0} y1={0}
-          x2={gnomonHeight / Math.SQRT2} y2={-gnomonHeight / Math.SQRT2}
-          stroke="red" strokeWidth={1}
-          strokeDasharray="3,3"
-          vectorEffect="non-scaling-stroke"
-        />
-        {/* Base */}
-        <line
-          x1={-gnomonHeight / Math.SQRT2} y1={-gnomonHeight / Math.SQRT2}
-          x2={gnomonHeight / Math.SQRT2} y2={-gnomonHeight / Math.SQRT2}
-          stroke="red" strokeWidth={1}
-          strokeDasharray="3,3"
-          vectorEffect="non-scaling-stroke"
-        />
-        {/* Left side */}
-        <line
-          x1={0} y1={0}
-          x2={-gnomonHeight / Math.SQRT2} y2={-gnomonHeight / Math.SQRT2}
-          stroke="red" strokeWidth={1}
-          strokeDasharray="3,3"
-          vectorEffect="non-scaling-stroke"
-        />
-        {/* Vertical center line — tip to base midpoint */}
-        <line
-          x1={0} y1={0}
-          x2={0} y2={-gnomonHeight / Math.SQRT2}
-          stroke="red" strokeWidth={1}
-          strokeDasharray="3,3"
-          vectorEffect="non-scaling-stroke"
-        />
-      </g>
+      <>
+        <g transform={flipTransform || undefined}>
+          {/* Right side */}
+          <line
+            x1={0} y1={0}
+            x2={gnomonHeight / Math.SQRT2} y2={-gnomonHeight / Math.SQRT2}
+            stroke="red" strokeWidth={1}
+            strokeDasharray="3,3"
+            vectorEffect="non-scaling-stroke"
+          />
+          {/* Base */}
+          <line
+            x1={-gnomonHeight / Math.SQRT2} y1={-gnomonHeight / Math.SQRT2}
+            x2={gnomonHeight / Math.SQRT2} y2={-gnomonHeight / Math.SQRT2}
+            stroke="red" strokeWidth={1}
+            strokeDasharray="3,3"
+            vectorEffect="non-scaling-stroke"
+          />
+          {/* Left side */}
+          <line
+            x1={0} y1={0}
+            x2={-gnomonHeight / Math.SQRT2} y2={-gnomonHeight / Math.SQRT2}
+            stroke="red" strokeWidth={1}
+            strokeDasharray="3,3"
+            vectorEffect="non-scaling-stroke"
+          />
+          {/* Vertical center line — tip to base midpoint */}
+          <line
+            x1={0} y1={0}
+            x2={0} y2={-gnomonHeight / Math.SQRT2}
+            stroke="red" strokeWidth={1}
+            strokeDasharray="3,3"
+            vectorEffect="non-scaling-stroke"
+          />
+        </g>
+        <text
+          x={aX} y={labelY}
+          fontSize={labelFontSize}
+          fill="red"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          transform={isNH ? `rotate(180 ${aX} ${labelY})` : undefined}
+          style={{ pointerEvents: 'none', userSelect: 'none' }}
+        >A</text>
+        <text
+          x={bX} y={labelY}
+          fontSize={labelFontSize}
+          fill="red"
+          textAnchor="middle"
+          dominantBaseline="middle"
+          transform={isNH ? `rotate(180 ${bX} ${labelY})` : undefined}
+          style={{ pointerEvents: 'none', userSelect: 'none' }}
+        >B</text>
+      </>
     );
   }
 
