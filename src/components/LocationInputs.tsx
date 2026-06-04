@@ -11,6 +11,7 @@ const locations: { [key: string]: { lat: number; lng: number } } = {
   'Cocoa Beach, FL USA': { lat: 28.3200, lng: -80.6076 },
   'Dallas, TX USA': { lat: 32.7767, lng: -96.7970 },
   'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
+  'Los Barriles, Mexico': { lat: 23.6880, lng: -109.6930 },
   'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321 },
   'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747 },
   'Recife, Brazil': { lat: -8.0476, lng: -34.8770 },
@@ -63,6 +64,7 @@ const getTimezoneFromCoordinates = (lat: number, lng: number) => {
   const timezoneData = [
     // North America
     { lat: 40.5853, lng: -105.0844, timeZoneId: 'America/Denver', name: 'Mountain Time', offset: -7, dstOffset: 1 }, // Fort Collins
+    { lat: 23.6880, lng: -109.6930, timeZoneId: 'America/Mazatlan', name: 'Mountain Standard Time', offset: -7, dstOffset: 0 }, // Los Barriles
     { lat: 28.3200, lng: -80.6076, timeZoneId: 'America/New_York', name: 'Eastern Time', offset: -5, dstOffset: 1 }, // Cocoa Beach
     { lat: 34.9496, lng: -81.9321, timeZoneId: 'America/New_York', name: 'Eastern Time', offset: -5, dstOffset: 1 }, // Spartanburg
     { lat: 32.2226, lng: -110.9747, timeZoneId: 'America/Phoenix', name: 'Mountain Standard Time', offset: -7, dstOffset: 0 }, // Tucson (no DST)
