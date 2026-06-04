@@ -24,7 +24,7 @@ type Props = {
   tzMeridian: number;
   scale: number;
   gnomonHeight: number;
-  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'popup-greeting-card';
+  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base';
   startHour: number;
   stopHour: number;
   use24Hour: boolean;
@@ -2156,7 +2156,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           r={gnomonHeightGuideDotR}
           fill="#111"
         />
-        {gnomonType === 'popup-greeting-card' && (
+        {gnomonType === 'glued-popup-base' && (
           <>
             {/* Center dot between the two bottom dots */}
             <circle

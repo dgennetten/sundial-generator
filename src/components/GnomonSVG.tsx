@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface GnomonSVGProps {
-  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'popup-greeting-card';
+  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base';
   gnomonHeight: number;
   lat?: number;
   inclineType?: string;
@@ -269,52 +269,40 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
       </g>
     );
   }
-  if (gnomonType === 'popup-greeting-card') {
-    // Diamond (rotated square) with tip at gnomon point.
-    // Vertical diagonal = gnomonHeight; horizontal diagonal = gnomonHeight (equal — it's a square rotated 45°).
-    // Vertices: top (0,0), right (H/2, -H/2), bottom (0, -H), left (-H/2, -H/2).
-    // Right-facing edges are solid; left-facing edges are dashed (consistent with popup gnomon).
-    // The vertical diagonal is drawn as a solid fold-crease line.
-    const H = gnomonHeight;
+  if (gnomonType === 'glued-popup-base') {
+    // Same triangle as 'popup' but all lines dashed, plus a vertical center line
+    // from the tip (0,0) to the base midpoint (0, -H/√2).
     const flipTransform = popupOrientation === 'up' ? 'scale(1, -1)' : '';
     return (
       <g transform={flipTransform || undefined}>
-        {/* Top-right edge */}
+        {/* Right side */}
         <line
           x1={0} y1={0}
-          x2={H / 2} y2={-H / 2}
+          x2={gnomonHeight / Math.SQRT2} y2={-gnomonHeight / Math.SQRT2}
           stroke="red" strokeWidth={1}
           strokeDasharray="3,3"
           vectorEffect="non-scaling-stroke"
         />
-        {/* Top-left edge */}
+        {/* Base */}
+        <line
+          x1={-gnomonHeight / Math.SQRT2} y1={-gnomonHeight / Math.SQRT2}
+          x2={gnomonHeight / Math.SQRT2} y2={-gnomonHeight / Math.SQRT2}
+          stroke="red" strokeWidth={1}
+          strokeDasharray="3,3"
+          vectorEffect="non-scaling-stroke"
+        />
+        {/* Left side */}
         <line
           x1={0} y1={0}
-          x2={-H / 2} y2={-H / 2}
+          x2={-gnomonHeight / Math.SQRT2} y2={-gnomonHeight / Math.SQRT2}
           stroke="red" strokeWidth={1}
           strokeDasharray="3,3"
           vectorEffect="non-scaling-stroke"
         />
-        {/* Bottom-right edge */}
-        <line
-          x1={H / 2} y1={-H / 2}
-          x2={0} y2={-H}
-          stroke="red" strokeWidth={1}
-          strokeDasharray="3,3"
-          vectorEffect="non-scaling-stroke"
-        />
-        {/* Bottom-left edge */}
-        <line
-          x1={-H / 2} y1={-H / 2}
-          x2={0} y2={-H}
-          stroke="red" strokeWidth={1}
-          strokeDasharray="3,3"
-          vectorEffect="non-scaling-stroke"
-        />
-        {/* Vertical diagonal — fold crease line */}
+        {/* Vertical center line — tip to base midpoint */}
         <line
           x1={0} y1={0}
-          x2={0} y2={-H}
+          x2={0} y2={-gnomonHeight / Math.SQRT2}
           stroke="red" strokeWidth={1}
           strokeDasharray="3,3"
           vectorEffect="non-scaling-stroke"
