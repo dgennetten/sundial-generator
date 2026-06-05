@@ -262,7 +262,10 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
 
     const pageStyle = document.createElement('style');
     pageStyle.id = 'dynamic-print-styles';
-    pageStyle.textContent = `@media print { @page { size: ${pageSizeStr} ${orientationStr}; margin: 0; } }`;
+    // duplex:simplex is a proposed CSS descriptor; honoured by some printer drivers.
+    // It is not universally supported — users may still need to uncheck "Two-sided"
+    // in their browser's print dialog.
+    pageStyle.textContent = `@media print { @page { size: ${pageSizeStr} ${orientationStr}; margin: 0; duplex: simplex; } }`;
     document.head.appendChild(pageStyle);
 
     // ── Determine what to print (checkboxes, independent of preview state) ───
@@ -280,11 +283,20 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       // createSVGExport reads the SundialPreview SVG from the DOM.
       // SundialPreview is always rendered (just hidden when gnomon tab is active)
       // so this always succeeds.
-      const svgStr = createSVGExport({
+      const rawSvgStr = createSVGExport({
         pageSize, orientation, showBackground, backgroundColor,
         ...(pageSize === 'Custom' && { customWidth, customHeight }),
       });
-      if (svgStr) {
+      if (rawSvgStr) {
+        // The on-screen SundialPreview SVG remains in the DOM (display:none) so
+        // print can always read it. But its clipPath/gradient IDs are identical
+        // to those in the print SVG. CSS url(#id) picks the FIRST match in
+        // document order — the hidden one — so clipping breaks in print.
+        // Fix: prefix every id= and url(#) in the print copy to make them unique.
+        const svgStr = rawSvgStr
+          .replace(/\bid="([^"]+)"/g,  'id="prt-$1"')
+          .replace(/url\(#([^)]+)\)/g, 'url(#prt-$1)')
+          .replace(/href="#([^"]+)"/g, 'href="#prt-$1"');
         const page = document.createElement('div');
         // Strip XML declaration so it parses cleanly as innerHTML
         page.innerHTML = svgStr.replace(/^<\?xml[^>]+\?>\s*/, '');
