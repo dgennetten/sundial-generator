@@ -14,7 +14,7 @@ export const LOG_ENTRIES: LogEntry[] = [
   {
     id: 2,
     date: '2026-06-05',
-    content: "NEW GREETING CARD DIAL!: in the gnomon dropdown, select 'Glued Popup'. Early Beta. Send Feedback!!",
+    content: "NEW GREETING CARD DIAL!: in the gnomon dropdown, select 'Glued Popup'. Early Beta. Send Feedback!! Note the new preview toggle.",
   },
 ]
 
