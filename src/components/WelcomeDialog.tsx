@@ -191,6 +191,12 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose }) => {
   const [language, setLanguage] = useState<Language>('en');
 
   useEffect(() => {
+    // On localhost, suppress auto-show unless reset just ran (sessionStorage flag)
+    if (import.meta.env.DEV) {
+      const resetFlag = sessionStorage.getItem('sundial-show-welcome-after-reset');
+      if (!resetFlag) return;
+      sessionStorage.removeItem('sundial-show-welcome-after-reset');
+    }
     // Check if user has dismissed the welcome dialog
     const dismissed = localStorage.getItem(WELCOME_DISMISSED_KEY);
     if (!dismissed) {

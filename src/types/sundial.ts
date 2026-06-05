@@ -170,6 +170,16 @@ export interface ExportOptions {
   declinationDegrees?: number;
   todayLineActive?: boolean;
   configJson?: string;
+  /** When gnomonType is 'glued-popup-base', whether to include the gnomon net page */
+  exportGnomonNet?: boolean;
+  /** When gnomonType is 'glued-popup-base', whether to include the sundial face page */
+  exportSundialFace?: boolean;
+  /** Page width in mm (derived from pageSize + orientation + custom dims) */
+  pageWidthMm?: number;
+  /** Page height in mm */
+  pageHeightMm?: number;
+  /** Border inset for gnomon net page, in mm */
+  borderMarginMm?: number;
 }
 
 /**

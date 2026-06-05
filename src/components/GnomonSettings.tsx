@@ -24,6 +24,9 @@ interface Props {
   dialDeclination?: number;
   /** When true (declination preset / grayed or declination zero), auto horizontal stays at center */
   lockHorizontalToCenter?: boolean;
+  /** Preview toggle for Glued Popup Base: 'Gnomon' shows the cut-and-fold net, 'Dial' shows normal preview */
+  gnomonPreviewMode?: 'Dial' | 'Gnomon';
+  onGnomonPreviewModeChange?: (mode: 'Dial' | 'Gnomon') => void;
   onChange: (values: { mode: Mode; height: number; gnomonType: GnomonType; positionMode?: PositionMode; position?: number; horizontalPosition?: number }) => void;
 }
 
@@ -42,6 +45,8 @@ const GnomonSettings: React.FC<Props> = ({
   dialInclination = 0,
   dialDeclination = 0,
   lockHorizontalToCenter = false,
+  gnomonPreviewMode = 'Dial',
+  onGnomonPreviewModeChange,
   onChange,
 }) => {
 
@@ -143,9 +148,16 @@ const GnomonSettings: React.FC<Props> = ({
         <h3 className="card-title"><MoveUpRight color="#2563eb" size={20} style={{marginRight: 6}} /> Gnomon Settings</h3>
       </div>
       <div className="card-content">
-        {/* Type dropdown on its own line */}
-        <div className="form-row">
-          <div className="form-group" style={{ width: isMobile ? '100%' : 'auto' }}>
+        {/* Type dropdown + optional Gnomon/Dial preview toggle.
+            Uses the same gap and flex weights as the Height/Position row so the
+            Preview toggle column aligns with the Position toggle column. */}
+        <div className="form-row" style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          gap: isMobile ? '0.5rem' : '1rem',
+          flexDirection: 'row',
+        }}>
+          <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1', minWidth: 0 }}>
             <label className="form-label">Type</label>
             <select
               className="form-select"
@@ -167,9 +179,57 @@ const GnomonSettings: React.FC<Props> = ({
               <option value="crosshair-with-height">Crosshair + Height</option>
               <option value="popup">Cut-n-Fold Popup</option>
               <option value="popup-with-brace">Popup with Brace</option>
-              <option value="glued-popup-base">Glued Popup Base</option>
+              <option value="glued-popup-base">Glued Popup - 2 pages</option>
             </select>
           </div>
+
+          {/* Preview toggle — only visible for Glued Popup Base.
+              flex: 1 matches the Position column in the row below. */}
+          {gnomonType === 'glued-popup-base' && onGnomonPreviewModeChange && (
+            <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1', minWidth: 0 }}>
+              <label className="form-label">Preview</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                <span style={{
+                  fontSize: '0.875rem',
+                  color: gnomonPreviewMode === 'Gnomon' ? '#2563eb' : '#9ca3af',
+                  fontWeight: gnomonPreviewMode === 'Gnomon' ? '600' : '400',
+                  transition: 'all 0.2s',
+                }}>Gnomon</span>
+                <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={gnomonPreviewMode === 'Dial'}
+                    onChange={(e) => onGnomonPreviewModeChange(e.target.checked ? 'Dial' : 'Gnomon')}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: gnomonPreviewMode === 'Dial' ? '#2563eb' : '#cbd5e0',
+                    borderRadius: '24px',
+                    transition: 'background-color 0.3s',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      height: '18px', width: '18px',
+                      left: gnomonPreviewMode === 'Dial' ? '22px' : '3px',
+                      bottom: '3px',
+                      backgroundColor: 'white',
+                      borderRadius: '50%',
+                      transition: 'left 0.3s',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                    }} />
+                  </span>
+                </label>
+                <span style={{
+                  fontSize: '0.875rem',
+                  color: gnomonPreviewMode === 'Dial' ? '#2563eb' : '#9ca3af',
+                  fontWeight: gnomonPreviewMode === 'Dial' ? '600' : '400',
+                  transition: 'all 0.2s',
+                }}>Dial</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Height and Position toggles on one line */}

@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM, { flushSync } from 'react-dom';
 import { Download, Save, FolderUp, Undo } from 'lucide-react';
 import { exportSundial, logPrintActivity, type ExportFormat, type PageSize } from '../utils/exportUtils';
+import { createSVGExport } from '../utils/svgExportUtils';
 import type { GnomonType, InclineType } from '../types/sundial';
 import { saveDialConfig, loadAllSavedConfigs, deleteSavedConfig, hasSavedConfigs, type SavedDialConfig } from '../utils/dialSaveRestore';
 import SaveDialDialog from './SaveDialDialog';
@@ -11,6 +12,7 @@ import type { HourlineInterval } from './hourlineUtils';
 import type { LineStyle } from './LineSettings';
 import type { DeclinationLine } from './DeclinationLineOptions';
 import { log } from '../utils/logger';
+import { buildGnomonNetSVGString, computePageMM } from '../utils/gnomonNetUtils';
 
 
 
@@ -96,6 +98,11 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
 
   const [pendingAction, setPendingAction] = useState<'print' | 'export' | null>(null);
   const [includeTodayLine, setIncludeTodayLine] = useState(false);
+
+  // Glued Popup Base export options
+  const [exportGnomonNet, setExportGnomonNet] = useState(true);
+  const [exportSundialFace, setExportSundialFace] = useState(true);
+  const isGluedPopup = gnomonType === 'glued-popup-base';
 
   const hasTodayLineActive = declinationLines?.some(line => line.id === 'today' && line.active) ?? false;
 
@@ -233,69 +240,91 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   const handlePrint = async () => {
     log.info('Starting print...');
 
-    // Create dynamic print styles based on current page settings
-    const printStyleId = 'dynamic-print-styles';
-    const existingStyle = document.getElementById(printStyleId);
+    // Remove any leftover print elements from a previous call
+    document.getElementById('dynamic-print-styles')?.remove();
+    document.getElementById('sundial-print-container')?.remove();
+    document.getElementById('sundial-print-hide')?.remove();
 
-    if (existingStyle) {
-      existingStyle.remove();
-    }
-
-    // Determine page size and orientation
+    // ── @page rule: size + margin: 0 ─────────────────────────────────────────
+    // margin: 0 so the SVG fills the exact physical page. Each SVG carries its
+    // own internal border margin, so nothing is clipped.
     const isLandscape = orientation === 'Landscape';
     let pageSizeStr = 'letter';
-
     switch (pageSize) {
-      case 'A4':
-        pageSizeStr = 'A4';
-        break;
-      case 'Letter':
-        pageSizeStr = 'letter';
-        break;
-      case '11x17':
-        pageSizeStr = 'ledger'; // 11x17 is also known as ledger/tabloid
-        break;
-      case '10x15cm Postcard':
-        pageSizeStr = '100mm 150mm';
-        break;
-      case 'Custom':
-        if (customWidth && customHeight) {
-          pageSizeStr = `${customWidth}mm ${customHeight}mm`;
-        }
-        break;
+      case 'A4':            pageSizeStr = 'A4';                                           break;
+      case 'Letter':        pageSizeStr = 'letter';                                       break;
+      case '11x17':         pageSizeStr = 'ledger';                                       break;
+      case '10x15cm Postcard': pageSizeStr = '100mm 150mm';                               break;
+      case 'Custom':        if (customWidth && customHeight)
+                              pageSizeStr = `${customWidth}mm ${customHeight}mm`;         break;
     }
-
     const orientationStr = isLandscape ? 'landscape' : 'portrait';
 
-    // Create and inject dynamic print styles
-    const style = document.createElement('style');
-    style.id = printStyleId;
+    const pageStyle = document.createElement('style');
+    pageStyle.id = 'dynamic-print-styles';
+    pageStyle.textContent = `@media print { @page { size: ${pageSizeStr} ${orientationStr}; margin: 0; } }`;
+    document.head.appendChild(pageStyle);
 
-    // Determine appropriate margin based on page size match
-    // If the dial page size matches the print page size, use minimal margins
-    // Otherwise, use larger margins for safety
-    let marginStr = '0.5in'; // Default margin for mismatched sizes
+    // ── Determine what to print (checkboxes, independent of preview state) ───
+    const includeSundialFace = !isGluedPopup || exportSundialFace;
+    const includeGnomonNet   = isGluedPopup && exportGnomonNet;
 
-    // Check if dial size matches print paper size (assuming standard letter paper)
-    if (pageSize === 'Letter') {
-      marginStr = '0.1in'; // Minimal margin when sizes match
-    } else if (pageSize === 'A4') {
-      marginStr = '0.1in'; // Minimal margin for A4 as well
-    }
-    // For other sizes (11x17, postcard, custom), keep the larger margin
+    // ── Build isolated print container ───────────────────────────────────────
+    // This is completely independent of which preview tab is currently shown.
+    // Each child div is one printed page.
+    const printContainer = document.createElement('div');
+    printContainer.id = 'sundial-print-container';
+    let firstPage = true;
 
-    style.textContent = `
-      @media print {
-        @page {
-          size: ${pageSizeStr} ${orientationStr};
-          margin: ${marginStr};
-        }
+    if (includeSundialFace) {
+      // createSVGExport reads the SundialPreview SVG from the DOM.
+      // SundialPreview is always rendered (just hidden when gnomon tab is active)
+      // so this always succeeds.
+      const svgStr = createSVGExport({
+        pageSize, orientation, showBackground, backgroundColor,
+        ...(pageSize === 'Custom' && { customWidth, customHeight }),
+      });
+      if (svgStr) {
+        const page = document.createElement('div');
+        // Strip XML declaration so it parses cleanly as innerHTML
+        page.innerHTML = svgStr.replace(/^<\?xml[^>]+\?>\s*/, '');
+        printContainer.appendChild(page);
+        firstPage = false;
       }
-    `;
+    }
 
-    document.head.appendChild(style);
+    if (includeGnomonNet) {
+      const { pageWidthMm, pageHeightMm } = computePageMM(pageSize, orientation, customWidth, customHeight);
+      const borderMm = (borderMargin ?? 0) * 25.4;
+      const gnomSvg  = buildGnomonNetSVGString(
+        gnomonHeight || 10, pageWidthMm, pageHeightMm, showBackground, backgroundColor, borderMm
+      );
+      const page = document.createElement('div');
+      if (!firstPage) {
+        // Force a page break before the second page.
+        // Both properties used for cross-browser compatibility.
+        page.style.cssText = 'break-before:page;page-break-before:always;';
+      }
+      page.innerHTML = gnomSvg;
+      printContainer.appendChild(page);
+    }
 
-    // Trigger print
+    document.body.appendChild(printContainer);
+
+    // Hide ALL other DOM content during print — only the container shows.
+    // `body > *:not(#...)` targets direct body children (app-container, portals, etc.)
+    // without hiding the print container's own children.
+    const hideStyle = document.createElement('style');
+    hideStyle.id = 'sundial-print-hide';
+    hideStyle.textContent = [
+      '@media print {',
+      '  body > *:not(#sundial-print-container) { display:none !important; }',
+      '  #sundial-print-container { display:block !important; }',
+      '}',
+    ].join('\n');
+    document.head.appendChild(hideStyle);
+
+    // Trigger the browser print dialog
     window.print();
 
     // Log the print activity
@@ -321,18 +350,16 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         configJson: JSON.stringify(collectCurrentConfig()),
       });
       log.info('Print activity logged successfully');
-      onLogComplete?.(); // Trigger map refresh
+      onLogComplete?.();
     } catch (error) {
       log.error('Failed to log print activity:', error);
-      // Don't prevent printing if logging fails
     }
 
-    // Clean up the dynamic style after a delay
+    // Clean up after the print dialog closes
     setTimeout(() => {
-      const styleToRemove = document.getElementById(printStyleId);
-      if (styleToRemove) {
-        styleToRemove.remove();
-      }
+      document.getElementById('dynamic-print-styles')?.remove();
+      document.getElementById('sundial-print-container')?.remove();
+      document.getElementById('sundial-print-hide')?.remove();
     }, 1000);
   };
 
@@ -344,6 +371,10 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
 
     log.info('Starting export, format:', format);
     setIsExporting(true);
+    const { pageWidthMm, pageHeightMm } = isGluedPopup
+      ? computePageMM(pageSize, orientation, customWidth, customHeight)
+      : { pageWidthMm: undefined, pageHeightMm: undefined };
+
     try {
       await exportSundial({
         format,
@@ -368,6 +399,11 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         declinationDegrees,
         todayLineActive: hasTodayLineActive,
         configJson: JSON.stringify(collectCurrentConfig()),
+        exportGnomonNet: isGluedPopup ? exportGnomonNet : false,
+        exportSundialFace: isGluedPopup ? exportSundialFace : true,
+        pageWidthMm,
+        pageHeightMm,
+        borderMarginMm: (borderMargin ?? 0) * 25.4,
       });
       log.info('Export completed successfully');
       onLogComplete?.(); // Trigger map refresh
@@ -453,6 +489,36 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
             flexDirection: 'column'
           }}
         >
+          {/* Glued Popup Base: page selection checkboxes */}
+          {isGluedPopup && (
+            <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem', alignItems: 'center', padding: '4px 0 2px' }}>
+              <span style={{ fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>Pages:</span>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.875rem', color: '#374151', cursor: 'pointer', userSelect: 'none' }}>
+                <input
+                  type="checkbox"
+                  checked={exportSundialFace}
+                  onChange={e => setExportSundialFace(e.target.checked)}
+                  style={{ width: 15, height: 15, cursor: 'pointer', accentColor: '#2563eb' }}
+                />
+                Dial Face
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.875rem', color: '#374151', cursor: 'pointer', userSelect: 'none' }}>
+                <input
+                  type="checkbox"
+                  checked={exportGnomonNet}
+                  onChange={e => setExportGnomonNet(e.target.checked)}
+                  style={{ width: 15, height: 15, cursor: 'pointer', accentColor: '#2563eb' }}
+                />
+                Cut-and-Fold Gnomons
+              </label>
+            </div>
+          )}
+          {isGluedPopup && (
+            <div style={{ fontSize: '0.78rem', color: '#b45309', padding: '0 0 2px', lineHeight: 1.3 }}>
+              Print / export at 100% actual size — never "Fit to Page"
+            </div>
+          )}
+
           {/* Reset, Save, Load (left) and Export (right) */}
             <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '0.5rem' }}>
               {/* Reset, Save, Load - left aligned */}

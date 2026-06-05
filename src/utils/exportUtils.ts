@@ -4,6 +4,7 @@ import type { ExportOptions, PageSize } from '../types';
 import { interpretDialTextBlockForEmail } from './dialTextBlockInterpreter';
 import { saveSundialPrint, computeInclinationDegrees } from './sundialPrintUtils';
 import { log } from './logger';
+import { buildGnomonNetSVGString } from './gnomonNetUtils';
 
 // Re-export types for backward compatibility
 export type { ExportFormat, PageSize } from '../types';
@@ -379,35 +380,53 @@ export async function exportSundial(options: ExportOptions): Promise<void> {
   }
   log.debug('Found SVG element:', svgElement);
 
+  const includeSundial = options.exportSundialFace !== false;
+  const includeGnomon  = options.exportGnomonNet === true && options.gnomonType === 'glued-popup-base';
+
   try {
     if (options.format === 'PNG') {
       log.info('Exporting as PNG...');
-      await exportPNG(svgContainer, options);
-      log.info('PNG export completed successfully');
+      if (includeSundial) {
+        await exportPNG(svgContainer, options);
+        log.info('PNG sundial export completed');
+      }
+      if (includeGnomon && options.pageWidthMm && options.pageHeightMm) {
+        await exportGnomonNetPNG(options, buildFilename(options, 'png').replace('.png', '-gnomon.png'));
+        log.info('PNG gnomon export completed');
+      }
     } else if (options.format === 'SVG') {
       log.info('Exporting as SVG...');
-      // Use the sophisticated SVG export utility
-      const svgContent = createSVGExport({
-        pageSize: options.pageSize,
-        orientation: options.orientation,
-        showBackground: options.showBackground,
-        backgroundColor: options.backgroundColor,
-        customWidth: options.customWidth,
-        customHeight: options.customHeight,
-      });
-      
-      if (!svgContent) {
-        throw new Error('Failed to create SVG content');
+      if (includeSundial) {
+        const svgContent = createSVGExport({
+          pageSize: options.pageSize,
+          orientation: options.orientation,
+          showBackground: options.showBackground,
+          backgroundColor: options.backgroundColor,
+          customWidth: options.customWidth,
+          customHeight: options.customHeight,
+        });
+        if (!svgContent) throw new Error('Failed to create SVG content');
+        downloadSVG(svgContent, buildFilename(options, 'svg'));
+        log.info('SVG sundial export completed');
       }
-      
-      downloadSVG(svgContent, buildFilename(options, 'svg'));
-      log.info('SVG export completed successfully');
+      if (includeGnomon && options.pageWidthMm && options.pageHeightMm) {
+        const gnomSVG = buildGnomonNetSVGString(
+          options.gnomonHeight || 10,
+          options.pageWidthMm,
+          options.pageHeightMm,
+          options.showBackground,
+          options.backgroundColor,
+          options.borderMarginMm
+        );
+        downloadFile(gnomSVG, buildFilename(options, 'svg').replace('.svg', '-gnomon.svg'), 'image/svg+xml');
+        log.info('SVG gnomon export completed');
+      }
     } else if (options.format === 'PDF') {
       log.info('Exporting as PDF...');
       await exportPDF(options);
       log.info('PDF export completed successfully');
     }
-    
+
     // Log the export activity after successful export
     await logExportActivity(options);
   } catch (error) {
@@ -415,6 +434,41 @@ export async function exportSundial(options: ExportOptions): Promise<void> {
     throw error;
   }
 }
+
+/**
+ * Exports the gnomon net as a PNG by rendering its SVG into a canvas.
+ */
+async function exportGnomonNetPNG(options: ExportOptions, filename: string): Promise<void> {
+  const { default: html2canvas } = await import('html2canvas');
+  const w = options.pageWidthMm!;
+  const h = options.pageHeightMm!;
+  const dpi = options.dpi || 300;
+  const mmToIn = 1 / 25.4;
+  const pxW = Math.round(w * mmToIn * dpi);
+  const pxH = Math.round(h * mmToIn * dpi);
+
+  const svgStr = buildGnomonNetSVGString(options.gnomonHeight || 10, w, h, options.showBackground, options.backgroundColor, options.borderMarginMm);
+
+  const container = document.createElement('div');
+  container.style.cssText = `position:fixed;top:-9999px;left:-9999px;width:${pxW}px;height:${pxH}px;background:white;`;
+  container.innerHTML = svgStr;
+  const svgEl = container.querySelector('svg');
+  if (svgEl) {
+    svgEl.setAttribute('width', String(pxW));
+    svgEl.setAttribute('height', String(pxH));
+  }
+  document.body.appendChild(container);
+
+  try {
+    const canvas = await html2canvas(container, { useCORS: true, background: '#ffffff' } as Parameters<typeof html2canvas>[1]);
+    canvas.toBlob(blob => {
+      if (blob) downloadFile(blob, filename, 'image/png');
+    }, 'image/png');
+  } finally {
+    document.body.removeChild(container);
+  }
+}
+
 
 /**
  * Exports as vector PDF by converting the generated SVG
@@ -537,6 +591,7 @@ async function exportPDF(options: ExportOptions): Promise<void> {
   const jsPDF = (jsPDFModule as { jsPDF: new (options?: unknown) => {
     internal: { pageSize: { getWidth(): number; getHeight(): number } };
     save(filename: string): void;
+    addPage(format?: string | number[], orientation?: string): void;
   } }).jsPDF;
   const svg2pdfModule: Record<string, unknown> = await import('svg2pdf.js');
   const svg2pdfFn: unknown = svg2pdfModule?.default || svg2pdfModule?.svg2pdf || (globalThis as Record<string, unknown>)?.svg2pdf;
@@ -583,8 +638,38 @@ async function exportPDF(options: ExportOptions): Promise<void> {
   // Process the North Point specifically to handle its unique rendering issues
   processNorthPointForPdf(svgEl);
 
-  // Render SVG without forcing a different width/height (prevents stroke/dash scaling)
-  await Promise.resolve(svg2pdfFn(svgEl, doc, { x: 0, y: 0, useCSS: true }));
+  const includeSundial = options.exportSundialFace !== false;
+  const includeGnomon  = options.exportGnomonNet === true && options.gnomonType === 'glued-popup-base';
+
+  if (includeSundial) {
+    // Render SVG without forcing a different width/height (prevents stroke/dash scaling)
+    await Promise.resolve(svg2pdfFn(svgEl, doc, { x: 0, y: 0, useCSS: true }));
+  }
+
+  // Add gnomon net as an additional page
+  if (includeGnomon) {
+    const pageW = options.pageWidthMm;
+    const pageH = options.pageHeightMm;
+    if (pageW && pageH) {
+      const gnomSVGStr = buildGnomonNetSVGString(options.gnomonHeight || 10, pageW, pageH, options.showBackground, options.backgroundColor, options.borderMarginMm);
+      const gnomParsed = new DOMParser().parseFromString(gnomSVGStr, 'image/svg+xml');
+      const gnomEl = gnomParsed.documentElement as unknown as SVGSVGElement;
+
+      if (includeSundial) {
+        doc.addPage(format, orientation as 'landscape' | 'portrait');
+      }
+
+      if (gnomEl && gnomEl.tagName.toLowerCase() === 'svg') {
+        // Use pt units (same as the dial face SVG) so svg2pdf maps the gnomon
+        // viewBox (mm-based user units) to the PDF page at 1:1 physical scale.
+        // Unitless width would be treated as CSS px (1px = 1/96 in ≠ 1/72 in = 1pt)
+        // and would cause ~75% scale error on the printed gnomon.
+        gnomEl.setAttribute('width', `${widthPt}pt`);
+        gnomEl.setAttribute('height', `${heightPt}pt`);
+        await Promise.resolve(svg2pdfFn(gnomEl, doc, { x: 0, y: 0, useCSS: true }));
+      }
+    }
+  }
 
   // Trigger download
   doc.save(buildFilename(options, 'pdf'));

@@ -26,6 +26,7 @@ import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
 import DesignExport from './components/DesignExport';
 import SundialPreview from './components/SundialPreview';
+import GnomonNetSVG from './components/GnomonNetSVG';
 import HourlineSettings from './components/HourlineSettings';
 import { loadHourlineIntervals, type HourlineInterval, saveHourlineOverrides } from './components/hourlineUtils';
 import LineSettings from './components/LineSettings';
@@ -113,6 +114,7 @@ const App: React.FC = () => {
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
   const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base'>('popup-with-brace');
+  const [gnomonPreviewMode, setGnomonPreviewMode] = useState<'Dial' | 'Gnomon'>('Dial');
   const [pageSize, setPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom'>('Letter');
   const [customWidth, setCustomWidth] = useState<number>(8.5 * 25.4); // Store in mm
   const [customHeight, setCustomHeight] = useState<number>(11 * 25.4); // Store in mm
@@ -199,7 +201,15 @@ const App: React.FC = () => {
   const [sundialNotesOffsetHorizontal, setSundialNotesOffsetHorizontal] = useState<number>(0); // in mm
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
   const [printedDialsMapRefreshTrigger, setPrintedDialsMapRefreshTrigger] = useState<number>(0);
-  const [showDevLog, setShowDevLog] = useState(() => shouldShowLog());
+  const [showDevLog, setShowDevLog] = useState(() => {
+    if (!import.meta.env.DEV) return shouldShowLog();
+    const resetFlag = sessionStorage.getItem('sundial-show-devlog-after-reset');
+    if (resetFlag) {
+      sessionStorage.removeItem('sundial-show-devlog-after-reset');
+      return shouldShowLog();
+    }
+    return false;
+  });
 
   // Page size map (mm)
   const pageSizeMap = useMemo(() => ({
@@ -362,6 +372,13 @@ const App: React.FC = () => {
   if (orientation === 'Landscape') {
     [pageWidth, pageHeight] = [pageHeight, pageWidth];
   }
+
+  // Reset gnomon preview to Dial when switching away from glued-popup-base
+  useEffect(() => {
+    if (gnomonType !== 'glued-popup-base') {
+      setGnomonPreviewMode('Dial');
+    }
+  }, [gnomonType]);
 
   // Dial inclination: tilt from horizontal in degrees (0 = flat, 90 = vertical).
   // Cancer and Capricorn use the declination-aware formula so the gnomon stays on the solstice line.
@@ -706,8 +723,13 @@ const App: React.FC = () => {
       ];
       keysToRemove.forEach(key => localStorage.removeItem(key));
       clearWelcomeDismissed();
+      clearLogPref();
       getControlsScrollerElement()?.scrollTo(0, 0);
-      try { sessionStorage.setItem('sundial-scroll-panel-to-top', '1'); } catch (_) {}
+      try {
+        sessionStorage.setItem('sundial-scroll-panel-to-top', '1');
+        sessionStorage.setItem('sundial-show-welcome-after-reset', '1');
+        sessionStorage.setItem('sundial-show-devlog-after-reset', '1');
+      } catch (_) {}
       window.location.hash = '';
       window.location.reload();
     }
@@ -1014,6 +1036,8 @@ const App: React.FC = () => {
           dialInclination={dialInclination}
           dialDeclination={dialDeclination}
           lockHorizontalToCenter={declinationType !== 'Manual' || Math.abs(dialDeclination) < 1e-6}
+          gnomonPreviewMode={gnomonPreviewMode}
+          onGnomonPreviewModeChange={setGnomonPreviewMode}
           onChange={useCallback(({ mode, height, gnomonType, positionMode, position, horizontalPosition }) => {
             setGnomonMode(mode);
             setGnomonHeight(height);
@@ -1135,11 +1159,28 @@ const App: React.FC = () => {
       >
         <div className="mobile-preview-slot">
           <div className="mobile-preview-slot-inner">
-            <React.Profiler id="SundialPreview" onRender={(id, phase, actualDuration) => {
-              if (phase === 'update') log.perf(id, phase, actualDuration);
-            }}>
-              <SundialPreview config={previewConfig} />
-            </React.Profiler>
+            {gnomonType === 'glued-popup-base' && gnomonPreviewMode === 'Gnomon' && (
+              <GnomonNetSVG
+                gnomonHeight={effectiveGnomonHeight}
+                pageWidth={pageWidth}
+                pageHeight={pageHeight}
+                showBackground={showBackground}
+                backgroundColor={backgroundColor}
+                borderMarginMm={borderMargin * 25.4}
+              />
+            )}
+            {/* SundialPreview stays in the DOM even when gnomon tab is active
+                so that createSVGExport() can always read the dial SVG for print.
+                display:contents when visible → transparent to the flex layout,
+                so SundialPreview's card is a direct flex child of .preview-panel
+                exactly as before this wrapper was added. */}
+            <div style={{ display: gnomonType === 'glued-popup-base' && gnomonPreviewMode === 'Gnomon' ? 'none' : 'contents' }}>
+              <React.Profiler id="SundialPreview" onRender={(id, phase, actualDuration) => {
+                if (phase === 'update') log.perf(id, phase, actualDuration);
+              }}>
+                <SundialPreview config={previewConfig} />
+              </React.Profiler>
+            </div>
           </div>
         </div>
         <MobileTabBar onResetDefaults={handleResetDefaults} />
