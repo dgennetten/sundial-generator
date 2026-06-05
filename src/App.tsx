@@ -40,6 +40,8 @@ import AboutCard from './components/AboutCard';
 import DialTextBlockSettings from './components/DialTextBlockSettings';
 import PrintedDialsMap from './components/PrintedDialsMap';
 import WelcomeDialog, { clearWelcomeDismissed } from './components/WelcomeDialog';
+import DevLogModal from './components/DevLogModal';
+import { shouldShowLog, clearLogPref } from './lib/devLog';
 import type { SundialPrint } from './types/sundial';
 import { log } from './utils/logger';
 import { getControlsScrollerElement } from './utils/controlsScroller';
@@ -197,6 +199,7 @@ const App: React.FC = () => {
   const [sundialNotesOffsetHorizontal, setSundialNotesOffsetHorizontal] = useState<number>(0); // in mm
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
   const [printedDialsMapRefreshTrigger, setPrintedDialsMapRefreshTrigger] = useState<number>(0);
+  const [showDevLog, setShowDevLog] = useState(() => shouldShowLog());
 
   // Page size map (mm)
   const pageSizeMap = useMemo(() => ({
@@ -766,6 +769,10 @@ const App: React.FC = () => {
       {/* Welcome Dialog */}
       <WelcomeDialog />
 
+      {showDevLog && (
+        <DevLogModal onClose={() => setShowDevLog(false)} />
+      )}
+
       {highLatVerticalNudgeOpen &&
         createPortal(
           <div
@@ -1111,7 +1118,7 @@ const App: React.FC = () => {
           refreshTrigger={printedDialsMapRefreshTrigger}
         /></div>
         {/* <VisitorMap /> */}
-        <div id="card-about"><AboutCard latitude={latitude} longitude={longitude} locationName={locationName} /></div>
+        <div id="card-about"><AboutCard latitude={latitude} longitude={longitude} locationName={locationName} onShowDevLog={() => { clearLogPref(); setShowDevLog(true); }} /></div>
         </div>
       </div>
 

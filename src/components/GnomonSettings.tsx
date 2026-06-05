@@ -165,7 +165,7 @@ const GnomonSettings: React.FC<Props> = ({
               <option value="crosshair">Crosshair</option>
               <option value="crosshair-with-north">Crosshair + North Pt</option>
               <option value="crosshair-with-height">Crosshair + Height</option>
-              <option value="popup">Popup</option>
+              <option value="popup">Cut-n-Fold Popup</option>
               <option value="popup-with-brace">Popup with Brace</option>
               <option value="glued-popup-base">Glued Popup Base</option>
             </select>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Info, Instagram, Mail, Coffee, Github, Globe, Send } from 'lucide-react';
+import { Info, Instagram, Mail, Coffee, Github, Globe, Send, Rss } from 'lucide-react';
 import BuildDate from './BuildDate';
 import { sendFeedback } from '../utils/feedbackUtils';
 
@@ -7,12 +7,13 @@ interface AboutCardProps {
   latitude: number;
   longitude: number;
   locationName: string;
+  onShowDevLog?: () => void;
 }
 
 const FEEDBACK_PLACEHOLDER =
   "Tell me what you like, want to see, etc. Include your email if you'd like to start up a conversation.";
 
-const AboutCard: React.FC<AboutCardProps> = ({ latitude, longitude, locationName }) => {
+const AboutCard: React.FC<AboutCardProps> = ({ latitude, longitude, locationName, onShowDevLog }) => {
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [feedbackError, setFeedbackError] = useState('');
@@ -184,6 +185,31 @@ algorithm which "enables it to be calculated for any epoch within 30 centuries o
 `,
           }}
         />
+        {/* Developer's Log */}
+        {onShowDevLog && (
+          <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e2e8f0' }}>
+            <button
+              type="button"
+              onClick={onShowDevLog}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                fontSize: '13px',
+                color: '#2563eb',
+                textDecoration: 'underline',
+              }}
+            >
+              <Rss size={14} color="#2563eb" />
+              Developer's Log
+            </button>
+          </div>
+        )}
+
         {/* Bottom row with build date and social icons */}
         <div
           style={{
