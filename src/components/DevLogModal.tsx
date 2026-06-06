@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { X, Rss } from 'lucide-react';
 import { LOG_ENTRIES, setLogPref, type LogPref } from '../lib/devLog';
 
+function renderContent(text: string): React.ReactNode {
+  const parts = text.split(/\*\*(.+?)\*\*/g);
+  return parts.map((part, i) => i % 2 === 1 ? <strong key={i}>{part}</strong> : part);
+}
+
 interface DevLogModalProps {
   onClose: () => void;
 }
@@ -129,7 +134,7 @@ const DevLogModal: React.FC<DevLogModalProps> = ({ onClose }) => {
               <span style={{ fontSize: '10px', color: '#9ca3af' }}>{formatDate(latest.date)}</span>
             </div>
             <p style={{ fontSize: '14px', color: '#1f2937', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-line' }}>
-              {latest.content}
+              {renderContent(latest.content)}
             </p>
           </div>
 
@@ -143,7 +148,7 @@ const DevLogModal: React.FC<DevLogModalProps> = ({ onClose }) => {
                 {formatDate(entry.date)}
               </span>
               <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-line' }}>
-                {entry.content}
+                {renderContent(entry.content)}
               </p>
             </div>
           ))}
