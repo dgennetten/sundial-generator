@@ -9,12 +9,12 @@ export const LOG_ENTRIES: LogEntry[] = [
   {
     id: 1,
     date: '2026-06-05',
-    content: "Introducing the Developer's Log — a way to surface the latest app changes directly to you. Rather than hunting through a changelog, you'll see a note here whenever something meaningful ships. I liked the idea so much I'm bringing it to all my apps. More to come! — KDG",
+    content: "Introducing the Developer's Log — a way to surface the latest app changes directly to you. Rather than hunting through a changelog, you'll see a note here whenever something meaningful ships. I liked the idea so much I'm bringing it to all my apps. More to come! — KDG (v2.12.0)",
   },
   {
     id: 2,
     date: '2026-06-05',
-    content: "NEW GREETING CARD DIAL!: in the gnomon dropdown, select 'Glued Popup'. Early Beta. Send Feedback!! Note the new **Preview** toggle.",
+    content: "NEW GREETING CARD DIAL!: in the gnomon dropdown, select 'Glued Popup'. Early Beta. Send Feedback!! Note the new **Preview** toggle. — KDG (v2.13.0)",
   },
 ]
 
