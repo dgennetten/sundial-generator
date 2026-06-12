@@ -43,7 +43,8 @@ export function computePageMM(
  *     Center vertical dashed fold line from apex to hypotenuse midpoint.
  *   Tab A (left) and Tab B (right) — fold-and-glue base tabs.
  *
- * Layout: two copies side-by-side or stacked, centered on the page.
+ * Layout: three copies when side-by-side (two below, one inverted above center),
+ * or two stacked / one scaled on very small pages.
  * Sundial directions are printed above the nets; gnomon directions alongside.
  *
  * @param gnomonHeight   physical standing height in mm — printed at actual size
@@ -100,27 +101,33 @@ export function buildGnomonNetSVGString(
   const availW = pageWidth  - 2 * margin;
   const availH = pageHeight - 2 * margin - headerH;
 
-  // ── Layout: 2 copies side-by-side, scaled to fill available width ─────────
+  // ── Layout: 3 copies side-by-side when space allows ───────────────────────
+  // Two nets on the bottom row; a third inverted copy centered above them.
   // Side-by-side is always preferred — stacked nets dominate portrait height.
   // Scale is computed so the pair fills the page width; capped at 1.0 so we
   // never enlarge beyond the physical gnomon size.
-  type Copy = { ox: number; oy: number; scale: number };
+  type Copy = { ox: number; oy: number; scale: number; rotate180?: boolean };
   let copies: Copy[];
   let groupW: number;
   let groupH: number;
 
+  // Third net sits one gnomon height above the bottom row → 2.5× gnomon height total.
+  const trioHeight = 2.5 * gH;
+
   // Scale that makes two nets fill the available width exactly (max 1.0)
-  const sbScale = Math.min((availW - hgap) / (4 * gH), availH / netH, 1);
+  const sbScale = Math.min((availW - hgap) / (4 * gH), availH / trioHeight, 1);
 
   if (sbScale >= 0.5) {
-    // Two side-by-side at computed scale
+    // Two side-by-side on the bottom row, third inverted and centered above.
     const s   = sbScale;
     const sgH = gH * s;
+    const rowDown = 0.75 * sgH;
     groupW = 4 * sgH + hgap;
-    groupH = 1.5 * sgH;
+    groupH = 2.5 * sgH;
     copies = [
-      { ox: 0,             oy: 0, scale: s },
-      { ox: 2 * sgH + hgap, oy: 0, scale: s },
+      { ox: 0,              oy: rowDown,          scale: s },
+      { ox: 2 * sgH + hgap, oy: rowDown,          scale: s },
+      { ox: sgH + hgap / 2, oy: -sgH + rowDown,   scale: s, rotate180: true },
     ];
   } else if (netW <= availW && 2 * netH + vgap <= availH) {
     // Fall back to two stacked at scale = 1 (very small gnomon on tiny page)
@@ -186,11 +193,13 @@ export function buildGnomonNetSVGString(
   const npScale = roseR / 460.035;
 
   // Centers at midpoint of each tab's inner diagonal edge (t=0.5 along midH→apex).
-  const roseCxA = gH * 3 / 4;
+  // Nudge each half one outline stroke-width horizontally away from the center fold.
+  const splitNudge = 0.5;
+  const roseCxA = gH * 3 / 4 - splitNudge;
   const roseCyA = gH * 5 / 4;
   const roseXfA = `translate(${fmt(roseCxA)},${fmt(roseCyA)}) rotate(45) scale(${npScale.toFixed(7)}) translate(-460.035,-600)`;
 
-  const roseCxB = gH * 5 / 4;
+  const roseCxB = gH * 5 / 4 + splitNudge;
   const roseCyB = gH * 5 / 4;
   const roseXfB = `translate(${fmt(roseCxB)},${fmt(roseCyB)}) rotate(-45) scale(${npScale.toFixed(7)}) translate(-460.035,-600)`;
   // NorthPoint.svg paths (star + inner ring + quadrant arcs; N/S text omitted)
@@ -205,11 +214,15 @@ export function buildGnomonNetSVGString(
   const npPathsSVG = npPaths.map(d => `<path d="${d}" fill="#2563eb"/>`).join('');
 
   // ── Render copies (per-copy defs for unique clip IDs) ─────────────────────
+  const netCenterY = gH * 0.75;
   const copiesSVG = copies
-    .map(({ ox, oy, scale }, idx) => {
+    .map(({ ox, oy, scale, rotate180 }, idx) => {
+      const rot = rotate180
+        ? ` translate(${gH},${netCenterY}) rotate(180) translate(${-gH},${-netCenterY})`
+        : '';
       const xf = scale !== 1
-        ? `translate(${ox},${oy}) scale(${scale})`
-        : `translate(${ox},${oy})`;
+        ? `translate(${ox},${oy}) scale(${scale})${rot}`
+        : `translate(${ox},${oy})${rot}`;
       const clipA = `gn-tabA-${idx}`;
       const clipB = `gn-tabB-${idx}`;
       return `  <g transform="${xf}">
@@ -228,19 +241,18 @@ export function buildGnomonNetSVGString(
     })
     .join('\n');
 
-  // ── Gnomon directions: right of group if room, else below ─────────────────
-  const groupRight  = pageOX + groupW;
-  const groupBottom = pageOY + groupH;
-  const groupMidY   = (pageOY + groupBottom) / 2;
-  const gInstrX     = groupRight + 8;
-  const gInstrY0    = groupMidY - (gnomonLines.length * glh) / 2;
+  // ── Gnomon directions: right of group if room, else left margin ───────────
+  const groupRight = pageOX + groupW;
+  const pageMidY   = pageHeight / 2 - 5;
+  const gInstrY0   = pageMidY - (gnomonLines.length * glh) / 2;
+  const gInstrX    = groupRight + 8;
 
   const gnomonInstrSVG = gInstrX + 55 <= pageWidth - margin
     ? gnomonLines.map((line, i) =>
         `  <text x="${gInstrX}" y="${gInstrY0 + i * glh}" font-size="${gfs}" text-anchor="start" dominant-baseline="auto" font-family="sans-serif" fill="#222">${line}</text>`
       ).join('\n')
     : gnomonLines.map((line, i) =>
-        `  <text x="${margin}" y="${groupBottom + 10 + i * glh}" font-size="${gfs}" text-anchor="start" dominant-baseline="auto" font-family="sans-serif" fill="#222">${line}</text>`
+        `  <text x="${margin}" y="${gInstrY0 + i * glh}" font-size="${gfs}" text-anchor="start" dominant-baseline="auto" font-family="sans-serif" fill="#222">${line}</text>`
       ).join('\n');
 
   // ── Background and border ─────────────────────────────────────────────────
