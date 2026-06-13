@@ -190,38 +190,10 @@ const PrintedDialsMap: React.FC<SundialPrintMapProps> = ({
       }
     });
 
-    // Fit map to show all markers
-    if (markersRef.current.length > 0) {
-      try {
-        const group = new L.FeatureGroup(markersRef.current);
-        const bounds = group.getBounds();
-        
-        if (bounds.isValid()) {
-          // Check if longitude span is greater than 180 degrees (crosses date line)
-          const lonSpan = bounds.getEast() - bounds.getWest();
-          if (lonSpan > 180) {
-            // When span > 180°, Leaflet fitBounds can show wrong side
-            // Use world bounds instead (zoom level 2 shows entire world)
-            map.setView([0, 0], 2);
-          } else {
-            map.fitBounds(bounds.pad(0.1));
-          }
-        } else {
-          log.warn('Invalid bounds calculated, using default view');
-          // If bounds are invalid (e.g., all markers at same point), center on first marker
-          if (markersRef.current.length > 0) {
-            const firstMarker = markersRef.current[0];
-            map.setView([firstMarker.getLatLng().lat, firstMarker.getLatLng().lng], 2);
-          }
-        }
-      } catch (error) {
-        log.error('Error fitting map bounds:', error);
-        // Fallback: center on first marker
-        if (markersRef.current.length > 0) {
-          const firstMarker = markersRef.current[0];
-          map.setView([firstMarker.getLatLng().lat, firstMarker.getLatLng().lng], 2);
-        }
-      }
+    // Center on the overall-latest (red) pin
+    const latestPrint = validPrints[0];
+    if (latestPrint) {
+      map.setView([latestPrint.latitude, latestPrint.longitude], 6);
     }
   }, [prints, loading, mapInitialized, onPinClick]);
 
