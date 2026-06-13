@@ -43,8 +43,8 @@ export function computePageMM(
  *     Center vertical dashed fold line from apex to hypotenuse midpoint.
  *   Tab A (left) and Tab B (right) — fold-and-glue base tabs.
  *
- * Layout: three copies when side-by-side (two below, one inverted above center),
- * or two stacked / one scaled on very small pages.
+ * Layout: up to three copies, always at full (1:1) scale — count reduces to two
+ * or one when the gnomon is too large to fit more at full size.
  * Sundial directions are printed above the nets; gnomon directions alongside.
  *
  * @param gnomonHeight   physical standing height in mm — printed at actual size
@@ -101,48 +101,50 @@ export function buildGnomonNetSVGString(
   const availW = pageWidth  - 2 * margin;
   const availH = pageHeight - 2 * margin - headerH;
 
-  // ── Layout: 3 copies side-by-side when space allows ───────────────────────
-  // Two nets on the bottom row; a third inverted copy centered above them.
-  // Side-by-side is always preferred — stacked nets dominate portrait height.
-  // Scale is computed so the pair fills the page width; capped at 1.0 so we
-  // never enlarge beyond the physical gnomon size.
+  // ── Layout: always full size (scale = 1); reduce count if needed ──────────
+  // Priority: 3 nets (trio) > 2 side-by-side > 2 stacked > 1 net.
+  // Nets are never scaled down — count decreases instead.
   type Copy = { ox: number; oy: number; scale: number; rotate180?: boolean };
   let copies: Copy[];
   let groupW: number;
   let groupH: number;
 
-  // Third net sits one gnomon height above the bottom row → 2.5× gnomon height total.
-  const trioHeight = 2.5 * gH;
+  const sideBySideWidthFits = 4 * gH + hgap <= availW;
+  const trioHeightFits      = 2.5 * gH <= availH;
+  const pairHeightFits      = netH <= availH;
+  const stackedHeightFits   = 2 * netH + vgap <= availH;
 
-  // Scale that makes two nets fill the available width exactly (max 1.0)
-  const sbScale = Math.min((availW - hgap) / (4 * gH), availH / trioHeight, 1);
-
-  if (sbScale >= 0.5) {
-    // Two side-by-side on the bottom row, third inverted and centered above.
-    const s   = sbScale;
-    const sgH = gH * s;
-    const rowDown = 0.75 * sgH;
-    groupW = 4 * sgH + hgap;
-    groupH = 2.5 * sgH;
+  if (sideBySideWidthFits && trioHeightFits) {
+    // Three nets: two on the bottom row, one inverted above — all at full size.
+    const rowDown = 0.75 * gH;
+    groupW = 4 * gH + hgap;
+    groupH = 2.5 * gH;
     copies = [
-      { ox: 0,              oy: rowDown,          scale: s },
-      { ox: 2 * sgH + hgap, oy: rowDown,          scale: s },
-      { ox: sgH + hgap / 2, oy: -sgH + rowDown,   scale: s, rotate180: true },
+      { ox: 0,              oy: rowDown,        scale: 1 },
+      { ox: 2 * gH + hgap, oy: rowDown,        scale: 1 },
+      { ox: gH + hgap / 2, oy: -gH + rowDown,  scale: 1, rotate180: true },
     ];
-  } else if (netW <= availW && 2 * netH + vgap <= availH) {
-    // Fall back to two stacked at scale = 1 (very small gnomon on tiny page)
+  } else if (sideBySideWidthFits && pairHeightFits) {
+    // Two nets side-by-side (trio didn't fit in height).
+    groupW = 4 * gH + hgap;
+    groupH = netH;
+    copies = [
+      { ox: 0,              oy: 0, scale: 1 },
+      { ox: 2 * gH + hgap, oy: 0, scale: 1 },
+    ];
+  } else if (netW <= availW && stackedHeightFits) {
+    // Two nets stacked vertically.
     groupW = netW;
     groupH = 2 * netH + vgap;
     copies = [
-      { ox: 0, oy: 0,            scale: 1 },
-      { ox: 0, oy: netH + vgap,  scale: 1 },
+      { ox: 0, oy: 0,           scale: 1 },
+      { ox: 0, oy: netH + vgap, scale: 1 },
     ];
   } else {
-    // Last resort: single copy scaled to fit
-    const scale = Math.min(availW / netW, availH / netH, 1);
-    groupW = netW * scale;
-    groupH = netH * scale;
-    copies = [{ ox: 0, oy: 0, scale }];
+    // Single net at full size.
+    groupW = netW;
+    groupH = netH;
+    copies = [{ ox: 0, oy: 0, scale: 1 }];
   }
 
   // Center the group in the available content area
