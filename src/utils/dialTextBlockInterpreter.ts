@@ -101,6 +101,9 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
     .replace(/\*\{today\}\*/gi, `*${todayDate}*`)
     .replace(/\{today\}/gi, `**${todayDate}**`);
 
+  // Strip [colorname] line prefixes — they're display-only markup, not meaningful in plain text
+  processedText = processedText.replace(/^\[[a-zA-Z]+\]/gm, '');
+
   return processedText;
 }
 

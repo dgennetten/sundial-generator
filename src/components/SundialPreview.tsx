@@ -2331,10 +2331,20 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     textBlockLines = processedText.split('\n')
       .filter(line => {
         const trimmed = line.trim();
-        // Remove lines that are empty or contain only markup characters (*, **)
-        return trimmed !== '' && !trimmed.match(/^\*+$/);
+        // Remove lines that are empty, contain only markup characters (*, **),
+        // or are only a color prefix with no content (e.g. "[red]" when {today} is inactive)
+        return trimmed !== '' && !trimmed.match(/^\*+$/) && !trimmed.match(/^\[[a-zA-Z]+\]\s*$/);
       })
-      .map(line => parseTextWithColor(line));
+      .map(line => {
+        const colorMatch = line.match(/^\[([a-zA-Z]+)\]/);
+        if (colorMatch) {
+          const lineColor = colorMatch[1];
+          const lineContent = line.slice(colorMatch[0].length);
+          // Explicit prefix always overrides auto-red or any other auto-color
+          return parseTextWithColor(lineContent).map(part => ({ ...part, color: lineColor }));
+        }
+        return parseTextWithColor(line);
+      });
 
 
 

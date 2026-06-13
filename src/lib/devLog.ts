@@ -21,6 +21,11 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-06-13',
     content: "Cut-and-Fold gnomon nets are now always printed at full scale — if the gnomon is too large to fit three on a page, the count drops to two or one rather than shrinking them. — KDG (v2.15.0)",
   },
+  {
+    id: 4,
+    date: '2026-06-13',
+    content: "Text block color prefixes: start any line with [red], [blue], [teal], etc. to color that line. Works with bold and italic too — e.g. [red]**{today}**. — KDG (v2.16.0)",
+  },
 ]
 
 export type LogPref =
