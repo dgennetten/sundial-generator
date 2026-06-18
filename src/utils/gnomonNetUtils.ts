@@ -43,8 +43,8 @@ export function computePageMM(
  *     Center vertical dashed fold line from apex to hypotenuse midpoint.
  *   Tab A (left) and Tab B (right) — fold-and-glue base tabs.
  *
- * Layout: up to three copies, always at full (1:1) scale — count reduces to two
- * or one when the gnomon is too large to fit more at full size.
+ * Layout: up to three full-size copies when they fit (triad: two below, one
+ * inverted above); scaled only as last resort.
  * Sundial directions are printed above the nets; gnomon directions alongside.
  *
  * @param gnomonHeight   physical standing height in mm — printed at actual size
@@ -69,6 +69,7 @@ export function buildGnomonNetSVGString(
   const margin = Math.max(8, borderMarginMm + 4);
   const hgap   = 10;   // horizontal gap between two side-by-side nets
   const vgap   = 10;   // vertical gap between two stacked nets
+  const triadRowGap = 2; // gap between inverted top net and bottom pair (shape-aware)
   const fmt    = (v: number) => (Math.round(v * 10) / 10).toString();
 
   // ── Sundial directions (printed above the nets) ───────────────────────────
@@ -77,8 +78,8 @@ export function buildGnomonNetSVGString(
     'score and valley fold a vertical crease intersecting the gnomon',
     'point and the two tiny dots at the top and bottom border.',
   ];
-  const sfs = 4.5;   // font size (mm)
-  const slh = 6.5;   // line height (mm)
+  const sfs = 3.5;   // font size (mm)
+  const slh = 5;     // line height (mm)
 
   // ── Gnomon directions (beside or below nets) ──────────────────────────────
   const gnomonLines = [
@@ -91,60 +92,113 @@ export function buildGnomonNetSVGString(
 
   // ── Header height: title + subtitle + sundial instructions + gap ──────────
   //   margin+8 : title
-  //   margin+18: subtitle
-  //   margin+28: sundial lines start
-  //   margin+28 + n*slh : sundial lines end
+  //   margin+14: gnomon height subtitle
+  //   margin+18: sundial lines start
+  //   margin+18 + n*slh : sundial lines end
   //   + 8 gap before nets
-  const sundialY0 = margin + 28;
-  const headerH   = Math.ceil(28 + sundialLines.length * slh + 8);
+  const subtitleY = margin + 14;
+  const sundialY0 = margin + 18;
+  const headerH   = Math.ceil(18 + sundialLines.length * slh + 8);
 
   const availW = pageWidth  - 2 * margin;
   const availH = pageHeight - 2 * margin - headerH;
 
-  // ── Layout: always full size (scale = 1); reduce count if needed ──────────
-  // Priority: 3 nets (trio) > 2 side-by-side > 2 stacked > 1 net.
-  // Nets are never scaled down — count decreases instead.
-  type Copy = { ox: number; oy: number; scale: number; rotate180?: boolean };
+  // ── Layout: as many full-size copies as fit; never shrink unless required ─
+  // Side-by-side is preferred over stacked. Scaling below 1.0 is only used when
+  // even a single net cannot fit at actual size.
+  type Copy = { ox: number; oy: number; scale: number; inverted?: boolean };
   let copies: Copy[];
   let groupW: number;
   let groupH: number;
 
-  const sideBySideWidthFits = 4 * gH + hgap <= availW;
-  const trioHeightFits      = 2.5 * gH <= availH;
-  const pairHeightFits      = netH <= availH;
-  const stackedHeightFits   = 2 * netH + vgap <= availH;
+  const fitsSideBySide = (count: number, scale: number) => {
+    const gaps = (count - 1) * hgap;
+    return count * netW * scale + gaps <= availW && netH * scale <= availH;
+  };
 
-  if (sideBySideWidthFits && trioHeightFits) {
-    // Three nets: two on the bottom row, one inverted above — all at full size.
-    const rowDown = 0.75 * gH;
-    groupW = 4 * gH + hgap;
-    groupH = 2.5 * gH;
-    copies = [
-      { ox: 0,              oy: rowDown,        scale: 1 },
-      { ox: 2 * gH + hgap, oy: rowDown,        scale: 1 },
-      { ox: gH + hgap / 2, oy: -gH + rowDown,  scale: 1, rotate180: true },
+  const fitsStacked = (count: number, scale: number) =>
+    netW * scale <= availW
+    && count * netH * scale + (count - 1) * vgap <= availH;
+
+  const fitsTriad = (scale: number) => {
+    const bottomW = 2 * netW * scale + hgap;
+    const totalH = 2 * gH * scale + triadRowGap;
+    return bottomW <= availW && totalH <= availH;
+  };
+
+  const sideBySideCopies = (count: number, scale: number): Copy[] =>
+    Array.from({ length: count }, (_, i) => ({
+      ox: i * (netW * scale + hgap),
+      oy: 0,
+      scale,
+    }));
+
+  const stackedCopies = (count: number, scale: number): Copy[] =>
+    Array.from({ length: count }, (_, i) => ({
+      ox: 0,
+      oy: i * (netH * scale + vgap),
+      scale,
+    }));
+
+  const triadCopies = (scale: number): Copy[] => {
+    const nw = netW * scale;
+    const bottomW = 2 * nw + hgap;
+    // Inverted net's hypotenuse sits at y = 0.5·gH; tuck bottom apexes just below it.
+    const bottomOy = scale * 0.5 * gH + triadRowGap;
+    return [
+      { ox: 0, oy: bottomOy, scale, inverted: false },
+      { ox: nw + hgap, oy: bottomOy, scale, inverted: false },
+      { ox: (bottomW - nw) / 2, oy: 0, scale, inverted: true },
     ];
-  } else if (sideBySideWidthFits && pairHeightFits) {
-    // Two nets side-by-side (trio didn't fit in height).
-    groupW = 4 * gH + hgap;
-    groupH = netH;
-    copies = [
-      { ox: 0,              oy: 0, scale: 1 },
-      { ox: 2 * gH + hgap, oy: 0, scale: 1 },
-    ];
-  } else if (netW <= availW && stackedHeightFits) {
-    // Two nets stacked vertically.
-    groupW = netW;
-    groupH = 2 * netH + vgap;
-    copies = [
-      { ox: 0, oy: 0,           scale: 1 },
-      { ox: 0, oy: netH + vgap, scale: 1 },
-    ];
-  } else {
-    // Single net at full size.
-    groupW = netW;
-    groupH = netH;
-    copies = [{ ox: 0, oy: 0, scale: 1 }];
+  };
+
+  let placed = false;
+  let bestCount = 0;
+  let bestLayout: 'side' | 'stack' | 'triad' = 'side';
+
+  if (fitsTriad(1)) {
+    bestCount = 3;
+    bestLayout = 'triad';
+  }
+
+  for (let count = 3; count >= 1; count--) {
+    if (fitsSideBySide(count, 1) && count > bestCount) {
+      bestCount = count;
+      bestLayout = 'side';
+      break;
+    }
+  }
+
+  for (let count = 3; count >= 2; count--) {
+    if (fitsStacked(count, 1) && count > bestCount) {
+      bestCount = count;
+      bestLayout = 'stack';
+    }
+  }
+
+  if (bestCount > 0) {
+    if (bestLayout === 'triad') {
+      copies = triadCopies(1);
+      groupW = 2 * netW + hgap;
+      groupH = 2 * gH + triadRowGap;
+    } else if (bestLayout === 'side') {
+      copies = sideBySideCopies(bestCount, 1);
+      groupW = bestCount * netW + (bestCount - 1) * hgap;
+      groupH = netH;
+    } else {
+      copies = stackedCopies(bestCount, 1);
+      groupW = netW;
+      groupH = bestCount * netH + (bestCount - 1) * vgap;
+    }
+    placed = true;
+  }
+
+  if (!placed) {
+    // Last resort: single copy scaled to fit
+    const scale = Math.min(availW / netW, availH / netH, 1);
+    groupW = netW * scale;
+    groupH = netH * scale;
+    copies = [{ ox: 0, oy: 0, scale }];
   }
 
   // Center the group in the available content area
@@ -215,16 +269,19 @@ export function buildGnomonNetSVGString(
   ];
   const npPathsSVG = npPaths.map(d => `<path d="${d}" fill="#2563eb"/>`).join('');
 
+  const buildCopyTransform = ({ ox, oy, scale, inverted }: Copy): string => {
+    const parts = [`translate(${fmt(ox)},${fmt(oy)})`];
+    if (scale !== 1) parts.push(`scale(${scale})`);
+    if (inverted) {
+      parts.push(`translate(${fmt(gH)},${fmt(netH / 2)}) scale(1,-1) translate(${fmt(-gH)},${fmt(-netH / 2)})`);
+    }
+    return parts.join(' ');
+  };
+
   // ── Render copies (per-copy defs for unique clip IDs) ─────────────────────
-  const netCenterY = gH * 0.75;
   const copiesSVG = copies
-    .map(({ ox, oy, scale, rotate180 }, idx) => {
-      const rot = rotate180
-        ? ` translate(${gH},${netCenterY}) rotate(180) translate(${-gH},${-netCenterY})`
-        : '';
-      const xf = scale !== 1
-        ? `translate(${ox},${oy}) scale(${scale})${rot}`
-        : `translate(${ox},${oy})${rot}`;
+    .map((copy, idx) => {
+      const xf = buildCopyTransform(copy);
       const clipA = `gn-tabA-${idx}`;
       const clipB = `gn-tabB-${idx}`;
       return `  <g transform="${xf}">
@@ -275,7 +332,7 @@ export function buildGnomonNetSVGString(
     bgRect,
     borderRect,
     `  <text x="${pageWidth / 2}" y="${margin + 8}" font-size="7" text-anchor="middle" font-family="sans-serif" font-weight="bold">Cut-and-Fold Gnomons</text>`,
-    `  <text x="${pageWidth / 2}" y="${margin + 18}" font-size="4.5" text-anchor="middle" font-family="sans-serif" fill="#555">Gnomon height: ${fmt(gnomonHeight)} mm</text>`,
+    `  <text x="${pageWidth / 2}" y="${subtitleY}" font-size="3.5" text-anchor="middle" font-family="sans-serif" fill="#555">Gnomon height: ${fmt(gnomonHeight)} mm</text>`,
     sundialInstrSVG,
     copiesSVG,
     gnomonInstrSVG,
