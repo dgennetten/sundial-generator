@@ -21,7 +21,12 @@ const DeclinationLineOptions: React.FC<{
   setShowBelowHorizonDateLines?: (v: boolean) => void;
   syncBelowHorizon?: boolean;
   setSyncBelowHorizon?: (v: boolean) => void;
-}> = ({ lineStyles, declinationLines, setDeclinationLines, dateRange = 'FullYear', lat = 0, showBelowHorizonDateLines = false, setShowBelowHorizonDateLines, syncBelowHorizon = false, setSyncBelowHorizon }) => {
+  showDatelineLabels?: boolean;
+  setShowDatelineLabels?: (v: boolean) => void;
+  declinationNoonmarks?: boolean;
+  datelineLabelLocation?: 'edge' | 'noonmark';
+  setDatelineLabelLocation?: (v: 'edge' | 'noonmark') => void;
+}> = ({ lineStyles, declinationLines, setDeclinationLines, dateRange = 'FullYear', lat = 0, showBelowHorizonDateLines = false, setShowBelowHorizonDateLines, syncBelowHorizon = false, setSyncBelowHorizon, showDatelineLabels = false, setShowDatelineLabels, declinationNoonmarks = false, datelineLabelLocation = 'edge', setDatelineLabelLocation }) => {
   const [draftDate, setDraftDate] = React.useState('');
   const [draftStyle, setDraftStyle] = React.useState('red-dashed-hairline');
   const lastInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -402,8 +407,37 @@ const DeclinationLineOptions: React.FC<{
             </tbody>
           </table>
         </div>
-        {setShowBelowHorizonDateLines && (
-          <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: '1.25rem', marginTop: '0.5rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        {setShowDatelineLabels && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+            <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
+              <input
+                type="checkbox"
+                checked={showDatelineLabels}
+                onChange={e => setShowDatelineLabels(e.target.checked)}
+              />
+              Date line labels
+            </label>
+            {showDatelineLabels && declinationNoonmarks && setDatelineLabelLocation && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '0.875rem', color: datelineLabelLocation === 'edge' ? '#2563eb' : '#9ca3af', fontWeight: datelineLabelLocation === 'edge' ? '600' : '400', transition: 'all 0.2s' }}>edge</span>
+                <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={datelineLabelLocation === 'noonmark'}
+                    onChange={e => setDatelineLabelLocation(e.target.checked ? 'noonmark' : 'edge')}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: datelineLabelLocation === 'noonmark' ? '#2563eb' : '#cbd5e0', borderRadius: '24px', transition: 'background-color 0.3s', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}>
+                    <span style={{ position: 'absolute', height: '18px', width: '18px', left: datelineLabelLocation === 'noonmark' ? '22px' : '3px', bottom: '3px', backgroundColor: 'white', borderRadius: '50%', transition: 'left 0.3s', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} />
+                  </span>
+                </label>
+                <span style={{ fontSize: '0.875rem', color: datelineLabelLocation === 'noonmark' ? '#2563eb' : '#9ca3af', fontWeight: datelineLabelLocation === 'noonmark' ? '600' : '400', transition: 'all 0.2s' }}>noon marks</span>
+              </span>
+            )}
+          </div>
+        )}
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem 1.25rem', marginTop: '0.5rem' }}>
+          {setShowBelowHorizonDateLines && (
             <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
               <input
                 type="checkbox"
@@ -412,18 +446,18 @@ const DeclinationLineOptions: React.FC<{
               />
               Show below-horizon date lines
             </label>
-            {setSyncBelowHorizon && (
-              <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
-                <input
-                  type="checkbox"
-                  checked={syncBelowHorizon}
-                  onChange={e => setSyncBelowHorizon(e.target.checked)}
-                />
-                Sync hour lines
-              </label>
-            )}
-          </div>
-        )}
+          )}
+          {setSyncBelowHorizon && (
+            <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
+              <input
+                type="checkbox"
+                checked={syncBelowHorizon}
+                onChange={e => setSyncBelowHorizon(e.target.checked)}
+              />
+              Sync hour lines
+            </label>
+          )}
+        </div>
       </div>
     </div>
   );

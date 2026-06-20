@@ -26,6 +26,11 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-06-13',
     content: "Text block color prefixes: start any line with [red], [blue], [teal], etc. to color that line. Works with bold and italic too — e.g. [red]**{today}**. — KDG (v2.16.0)",
   },
+  {
+    id: 5,
+    date: '2026-06-20',
+    content: "Date lines now show labels! Look for the **Dateline labels** checkbox in the Date Lines section. Each label is rotated parallel to its date line and tucked just inside the right border — translated to your chosen language. — KDG (v2.14.3)",
+  },
 ]
 
 export type LogPref =
