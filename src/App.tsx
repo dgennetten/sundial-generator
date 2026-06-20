@@ -182,6 +182,18 @@ const App: React.FC = () => {
   const [showFullYearOnNoon, setShowFullYearOnNoon] = useState<boolean>(false);
   const [showBelowHorizonHourLines, setShowBelowHorizonHourLines] = useState<boolean>(true);
   const [showBelowHorizonDateLines, setShowBelowHorizonDateLines] = useState<boolean>(true);
+  const [showDatelineLabels, setShowDatelineLabels] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem('sundial-dateline-labels');
+      return stored !== null ? stored === 'true' : true;
+    } catch { return true; }
+  });
+  const [datelineLabelLocation, setDatelineLabelLocation] = useState<'edge' | 'noonmark'>(() => {
+    try {
+      const stored = localStorage.getItem('sundial-dateline-label-location');
+      return stored === 'noonmark' ? 'noonmark' : 'edge';
+    } catch { return 'edge'; }
+  });
   const [syncBelowHorizon, setSyncBelowHorizon] = useState<boolean>(true);
   const [dialShape, setDialShape] = useState<DialShape>('Rectangle');
   const [borderStyle, setBorderStyle] = useState<string>('default-hairline');
@@ -380,6 +392,13 @@ const App: React.FC = () => {
     }
   }, [gnomonType]);
 
+  useEffect(() => {
+    try { localStorage.setItem('sundial-dateline-labels', String(showDatelineLabels)); } catch { /* ignore */ }
+  }, [showDatelineLabels]);
+  useEffect(() => {
+    try { localStorage.setItem('sundial-dateline-label-location', datelineLabelLocation); } catch { /* ignore */ }
+  }, [datelineLabelLocation]);
+
   // Dial inclination: tilt from horizontal in degrees (0 = flat, 90 = vertical).
   // Cancer and Capricorn use the declination-aware formula so the gnomon stays on the solstice line.
   const dialInclination = useMemo(() => {
@@ -516,6 +535,8 @@ const App: React.FC = () => {
     dialOrientation,
     showBelowHorizonHourLines,
     showBelowHorizonDateLines,
+    showDatelineLabels,
+    datelineLabelLocation,
   }), [
     latitude,
     longitude,
@@ -565,6 +586,8 @@ const App: React.FC = () => {
     dialOrientation,
     showBelowHorizonHourLines,
     showBelowHorizonDateLines,
+    showDatelineLabels,
+    datelineLabelLocation,
   ]);
 
   // Callback to restore dial configuration from saved config
@@ -1084,6 +1107,11 @@ const App: React.FC = () => {
               setSyncBelowHorizon(v);
               if (v) setShowBelowHorizonDateLines(showBelowHorizonHourLines);
             }}
+            showDatelineLabels={showDatelineLabels}
+            setShowDatelineLabels={setShowDatelineLabels}
+            declinationNoonmarks={declinationNoonmarks}
+            datelineLabelLocation={datelineLabelLocation}
+            setDatelineLabelLocation={setDatelineLabelLocation}
           /></div>
           <div id="card-hourlines"><HourlineSettings
             dateRange={hourlineDateRange}

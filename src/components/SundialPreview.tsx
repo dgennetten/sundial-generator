@@ -70,6 +70,8 @@ type Props = {
   dialOrientation?: 'North' | 'South';
   showBelowHorizonHourLines?: boolean;
   showBelowHorizonDateLines?: boolean;
+  showDatelineLabels?: boolean;
+  datelineLabelLocation?: 'edge' | 'noonmark';
 };
 // Note: App now prefers passing a single `config` prop. To keep JSX happy where only `config` is provided,
 // we use a union props type here and normalize to a single `p` object.
@@ -129,6 +131,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     dialOrientation,
     showBelowHorizonHourLines = false,
     showBelowHorizonDateLines = false,
+    showDatelineLabels = false,
+    datelineLabelLocation = 'edge',
   } = p;
 
   const geoLat = originalLatitude ?? lat;
@@ -2058,6 +2062,236 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     ];
   }) : [];
 
+  // Dateline labels
+  const declinationLabelElements: JSX.Element[] = [];
+  if (showDatelineLabels && declinationLines.length > 0) {
+    const lang = (typeof window !== 'undefined' ? localStorage.getItem('sundial-welcome-language') : null) || 'en';
+    const labelFontSize = fontSizeMm / 3;
+    const transformY = (gnomonPosition ?? 0) - (height / 2);
+    const rightBound = width / 2 - borderMarginMm;
+    const leftBound = -width / 2 + borderMarginMm;
+    const topBound = -height / 2 + borderMarginMm - transformY;
+    const bottomBound = height / 2 - borderMarginMm - transformY;
+    const maxRadius = Math.sqrt(width * width + height * height);
+
+    // For North-facing dials the outer group rotates 180°, so visual-right = content min-x.
+    // For South-facing dials, visual-right = content max-x.
+    const isNorthFacing = effectiveDialOrientation === 'North';
+
+    // Fixed label column: 2 em-widths inside the visual right border (in content coordinates).
+    const labelMargin = 1.5 * labelFontSize;
+    const labelColX = isNorthFacing ? leftBound + labelMargin : rightBound - labelMargin;
+
+    function computeDeclinationLabelInfo(decl: number, targetX = labelColX): { y: number; angle: number } | null {
+      const collectPts = (strictY: boolean) => {
+        const pts: { x: number; y: number }[] = [];
+        for (let h = startHour; h <= stopHour; h += 1 / 30) {
+          const latRad = degreesToRadians(lat);
+          const declRad = degreesToRadians(decl);
+          const hourAngle = degreesToRadians(15 * (h - 12));
+          const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
+          const altitude = Math.asin(sinAlt);
+          if (altitude <= 0 && !showBelowHorizonDateLines) continue;
+          let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
+          cosAz = Math.max(-1, Math.min(1, cosAz));
+          let azimuth = Math.acos(cosAz);
+          if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
+          const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination);
+          if (!coords) continue;
+          const x = scale * coords.x;
+          const y = scale * coords.y;
+          if (Math.sqrt(x * x + y * y) > maxRadius) continue;
+          if (x < leftBound || x > rightBound) continue;
+          if (strictY && (y < topBound || y > bottomBound)) continue;
+          pts.push({ x, y });
+        }
+        return pts;
+      };
+
+      // First try with full bounds; if nothing found (e.g. extreme solstice) relax y-bounds.
+      let pts = collectPts(true);
+      if (pts.length === 0) pts = collectPts(false);
+      if (pts.length === 0) return null;
+
+      // Find the point whose x is closest to targetX.
+      let closest = 0;
+      let minDist = Math.abs(pts[0].x - targetX);
+      for (let i = 1; i < pts.length; i++) {
+        const d = Math.abs(pts[i].x - targetX);
+        if (d < minDist) { minDist = d; closest = i; }
+      }
+
+      // Compute tangent angle at that point using neighbors.
+      const prevIdx = Math.max(0, closest - 4);
+      const nextIdx = Math.min(pts.length - 1, closest + 4);
+      let angle = 0;
+      if (prevIdx !== nextIdx) {
+        const dx = pts[nextIdx].x - pts[prevIdx].x;
+        const dy = pts[nextIdx].y - pts[prevIdx].y;
+        angle = Math.atan2(dy, dx) * 180 / Math.PI;
+      }
+      // Normalize to [-90, 90] so text is never upside-down.
+      while (angle > 90) angle -= 180;
+      while (angle < -90) angle += 180;
+
+      return { y: pts[closest].y, angle };
+    }
+
+    function formatDateLabel(date: Date): string {
+      try {
+        return date.toLocaleDateString(lang, { month: 'short', day: 'numeric' }).toUpperCase();
+      } catch {
+        return date.toLocaleDateString('en', { month: 'short', day: 'numeric' }).toUpperCase();
+      }
+    }
+
+    function pushDatelineLabel(decl: number, labelText: string, key: string, color: string) {
+      const info = computeDeclinationLabelInfo(decl);
+      if (!info) return;
+      const perpOffset = labelFontSize * 0.7;
+      // For North dials the outer group adds 180°; subtract 180° so net visible rotation = dateline angle.
+      const labelAngle = isNorthFacing ? info.angle - 180 : info.angle;
+      // Normalize perpendicular distance: a fixed content-y offset gives perpOffset*cos(angle) visual distance.
+      // Divide by cos(angle) so the actual perpendicular gap is constant regardless of dateline slope.
+      const cosAngle = Math.max(Math.abs(Math.cos(info.angle * Math.PI / 180)), 0.15);
+      const yOffset = perpOffset / cosAngle;
+      // "Above the dateline" visually: outer rotate(180) inverts y for North dials,
+      // so North needs content +y (larger → visually higher after flip); South needs content -y.
+      const labelY = isNorthFacing ? info.y + yOffset : info.y - yOffset;
+      // textAnchor="end" puts the last character at labelColX in the element frame.
+      // For North (x-axis flipped): element "end" = visual-right edge → sits at the border.
+      // Text extends in element -x direction = visual-left = into the dial, for both orientations.
+      // Rotate around the label anchor itself so every label's right edge stays at labelColX.
+      declinationLabelElements.push(
+        <text
+          key={key}
+          x={labelColX}
+          y={labelY}
+          fontSize={labelFontSize}
+          fill={color}
+          textAnchor="end"
+          alignmentBaseline="middle"
+          transform={`rotate(${labelAngle} ${labelColX} ${labelY})`}
+          style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+        >
+          {labelText}
+        </text>
+      );
+    }
+
+    const useNoonmarkLabels = datelineLabelLocation === 'noonmark' && declinationNoonmarks;
+
+    // Counter for alternating noon mark label sides (half-year only); resets each render pass.
+    const noonmarkCounter = { value: 0 };
+
+    function pushNoonmarkLabel(decl: number, ip: { x: number; y: number }, labelText: string, key: string, color: string) {
+      const noonX = scale * ip.x;
+      const info = computeDeclinationLabelInfo(decl, noonX);
+      if (!info) return;
+      const perpOffset = labelFontSize * 0.45;
+      const labelAngle = isNorthFacing ? info.angle - 180 : info.angle;
+      const cosAngle = Math.max(Math.abs(Math.cos(info.angle * Math.PI / 180)), 0.15);
+      const yOffset = perpOffset / cosAngle;
+      const labelY = isNorthFacing ? info.y + yOffset : info.y - yOffset;
+      const rightSign = isNorthFacing ? -1 : 1;
+      let outsideSign: number;
+      if (dateRange !== 'FullYear') {
+        outsideSign = noonmarkCounter.value % 2 === 0 ? -rightSign : rightSign;
+        noonmarkCounter.value++;
+      } else {
+        // sign(ip.x) points away from figure-8 center for both lobes.
+        outsideSign = ip.x >= 0 ? 1 : -1;
+      }
+      const sideGap = labelFontSize * 0.25;
+      const lx = noonX + outsideSign * sideGap;
+      const anchor = (isNorthFacing === (outsideSign > 0)) ? 'end' : 'start';
+      declinationLabelElements.push(
+        <text
+          key={key}
+          x={lx}
+          y={labelY}
+          fontSize={labelFontSize}
+          fill={color}
+          textAnchor={anchor}
+          alignmentBaseline="middle"
+          transform={`rotate(${labelAngle} ${lx} ${labelY})`}
+          style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+        >
+          {labelText}
+        </text>
+      );
+    }
+
+    function pushLabel(decl: number, ip: { x: number; y: number } | null, labelText: string, key: string, color: string) {
+      if (useNoonmarkLabels && ip) {
+        pushNoonmarkLabel(decl, ip, labelText, key, color);
+      } else if (!useNoonmarkLabels) {
+        pushDatelineLabel(decl, labelText, key, color);
+      }
+    }
+
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+    declinationLines.forEach((line, idx) => {
+      if (!line.active) return;
+      if (!isDateStringInRange(line.date)) return;
+      const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
+      const color = style?.color || 'black';
+
+      if (line.date === '1st of the Month') {
+        getMonthBoundaryDeclinations().forEach((boundary, boundaryIdx) => {
+          const mi = monthNames.indexOf(boundary.month);
+          if (mi < 0) return;
+          const labelText = formatDateLabel(new Date(2000, mi, 1));
+          const ip = useNoonmarkLabels ? findDeclinationAnalemmaIntersection(boundary.decl) : null;
+          pushLabel(boundary.decl, ip, labelText, `dlabel-${idx}-${boundary.month}-${boundaryIdx}`, color);
+        });
+        return;
+      }
+
+      if (line.date === '1st and 15th') {
+        getFirstAndFifteenthDeclinations().forEach((day, dayIdx) => {
+          const mi = monthNames.indexOf(day.month);
+          if (mi < 0) return;
+          const labelText = formatDateLabel(new Date(2000, mi, day.dayOfMonth));
+          const ip = useNoonmarkLabels ? findDeclinationAnalemmaIntersection(day.decl) : null;
+          pushLabel(day.decl, ip, labelText, `dlabel-${idx}-${day.month}-${day.dayOfMonth}-${dayIdx}`, color);
+        });
+        return;
+      }
+
+      const decl = getDeclinationForLine(line);
+      if (decl === null) return;
+
+      if (line.date === 'Today') return;
+
+      let labelDate: Date;
+      if (line.date === 'Summer Solstice') {
+        labelDate = new Date(2000, 5, 21);
+      } else if (line.date === 'Winter Solstice') {
+        labelDate = new Date(2000, 11, 21);
+      } else if (line.date === 'Equinox') {
+        labelDate = new Date(2000, 2, 21);
+      } else {
+        let parsed = new Date(line.date + ' 2000');
+        if (isNaN(parsed.getTime())) {
+          const m = /^(\w+)\s+(\d{1,2})$/.exec(line.date.trim());
+          if (m) {
+            const months2 = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+            const mi = months2.indexOf(m[1].slice(0, 3).toLowerCase());
+            const d = parseInt(m[2], 10);
+            if (mi >= 0) parsed = new Date(2000, mi, d);
+          }
+        }
+        if (isNaN(parsed.getTime())) return;
+        labelDate = parsed;
+      }
+
+      const ip = useNoonmarkLabels ? findDeclinationAnalemmaIntersection(decl) : null;
+      pushLabel(decl, ip, formatDateLabel(labelDate), `dlabel-${idx}-${line.id}`, color);
+    });
+  }
+
   // Get border line style
   const borderLineStyle = lineStyles.find(s => s.id === borderStyle || s.name === borderStyle);
 
@@ -2487,6 +2721,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   transform: effectiveDialOrientation === 'North' ? `rotate(180 ${x} ${y})` : undefined
                 });
               })}
+
+              {/* Dateline labels — orientation already embedded in each element's transform */}
+              {declinationLabelElements}
 
               {/* --- Dial Text Block --- */}
 

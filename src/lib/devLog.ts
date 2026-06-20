@@ -16,6 +16,11 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-06-05',
     content: "NEW GREETING CARD DIAL!: in the gnomon dropdown, select 'Glued Popup'. Early Beta. Send Feedback!! Note the new **Preview** toggle. — KDG (v2.13.0)",
   },
+  {
+    id: 3,
+    date: '2026-06-20',
+    content: "Date lines now show labels! Look for the **Dateline labels** checkbox in the Date Lines section. Each label is rotated parallel to its date line and tucked just inside the right border — translated to your chosen language. — KDG (v2.14.3)",
+  },
 ]
 
 export type LogPref =

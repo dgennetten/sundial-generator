@@ -109,9 +109,9 @@ export function buildGnomonNetSVGString(
   // Side-by-side is preferred over stacked. Scaling below 1.0 is only used when
   // even a single net cannot fit at actual size.
   type Copy = { ox: number; oy: number; scale: number; inverted?: boolean };
-  let copies: Copy[];
-  let groupW: number;
-  let groupH: number;
+  let copies: Copy[] = [];
+  let groupW = 0;
+  let groupH = 0;
 
   const fitsSideBySide = (count: number, scale: number) => {
     const gaps = (count - 1) * hgap;
