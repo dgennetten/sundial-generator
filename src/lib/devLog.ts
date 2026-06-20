@@ -29,7 +29,7 @@ export const LOG_ENTRIES: LogEntry[] = [
   {
     id: 5,
     date: '2026-06-20',
-    content: "Date lines now show labels! Look for the **Dateline labels** checkbox in the Date Lines section. Each label is rotated parallel to its date line and tucked just inside the right border — translated to your chosen language. — KDG (v2.14.3)",
+    content: "Date lines now show labels! Look for the **Date line labels** checkbox in the Date Lines section. Each label is rotated parallel to its date line and tucked just inside the right border. If Noon Date Marks are enabled, a toggle lets you move the labels next to the noon marks instead. Labels are translated to your chosen language. — KDG (v2.14.3)",
   },
 ]
 
