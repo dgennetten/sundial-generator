@@ -2265,13 +2265,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
       if (line.date === 'Today') return;
 
+      if (line.date === 'Summer Solstice' || line.date === 'Winter Solstice') return;
+
       let labelDate: Date;
-      if (line.date === 'Summer Solstice') {
-        labelDate = new Date(2000, 5, 21);
-      } else if (line.date === 'Winter Solstice') {
-        labelDate = new Date(2000, 11, 21);
-      } else if (line.date === 'Equinox') {
-        labelDate = new Date(2000, 2, 21);
+      if (line.date === 'Equinox') {
+        return; // Equinox/solstice dates vary year to year — no label
       } else {
         let parsed = new Date(line.date + ' 2000');
         if (isNaN(parsed.getTime())) {
