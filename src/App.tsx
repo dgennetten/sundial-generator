@@ -219,7 +219,7 @@ const App: React.FC = () => {
     longitude: true,
     equationOfTime: true,
     solarDeclination: true,
-    refraction: false,
+    refraction: true,
     umbraCorrection: false,
   });
 
