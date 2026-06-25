@@ -304,10 +304,12 @@ export function getSolarDeclination(dayOfYear: number, year: number = new Date()
 export type Orientation = 'Horizontal' | 'Vertical' | 'Polar';
 
 export interface SolarPositionResult {
-  /** Solar altitude in radians */
+  /** Solar altitude in radians (refracted when applyRefraction is true) */
   altitude: number;
   /** Solar azimuth in radians, measured from North clockwise */
   azimuth: number;
+  /** True (pre-refraction) altitude in radians; only present when refraction was applied */
+  trueAltitude?: number;
 }
 
 export interface ShadowProjectionResult {
@@ -341,6 +343,19 @@ export const DEFAULT_CORRECTION_FLAGS: CorrectionFlags = {
 };
 
 /**
+ * Atmospheric refraction correction using Bennett's formula.
+ * Returns the refraction angle in degrees to ADD to the true altitude to get apparent altitude.
+ * Accurate to ~0.07 arcminutes for altitudes above −5°.
+ * @param altitudeDeg  True solar altitude in degrees.
+ */
+export function atmosphericRefraction(altitudeDeg: number): number {
+  if (altitudeDeg < -5) return 0;
+  // Bennett's formula: R in arcminutes, evaluated at true altitude (adequate for sundial use)
+  const R = 1.02 / Math.tan(degreesToRadians(altitudeDeg + 10.3 / (altitudeDeg + 5.11)));
+  return Math.max(0, R) / 60; // convert arcminutes → degrees
+}
+
+/**
  * Calculate solar position for a given day, location, and time
  */
 export function getSolarPosition(
@@ -349,7 +364,7 @@ export function getSolarPosition(
   lng: number,
   tzMeridian: number,
   hour: number,
-  options?: { eotMinutes?: number }
+  options?: { eotMinutes?: number; applyRefraction?: boolean }
 ): SolarPositionResult {
   const latRad = degreesToRadians(lat);
   const decl = getSolarDeclination(day);
@@ -363,11 +378,12 @@ export function getSolarPosition(
   const sinAlt =
     Math.sin(latRad) * Math.sin(declRad) +
     Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
-  const altitude = Math.asin(sinAlt);
+  const trueAltitude = Math.asin(sinAlt);
 
+  // Azimuth is computed from TRUE altitude — refraction only changes altitude, not azimuth.
   let cosAz =
-    (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) /
-    (Math.cos(altitude) * Math.cos(latRad));
+    (Math.sin(declRad) - Math.sin(trueAltitude) * Math.sin(latRad)) /
+    (Math.cos(trueAltitude) * Math.cos(latRad));
 
   cosAz = Math.max(-1, Math.min(1, cosAz)); // clamp
   let azimuth = Math.acos(cosAz);
@@ -375,7 +391,15 @@ export function getSolarPosition(
     azimuth = 2 * Math.PI - azimuth;
   }
 
-  return { altitude, azimuth };
+  // Apply atmospheric refraction: the sun appears higher than it truly is.
+  // Refraction only affects altitude (lifts sun straight up), not azimuth.
+  if (options?.applyRefraction) {
+    const refDeg = atmosphericRefraction(radiansToDegrees(trueAltitude));
+    const altitude = degreesToRadians(radiansToDegrees(trueAltitude) + refDeg);
+    return { altitude, azimuth, trueAltitude };
+  }
+
+  return { altitude: trueAltitude, azimuth };
 }
 
 /**
@@ -493,6 +517,7 @@ export interface AnalemmaParams {
   dialDeclination?: number;  // dial rotation from poleward, degrees (+West / −East); default 0
   showBelowHorizon?: boolean; // include days where sun is below horizon but dial still illuminated
   eotMinutes?: number;       // when provided, overrides getEquationOfTime (e.g. pass 0 to bypass EoT)
+  applyRefraction?: boolean; // when true, applies atmospheric refraction correction to solar altitude
 }
 
 export interface AnalemmaPoint {
@@ -510,13 +535,14 @@ export interface AnalemmaPoint {
  * to close the analemma loop for rendering.
  */
 export function getAnalemmaPointsProjected(params: AnalemmaParams): AnalemmaPoint[] {
-  const { lat, lng, tzMeridian, hour, styleHeight, dialInclination, dialDeclination = 0, showBelowHorizon = false, eotMinutes } = params;
-  const eotOptions = eotMinutes !== undefined ? { eotMinutes } : undefined;
+  const { lat, lng, tzMeridian, hour, styleHeight, dialInclination, dialDeclination = 0, showBelowHorizon = false, eotMinutes, applyRefraction } = params;
+  const solarOptions = { ...(eotMinutes !== undefined ? { eotMinutes } : {}), ...(applyRefraction ? { applyRefraction } : {}) };
+  const hasSolarOptions = Object.keys(solarOptions).length > 0;
   const points: AnalemmaPoint[] = [];
 
   for (let day = 1; day <= 365; day++) {
-    const { altitude, azimuth } = getSolarPosition(day, lat, lng, tzMeridian, hour, eotOptions);
-    const aboveHorizon = altitude > 0;
+    const { altitude, azimuth, trueAltitude } = getSolarPosition(day, lat, lng, tzMeridian, hour, hasSolarOptions ? solarOptions : undefined);
+    const aboveHorizon = (trueAltitude ?? altitude) > 0;
 
     if (!aboveHorizon && !showBelowHorizon) continue;
 

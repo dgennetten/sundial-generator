@@ -582,7 +582,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       // Same altitude filtering as dash segments
       const altitudeForShadow0 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
       if (altitude > altLimit) {
-        let cosAz = (Math.sin(declRad) - Math.sin(altitudeForShadow0) * Math.sin(latRad)) / (Math.cos(altitudeForShadow0) * Math.cos(latRad));
+        let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
         if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
@@ -645,7 +645,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       // Same altitude filtering as other calculated styles
       const altitudeForShadow1 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
       if (altitude > altLimit) {
-        let cosAz = (Math.sin(declRad) - Math.sin(altitudeForShadow1) * Math.sin(latRad)) / (Math.cos(altitudeForShadow1) * Math.cos(latRad));
+        let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
         if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
@@ -720,7 +720,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       }
 
       const altitudeForShadow2 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
-      let cosAz = (Math.sin(declRad) - Math.sin(altitudeForShadow2) * Math.sin(latRad)) / (Math.cos(altitudeForShadow2) * Math.cos(latRad));
+      let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
       cosAz = Math.max(-1, Math.min(1, cosAz));
       let azimuth = Math.acos(cosAz);
       if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
@@ -804,7 +804,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       }
 
       const altitudeForShadow3 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
-      let cosAz = (Math.sin(declRad) - Math.sin(altitudeForShadow3) * Math.sin(latRad)) / (Math.cos(altitudeForShadow3) * Math.cos(latRad));
+      let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
       cosAz = Math.max(-1, Math.min(1, cosAz));
       let azimuth = Math.acos(cosAz);
       if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
@@ -1836,7 +1836,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         const altitude = Math.asin(sinAlt);
         if (!showBelowHorizonDateLines && altitude <= 0) continue;
         const altitudeForShadow4 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
-        let cosAz = (Math.sin(declRad) - Math.sin(altitudeForShadow4) * Math.sin(latRad)) / (Math.cos(altitudeForShadow4) * Math.cos(latRad));
+        let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
         if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
@@ -1875,7 +1875,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const altitude = Math.asin(sinAlt);
       if (altitude > 0 || showBelowHorizonDateLines) {
         const altitudeForShadow5 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
-        let cosAz = (Math.sin(declRad) - Math.sin(altitudeForShadow5) * Math.sin(latRad)) / (Math.cos(altitudeForShadow5) * Math.cos(latRad));
+        let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
         if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
@@ -2137,7 +2137,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           const altitude = Math.asin(sinAlt);
           if (altitude <= 0 && !showBelowHorizonDateLines) continue;
           const altitudeForShadow6 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
-          let cosAz = (Math.sin(declRad) - Math.sin(altitudeForShadow6) * Math.sin(latRad)) / (Math.cos(altitudeForShadow6) * Math.cos(latRad));
+          let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
           cosAz = Math.max(-1, Math.min(1, cosAz));
           let azimuth = Math.acos(cosAz);
           if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
@@ -2638,7 +2638,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
       const altitude = Math.asin(sinAlt);
       const altitudeForShadow7 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
-      let cosAz = (Math.sin(declRad) - Math.sin(altitudeForShadow7) * Math.sin(latRad)) / (Math.cos(altitudeForShadow7) * Math.cos(latRad));
+      let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
       cosAz = Math.max(-1, Math.min(1, cosAz));
       let azimuth = Math.acos(cosAz);
       if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
