@@ -317,6 +317,29 @@ export interface ShadowProjectionResult {
   y: number;
 }
 
+// ============================================================================
+// Correction Flags
+// ============================================================================
+
+/** Controls which astronomical corrections are applied to the sundial rendering. */
+export interface CorrectionFlags {
+  latitude: boolean;       // tilt dial from polar to horizontal per geographic latitude
+  longitude: boolean;      // shift hour lines per longitude offset from time-zone meridian
+  equationOfTime: boolean; // apply equation of time (creates analemma figure-8 shape)
+  solarDeclination: boolean; // show date/declination lines on dial face
+  refraction: boolean;       // atmospheric refraction (not yet implemented)
+  umbraCorrection: boolean;  // penumbra/umbra width correction (not yet implemented)
+}
+
+export const DEFAULT_CORRECTION_FLAGS: CorrectionFlags = {
+  latitude: true,
+  longitude: true,
+  equationOfTime: true,
+  solarDeclination: true,
+  refraction: false,
+  umbraCorrection: false,
+};
+
 /**
  * Calculate solar position for a given day, location, and time
  */
@@ -325,12 +348,13 @@ export function getSolarPosition(
   lat: number,
   lng: number,
   tzMeridian: number,
-  hour: number
+  hour: number,
+  options?: { eotMinutes?: number }
 ): SolarPositionResult {
   const latRad = degreesToRadians(lat);
   const decl = getSolarDeclination(day);
   const declRad = degreesToRadians(decl);
-  const eot = getEquationOfTime(day);
+  const eot = options?.eotMinutes !== undefined ? options.eotMinutes : getEquationOfTime(day);
   const timeCorrection = 4 * (lng - tzMeridian); // minutes: positive = location east of meridian (solar noon earlier)
   const correctedMinutes = timeCorrection + eot;
   const solarTime = hour + correctedMinutes / 60;
@@ -468,6 +492,7 @@ export interface AnalemmaParams {
   dialInclination: number;   // dial tilt from horizontal, degrees (0 = flat, 90 = vertical)
   dialDeclination?: number;  // dial rotation from poleward, degrees (+West / −East); default 0
   showBelowHorizon?: boolean; // include days where sun is below horizon but dial still illuminated
+  eotMinutes?: number;       // when provided, overrides getEquationOfTime (e.g. pass 0 to bypass EoT)
 }
 
 export interface AnalemmaPoint {
@@ -485,11 +510,12 @@ export interface AnalemmaPoint {
  * to close the analemma loop for rendering.
  */
 export function getAnalemmaPointsProjected(params: AnalemmaParams): AnalemmaPoint[] {
-  const { lat, lng, tzMeridian, hour, styleHeight, dialInclination, dialDeclination = 0, showBelowHorizon = false } = params;
+  const { lat, lng, tzMeridian, hour, styleHeight, dialInclination, dialDeclination = 0, showBelowHorizon = false, eotMinutes } = params;
+  const eotOptions = eotMinutes !== undefined ? { eotMinutes } : undefined;
   const points: AnalemmaPoint[] = [];
 
   for (let day = 1; day <= 365; day++) {
-    const { altitude, azimuth } = getSolarPosition(day, lat, lng, tzMeridian, hour);
+    const { altitude, azimuth } = getSolarPosition(day, lat, lng, tzMeridian, hour, eotOptions);
     const aboveHorizon = altitude > 0;
 
     if (!aboveHorizon && !showBelowHorizon) continue;

@@ -36,6 +36,7 @@ import DeclinationLineOptions from './components/DeclinationLineOptions';
 import { loadDeclinationLines } from './components/declinationLineUtils';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
 import { getDisplayTiltAngle, calculateAutoGnomonHeight, getWallDeclinationForPreset, getCancerInclineWithDeclination, getCapricornInclineWithDeclination } from './utils/sundialMath';
+import type { CorrectionFlags } from './utils/sundialMath';
 import AboutCard from './components/AboutCard';
 // import VisitorMap from './components/VisitorMap';
 import DialTextBlockSettings from './components/DialTextBlockSettings';
@@ -213,6 +214,15 @@ const App: React.FC = () => {
   const [sundialNotesOffsetHorizontal, setSundialNotesOffsetHorizontal] = useState<number>(0); // in mm
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
   const [printedDialsMapRefreshTrigger, setPrintedDialsMapRefreshTrigger] = useState<number>(0);
+  const [correctionFlags, setCorrectionFlags] = useState<CorrectionFlags>({
+    latitude: true,
+    longitude: true,
+    equationOfTime: true,
+    solarDeclination: true,
+    refraction: false,
+    umbraCorrection: false,
+  });
+
   const [showDevLog, setShowDevLog] = useState(() => {
     if (!import.meta.env.DEV) return shouldShowLog();
     const resetFlag = sessionStorage.getItem('sundial-show-devlog-after-reset');
@@ -537,6 +547,7 @@ const App: React.FC = () => {
     showBelowHorizonDateLines,
     showDatelineLabels,
     datelineLabelLocation,
+    correctionFlags,
   }), [
     latitude,
     longitude,
@@ -588,6 +599,7 @@ const App: React.FC = () => {
     showBelowHorizonDateLines,
     showDatelineLabels,
     datelineLabelLocation,
+    correctionFlags,
   ]);
 
   // Callback to restore dial configuration from saved config
@@ -1170,7 +1182,7 @@ const App: React.FC = () => {
           refreshTrigger={printedDialsMapRefreshTrigger}
         /></div>
         {/* <VisitorMap /> */}
-        <div id="card-about"><AboutCard latitude={latitude} longitude={longitude} locationName={locationName} onShowDevLog={() => { clearLogPref(); setShowDevLog(true); }} /></div>
+        <div id="card-about"><AboutCard latitude={latitude} longitude={longitude} locationName={locationName} onShowDevLog={() => { clearLogPref(); setShowDevLog(true); }} correctionFlags={correctionFlags} onCorrectionFlagsChange={setCorrectionFlags} /></div>
         </div>
       </div>
 

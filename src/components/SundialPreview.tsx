@@ -1,6 +1,7 @@
 import React from 'react';
 import type { JSX } from 'react';
 import { getAnalemmaPointsProjected, degreesToRadians, getSolarDeclination, getEquationOfTime, computeShadowPoint } from '../utils/sundialMath';
+import type { CorrectionFlags } from '../utils/sundialMath';
 import type { DeclinationLine } from './DeclinationLineOptions';
 import type { LineStyle } from './LineSettings';
 import type { HourlineInterval } from './hourlineUtils';
@@ -72,6 +73,7 @@ type Props = {
   showBelowHorizonDateLines?: boolean;
   showDatelineLabels?: boolean;
   datelineLabelLocation?: 'edge' | 'noonmark';
+  correctionFlags?: CorrectionFlags;
 };
 // Note: App now prefers passing a single `config` prop. To keep JSX happy where only `config` is provided,
 // we use a union props type here and normalize to a single `p` object.
@@ -133,12 +135,32 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     showBelowHorizonDateLines = false,
     showDatelineLabels = false,
     datelineLabelLocation = 'edge',
+    correctionFlags,
   } = p;
+
+  // Compute effective parameters based on correction flags.
+  // Latitude OFF → polar dial orientation (straight parallel hour lines).
+  // Longitude OFF → no longitude offset (noon stays centered on time-zone meridian).
+  // EoT OFF       → equation of time bypassed (no analemma figure-8 shape).
+  // Declination OFF → date/declination lines hidden.
+  const correctionLatitude    = !correctionFlags || correctionFlags.latitude    !== false;
+  const correctionLongitude   = !correctionFlags || correctionFlags.longitude   !== false;
+  const correctionEoT         = !correctionFlags || correctionFlags.equationOfTime !== false;
+  const correctionDeclination = !correctionFlags || correctionFlags.solarDeclination !== false;
 
   const geoLat = originalLatitude ?? lat;
   const isGeoNorthern = geoLat >= 0;
   // Use dialOrientation if provided, otherwise default based on hemisphere
   const effectiveDialOrientation = dialOrientation ?? (isGeoNorthern ? 'North' : 'South');
+
+  // Effective values when correction flags are applied.
+  // Latitude OFF → polar dial: incline the dial face to match the geographic latitude.
+  const effectiveLng           = correctionLongitude ? lng : tzMeridian;
+  const effectiveDialInclination = correctionLatitude ? dialInclination : Math.abs(geoLat);
+  // EoT OFF: pass eotMinutes=0 to getAnalemmaPointsProjected so all days use solar time.
+  const eotMinutesOverride: number | undefined = correctionEoT ? undefined : 0;
+  // Declination OFF: suppress all date lines.
+  const effectiveDeclinationLines = correctionDeclination ? declinationLines : [];
 
   // Calculate custom page size in mm
   const getCustomPageSize = () => {
@@ -190,12 +212,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const noonHour = 12;
   let noonPoints = getAnalemmaPointsProjected({
     lat,
-    lng,
+    lng: effectiveLng,
     tzMeridian,
     hour: noonHour,
     styleHeight: gnomonHeight,
-    dialInclination,
+    dialInclination: effectiveDialInclination,
     dialDeclination,
+    eotMinutes: eotMinutesOverride,
   });
   // Filter noonPoints by date range
   // WinterToSpring (UI: Winter - Spring), SummerToFall (UI: Summer - Fall)
@@ -520,8 +543,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       if (diff < bestDiff) { bestDiff = diff; bestDay = day; }
     }
 
-    const eotMinutes = getEquationOfTime(bestDay);
-    const longCorrMinutes = 4 * (lng - tzMeridian);
+    const eotMinutes = correctionEoT ? getEquationOfTime(bestDay) : 0;
+    const longCorrMinutes = correctionLongitude ? 4 * (lng - tzMeridian) : 0;
     return (eotMinutes + longCorrMinutes) / 60;
   }
 
@@ -560,7 +583,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
         if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-        const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination);
+        const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination);
         if (!coords) continue;
         const x = scale * coords.x;
         const y = scale * coords.y;
@@ -622,7 +645,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
         if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-        const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination);
+        const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination);
         if (!coords) continue;
         const x = scale * coords.x;
         const y = scale * coords.y;
@@ -696,7 +719,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       cosAz = Math.max(-1, Math.min(1, cosAz));
       let azimuth = Math.acos(cosAz);
       if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-      const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination);
+      const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination);
       if (!coords) { previousPoint = null; continue; }
 
       const currentPoint = { x: scale * coords.x, y: scale * coords.y };
@@ -779,7 +802,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       cosAz = Math.max(-1, Math.min(1, cosAz));
       let azimuth = Math.acos(cosAz);
       if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-      const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination);
+      const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination);
       if (!coords) { previousPoint = null; continue; }
 
       const currentPoint = { x: scale * coords.x, y: scale * coords.y };
@@ -980,13 +1003,14 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         if (skipSlot && !placeNoonLabel) continue;
         let points = getAnalemmaPointsProjected({
           lat,
-          lng,
+          lng: effectiveLng,
           tzMeridian,
           hour: h,
           styleHeight: gnomonHeight,
-          dialInclination,
+          dialInclination: effectiveDialInclination,
           dialDeclination,
           showBelowHorizon: showBelowHorizonHourLines,
+          eotMinutes: eotMinutesOverride,
         });
         if (!showBelowHorizonHourLines) {
           points = points.filter(p => p.aboveHorizon !== false);
@@ -995,6 +1019,41 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             const firstDay = points[0].day ?? 0;
             const lastDay = points[points.length - 1].day ?? 0;
             if (firstDay > 2 || lastDay < 364) continue;
+          }
+        }
+        // Label anchor points always use full EoT so labels don't shift when EoT is toggled.
+        const labelPoints = eotMinutesOverride !== undefined
+          ? getAnalemmaPointsProjected({
+              lat, lng: effectiveLng, tzMeridian, hour: h,
+              styleHeight: gnomonHeight, dialInclination: effectiveDialInclination,
+              dialDeclination, showBelowHorizon: showBelowHorizonHourLines,
+            }).filter(p => showBelowHorizonHourLines || p.aboveHorizon !== false)
+          : points;
+        const labelPtForDay = (targetDay: number) => {
+          let best = labelPoints[0];
+          for (const p of labelPoints) {
+            if (Math.abs(p.day - targetDay) < Math.abs(best.day - targetDay)) best = p;
+          }
+          return best ?? { x: 0, y: 0 };
+        };
+        // Normal direction also comes from labelPoints so it stays stable when EoT is toggled.
+        const getLabelNormalAtDay = (targetDay: number) => {
+          let bestIdx = 0;
+          let minDiff = Infinity;
+          for (let i = 0; i < labelPoints.length; i++) {
+            const diff = Math.abs(labelPoints[i].day - targetDay);
+            if (diff < minDiff) { minDiff = diff; bestIdx = i; }
+          }
+          return getNormalAtPoint(labelPoints, bestIdx);
+        };
+        // When EoT is bypassed, shift the collapsed arc so its mean x matches the full-analemma
+        // mean x — this way toggling EoT only changes shape (arc ↔ figure-8), not position.
+        if (eotMinutesOverride !== undefined && labelPoints.length > 0 && points.length > 0) {
+          const fullMeanX = labelPoints.reduce((s, p) => s + p.x, 0) / labelPoints.length;
+          const noEotMeanX = points.reduce((s, p) => s + p.x, 0) / points.length;
+          const shiftX = fullMeanX - noEotMeanX;
+          if (Math.abs(shiftX) > 0.001) {
+            points = points.map(p => ({ ...p, x: p.x + shiftX }));
           }
         }
         // Filter points by date range
@@ -1034,26 +1093,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             summerSegment = sortedSeg1;
           }
 
-          const allVisiblePoints = [...winterSegment, ...summerSegment];
-
           // If labelWinterSide, place at winter solstice
           if (labelWinterSide && winterSegment.length > 0) {
-            // Find the point closest to winter solstice day
-            let bestIdx = 0;
-            let minDiff = Math.abs(winterSegment[0].day - winterSolsticeDay);
-            for (let i = 1; i < winterSegment.length; i++) {
-              const diff = Math.abs(winterSegment[i].day - winterSolsticeDay);
-              if (diff < minDiff) {
-                minDiff = diff;
-                bestIdx = i;
-              }
-            }
-
-            const pt = winterSegment[bestIdx];
-            const { nx, ny } = getNormalAtPoint(winterSegment, bestIdx);
-            const offset = getOutwardOffset(pt, nx, ny, allVisiblePoints);
-            const x = scale * pt.x + nx * offset;
-            const y = scale * pt.y + ny * offset;
+            const { nx, ny } = getLabelNormalAtDay(winterSolsticeDay);
+            const labelPt = labelPtForDay(winterSolsticeDay);
+            const offset = getOutwardOffset(labelPt, nx, ny, labelPoints);
+            const x = scale * labelPt.x + nx * offset;
+            const y = scale * labelPt.y + ny * offset;
             // Only add label if it's within the border bounds
             if (isTextWithinBounds(x, y)) {
               hourLabelElements.push(
@@ -1075,22 +1121,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
           // If labelSummerSide, place at summer solstice
           if (labelSummerSide && summerSegment.length > 0) {
-            // Find the point closest to summer solstice day
-            let bestIdx = 0;
-            let minDiff = Math.abs(summerSegment[0].day - summerSolsticeDay);
-            for (let i = 1; i < summerSegment.length; i++) {
-              const diff = Math.abs(summerSegment[i].day - summerSolsticeDay);
-              if (diff < minDiff) {
-                minDiff = diff;
-                bestIdx = i;
-              }
-            }
-
-            const pt = summerSegment[bestIdx];
-            const { nx, ny } = getNormalAtPoint(summerSegment, bestIdx);
-            const offset = getOutwardOffset(pt, nx, ny, allVisiblePoints);
-            const x = scale * pt.x + nx * offset;
-            const y = scale * pt.y + ny * offset;
+            const { nx, ny } = getLabelNormalAtDay(summerSolsticeDay);
+            const labelPt = labelPtForDay(summerSolsticeDay);
+            const offset = getOutwardOffset(labelPt, nx, ny, labelPoints);
+            const x = scale * labelPt.x + nx * offset;
+            const y = scale * labelPt.y + ny * offset;
             // Only add label if it's within the border bounds
             if (isTextWithinBounds(x, y)) {
               hourLabelElements.push(
@@ -1113,8 +1148,6 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           // Only one segment: summer to winter solstice
           points = points.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
           if (points.length === 0) continue;
-          // Sort points by day
-          const sortedPoints = [...points].sort((a, b) => a.day - b.day);
 
           // Determine solstice days based on hemisphere
           const isNorthernHemisphere = isGeoNorthern;
@@ -1123,11 +1156,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
           // If labelSummerSide, place at start (summer solstice)
           if (labelSummerSide) {
-            const pt = sortedPoints[0];
-            const { nx, ny } = getNormalAtPoint(sortedPoints, 0);
-            const offset = getOutwardOffset(pt, nx, ny, sortedPoints);
-            const x = scale * pt.x + nx * offset;
-            const y = scale * pt.y + ny * offset;
+            const { nx, ny } = getLabelNormalAtDay(summerSolsticeDay);
+            const labelPt = labelPtForDay(summerSolsticeDay);
+            const offset = getOutwardOffset(labelPt, nx, ny, labelPoints);
+            const x = scale * labelPt.x + nx * offset;
+            const y = scale * labelPt.y + ny * offset;
             // Only add label if it's within the border bounds
             if (isTextWithinBounds(x, y)) {
               hourLabelElements.push(
@@ -1148,12 +1181,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           }
           // If labelWinterSide, place at end (winter solstice)
           if (labelWinterSide) {
-            const lastIdx = sortedPoints.length - 1;
-            const pt = sortedPoints[lastIdx];
-            const { nx, ny } = getNormalAtPoint(sortedPoints, lastIdx);
-            const offset = getOutwardOffset(pt, nx, ny, sortedPoints);
-            const x = scale * pt.x + nx * offset;
-            const y = scale * pt.y + ny * offset;
+            const { nx, ny } = getLabelNormalAtDay(winterSolsticeDay);
+            const labelPt = labelPtForDay(winterSolsticeDay);
+            const offset = getOutwardOffset(labelPt, nx, ny, labelPoints);
+            const x = scale * labelPt.x + nx * offset;
+            const y = scale * labelPt.y + ny * offset;
             // Only add label if it's within the border bounds
             if (isTextWithinBounds(x, y)) {
               hourLabelElements.push(
@@ -1196,14 +1228,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               }
               idx = minIdx;
             }
-            const pt = points[idx];
-            const { nx, ny } = getNormalAtPoint(points, idx);
             const isSummer = solsticeDay === summerSolsticeDay;
-
-            const offset = getOutwardOffset(pt, nx, ny, points);
-
-            const x = scale * pt.x + nx * offset;
-            const y = scale * pt.y + ny * offset;
+            const { nx, ny } = getLabelNormalAtDay(solsticeDay);
+            const labelPt = labelPtForDay(solsticeDay);
+            const offset = getOutwardOffset(labelPt, nx, ny, labelPoints);
+            const x = scale * labelPt.x + nx * offset;
+            const y = scale * labelPt.y + ny * offset;
             // Only add label if it's within the border bounds
             if (isTextWithinBounds(x, y)) {
               hourLabelElements.push(
@@ -1243,13 +1273,14 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         if (isTimeSlotCovered(h, interval.name, hourlineIntervals)) continue;
         let points = getAnalemmaPointsProjected({
           lat,
-          lng,
+          lng: effectiveLng,
           tzMeridian,
           hour: h,
           styleHeight: gnomonHeight,
-          dialInclination,
+          dialInclination: effectiveDialInclination,
           dialDeclination,
           showBelowHorizon: showBelowHorizonHourLines,
+          eotMinutes: eotMinutesOverride,
         });
         // Filter points by date range
         const isNorthernHemisphere = isGeoNorthern;
@@ -1541,12 +1572,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     if (complementStyle) {
       const fullNoon = getAnalemmaPointsProjected({
         lat,
-        lng,
+        lng: effectiveLng,
         tzMeridian,
         hour: 12,
         styleHeight: gnomonHeight,
-        dialInclination,
+        dialInclination: effectiveDialInclination,
         dialDeclination,
+        eotMinutes: eotMinutesOverride,
       });
       const complementPts = fullNoon
         .filter((p) => !isDayInRange(p.day, dateRange))
@@ -1714,12 +1746,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Use the same parameters as the declination lines (original lat, Horizontal orientation)
     const noonAnalemmaPoints = getAnalemmaPointsProjected({
       lat,
-      lng,
+      lng: effectiveLng,
       tzMeridian,
       hour: 12,
       styleHeight: gnomonHeight,
-      dialInclination,
+      dialInclination: effectiveDialInclination,
       dialDeclination,
+      eotMinutes: eotMinutesOverride,
     });
 
     // Filter points by date range
@@ -1797,7 +1830,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
         if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-        const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination);
+        const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination);
         if (!coords) continue;
         const x = scale * coords.x;
         const y = scale * coords.y;
@@ -1835,7 +1868,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         cosAz = Math.max(-1, Math.min(1, cosAz));
         let azimuth = Math.acos(cosAz);
         if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-        const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination);
+        const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination);
         if (coords && Math.sqrt((scale * coords.x) ** 2 + (scale * coords.y) ** 2) <= maxRadius) {
           currentSegment.push({ x: scale * coords.x, y: scale * coords.y });
         } else if (currentSegment.length > 0) {
@@ -1873,12 +1906,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   }
 
   // Draw declination lines
-  if (declinationLines.length > 0) {
+  if (effectiveDeclinationLines.length > 0) {
 
-    log.debug('Declination lines to render:', declinationLines.map(l => ({ date: l.date, active: l.active, styleId: l.styleId, id: l.id, decl: getDeclinationForLine(l) })));
+    log.debug('Declination lines to render:', effectiveDeclinationLines.map(l => ({ date: l.date, active: l.active, styleId: l.styleId, id: l.id, decl: getDeclinationForLine(l) })));
   }
 
-  const declinationLineElements = declinationLines.flatMap((line, idx) => {
+  const declinationLineElements = effectiveDeclinationLines.flatMap((line, idx) => {
     if (!line.active) return [];
     if (!isDateStringInRange(line.date)) return [];
 
@@ -1917,7 +1950,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   log.group('Noon Date Marks');
   log.debug(`Noon date marks enabled: ${declinationNoonmarks}, scale: ${scale}, viewBoxScaleFactor: ${viewBoxScaleFactor}`);
 
-  const declinationNoonmarkElements = declinationNoonmarks ? declinationLines.flatMap((line, idx) => {
+  const declinationNoonmarkElements = declinationNoonmarks ? effectiveDeclinationLines.flatMap((line, idx) => {
 
     log.debug(`Processing declination line ${idx}: ${line.date}, active: ${line.active}`);
 
@@ -2064,7 +2097,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
   // Dateline labels
   const declinationLabelElements: JSX.Element[] = [];
-  if (showDatelineLabels && declinationLines.length > 0) {
+  if (showDatelineLabels && effectiveDeclinationLines.length > 0) {
     const lang = (typeof window !== 'undefined' ? localStorage.getItem('sundial-welcome-language') : null) || 'en';
     const labelFontSize = fontSizeMm / 3;
     const transformY = (gnomonPosition ?? 0) - (height / 2);
@@ -2096,7 +2129,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           cosAz = Math.max(-1, Math.min(1, cosAz));
           let azimuth = Math.acos(cosAz);
           if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-          const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination);
+          const coords = computeShadowPoint(altitude, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination);
           if (!coords) continue;
           const x = scale * coords.x;
           const y = scale * coords.y;
@@ -2232,7 +2265,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-    declinationLines.forEach((line, idx) => {
+    effectiveDeclinationLines.forEach((line, idx) => {
       if (!line.active) return;
       if (!isDateStringInRange(line.date)) return;
       const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
@@ -2437,7 +2470,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         : '';
 
     // Check if "Today" declination line is active
-    const todayLineActive = declinationLines.some(line => line.active && line.date === 'Today' && isDateStringInRange('Today'));
+    const todayLineActive = effectiveDeclinationLines.some(line => line.active && line.date === 'Today' && isDateStringInRange('Today'));
 
     // Get today's date in "Month Day" format
     const getTodayDateString = (): string => {
@@ -2597,7 +2630,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       let azimuth = Math.acos(cosAz);
       if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
 
-      return computeShadowPoint(altitude, azimuth, gnomonHeight, lat, dialInclination, dialDeclination) ?? { x: 0, y: 0 };
+      return computeShadowPoint(altitude, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination) ?? { x: 0, y: 0 };
     }
 
     const summerSolsticeDeclination = 23.44;   // June 21st
