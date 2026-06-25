@@ -50,7 +50,7 @@ const CORRECTIONS: {
     key: 'refraction',
     label: 'Atmospheric Refraction',
     description: 'Bends sunlight near the horizon — shifts hour lines near sunrise/sunset.',
-    implemented: false,
+    implemented: true,
   },
   {
     key: 'umbraCorrection',
