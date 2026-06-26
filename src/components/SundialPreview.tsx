@@ -75,7 +75,7 @@ type Props = {
   showBelowHorizonDateLines?: boolean;
   showDatelineLabels?: boolean;
   datelineLabelLocation?: 'edge' | 'noonmark';
-  datelineLanguage?: string;
+  language?: string;
   correctionFlags?: CorrectionFlags;
 };
 // Note: App now prefers passing a single `config` prop. To keep JSX happy where only `config` is provided,
@@ -138,7 +138,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     showBelowHorizonDateLines = false,
     showDatelineLabels = false,
     datelineLabelLocation = 'edge',
-    datelineLanguage = 'en',
+    language = 'en',
     correctionFlags,
   } = p;
 
@@ -2113,7 +2113,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Dateline labels
   const declinationLabelElements: JSX.Element[] = [];
   if (showDatelineLabels && effectiveDeclinationLines.length > 0) {
-    const lang = datelineLanguage || 'en';
+    const lang = language || 'en';
     const labelFontSize = fontSizeMm / 3;
     const transformY = (gnomonPosition ?? 0) - (height / 2);
     const rightBound = width / 2 - borderMarginMm;
@@ -2492,7 +2492,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const getTodayDateString = (): string => {
       const today = new Date();
       try {
-        return today.toLocaleDateString(datelineLanguage, { month: 'long', day: 'numeric' });
+        return today.toLocaleDateString(language, { month: 'long', day: 'numeric' });
       } catch {
         const months = ['January', 'February', 'March', 'April', 'May', 'June',
           'July', 'August', 'September', 'October', 'November', 'December'];
@@ -2516,14 +2516,14 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       processedText = processedText.replace(/\{location\}/gi, locationString);
     }
     
-    const dialLabels = DIAL_LABELS[datelineLanguage as Language] ?? DIAL_LABELS.en;
+    const dialLabels = DIAL_LABELS[language as Language] ?? DIAL_LABELS.en;
     processedText = processedText
       .replace(/\{latitude-label\}/gi, dialLabels.latitude)
       .replace(/\{longitude-label\}/gi, dialLabels.longitude)
       .replace(/\{latitude\}/gi, latStr)
       .replace(/\{longitude\}/gi, lngStr)
       .replace(/\{half-year\}/gi, dateRange === 'FullYear' ? '' : dateRange === 'SummerToFall' ? 'Summer - Fall' : 'Winter - Spring')
-      .replace(/\{gnomon\}/gi, `${(DIAL_LABELS[datelineLanguage as Language] ?? DIAL_LABELS.en).height}: ${gnomonHeight} mm`)
+      .replace(/\{gnomon\}/gi, `${(DIAL_LABELS[language as Language] ?? DIAL_LABELS.en).height}: ${gnomonHeight} mm`)
       .replace(/\{incline\}/gi, inclineString)
       .replace(/\{decline\}/gi, (inclineString && declineString) ? `, ${declineString}` : declineString);
 
