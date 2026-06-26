@@ -55,7 +55,7 @@ const CORRECTIONS: {
   {
     key: 'umbraCorrection',
     label: 'Penumbra Brightness Bias',
-    description: 'Adjusts for the penumbra gradient at the gnomon shadow edge.',
+    description: 'Adjusts for the non-linear psychometric penumbra gradient at the gnomon shadow edge.',
     implemented: false,
   },
 ];
@@ -342,57 +342,6 @@ algorithm which "enables it to be calculated for any epoch within 30 centuries o
                 </div>
               </div>
             )}
-          </div>
-        )}
-
-        {/* Components of Correction dashboard — always visible when flags are present */}
-        {correctionFlags && onCorrectionFlagsChange && (
-          <div
-            style={{
-              marginTop: '0.75rem',
-              paddingTop: '0.75rem',
-              borderTop: '1px solid #e2e8f0',
-            }}
-          >
-            <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '0.35rem', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              Components of Correction
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
-              {CORRECTIONS.map(({ key, label, implemented }) => {
-                const active = correctionFlags[key];
-                const disabled = !implemented;
-                const bgColor = disabled ? '#f1f5f9' : active ? '#dcfce7' : '#fef2f2';
-                const textColor = disabled ? '#94a3b8' : active ? '#15803d' : '#b91c1c';
-                const dot = disabled ? '○' : active ? '●' : '○';
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    disabled={disabled}
-                    onClick={() => !disabled && handleCorrectionChange(key, !active)}
-                    title={disabled ? 'Not yet implemented' : active ? `${label}: ON — click to disable` : `${label}: OFF — click to enable`}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.2rem',
-                      padding: '2px 7px',
-                      borderRadius: '999px',
-                      border: `1px solid ${disabled ? '#e2e8f0' : active ? '#86efac' : '#fca5a5'}`,
-                      backgroundColor: bgColor,
-                      color: textColor,
-                      fontSize: '11px',
-                      fontWeight: 500,
-                      cursor: disabled ? 'not-allowed' : 'pointer',
-                      opacity: disabled ? 0.6 : 1,
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    <span style={{ fontSize: '9px' }}>{dot}</span>
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
           </div>
         )}
 
