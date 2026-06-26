@@ -49,7 +49,7 @@ import { log } from './utils/logger';
 import { getControlsScrollerElement } from './utils/controlsScroller';
 
 
-const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\nLatitude: {latitude}, Longitude: {longitude}\n{half-year}\n*{incline}{decline}*\n*{gnomon}*\n[red]**{today}**`;
+const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{latitude-label}: {latitude}, {longitude-label}: {longitude}\n{half-year}\n*{incline}{decline}*\n*{gnomon}*\n[red]**{today}**`;
 
 const MOBILE_TABS = [
   { id: 'card-export',     icon: Download,    label: 'Export' },

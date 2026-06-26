@@ -10,7 +10,7 @@ interface WelcomeDialogProps {
   onLanguageChange?: (lang: string) => void;
 }
 
-type Language = 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'zh' | 'ja' | 'ko' | 'ru' | 'ar';
+export type Language = 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'zh' | 'ja' | 'ko' | 'ru' | 'ar';
 
 interface Translations {
   title: string;
@@ -185,6 +185,20 @@ const languages: { code: Language; countryCode: string; name: string }[] = [
   { code: 'ru', countryCode: 'ru', name: 'Русский' },
   { code: 'ar', countryCode: 'sa', name: 'العربية' },
 ];
+
+export const DIAL_LABELS: Record<Language, { latitude: string; longitude: string; height: string }> = {
+  en: { latitude: 'Latitude',  longitude: 'Longitude',  height: 'height' },
+  es: { latitude: 'Latitud',   longitude: 'Longitud',   height: 'altura' },
+  fr: { latitude: 'Latitude',  longitude: 'Longitude',  height: 'hauteur' },
+  de: { latitude: 'Breite',    longitude: 'Länge',      height: 'Höhe' },
+  it: { latitude: 'Latitudine',longitude: 'Longitudine',height: 'altezza' },
+  pt: { latitude: 'Latitude',  longitude: 'Longitude',  height: 'altura' },
+  zh: { latitude: '纬度',       longitude: '经度',        height: '高度' },
+  ja: { latitude: '緯度',       longitude: '経度',        height: '高さ' },
+  ko: { latitude: '위도',       longitude: '경도',        height: '높이' },
+  ru: { latitude: 'Широта',    longitude: 'Долгота',    height: 'высота' },
+  ar: { latitude: 'خط العرض',  longitude: 'خط الطول',  height: 'الارتفاع' },
+};
 
 const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, onLanguageChange }) => {
   const [showDialog, setShowDialog] = useState(false);

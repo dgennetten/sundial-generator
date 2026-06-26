@@ -87,6 +87,8 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
   }
   
   processedText = processedText
+    .replace(/\{latitude-label\}/gi, 'Latitude')
+    .replace(/\{longitude-label\}/gi, 'Longitude')
     .replace(/\{latitude\}/gi, latStr)
     .replace(/\{longitude\}/gi, lngStr)
     .replace(/\{half-year\}/gi, halfYearString)

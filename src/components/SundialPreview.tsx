@@ -8,6 +8,8 @@ import type { HourlineInterval } from './hourlineUtils';
 import { Sun } from 'lucide-react';
 import GnomonSVG from './GnomonSVG';
 import { log } from '../utils/logger';
+import { DIAL_LABELS } from './WelcomeDialog';
+import type { Language } from './WelcomeDialog';
 
 const pageSizeMap = {
   Letter: { width: 8.5 * 25.4, height: 11 * 25.4 },
@@ -2486,12 +2488,16 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Check if "Today" declination line is active
     const todayLineActive = effectiveDeclinationLines.some(line => line.active && line.date === 'Today' && isDateStringInRange('Today'));
 
-    // Get today's date in "Month Day" format
+    // Get today's date in localized "Month Day" format
     const getTodayDateString = (): string => {
       const today = new Date();
-      const months = ['January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'];
-      return `${months[today.getMonth()]} ${today.getDate()}`;
+      try {
+        return today.toLocaleDateString(datelineLanguage, { month: 'long', day: 'numeric' });
+      } catch {
+        const months = ['January', 'February', 'March', 'April', 'May', 'June',
+          'July', 'August', 'September', 'October', 'November', 'December'];
+        return `${months[today.getMonth()]} ${today.getDate()}`;
+      }
     };
 
     // Process text with placeholders, but handle {today} specially
@@ -2510,11 +2516,14 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       processedText = processedText.replace(/\{location\}/gi, locationString);
     }
     
+    const dialLabels = DIAL_LABELS[datelineLanguage as Language] ?? DIAL_LABELS.en;
     processedText = processedText
+      .replace(/\{latitude-label\}/gi, dialLabels.latitude)
+      .replace(/\{longitude-label\}/gi, dialLabels.longitude)
       .replace(/\{latitude\}/gi, latStr)
       .replace(/\{longitude\}/gi, lngStr)
       .replace(/\{half-year\}/gi, dateRange === 'FullYear' ? '' : dateRange === 'SummerToFall' ? 'Summer - Fall' : 'Winter - Spring')
-      .replace(/\{gnomon\}/gi, `height: ${gnomonHeight} mm`)
+      .replace(/\{gnomon\}/gi, `${(DIAL_LABELS[datelineLanguage as Language] ?? DIAL_LABELS.en).height}: ${gnomonHeight} mm`)
       .replace(/\{incline\}/gi, inclineString)
       .replace(/\{decline\}/gi, (inclineString && declineString) ? `, ${declineString}` : declineString);
 
