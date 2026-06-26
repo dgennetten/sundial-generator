@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Text } from 'lucide-react';
 import { languages } from './WelcomeDialog';
 
@@ -20,6 +20,72 @@ interface Props {
   language: string;
   setLanguage: (v: string) => void;
 }
+
+const LanguagePicker: React.FC<{ language: string; setLanguage: (v: string) => void }> = ({ language, setLanguage }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const current = languages.find(l => l.code === language) ?? languages[0];
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: '6px',
+          padding: '5px 8px', border: '1px solid #d1d5db', borderRadius: '6px',
+          background: '#fff', cursor: 'pointer', fontSize: '13px', whiteSpace: 'nowrap',
+          minWidth: '130px',
+        }}
+      >
+        <img
+          src={`https://flagicons.lipis.dev/flags/4x3/${current.countryCode}.svg`}
+          alt={current.name}
+          style={{ width: '20px', height: '15px', objectFit: 'cover', borderRadius: '2px' }}
+        />
+        {current.name}
+        <span style={{ marginLeft: 'auto', fontSize: '10px', color: '#6b7280' }}>▾</span>
+      </button>
+      {open && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, zIndex: 100,
+          background: '#fff', border: '1px solid #d1d5db', borderRadius: '6px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.12)', marginTop: '2px',
+          minWidth: '150px', maxHeight: '260px', overflowY: 'auto',
+        }}>
+          {languages.map(l => (
+            <button
+              key={l.code}
+              type="button"
+              onClick={() => { setLanguage(l.code); setOpen(false); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                width: '100%', padding: '6px 10px', border: 'none', textAlign: 'left',
+                background: l.code === language ? '#eff6ff' : 'transparent',
+                cursor: 'pointer', fontSize: '13px',
+              }}
+            >
+              <img
+                src={`https://flagicons.lipis.dev/flags/4x3/${l.countryCode}.svg`}
+                alt={l.name}
+                style={{ width: '20px', height: '15px', objectFit: 'cover', borderRadius: '2px' }}
+              />
+              {l.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const DialTextBlockSettings: React.FC<Props> = ({
   dialTextBlock,
@@ -140,9 +206,7 @@ const DialTextBlockSettings: React.FC<Props> = ({
             </div>
           </div>
         )}
-        
-        {/* Conditional content based on selected mode */}
-        
+
         {sundialNotesMode === 'seasonsGuide' && (
           <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end' }}>
             <div className="form-group" style={{ flex: '0 0 auto' }}>
@@ -176,19 +240,11 @@ const DialTextBlockSettings: React.FC<Props> = ({
             </div>
             <div className="form-group" style={{ flex: '0 0 auto' }}>
               <label className="form-label">Language</label>
-              <select
-                className="form-select"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-              >
-                {languages.map(l => (
-                  <option key={l.code} value={l.code}>{l.flag} {l.name}</option>
-                ))}
-              </select>
+              <LanguagePicker language={language} setLanguage={setLanguage} />
             </div>
           </div>
         )}
-        
+
         {sundialNotesMode === 'textBlock' && (
           <>
             <div className="form-group">
@@ -244,15 +300,7 @@ const DialTextBlockSettings: React.FC<Props> = ({
               </div>
               <div className="form-group" style={{ flex: '0 0 auto' }}>
                 <label className="form-label">Language</label>
-                <select
-                  className="form-select"
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                >
-                  {languages.map(l => (
-                    <option key={l.code} value={l.code}>{l.flag} {l.name}</option>
-                  ))}
-                </select>
+                <LanguagePicker language={language} setLanguage={setLanguage} />
               </div>
             </div>
           </>
@@ -263,4 +311,3 @@ const DialTextBlockSettings: React.FC<Props> = ({
 };
 
 export default React.memo(DialTextBlockSettings);
-
