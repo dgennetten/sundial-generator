@@ -214,6 +214,9 @@ const App: React.FC = () => {
   const [sundialNotesOffsetHorizontal, setSundialNotesOffsetHorizontal] = useState<number>(0); // in mm
   const [locationName, setLocationName] = useState<string>('NASS, Louisville, KY');
   const [printedDialsMapRefreshTrigger, setPrintedDialsMapRefreshTrigger] = useState<number>(0);
+  const [datelineLanguage, setDatelineLanguage] = useState<string>(
+    () => (typeof window !== 'undefined' ? localStorage.getItem('sundial-welcome-language') : null) || 'en'
+  );
   const [correctionFlags, setCorrectionFlags] = useState<CorrectionFlags>({
     latitude: true,
     longitude: true,
@@ -547,6 +550,7 @@ const App: React.FC = () => {
     showBelowHorizonDateLines,
     showDatelineLabels,
     datelineLabelLocation,
+    datelineLanguage,
     correctionFlags,
   }), [
     latitude,
@@ -599,6 +603,7 @@ const App: React.FC = () => {
     showBelowHorizonDateLines,
     showDatelineLabels,
     datelineLabelLocation,
+    datelineLanguage,
     correctionFlags,
   ]);
 
@@ -824,7 +829,7 @@ const App: React.FC = () => {
   return (
     <div className="app-container">
       {/* Welcome Dialog */}
-      <WelcomeDialog />
+      <WelcomeDialog onLanguageChange={setDatelineLanguage} />
 
       {showDevLog && (
         <DevLogModal onClose={() => setShowDevLog(false)} />

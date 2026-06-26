@@ -7,6 +7,7 @@ const WELCOME_DISMISSED_KEY = 'sundial-welcome-dismissed';
 
 interface WelcomeDialogProps {
   onClose?: () => void;
+  onLanguageChange?: (lang: string) => void;
 }
 
 type Language = 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'zh' | 'ja' | 'ko' | 'ru' | 'ar';
@@ -185,7 +186,7 @@ const languages: { code: Language; countryCode: string; name: string }[] = [
   { code: 'ar', countryCode: 'sa', name: 'العربية' },
 ];
 
-const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose }) => {
+const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, onLanguageChange }) => {
   const [showDialog, setShowDialog] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [language, setLanguage] = useState<Language>('en');
@@ -296,6 +297,7 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose }) => {
               onClick={() => {
                 setLanguage(lang.code);
                 localStorage.setItem('sundial-welcome-language', lang.code);
+                onLanguageChange?.(lang.code);
               }}
               style={{
                 background: language === lang.code ? '#2563eb' : 'transparent',

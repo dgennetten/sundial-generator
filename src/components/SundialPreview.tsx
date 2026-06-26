@@ -73,6 +73,7 @@ type Props = {
   showBelowHorizonDateLines?: boolean;
   showDatelineLabels?: boolean;
   datelineLabelLocation?: 'edge' | 'noonmark';
+  datelineLanguage?: string;
   correctionFlags?: CorrectionFlags;
 };
 // Note: App now prefers passing a single `config` prop. To keep JSX happy where only `config` is provided,
@@ -135,6 +136,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     showBelowHorizonDateLines = false,
     showDatelineLabels = false,
     datelineLabelLocation = 'edge',
+    datelineLanguage = 'en',
     correctionFlags,
   } = p;
 
@@ -2109,7 +2111,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Dateline labels
   const declinationLabelElements: JSX.Element[] = [];
   if (showDatelineLabels && effectiveDeclinationLines.length > 0) {
-    const lang = (typeof window !== 'undefined' ? localStorage.getItem('sundial-welcome-language') : null) || 'en';
+    const lang = datelineLanguage || 'en';
     const labelFontSize = fontSizeMm / 3;
     const transformY = (gnomonPosition ?? 0) - (height / 2);
     const rightBound = width / 2 - borderMarginMm;
