@@ -7,6 +7,7 @@ const WELCOME_DISMISSED_KEY = 'sundial-welcome-dismissed';
 
 interface WelcomeDialogProps {
   onClose?: () => void;
+  language?: string;
   onLanguageChange?: (lang: string) => void;
 }
 
@@ -200,10 +201,18 @@ export const DIAL_LABELS: Record<Language, { latitude: string; longitude: string
   ar: { latitude: 'خط العرض',  longitude: 'خط الطول',  height: 'الارتفاع' },
 };
 
-const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, onLanguageChange }) => {
+const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: languageProp, onLanguageChange }) => {
   const [showDialog, setShowDialog] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
-  const [language, setLanguage] = useState<Language>('en');
+  const [internalLanguage, setInternalLanguage] = useState<Language>('en');
+
+  const language: Language = (languageProp && translations[languageProp as Language] ? languageProp as Language : null) ?? internalLanguage;
+
+  const handleLanguageSelect = (code: Language) => {
+    setInternalLanguage(code);
+    localStorage.setItem('sundial-welcome-language', code);
+    onLanguageChange?.(code);
+  };
 
   useEffect(() => {
     // On localhost, suppress auto-show unless reset just ran (sessionStorage flag)
@@ -220,7 +229,7 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, onLanguageChange
     // Load saved language preference
     const savedLanguage = localStorage.getItem('sundial-welcome-language') as Language;
     if (savedLanguage && translations[savedLanguage]) {
-      setLanguage(savedLanguage);
+      setInternalLanguage(savedLanguage);
     }
   }, []);
 
@@ -308,11 +317,7 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, onLanguageChange
           {languages.map((lang) => (
             <button
               key={lang.code}
-              onClick={() => {
-                setLanguage(lang.code);
-                localStorage.setItem('sundial-welcome-language', lang.code);
-                onLanguageChange?.(lang.code);
-              }}
+              onClick={() => handleLanguageSelect(lang.code)}
               style={{
                 background: language === lang.code ? '#2563eb' : 'transparent',
                 border: `1.5px solid ${language === lang.code ? '#2563eb' : '#e5e7eb'}`,

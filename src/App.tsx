@@ -829,7 +829,7 @@ const App: React.FC = () => {
   return (
     <div className="app-container">
       {/* Welcome Dialog */}
-      <WelcomeDialog onLanguageChange={setLanguage} />
+      <WelcomeDialog language={language} onLanguageChange={setLanguage} />
 
       {showDevLog && (
         <DevLogModal onClose={() => setShowDevLog(false)} />
