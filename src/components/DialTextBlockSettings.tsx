@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text } from 'lucide-react';
+import { languages } from './WelcomeDialog';
 
 interface Props {
   dialTextBlock: string;
@@ -16,6 +17,8 @@ interface Props {
   setSundialNotesOffset: (v: number) => void;
   sundialNotesOffsetHorizontal: number;
   setSundialNotesOffsetHorizontal: (v: number) => void;
+  language: string;
+  setLanguage: (v: string) => void;
 }
 
 const DialTextBlockSettings: React.FC<Props> = ({
@@ -33,6 +36,8 @@ const DialTextBlockSettings: React.FC<Props> = ({
   setSundialNotesOffset,
   sundialNotesOffsetHorizontal,
   setSundialNotesOffsetHorizontal,
+  language,
+  setLanguage,
 }) => {
   return (
     <div className="card">
@@ -169,6 +174,18 @@ const DialTextBlockSettings: React.FC<Props> = ({
                 <option value="Courier New">Courier New</option>
               </select>
             </div>
+            <div className="form-group" style={{ flex: '0 0 auto' }}>
+              <label className="form-label">Language</label>
+              <select
+                className="form-select"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+              >
+                {languages.map(l => (
+                  <option key={l.code} value={l.code}>{l.flag} {l.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
         )}
         
@@ -223,6 +240,18 @@ const DialTextBlockSettings: React.FC<Props> = ({
                   <option value="Times New Roman">Times New Roman</option>
                   <option value="Georgia">Georgia</option>
                   <option value="Courier New">Courier New</option>
+                </select>
+              </div>
+              <div className="form-group" style={{ flex: '0 0 auto' }}>
+                <label className="form-label">Language</label>
+                <select
+                  className="form-select"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                >
+                  {languages.map(l => (
+                    <option key={l.code} value={l.code}>{l.flag} {l.name}</option>
+                  ))}
                 </select>
               </div>
             </div>

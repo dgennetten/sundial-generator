@@ -172,18 +172,18 @@ const translations: Record<Language, Translations> = {
   },
 };
 
-const languages: { code: Language; countryCode: string; name: string }[] = [
-  { code: 'en', countryCode: 'us', name: 'English' },
-  { code: 'es', countryCode: 'es', name: 'Español' },
-  { code: 'fr', countryCode: 'fr', name: 'Français' },
-  { code: 'de', countryCode: 'de', name: 'Deutsch' },
-  { code: 'it', countryCode: 'it', name: 'Italiano' },
-  { code: 'pt', countryCode: 'pt', name: 'Português' },
-  { code: 'zh', countryCode: 'cn', name: '中文' },
-  { code: 'ja', countryCode: 'jp', name: '日本語' },
-  { code: 'ko', countryCode: 'kr', name: '한국어' },
-  { code: 'ru', countryCode: 'ru', name: 'Русский' },
-  { code: 'ar', countryCode: 'sa', name: 'العربية' },
+export const languages: { code: Language; countryCode: string; flag: string; name: string }[] = [
+  { code: 'en', countryCode: 'us', flag: '🇺🇸', name: 'English' },
+  { code: 'es', countryCode: 'es', flag: '🇪🇸', name: 'Español' },
+  { code: 'fr', countryCode: 'fr', flag: '🇫🇷', name: 'Français' },
+  { code: 'de', countryCode: 'de', flag: '🇩🇪', name: 'Deutsch' },
+  { code: 'it', countryCode: 'it', flag: '🇮🇹', name: 'Italiano' },
+  { code: 'pt', countryCode: 'pt', flag: '🇵🇹', name: 'Português' },
+  { code: 'zh', countryCode: 'cn', flag: '🇨🇳', name: '中文' },
+  { code: 'ja', countryCode: 'jp', flag: '🇯🇵', name: '日本語' },
+  { code: 'ko', countryCode: 'kr', flag: '🇰🇷', name: '한국어' },
+  { code: 'ru', countryCode: 'ru', flag: '🇷🇺', name: 'Русский' },
+  { code: 'ar', countryCode: 'sa', flag: '🇸🇦', name: 'العربية' },
 ];
 
 export const DIAL_LABELS: Record<Language, { latitude: string; longitude: string; height: string }> = {

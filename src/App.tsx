@@ -1103,6 +1103,11 @@ const App: React.FC = () => {
           setSundialNotesOffset={setSundialNotesOffset}
           sundialNotesOffsetHorizontal={sundialNotesOffsetHorizontal}
           setSundialNotesOffsetHorizontal={setSundialNotesOffsetHorizontal}
+          language={language}
+          setLanguage={(v) => {
+            setLanguage(v);
+            localStorage.setItem('sundial-welcome-language', v);
+          }}
         /></div>
 
         <React.Profiler id="HourlineSettings" onRender={(id, phase, actualDuration) => {
