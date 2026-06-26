@@ -3151,14 +3151,14 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                           {/* Fall - below equinox line, left of analemma */}
                           {winterQuarter && (
                             <text
-                              x={winterQuarter.x - 14}
+                              x={winterQuarter.x - 9}
                               y={equinoxLine.y1 + 8}
                               textAnchor="middle"
                               dominantBaseline="top"
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={effectiveDialOrientation === 'North' ? `rotate(180 ${winterQuarter.x - 14} ${equinoxLine.y1 + 8})` : undefined}
+                              transform={effectiveDialOrientation === 'North' ? `rotate(180 ${winterQuarter.x - 9} ${equinoxLine.y1 + 8})` : undefined}
                             >
                               {sl.fall}
                             </text>
