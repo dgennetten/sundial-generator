@@ -3112,7 +3112,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                       )}
 
                       {/* Seasonal Labels positioned relative to equinox line */}
-                      {equinoxLine && (
+                      {equinoxLine && (() => {
+                        const sl = DIAL_LABELS[language as Language] ?? DIAL_LABELS.en;
+                        return (
                         <>
                           {/* Spring - above equinox line, left of analemma */}
                           {summerQuarter && (
@@ -3126,7 +3128,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fill="#2563eb"
                               transform={effectiveDialOrientation === 'North' ? `rotate(180 ${summerQuarter.x - 10} ${equinoxLine.y1 - 8})` : undefined}
                             >
-                              Spring
+                              {sl.spring}
                             </text>
                           )}
 
@@ -3142,7 +3144,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fill="#2563eb"
                               transform={effectiveDialOrientation === 'North' ? `rotate(180 ${fallQuarter.x + 12} ${equinoxLine.y1 - 8})` : undefined}
                             >
-                              Summer
+                              {sl.summer}
                             </text>
                           )}
 
@@ -3158,7 +3160,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fill="#2563eb"
                               transform={effectiveDialOrientation === 'North' ? `rotate(180 ${winterQuarter.x - 5} ${equinoxLine.y1 + 8})` : undefined}
                             >
-                              Fall
+                              {sl.fall}
                             </text>
                           )}
 
@@ -3174,11 +3176,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fill="#2563eb"
                               transform={effectiveDialOrientation === 'North' ? `rotate(180 ${springQuarter.x + 10} ${equinoxLine.y1 + 8})` : undefined}
                             >
-                              Winter
+                              {sl.winter}
                             </text>
                           )}
                         </>
-                      )}
+                        );
+                      })()}
                     </>
                   );
                 }

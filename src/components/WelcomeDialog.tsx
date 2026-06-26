@@ -187,18 +187,18 @@ export const languages: { code: Language; countryCode: string; flag: string; nam
   { code: 'ar', countryCode: 'sa', flag: '🇸🇦', name: 'العربية' },
 ];
 
-export const DIAL_LABELS: Record<Language, { latitude: string; longitude: string; height: string }> = {
-  en: { latitude: 'Latitude',  longitude: 'Longitude',  height: 'height' },
-  es: { latitude: 'Latitud',   longitude: 'Longitud',   height: 'altura' },
-  fr: { latitude: 'Latitude',  longitude: 'Longitude',  height: 'hauteur' },
-  de: { latitude: 'Breite',    longitude: 'Länge',      height: 'Höhe' },
-  it: { latitude: 'Latitudine',longitude: 'Longitudine',height: 'altezza' },
-  pt: { latitude: 'Latitude',  longitude: 'Longitude',  height: 'altura' },
-  zh: { latitude: '纬度',       longitude: '经度',        height: '高度' },
-  ja: { latitude: '緯度',       longitude: '経度',        height: '高さ' },
-  ko: { latitude: '위도',       longitude: '경도',        height: '높이' },
-  ru: { latitude: 'Широта',    longitude: 'Долгота',    height: 'высота' },
-  ar: { latitude: 'خط العرض',  longitude: 'خط الطول',  height: 'الارتفاع' },
+export const DIAL_LABELS: Record<Language, { latitude: string; longitude: string; height: string; spring: string; summer: string; fall: string; winter: string }> = {
+  en: { latitude: 'Latitude',   longitude: 'Longitude',   height: 'height',    spring: 'Spring', summer: 'Summer', fall: 'Fall',    winter: 'Winter'   },
+  es: { latitude: 'Latitud',    longitude: 'Longitud',    height: 'altura',    spring: 'Primavera', summer: 'Verano', fall: 'Otoño', winter: 'Invierno' },
+  fr: { latitude: 'Latitude',   longitude: 'Longitude',   height: 'hauteur',   spring: 'Printemps', summer: 'Été',  fall: 'Automne', winter: 'Hiver'    },
+  de: { latitude: 'Breite',     longitude: 'Länge',       height: 'Höhe',      spring: 'Frühling', summer: 'Sommer', fall: 'Herbst', winter: 'Winter'   },
+  it: { latitude: 'Latitudine', longitude: 'Longitudine', height: 'altezza',   spring: 'Primavera', summer: 'Estate', fall: 'Autunno', winter: 'Inverno' },
+  pt: { latitude: 'Latitude',   longitude: 'Longitude',   height: 'altura',    spring: 'Primavera', summer: 'Verão', fall: 'Outono', winter: 'Inverno'  },
+  zh: { latitude: '纬度',        longitude: '经度',         height: '高度',       spring: '春', summer: '夏', fall: '秋', winter: '冬'                      },
+  ja: { latitude: '緯度',        longitude: '経度',         height: '高さ',       spring: '春', summer: '夏', fall: '秋', winter: '冬'                      },
+  ko: { latitude: '위도',        longitude: '경도',         height: '높이',       spring: '봄', summer: '여름', fall: '가을', winter: '겨울'                },
+  ru: { latitude: 'Широта',     longitude: 'Долгота',     height: 'высота',    spring: 'Весна', summer: 'Лето', fall: 'Осень', winter: 'Зима'           },
+  ar: { latitude: 'خط العرض',   longitude: 'خط الطول',   height: 'الارتفاع',  spring: 'الربيع', summer: 'الصيف', fall: 'الخريف', winter: 'الشتاء'     },
 };
 
 const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: languageProp, onLanguageChange }) => {
