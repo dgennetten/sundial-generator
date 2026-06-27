@@ -223,7 +223,7 @@ const App: React.FC = () => {
     equationOfTime: true,
     solarDeclination: true,
     refraction: true,
-    umbraCorrection: false,
+    mysteryError: false,
   });
 
   const [showDevLog, setShowDevLog] = useState(() => {

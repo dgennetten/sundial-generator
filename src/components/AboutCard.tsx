@@ -47,9 +47,9 @@ const CORRECTIONS: {
     implemented: true,
   },
   {
-    key: 'umbraCorrection',
-    label: 'Penumbra Brightness Bias',
-    description: 'Adjusts for the non-linear psychometric penumbra gradient at the gnomon shadow edge.',
+    key: 'mysteryError',
+    label: 'Mystery Error',
+    description: 'What un-corrected source of error is not yet addressed in today\'s dials or software? It\'s a larger error than Refraction. Sometimes much larger. See my 2027 NASS Presentation and accompanying Compendium paper.',
     implemented: false,
   },
   {

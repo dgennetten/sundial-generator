@@ -330,7 +330,7 @@ export interface CorrectionFlags {
   equationOfTime: boolean; // apply equation of time (creates analemma figure-8 shape)
   solarDeclination: boolean; // show date/declination lines on dial face
   refraction: boolean;       // atmospheric refraction (not yet implemented)
-  umbraCorrection: boolean;  // penumbra/umbra width correction (not yet implemented)
+  mysteryError: boolean;     // mystery error (not yet implemented)
 }
 
 export const DEFAULT_CORRECTION_FLAGS: CorrectionFlags = {
@@ -339,7 +339,7 @@ export const DEFAULT_CORRECTION_FLAGS: CorrectionFlags = {
   equationOfTime: true,
   solarDeclination: true,
   refraction: false,
-  umbraCorrection: false,
+  mysteryError: false,
 };
 
 /**
