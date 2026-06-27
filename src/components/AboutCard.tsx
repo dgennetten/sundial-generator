@@ -47,16 +47,16 @@ const CORRECTIONS: {
     implemented: true,
   },
   {
-    key: 'refraction',
-    label: 'Atmospheric Refraction',
-    description: 'Bends sunlight near the horizon — shifts hour lines near sunrise/sunset.',
-    implemented: true,
-  },
-  {
     key: 'umbraCorrection',
     label: 'Penumbra Brightness Bias',
     description: 'Adjusts for the non-linear psychometric penumbra gradient at the gnomon shadow edge.',
     implemented: false,
+  },
+  {
+    key: 'refraction',
+    label: 'Atmospheric Refraction',
+    description: 'Bends sunlight near the horizon — shifts hour lines near sunrise/sunset.',
+    implemented: true,
   },
 ];
 
