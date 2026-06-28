@@ -5,7 +5,7 @@ import type { CorrectionFlags } from '../utils/sundialMath';
 import type { DeclinationLine } from './DeclinationLineOptions';
 import type { LineStyle } from './LineSettings';
 import type { HourlineInterval } from './hourlineUtils';
-import { Sun } from 'lucide-react';
+import { Sun, Maximize2, Minimize2 } from 'lucide-react';
 import GnomonSVG from './GnomonSVG';
 import { log } from '../utils/logger';
 import { DIAL_LABELS } from './WelcomeDialog';
@@ -81,10 +81,15 @@ type Props = {
 // Note: App now prefers passing a single `config` prop. To keep JSX happy where only `config` is provided,
 // we use a union props type here and normalize to a single `p` object.
 
-type SundialPreviewProps = { config: Props } | Props;
+type SundialPreviewProps = ({ config: Props } | Props) & {
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
+};
 
 const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const p: Props = (props as { config?: Props }).config ?? (props as Props);
+  const isFullscreen = (props as { isFullscreen?: boolean }).isFullscreen ?? false;
+  const onToggleFullscreen = (props as { onToggleFullscreen?: () => void }).onToggleFullscreen;
   const {
     lat,
     lng,
@@ -2716,8 +2721,17 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
   return (
     <div className="card" style={{ width: '100%', margin: 0 }}>
-      <div className="card-header">
+      <div className="card-header sundial-preview-header">
         <h3 className="card-title"><Sun color="#2563eb" size={20} style={{ marginRight: 6 }} /> Sundial Preview ({orientation}, {pageSize})</h3>
+        {onToggleFullscreen && (
+          <button
+            onClick={onToggleFullscreen}
+            className="preview-fullscreen-btn"
+            title={isFullscreen ? 'Exit fullscreen' : 'Expand preview'}
+          >
+            {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+          </button>
+        )}
       </div>
       <div className="sundial-preview-svg-host" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible' }}>
         <svg

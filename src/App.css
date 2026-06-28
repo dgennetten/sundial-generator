@@ -27,6 +27,12 @@
   border-bottom: 2px solid #f0f2f5;
 }
 
+.sundial-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .card-title {
   font-size: 1.1rem;
   font-weight: 600;
@@ -244,6 +250,7 @@
   overflow-y: auto;
   max-height: 100vh;
   padding-right: 1rem;
+  position: relative;
 }
 
 /* Invisible on desktop: inner scroll wrapper + preview slot wrappers */
@@ -286,6 +293,158 @@
   align-items: center;
   height: calc(100vh - 3rem);
   overflow: hidden;
+}
+
+/* Fullscreen preview mode (desktop only) */
+@media (min-width: 901px) {
+  .app-container.preview-fullscreen {
+    position: relative;
+  }
+
+  .app-container.preview-fullscreen .preview-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    height: 100vh;
+    width: 100vw;
+    background: #f8f9fa;
+    flex: unset;
+  }
+
+  /* Floating controls panel */
+  .controls-panel--floating {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 200;
+    min-width: 360px;
+    max-width: 420px;
+    width: min(420px, calc(100vw - 2rem));
+    max-height: min(calc(420px * 1.5), calc(100vh - 2rem));
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    background: #fff;
+    flex: unset !important;
+    height: auto !important;
+    border-right: none !important;
+    padding-right: 0 !important;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Drag handle / icon bar at top of floating panel */
+  .floating-controls-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 8px;
+    background: #f0f2f7;
+    border-radius: 12px 12px 0 0;
+    cursor: grab;
+    user-select: none;
+    flex-shrink: 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .floating-controls-titlebar:active {
+    cursor: grabbing;
+  }
+
+  .floating-controls-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    flex: 1;
+  }
+
+  .floating-tab-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #4a5568;
+    padding: 5px 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .floating-tab-icon:hover {
+    background: #667eea22;
+    color: #667eea;
+  }
+
+  .floating-controls-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #718096;
+    padding: 5px 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .floating-controls-close:hover {
+    background: #fed7d7;
+    color: #c53030;
+  }
+
+  /* Scrollable content area inside floating panel */
+  .controls-panel--floating .mobile-controls-scroll {
+    display: block;
+    overflow-y: auto;
+    flex: 1;
+    padding: 0 1rem 1rem;
+  }
+
+  .preview-show-controls-btn {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 200;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    color: #2d3748;
+  }
+
+  .preview-show-controls-btn:hover {
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+  }
+}
+
+.preview-fullscreen-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #718096;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .preview-fullscreen-btn {
+    display: none;
+  }
+}
+
+.preview-fullscreen-btn:hover {
+  background: #f0f0f0;
+  color: #2d3748;
 }
 
 /* App Header */

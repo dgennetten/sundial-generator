@@ -19,7 +19,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Download, MapPin, StickyNote, MoveUpRight, Text, Calendar, Clock, PenLine, Map, Info, Undo } from 'lucide-react';
+import { Download, MapPin, StickyNote, MoveUpRight, Text, Calendar, Clock, PenLine, Map, Info, Undo, X } from 'lucide-react';
 
 import PageSettings, { type InclineType, type DeclinationType, type DialShape } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
@@ -131,6 +131,7 @@ const App: React.FC = () => {
   const [dialOrientation, setDialOrientation] = useState<'North' | 'South'>(latitude >= 0 ? 'North' : 'South');
   const prevHemisphereRef = useRef<'N' | 'S'>(latitude >= 0 ? 'N' : 'S');
   const controlsPanelRef = useRef<HTMLDivElement>(null);
+  const floatingScrollRef = useRef<HTMLDivElement>(null);
   const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToFall' | 'WinterToSpring'>('FullYear');
   const [lineStyles, setLineStyles] = useState<LineStyle[]>(() => {
     return loadLineStyles();
@@ -225,6 +226,45 @@ const App: React.FC = () => {
     refraction: true,
     mysteryError: false,
   });
+
+  const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false);
+  const [showFloatingControls, setShowFloatingControls] = useState(true);
+  const [floatingPos, setFloatingPos] = useState<{ x: number; y: number } | null>(null);
+  const floatingDragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+
+  // Sync React state with browser fullscreen changes (e.g. user presses Escape)
+  useEffect(() => {
+    const onFsChange = () => {
+      if (!document.fullscreenElement) {
+        setIsPreviewFullscreen(false);
+        setShowFloatingControls(true);
+        setFloatingPos(null);
+      }
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, []);
+
+  const handleFloatingDragStart = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('button')) return;
+    e.preventDefault();
+    const panel = (e.currentTarget as HTMLDivElement).parentElement!;
+    const rect = panel.getBoundingClientRect();
+    floatingDragRef.current = { startX: e.clientX, startY: e.clientY, origX: rect.left, origY: rect.top };
+
+    const onMove = (ev: MouseEvent) => {
+      if (!floatingDragRef.current) return;
+      const { startX, startY, origX, origY } = floatingDragRef.current;
+      setFloatingPos({ x: origX + ev.clientX - startX, y: origY + ev.clientY - startY });
+    };
+    const onUp = () => {
+      floatingDragRef.current = null;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, []);
 
   const [showDevLog, setShowDevLog] = useState(() => {
     if (!import.meta.env.DEV) return shouldShowLog();
@@ -827,7 +867,7 @@ const App: React.FC = () => {
     );
 
   return (
-    <div className="app-container">
+    <div className={`app-container${isPreviewFullscreen ? ' preview-fullscreen' : ''}`}>
       {/* Welcome Dialog */}
       <WelcomeDialog language={language} onLanguageChange={setLanguage} />
 
@@ -921,8 +961,52 @@ const App: React.FC = () => {
         )}
       
       {/* Controls Panel - Left Side */}
-      <div ref={controlsPanelRef} className="controls-panel">
-        <div className="mobile-controls-scroll">
+      {(!isPreviewFullscreen || showFloatingControls) && (
+      <div
+        ref={controlsPanelRef}
+        className={`controls-panel${isPreviewFullscreen ? ' controls-panel--floating' : ''}`}
+        style={isPreviewFullscreen && floatingPos ? { left: floatingPos.x, top: floatingPos.y } : undefined}
+      >
+        {isPreviewFullscreen && (
+          <div className="floating-controls-titlebar" onMouseDown={handleFloatingDragStart}>
+            <div className="floating-controls-icons">
+              {MOBILE_TABS.map(({ id, icon: Icon, label }) => (
+                <button
+                  key={id}
+                  className="floating-tab-icon"
+                  title={label}
+                  onClick={() => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    const scroller = floatingScrollRef.current;
+                    if (scroller) {
+                      const top = el.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+                      scroller.scrollTo({ top, behavior: 'smooth' });
+                    }
+                  }}
+                >
+                  <Icon size={15} />
+                </button>
+              ))}
+            </div>
+            <button
+              className="floating-controls-close"
+              onClick={() => {
+                if (document.fullscreenElement) {
+                  document.exitFullscreen();
+                } else {
+                  setIsPreviewFullscreen(false);
+                  setShowFloatingControls(true);
+                  setFloatingPos(null);
+                }
+              }}
+              title="Hide controls"
+            >
+              <X size={15} />
+            </button>
+          </div>
+        )}
+        <div className="mobile-controls-scroll" ref={isPreviewFullscreen ? floatingScrollRef : undefined}>
         <div className="app-header">
           <h1 className="app-title">Precision Sundial</h1>
           <p className="app-subtitle">Create beautiful, accurate sundials for any location</p>
@@ -1195,6 +1279,7 @@ const App: React.FC = () => {
         <div id="card-about"><AboutCard latitude={latitude} longitude={longitude} locationName={locationName} onShowDevLog={() => { clearLogPref(); setShowDevLog(true); }} correctionFlags={correctionFlags} onCorrectionFlagsChange={setCorrectionFlags} /></div>
         </div>
       </div>
+      )}
 
       {/* Preview Panel - Right Side (order places it at top on mobile portrait) */}
       <div
@@ -1228,11 +1313,43 @@ const App: React.FC = () => {
               <React.Profiler id="SundialPreview" onRender={(id, phase, actualDuration) => {
                 if (phase === 'update') log.perf(id, phase, actualDuration);
               }}>
-                <SundialPreview config={previewConfig} />
+                <SundialPreview
+                  config={previewConfig}
+                  isFullscreen={isPreviewFullscreen}
+                  onToggleFullscreen={() => {
+                    if (!document.fullscreenElement) {
+                      document.documentElement.requestFullscreen().then(() => {
+                        setIsPreviewFullscreen(true);
+                        setShowFloatingControls(true);
+                        setFloatingPos(null);
+                      }).catch(() => {
+                        // Fallback: CSS-only fullscreen if browser blocks the API
+                        setIsPreviewFullscreen(true);
+                        setShowFloatingControls(true);
+                        setFloatingPos(null);
+                      });
+                    } else {
+                      document.exitFullscreen().then(() => {
+                        setIsPreviewFullscreen(false);
+                        setShowFloatingControls(true);
+                        setFloatingPos(null);
+                      });
+                    }
+                  }}
+                />
               </React.Profiler>
             </div>
           </div>
         </div>
+        {isPreviewFullscreen && !showFloatingControls && (
+          <button
+            className="preview-show-controls-btn"
+            onClick={() => setShowFloatingControls(true)}
+            title="Show controls"
+          >
+            Show Controls
+          </button>
+        )}
         <MobileTabBar onResetDefaults={handleResetDefaults} />
       </div>
 
