@@ -199,27 +199,6 @@ const AboutCard: React.FC<AboutCardProps> = ({
             </a>{' '}
             is available in the official YouTube playlist.
           </p>
-          <p
-            style={{
-              margin: '10px 0 0 0',
-              fontSize: '13px',
-              fontWeight: 500,
-              lineHeight: 1.45,
-            }}
-          >
-            I will be presenting the talk: &lsquo;
-            <strong>Public Nodus</strong>
-            : Why Everything You Know about Precision is Pointless.&rsquo; at the June{' '}
-            <a
-              href="https://sundials.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#b45309', textDecoration: 'underline', fontWeight: 600 }}
-            >
-              NASS conference
-            </a>
-            .
-          </p>
         </div>
         <div
           dangerouslySetInnerHTML={{
