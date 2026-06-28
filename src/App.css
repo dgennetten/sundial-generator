@@ -331,6 +331,26 @@
   overflow: hidden;
 }
 
+/* Desktop: preview card floats centered with equal margin on all sides */
+@media (min-width: 901px) {
+  .preview-panel {
+    padding: 1.25rem;
+  }
+
+  .preview-panel .card {
+    margin: 0;
+    width: 100%;
+    border-radius: 16px;
+  }
+
+  .preview-panel .sundial-preview-svg-host {
+    aspect-ratio: var(--mobile-page-aspect-w) / var(--mobile-page-aspect-h);
+    width: 100%;
+    max-height: calc(100vh - 11rem);
+    min-height: unset;
+  }
+}
+
 /* Fullscreen preview mode (desktop only) */
 @media (min-width: 901px) {
   .app-container.preview-fullscreen {

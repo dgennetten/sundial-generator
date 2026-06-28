@@ -2739,9 +2739,17 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           width="100%"
           height="100%"
           viewBox={`-${viewBoxWidth / 2} -${viewBoxHeight / 2} ${viewBoxWidth} ${viewBoxHeight}`}
-          style={{ display: 'block', border: '1px solid #ccc', background: showBackground ? backgroundColor : '#fff', width: '100%', height: '100%', objectFit: 'contain' }}
+          style={{ display: 'block', border: '1px solid #ccc', background: 'transparent', width: '100%', height: '100%', objectFit: 'contain' }}
           preserveAspectRatio="xMidYMid meet"
         >
+          {/* Background rect scoped to page dimensions so it never bleeds outside the dial area */}
+          <rect
+            x={-scaledWidth / 2}
+            y={-scaledHeight / 2}
+            width={scaledWidth}
+            height={scaledHeight}
+            fill={showBackground ? backgroundColor : '#fff'}
+          />
           {/* Define clipping paths for dial shapes */}
           <defs>
             <clipPath id={`dial-clip-${dialShape.toLowerCase()}`}>
