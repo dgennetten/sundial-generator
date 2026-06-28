@@ -132,6 +132,15 @@ const App: React.FC = () => {
   const prevHemisphereRef = useRef<'N' | 'S'>(latitude >= 0 ? 'N' : 'S');
   const controlsPanelRef = useRef<HTMLDivElement>(null);
   const floatingScrollRef = useRef<HTMLDivElement>(null);
+  const [controlsScrolled, setControlsScrolled] = useState(false);
+
+  useEffect(() => {
+    const el = controlsPanelRef.current;
+    if (!el) return;
+    const onScroll = () => setControlsScrolled(el.scrollTop > 40);
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
   const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToFall' | 'WinterToSpring'>('FullYear');
   const [lineStyles, setLineStyles] = useState<LineStyle[]>(() => {
     return loadLineStyles();
@@ -975,12 +984,14 @@ const App: React.FC = () => {
                   key={id}
                   className="floating-tab-icon"
                   title={label}
-                  onClick={() => {
+                  onClick={(e) => {
                     const el = document.getElementById(id);
                     if (!el) return;
                     const scroller = floatingScrollRef.current;
                     if (scroller) {
-                      const top = el.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+                      const bar = (e.currentTarget as HTMLElement).closest('.floating-controls-titlebar') as HTMLElement | null;
+                      const barHeight = bar ? bar.getBoundingClientRect().height : 0;
+                      const top = el.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop - barHeight;
                       scroller.scrollTo({ top, behavior: 'smooth' });
                     }
                   }}
@@ -1004,6 +1015,30 @@ const App: React.FC = () => {
             >
               <X size={15} />
             </button>
+          </div>
+        )}
+        {!isPreviewFullscreen && controlsScrolled && (
+          <div className="controls-sticky-iconbar">
+            {MOBILE_TABS.map(({ id, icon: Icon, label }) => (
+              <button
+                key={id}
+                className="controls-sticky-icon"
+                title={label}
+                onClick={(e) => {
+                  const el = document.getElementById(id);
+                  if (!el) return;
+                  const scroller = controlsPanelRef.current;
+                  if (scroller) {
+                    const bar = (e.currentTarget as HTMLElement).closest('.controls-sticky-iconbar') as HTMLElement | null;
+                    const barHeight = bar ? bar.getBoundingClientRect().height : 0;
+                    const top = el.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop - barHeight;
+                    scroller.scrollTo({ top, behavior: 'smooth' });
+                  }
+                }}
+              >
+                <Icon size={15} />
+              </button>
+            ))}
           </div>
         )}
         <div className="mobile-controls-scroll" ref={isPreviewFullscreen ? floatingScrollRef : undefined}>
