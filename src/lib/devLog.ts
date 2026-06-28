@@ -34,7 +34,7 @@ export const LOG_ENTRIES: LogEntry[] = [
   {
     id: 6,
     date: '2026-06-25',
-    content: "**Atmospheric Refraction** is now a live correction you can toggle. Earth's atmosphere bends sunlight near the horizon — making the sun appear slightly higher than it truly is. On a sundial this shifts the shadow position, most noticeably at low solar altitudes (early morning, late evening, and winter hours at higher latitudes). The correction uses **Bennett's formula** (R = 1.02 / tan(h + 10.3/(h + 5.11))), accurate to ~0.07 arcminutes. Open **Components of Correction** in the About card to experiment. Dial decoration text is now language-localized. — KDG (v2.18.2)",
+    content: "**Atmospheric Refraction** is now a live correction you can toggle. Earth's atmosphere bends sunlight near the horizon — making the sun appear slightly higher than it truly is. On a sundial this shifts the shadow position, most noticeably at low solar altitudes (early morning, late evening, and winter hours at higher latitudes). The correction uses **Bennett's formula** (R = 1.02 / tan(h + 10.3/(h + 5.11))), accurate to ~0.07 arcminutes. Open **Components of Correction** in the About card to experiment. Dial decoration text is now language-localized. On desktop, click the expand icon in the preview header to go full screen — the controls float in a draggable panel you can reposition or dismiss. — KDG (v2.19.0)",
   },
 ]
 
