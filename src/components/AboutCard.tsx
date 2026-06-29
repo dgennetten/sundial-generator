@@ -199,6 +199,24 @@ const AboutCard: React.FC<AboutCardProps> = ({
             </a>{' '}
             is available in the official YouTube playlist.
           </p>
+          <p
+            style={{
+              margin: '8px 0 0 0',
+              fontSize: '13px',
+              fontWeight: 500,
+              lineHeight: 1.45,
+            }}
+          >
+            My 2026 NASS Talk:{' '}
+            <a
+              href="https://www.youtube.com/watch?v=4yRfAHHYbLI"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#b45309', textDecoration: 'underline', fontWeight: 600 }}
+            >
+              &ldquo;Public Nodus: Everything You Know about Precision is Pointless&rdquo;
+            </a>
+          </p>
         </div>
         <div
           dangerouslySetInnerHTML={{
