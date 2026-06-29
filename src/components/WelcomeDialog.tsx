@@ -32,7 +32,7 @@ const translations: Record<Language, Translations> = {
     title: 'How to Build Your Custom Sundial',
     steps: {
       location: { label: 'Location:', text: 'Use the dropdown menu, the interactive map, or enter latitude and longitude directly.' },
-      gnomon: { label: 'Gnomon Style:', text: 'Don\'t miss the innovative popup gnomon, perfect for paper dials and hands‑on experimentation.' },
+      gnomon: { label: 'Gnomon Style:', text: 'Don\'t miss the innovative popup gnomons, especially the new greeting card popup, perfect for paper dials and hands‑on experimentation.' },
       dateRange: { label: 'Full/Half Year:', text: ': Choose Winter–Spring or Fall–Summer for a cleaner, easier‑to‑read layout.' },
       specialDates: { label: 'Special Dates:', text: ': Display any Special Dates. Uncheck \'Today\' to remove the red line with today\'s date.' },
       reset: { label: 'Reset to Defaults:', text: 'Click Reset button to restore defaults and bring back this popup.' },
@@ -45,7 +45,7 @@ const translations: Record<Language, Translations> = {
     title: 'Cómo Construir Tu Reloj de Sol Personalizado',
     steps: {
       location: { label: 'Ubicación:', text: ' Usa el menú desplegable, el mapa interactivo o introduce latitud y longitud directamente.' },
-      gnomon: { label: 'Estilo de Gnomon:', text: ' No te pierdas el innovador gnomon emergente, perfecto para relojes de papel y experimentación práctica.' },
+      gnomon: { label: 'Estilo de Gnomon:', text: ' No te pierdas los innovadores gnomons emergentes, especialmente el nuevo popup de tarjeta de felicitación, perfecto para relojes de papel y experimentación práctica.' },
       dateRange: { label: 'Año Completo/Medio:', text: ': Elige Invierno–Primavera u Otoño–Verano para un diseño más limpio y fácil de leer.' },
       specialDates: { label: 'Fechas Especiales:', text: ': Muestra cualquier fecha especial. Desmarca \'Hoy\' para eliminar la línea roja con la fecha de hoy.' },
       reset: { label: 'Restablecer a Predeterminados:', text: 'Haz clic en el botón Restablecer para restaurar los valores predeterminados y volver a mostrar este popup.' },
@@ -58,7 +58,7 @@ const translations: Record<Language, Translations> = {
     title: 'Comment Construire Votre Cadran Solaire Personnalisé',
     steps: {
       location: { label: 'Emplacement :', text: ' Utilisez le menu déroulant, la carte interactive ou saisissez directement la latitude et la longitude.' },
-      gnomon: { label: 'Style de Gnomon :', text: ' Ne manquez pas le gnomon pop-up innovant, parfait pour les cadrans en papier et l\'expérimentation pratique.' },
+      gnomon: { label: 'Style de Gnomon :', text: ' Ne manquez pas les gnomons pop-up innovants, notamment le nouveau popup carte de vœux, parfait pour les cadrans en papier et l\'expérimentation pratique.' },
       dateRange: { label: 'Année Complète/Demi :', text: ': Choisissez Hiver–Printemps ou Automne–Été pour une mise en page plus claire et plus facile à lire.' },
       specialDates: { label: 'Dates Spéciales :', text: ': Affichez toutes les dates spéciales. Décochez « Aujourd\'hui » pour supprimer la ligne rouge avec la date d\'aujourd\'hui.' },
       reset: { label: 'Réinitialiser aux Valeurs par Défaut :', text: 'Cliquez sur le bouton Réinitialiser pour restaurer les paramètres par défaut et réafficher ce popup.' },
@@ -71,7 +71,7 @@ const translations: Record<Language, Translations> = {
     title: 'So Bauen Sie Ihre Individuelle Sonnenuhr',
     steps: {
       location: { label: 'Standort:', text: ' Verwenden Sie das Dropdown-Menü, die interaktive Karte oder geben Sie Breiten- und Längengrad direkt ein.' },
-      gnomon: { label: 'Gnomon-Stil:', text: ' Verpassen Sie nicht den innovativen Pop-up-Gnomon, perfekt für Papieruhren und praktische Experimente.' },
+      gnomon: { label: 'Gnomon-Stil:', text: ' Verpassen Sie nicht die innovativen Pop-up-Gnomons, insbesondere den neuen Grußkarten-Popup, perfekt für Papieruhren und praktische Experimente.' },
       dateRange: { label: 'Ganzes/Halbes Jahr:', text: ': Wählen Sie Winter–Frühling oder Herbst–Sommer für ein klareres, leichter lesbares Layout.' },
       specialDates: { label: 'Besondere Daten:', text: ': Zeigen Sie beliebige besondere Daten an. Deaktivieren Sie „Heute“, um die rote Linie mit dem heutigen Datum zu entfernen.' },
       reset: { label: 'Auf Standardwerte Zurücksetzen:', text: 'Klicken Sie auf die Schaltfläche Zurücksetzen, um die Standardeinstellungen wiederherzustellen und dieses Popup erneut anzuzeigen.' },
@@ -84,7 +84,7 @@ const translations: Record<Language, Translations> = {
     title: 'Come Costruire la Tua Meridiana Personalizzata',
     steps: {
       location: { label: 'Posizione:', text: ' Usa il menu a discesa, la mappa interattiva o inserisci direttamente latitudine e longitudine.' },
-      gnomon: { label: 'Stile dello Gnomone:', text: ' Non perdere l\'innovativo gnomone pop-up, perfetto per meridiane di carta e sperimentazione pratica.' },
+      gnomon: { label: 'Stile dello Gnomone:', text: ' Non perdere gli innovativi gnomoni pop-up, in particolare il nuovo popup biglietto d\'auguri, perfetto per meridiane di carta e sperimentazione pratica.' },
       dateRange: { label: 'Anno Intero/Mezzo:', text: ': Scegli Inverno–Primavera o Autunno–Estate per un layout più pulito e facile da leggere.' },
       specialDates: { label: 'Date Speciali:', text: ': Visualizza qualsiasi data speciale. Deseleziona «Oggi» per rimuovere la linea rossa con la data di oggi.' },
       reset: { label: 'Ripristina le Impostazioni Predefinite:', text: 'Clicca il pulsante Ripristina per ripristinare le impostazioni predefinite e riportare questo popup.' },
@@ -97,7 +97,7 @@ const translations: Record<Language, Translations> = {
     title: 'Como Construir Seu Relógio de Sol Personalizado',
     steps: {
       location: { label: 'Localização:', text: ' Use o menu suspenso, o mapa interativo ou insira latitude e longitude diretamente.' },
-      gnomon: { label: 'Estilo do Gnômon:', text: ' Não perca o inovador gnômon pop-up, perfeito para relógios de papel e experimentação prática.' },
+      gnomon: { label: 'Estilo do Gnômon:', text: ' Não perca os inovadores gnômons pop-up, especialmente o novo popup de cartão de felicitações, perfeito para relógios de papel e experimentação prática.' },
       dateRange: { label: 'Ano Completo/Meio:', text: ': Escolha Inverno–Primavera ou Outono–Verão para um layout mais limpo e fácil de ler.' },
       specialDates: { label: 'Datas Especiais:', text: ': Exiba quaisquer datas especiais. Desmarque «Hoje» para remover a linha vermelha com a data de hoje.' },
       reset: { label: 'Redefinir para Padrões:', text: 'Clique no botão Redefinir para restaurar os padrões e trazer de volta este popup.' },
@@ -110,7 +110,7 @@ const translations: Record<Language, Translations> = {
     title: '如何制作您的定制日晷',
     steps: {
       location: { label: '位置：', text: '使用下拉菜单、交互式地图或直接输入纬度和经度。' },
-      gnomon: { label: '晷针样式：', text: ' 不要错过创新的弹出式晷针，非常适合纸质日晷和动手实验。' },
+      gnomon: { label: '晷针样式：', text: ' 不要错过创新的弹出式晷针，尤其是全新的贺卡弹出式，非常适合纸质日晷和动手实验。' },
       dateRange: { label: '全年/半年：', text: '选择冬季–春季或秋季–夏季，以获得更清晰、更易读的布局。' },
       specialDates: { label: '特殊日期：', text: ' 显示任意特殊日期。取消选中「今天」以移除带有今天日期的红线。' },
       reset: { label: '重置为默认值：', text: '点击重置按钮以恢复默认设置并重新显示此弹出窗口。' },
@@ -123,7 +123,7 @@ const translations: Record<Language, Translations> = {
     title: 'カスタム日時計の作り方',
     steps: {
       location: { label: '位置：', text: 'ドロップダウンメニュー、インタラクティブマップを使うか、緯度と経度を直接入力してください。' },
-      gnomon: { label: 'グノモンスタイル：', text: ' 紙の日時計や実践的な実験に最適な革新的なポップアップグノモンをお見逃しなく。' },
+      gnomon: { label: 'グノモンスタイル：', text: ' 革新的なポップアップグノモン、特に新しいグリーティングカードポップアップをお見逃しなく。紙の日時計や実践的な実験に最適です。' },
       dateRange: { label: '全年/半年：', text: 'よりクリーンで読みやすいレイアウトのために、冬–春または秋–夏を選択します。' },
       specialDates: { label: '特別な日付：', text: ' 任意の特別な日付を表示します。「今日」のチェックを外すと、今日の日付の赤い線が削除されます。' },
       reset: { label: 'デフォルトにリセット：', text: 'リセットボタンをクリックしてデフォルト設定に戻し、このポップアップを再表示してください。' },
@@ -136,7 +136,7 @@ const translations: Record<Language, Translations> = {
     title: '맞춤형 해시계 만들기',
     steps: {
       location: { label: '위치:', text: ' 드롭다운 메뉴, 대화형 지도를 사용하거나 위도와 경도를 직접 입력하세요.' },
-      gnomon: { label: '그노몬 스타일:', text: ' 종이 해시계와 실습 실험에 완벽한 혁신적인 팝업 그노몬을 놓치지 마세요.' },
+      gnomon: { label: '그노몬 스타일:', text: ' 혁신적인 팝업 그노몬, 특히 새로운 그리팅 카드 팝업을 놓치지 마세요. 종이 해시계와 실습 실험에 완벽합니다.' },
       dateRange: { label: '전체/반년:', text: '더 깔끔하고 읽기 쉬운 레이아웃을 위해 겨울–봄 또는 가을–여름을 선택합니다.' },
       specialDates: { label: '특별한 날짜:', text: ' 원하는 특별한 날짜를 표시합니다. \'오늘\'의 체크를 해제하면 오늘 날짜의 빨간 선이 제거됩니다.' },
       reset: { label: '기본값으로 재설정:', text: '재설정 버튼을 클릭하여 기본값을 복원하고 이 팝업을 다시 표시하세요.' },
@@ -149,7 +149,7 @@ const translations: Record<Language, Translations> = {
     title: 'Как Создать Свой Персональный Солнечные Часы',
     steps: {
       location: { label: 'Местоположение:', text: ' Используйте выпадающее меню, интерактивную карту или введите широту и долготу напрямую.' },
-      gnomon: { label: 'Стиль Гномона:', text: ' Не пропустите инновационный всплывающий гномон, идеально подходящий для бумажных часов и практических экспериментов.' },
+      gnomon: { label: 'Стиль Гномона:', text: ' Не пропустите инновационные всплывающие гномоны, особенно новый всплывающий гномон-открытка, идеально подходящий для бумажных часов и практических экспериментов.' },
       dateRange: { label: 'Полный/Полугодовой:', text: ': Выберите Зима–Весна или Осень–Лето для более чистого и удобочитаемого макета.' },
       specialDates: { label: 'Особые Даты:', text: ': Отображайте любые особые даты. Снимите флажок «Сегодня», чтобы удалить красную линию с сегодняшней датой.' },
       reset: { label: 'Сбросить к Значениям по Умолчанию:', text: 'Нажмите кнопку Сбросить, чтобы восстановить настройки по умолчанию и вернуть это всплывающее окно.' },
@@ -162,7 +162,7 @@ const translations: Record<Language, Translations> = {
     title: 'كيفية بناء ساعتك الشمسية المخصصة',
     steps: {
       location: { label: 'الموقع:', text: ' استخدم القائمة المنسدلة أو الخريطة التفاعلية أو أدخل خط العرض وخط الطول مباشرة.' },
-      gnomon: { label: 'نمط العقرب:', text: ' لا تفوت العقرب المنبثق المبتكر، المثالي للساعات الورقية والتجارب العملية.' },
+      gnomon: { label: 'نمط العقرب:', text: ' لا تفوت العقارب المنبثقة المبتكرة، وخاصة النافذة المنبثقة الجديدة لبطاقة التهنئة، المثالية للساعات الورقية والتجارب العملية.' },
       dateRange: { label: 'سنة كاملة/نصف سنة:', text: ': اختر الشتاء–الربيع أو الخريف–الصيف للحصول على تخطيط أنظف وأسهل للقراءة.' },
       specialDates: { label: 'تواريخ خاصة:', text: ': اعرض أي تواريخ خاصة. قم بإلغاء تحديد \'اليوم\' لإزالة الخط الأحمر مع تاريخ اليوم.' },
       reset: { label: 'إعادة التعيين إلى الافتراضيات:', text: 'انقر على زر إعادة التعيين لاستعادة الإعدادات الافتراضية وإعادة عرض هذه النافذة المنبثقة.' },
