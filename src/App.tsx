@@ -109,9 +109,9 @@ const MobileTabBar: React.FC<{ onResetDefaults: () => void }> = ({ onResetDefaul
 };
 
 const App: React.FC = () => {
-  const [latitude, setLatitude] = useState(38.2530);
-  const [longitude, setLongitude] = useState(-85.7592);
-  const [tzMeridian, setTzMeridian] = useState(-75); // Eastern Standard Time meridian (EST = UTC-5 = -75°)
+  const [latitude, setLatitude] = useState(40.5853);
+  const [longitude, setLongitude] = useState(-105.0844);
+  const [tzMeridian, setTzMeridian] = useState(-105); // Mountain Standard Time meridian (MST = UTC-7 = -105°)
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
   const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base'>('popup-with-brace');
