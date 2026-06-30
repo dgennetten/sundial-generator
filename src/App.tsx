@@ -222,7 +222,7 @@ const App: React.FC = () => {
   const [sundialNotesPositionMode, setSundialNotesPositionMode] = useState<'auto' | 'manual'>('auto');
   const [sundialNotesOffset, setSundialNotesOffset] = useState<number>(0); // in mm
   const [sundialNotesOffsetHorizontal, setSundialNotesOffsetHorizontal] = useState<number>(0); // in mm
-  const [locationName, setLocationName] = useState<string>('NASS, Louisville, KY');
+  const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
   const [printedDialsMapRefreshTrigger, setPrintedDialsMapRefreshTrigger] = useState<number>(0);
   const [language, setLanguage] = useState<string>(
     () => (typeof window !== 'undefined' ? localStorage.getItem('sundial-welcome-language') : null) || 'en'
