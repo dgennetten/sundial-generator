@@ -52,7 +52,14 @@ const GnomonSettings: React.FC<Props> = ({
 
   // Responsive: detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
-  const [autoHeight, setAutoHeight] = useState<number>(0);
+  // Initialize autoHeight synchronously so the auto gnomon position is correct on the
+  // very first render. Starting at 0 caused a post-mount effect cascade (autoHeight 0 →
+  // computed → recompute position → onChange) that visibly shifted the dial on load.
+  const [autoHeight, setAutoHeight] = useState<number>(() =>
+    mode === 'auto'
+      ? calcAutoHeight(latitude, longitude, tzMeridian, pageHeight, dialInclination, dialDeclination)
+      : 0
+  );
   const [positionMode, setPositionMode] = useState<PositionMode>(propPositionMode || 'auto');
   const [manualPosition, setManualPosition] = useState<number>(propPosition || 0);
   const [manualHorizontalPosition, setManualHorizontalPosition] = useState<number>(propHorizontalPosition ?? Math.round(pageWidth / 2));
