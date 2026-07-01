@@ -11,7 +11,7 @@ const locations: { [key: string]: { lat: number; lng: number } } = {
   'Cocoa Beach, FL USA': { lat: 28.3200, lng: -80.6076 },
   'Dallas, TX USA': { lat: 32.7767, lng: -96.7970 },
   'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
-  'Los Barriles, Mexico': { lat: 23.6880, lng: -109.6930 },
+  'Honolulu, Hawaii': { lat: 21.3069, lng: -157.8583 },
   'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321 },
   'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747 },
   'Recife, Brazil': { lat: -8.0476, lng: -34.8770 },
@@ -64,7 +64,7 @@ const getTimezoneFromCoordinates = (lat: number, lng: number) => {
   const timezoneData = [
     // North America
     { lat: 40.5853, lng: -105.0844, timeZoneId: 'America/Denver', name: 'Mountain Time', offset: -7, dstOffset: 1 }, // Fort Collins
-    { lat: 23.6880, lng: -109.6930, timeZoneId: 'America/Mazatlan', name: 'Mountain Standard Time', offset: -7, dstOffset: 0 }, // Los Barriles
+    { lat: 21.3069, lng: -157.8583, timeZoneId: 'Pacific/Honolulu', name: 'Hawaii-Aleutian Standard Time', offset: -10, dstOffset: 0 }, // Honolulu (no DST)
     { lat: 28.3200, lng: -80.6076, timeZoneId: 'America/New_York', name: 'Eastern Time', offset: -5, dstOffset: 1 }, // Cocoa Beach
     { lat: 38.2530, lng: -85.7592, timeZoneId: 'America/Kentucky/Louisville', name: 'Eastern Time', offset: -5, dstOffset: 1 }, // Louisville KY
     { lat: 34.9496, lng: -81.9321, timeZoneId: 'America/New_York', name: 'Eastern Time', offset: -5, dstOffset: 1 }, // Spartanburg

@@ -1165,7 +1165,7 @@ const App: React.FC = () => {
             } else {
               const locations: { [key: string]: { lat: number; lng: number } } = {
                 'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
-                'Los Barriles, Mexico': { lat: 23.6880, lng: -109.6930 },
+                'Honolulu, Hawaii': { lat: 21.3069, lng: -157.8583 },
                 'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321 },
                 'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747 },
                 'Recife, Brazil': { lat: -8.0476, lng: -34.8770 },
