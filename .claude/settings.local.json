@@ -52,7 +52,8 @@
       "PowerShell(\"---- index.html clean? ----\")",
       "PowerShell(\"---- probes gone? ----\")",
       "PowerShell(if \\($LASTEXITCODE -ne 0\\) { \"No probe references found \\(clean\\)\" })",
-      "PowerShell(git pull)"
+      "PowerShell(git pull)",
+      "PowerShell(npm run test:run -- gnomonShadowUtils 2>&1)"
     ]
   }
 }

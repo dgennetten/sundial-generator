@@ -12,7 +12,6 @@ import {
   getLocationDateTime,
   isLocationInDST,
   getAnimatedLocationDateTime,
-  animationSweepProgress,
   PENUMBRA_LAYER_OPACITY,
   penumbraLayerFill,
   penumbraLayerOffsets,
@@ -54,13 +53,13 @@ function shadowArgs(dateTime = SUMMER_MORNING, gnomonHeight = 10) {
 describe('getAnimatedLocationDateTime', () => {
   const anchor = { year: 2026, month: 5, day: 15, dayOfYear: 166, hour: 14 };
 
-  it('sweeps hours forward then back for seamless Day loops', () => {
+  it('sweeps hours forward only for Day mode (no reverse)', () => {
     const start = getAnimatedLocationDateTime('Day', 0, anchor, 4, 20);
     const mid = getAnimatedLocationDateTime('Day', 0.5, anchor, 4, 20);
     const end = getAnimatedLocationDateTime('Day', 1, anchor, 4, 20);
     expect(start.hour).toBeCloseTo(4, 5);
-    expect(mid.hour).toBeCloseTo(20, 5);
-    expect(end.hour).toBeCloseTo(4, 5);
+    expect(mid.hour).toBeCloseTo(12, 5);
+    expect(end.hour).toBeCloseTo(20, 5);
   });
 
   it('sweeps days through the year for Hour mode', () => {
@@ -72,10 +71,11 @@ describe('getAnimatedLocationDateTime', () => {
     expect(summer.month).toBeGreaterThanOrEqual(5);
   });
 
-  it('uses ping-pong sweep so loop endpoints match', () => {
-    expect(animationSweepProgress(0)).toBeCloseTo(0, 5);
-    expect(animationSweepProgress(0.5)).toBeCloseTo(1, 5);
-    expect(animationSweepProgress(1)).toBeCloseTo(0, 5);
+  it('sweeps days forward only for Hour mode (no reverse)', () => {
+    const start = getAnimatedLocationDateTime('Hour', 0, anchor, 4, 20);
+    const end = getAnimatedLocationDateTime('Hour', 1, anchor, 4, 20);
+    expect(start.dayOfYear).toBe(1);
+    expect(end.dayOfYear).toBe(365);
   });
 });
 

@@ -855,12 +855,6 @@ export function shadowPointsToSvgPath(points: Point2[]): string {
   return `M ${first.x} ${first.y} ${rest.map((p) => `L ${p.x} ${p.y}`).join(' ')} Z`;
 }
 
-/** Map linear 0→1 cycle progress to a 0→1→0 sweep (no discontinuity at loop). */
-export function animationSweepProgress(linearProgress: number): number {
-  const t = Math.max(0, Math.min(1, linearProgress));
-  return t < 0.5 ? t * 2 : 2 - t * 2;
-}
-
 /** Interpolate animation state: Day = hour sweep at current date; Hour = day sweep at current hour. */
 export function getAnimatedLocationDateTime(
   mode: 'Day' | 'Hour',
@@ -869,12 +863,13 @@ export function getAnimatedLocationDateTime(
   startHour: number,
   stopHour: number,
 ): LocationDateTime {
-  const sweep = animationSweepProgress(progress);
+  // Forward-only sweep: play through the range and loop back to the start (no reverse).
+  const t = Math.max(0, Math.min(1, progress));
   if (mode === 'Day') {
-    const hour = startHour + sweep * (stopHour - startHour);
+    const hour = startHour + t * (stopHour - startHour);
     return { ...anchor, hour };
   }
-  const dayOfYear = 1 + Math.floor(sweep * 364.999);
+  const dayOfYear = 1 + Math.floor(t * 364.999);
   const { month, day } = monthDayFromDayOfYear(anchor.year, dayOfYear);
   return { ...anchor, dayOfYear, month, day };
 }
