@@ -70,6 +70,8 @@ const GnomonSettings: React.FC<Props> = ({
 
   // Responsive: detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
+  // Crosshair gnomons have no popup body to cast a shadow, so animation is not applicable
+  const isCrosshair = gnomonType.startsWith('crosshair');
   // Initialize autoHeight synchronously so the auto gnomon position is correct on the
   // very first render. Starting at 0 caused a post-mount effect cascade (autoHeight 0 →
   // computed → recompute position → onChange) that visibly shifted the dial on load.
@@ -621,10 +623,16 @@ const GnomonSettings: React.FC<Props> = ({
             {locationShadowPreview && onLocationShadowAnimationChange && (
               <div style={{ marginTop: '0.5rem', paddingLeft: '1.25rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
+                  <label style={{
+                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    cursor: isCrosshair ? 'not-allowed' : 'pointer',
+                    fontSize: '0.875rem',
+                    color: isCrosshair ? '#9ca3af' : undefined,
+                  }}>
                     <input
                       type="checkbox"
-                      checked={locationShadowAnimation}
+                      checked={locationShadowAnimation && !isCrosshair}
+                      disabled={isCrosshair}
                       onChange={(e) => {
                         onLocationShadowAnimationChange(e.target.checked);
                         if (!e.target.checked) {
