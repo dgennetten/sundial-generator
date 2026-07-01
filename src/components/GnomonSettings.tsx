@@ -725,15 +725,15 @@ const GnomonSettings: React.FC<Props> = ({
                       {locationShadowAnimationPaused ? <Play size={14} /> : <Pause size={14} />}
                     </button>
                   )}
+                  <input
+                    type="text"
+                    className="form-input"
+                    readOnly
+                    value={locationShadowDateTimeLabel}
+                    style={{ fontSize: '0.8rem', color: '#4a5568', width: '8.5rem', padding: '0.25rem 0.4rem' }}
+                    aria-label="Shadow preview date and time"
+                  />
                 </div>
-                <input
-                  type="text"
-                  className="form-input"
-                  readOnly
-                  value={locationShadowDateTimeLabel}
-                  style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#4a5568', width: '100%' }}
-                  aria-label="Shadow preview date and time"
-                />
               </div>
             )}
           </div>

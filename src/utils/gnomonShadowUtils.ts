@@ -205,7 +205,6 @@ export function formatLocationDateTime(dt: LocationDateTime): string {
   const dateStr = date.toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
-    year: 'numeric',
     timeZone: 'UTC',
   });
   const h24 = dt.hour;
