@@ -206,6 +206,7 @@ export function createSimpleSVGExport(options: SimpleSVGExportOptions): string |
   
   // Clone the SVG element
   const svgClone = svgElement.cloneNode(true) as SVGSVGElement;
+  svgClone.querySelectorAll('.gnomon-location-shadow').forEach((el) => el.remove());
   
   // Set proper dimensions
   svgClone.setAttribute('width', `${pageWidthPt}pt`);

@@ -806,6 +806,7 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
     log.error('No SVG found in cloned container!');
     throw new Error('Cloned container has no SVG');
   }
+  tempSvg.querySelectorAll('.gnomon-location-shadow').forEach((el) => el.remove());
   
   log.debug(`Cloned SVG children count: ${tempSvg.children.length}`);
   
@@ -820,6 +821,7 @@ async function exportPNG(svgContainer: HTMLElement, options: ExportOptions): Pro
     log.error('Cloned SVG has no children! Trying to re-clone...');
     // Try to replace the empty SVG with a fresh clone
     const freshSvgClone = originalSvg.cloneNode(true) as SVGElement;
+    freshSvgClone.querySelectorAll('.gnomon-location-shadow').forEach((el) => el.remove());
     tempSvg.parentNode?.replaceChild(freshSvgClone, tempSvg);
     log.debug(`Fresh clone children count: ${freshSvgClone.children.length}`);
   }

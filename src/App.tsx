@@ -27,6 +27,7 @@ import GnomonSettings from './components/GnomonSettings';
 import DesignExport from './components/DesignExport';
 import SundialPreview from './components/SundialPreview';
 import GnomonNetSVG from './components/GnomonNetSVG';
+import { useLocationShadowTime } from './hooks/useLocationShadowTime';
 import HourlineSettings from './components/HourlineSettings';
 import { loadHourlineIntervals, type HourlineInterval, saveHourlineOverrides } from './components/hourlineUtils';
 import LineSettings from './components/LineSettings';
@@ -116,6 +117,10 @@ const App: React.FC = () => {
   const [gnomonHeight, setGnomonHeight] = useState(10);
   const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base'>('popup-with-brace');
   const [gnomonPreviewMode, setGnomonPreviewMode] = useState<'Dial' | 'Gnomon'>('Dial');
+  const [locationShadowPreview, setLocationShadowPreview] = useState(true);
+  const [locationShadowAnimation, setLocationShadowAnimation] = useState(false);
+  const [locationShadowAnimationPaused, setLocationShadowAnimationPaused] = useState(false);
+  const [locationShadowAnimationMode, setLocationShadowAnimationMode] = useState<'Day' | 'Hour'>('Day');
   const [pageSize, setPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom'>('Letter');
   const [customWidth, setCustomWidth] = useState<number>(8.5 * 25.4); // Store in mm
   const [customHeight, setCustomHeight] = useState<number>(11 * 25.4); // Store in mm
@@ -546,6 +551,19 @@ const App: React.FC = () => {
     })(),
     [declinationLines]
   );
+  const locationShadowTime = useLocationShadowTime(
+    locationShadowPreview,
+    locationShadowAnimation,
+    locationShadowAnimationPaused,
+    locationShadowAnimationMode,
+    tzMeridian,
+    useDST,
+    latitude,
+    longitude,
+    startHour,
+    stopHour,
+  );
+
   const previewConfig = useMemo(() => ({
     lat: latitude,
     lng: longitude,
@@ -601,6 +619,8 @@ const App: React.FC = () => {
     datelineLabelLocation,
     language,
     correctionFlags,
+    locationShadowPreview,
+    locationShadowDateTime: locationShadowTime.dateTime,
   }), [
     latitude,
     longitude,
@@ -654,6 +674,8 @@ const App: React.FC = () => {
     datelineLabelLocation,
     language,
     correctionFlags,
+    locationShadowPreview,
+    locationShadowTime.dateTime,
   ]);
 
   // Callback to restore dial configuration from saved config
@@ -1197,6 +1219,15 @@ const App: React.FC = () => {
           lockHorizontalToCenter={declinationType !== 'Manual' || Math.abs(dialDeclination) < 1e-6}
           gnomonPreviewMode={gnomonPreviewMode}
           onGnomonPreviewModeChange={setGnomonPreviewMode}
+          locationShadowPreview={locationShadowPreview}
+          onLocationShadowPreviewChange={setLocationShadowPreview}
+          locationShadowAnimation={locationShadowAnimation}
+          onLocationShadowAnimationChange={setLocationShadowAnimation}
+          locationShadowAnimationPaused={locationShadowAnimationPaused}
+          onLocationShadowAnimationPausedChange={setLocationShadowAnimationPaused}
+          locationShadowAnimationMode={locationShadowAnimationMode}
+          onLocationShadowAnimationModeChange={setLocationShadowAnimationMode}
+          locationShadowDateTimeLabel={locationShadowTime.dateTimeLabel}
           onChange={useCallback(({ mode, height, gnomonType, positionMode, position, horizontalPosition }) => {
             setGnomonMode(mode);
             setGnomonHeight(height);

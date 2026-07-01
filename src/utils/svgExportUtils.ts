@@ -121,7 +121,9 @@ export function createSVGExport(options: SVGExportOptions): string | null {
   
   // SIMPLE APPROACH: Just serialize the entire SVG content directly
   // This avoids all the complex layering that was causing duplicate dials
-  const svgInnerContent = svgElement.innerHTML;
+  const exportSvg = svgElement.cloneNode(true) as SVGSVGElement;
+  exportSvg.querySelectorAll('.gnomon-location-shadow').forEach((el) => el.remove());
+  const svgInnerContent = exportSvg.innerHTML;
   log.debug('SVG inner content length:', svgInnerContent.length);
   
   // Add the content directly without any special processing

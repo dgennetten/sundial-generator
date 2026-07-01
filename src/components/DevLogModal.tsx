@@ -116,13 +116,16 @@ const DevLogModal: React.FC<DevLogModalProps> = ({ onClose }) => {
         {/* Scrollable entries */}
         <div
           style={{
-            flex: 1,
+            flex: '1 1 auto',
             overflowY: 'auto',
+            overflowX: 'hidden',
             padding: '16px 20px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
             minHeight: 0,
+            maxHeight: 'min(52vh, 420px)',
+            WebkitOverflowScrolling: 'touch',
           }}
         >
           {/* Latest entry */}

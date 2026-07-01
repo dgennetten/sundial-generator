@@ -7,6 +7,8 @@ import type { LineStyle } from './LineSettings';
 import type { HourlineInterval } from './hourlineUtils';
 import { Sun, Maximize2, Minimize2 } from 'lucide-react';
 import GnomonSVG from './GnomonSVG';
+import GnomonShadowSVG from './GnomonShadowSVG';
+import type { LocationDateTime } from '../utils/gnomonShadowUtils';
 import { log } from '../utils/logger';
 import { DIAL_LABELS } from './WelcomeDialog';
 import type { Language } from './WelcomeDialog';
@@ -77,6 +79,8 @@ type Props = {
   datelineLabelLocation?: 'edge' | 'noonmark';
   language?: string;
   correctionFlags?: CorrectionFlags;
+  locationShadowPreview?: boolean;
+  locationShadowDateTime?: LocationDateTime;
 };
 // Note: App now prefers passing a single `config` prop. To keep JSX happy where only `config` is provided,
 // we use a union props type here and normalize to a single `p` object.
@@ -145,6 +149,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     datelineLabelLocation = 'edge',
     language = 'en',
     correctionFlags,
+    locationShadowPreview = false,
+    locationShadowDateTime,
   } = p;
 
   // Compute effective parameters based on correction flags.
@@ -2356,6 +2362,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const scaledWidth = width * viewBoxScaleFactor;
   const scaledHeight = height * viewBoxScaleFactor;
   const scaledBorderMargin = borderMarginMm * viewBoxScaleFactor;
+  const gnomonContentTransform = `translate(${(gnomonHorizontalPosition ?? width / 2) - width / 2}, ${(gnomonPosition ?? 0) - (height / 2)})${dialInclination === 0 && dialDeclination !== 0 ? ` rotate(${dialDeclination})` : ''}`;
+  const showLocationShadow =
+    locationShadowPreview &&
+    locationShadowDateTime &&
+    (gnomonType === 'popup' || gnomonType === 'popup-with-brace' || gnomonType === 'glued-popup-base');
 
   // Show border when borderStyle is not 'none'
   const showBorder = borderStyle !== 'none';
@@ -2781,7 +2792,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
             {/* Content positioned relative to gnomon.
                 For horizontal dials (dialInclination=0), declining is a plate rotation: rotate by dialDeclination.
                 For inclined dials, the 3D projection math already accounts for dialDeclination. */}
-            <g transform={`translate(${(gnomonHorizontalPosition ?? width / 2) - width / 2}, ${(gnomonPosition ?? 0) - (height / 2)})${dialInclination === 0 && dialDeclination !== 0 ? ` rotate(${dialDeclination})` : ''}`}>
+            <g transform={gnomonContentTransform}>
+              {declinationLineElements}
+              {hourlineElements.flat()}
+              {noonComplementElements}
+              {declinationNoonmarkElements}
+
               {/* Gnomon mark at (0,0) */}
               <GnomonSVG
                 gnomonType={gnomonType}
@@ -2792,13 +2808,6 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 fontSize={fontSize}
                 originalLatitude={originalLatitude}
               />
-
-              {declinationLineElements}
-              {hourlineElements.flat()}
-              {noonComplementElements}
-              {declinationNoonmarkElements}
-
-
 
               {/* Hour labels — counter-rotate to keep readable when main group is flipped */}
               {hourLabelElements.map((label, index) => {
@@ -3298,6 +3307,25 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               })()}
             </g>
           </g>
+          {showLocationShadow && (
+            <g
+              transform={`${effectiveDialOrientation === 'North' ? 'rotate(180) ' : ''}scale(${viewBoxScaleFactor})`}
+            >
+              <g transform={gnomonContentTransform}>
+                <GnomonShadowSVG
+                  gnomonHeight={gnomonHeight}
+                  lat={lat}
+                  lng={lng}
+                  tzMeridian={tzMeridian}
+                  useDST={useDST}
+                  dialInclination={dialInclination}
+                  dialDeclination={dialDeclination}
+                  originalLatitude={originalLatitude}
+                  shadowDateTime={locationShadowDateTime}
+                />
+              </g>
+            </g>
+          )}
         </svg>
       </div>
     </div>

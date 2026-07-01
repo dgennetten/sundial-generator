@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { getAnalemmaPointsProjected } from '../utils/analemmaGenerator';
 import { calculateAutoGnomonHeight as calcAutoHeight } from '../utils/sundialMath';
-import { MoveUpRight } from 'lucide-react';
+import { MoveUpRight, Pause, Play } from 'lucide-react';
 
 type Mode = 'auto' | 'manual';
 type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base';
@@ -27,6 +27,15 @@ interface Props {
   /** Preview toggle for Glued Popup Base: 'Gnomon' shows the cut-and-fold net, 'Dial' shows normal preview */
   gnomonPreviewMode?: 'Dial' | 'Gnomon';
   onGnomonPreviewModeChange?: (mode: 'Dial' | 'Gnomon') => void;
+  locationShadowPreview?: boolean;
+  onLocationShadowPreviewChange?: (enabled: boolean) => void;
+  locationShadowAnimation?: boolean;
+  onLocationShadowAnimationChange?: (enabled: boolean) => void;
+  locationShadowAnimationPaused?: boolean;
+  onLocationShadowAnimationPausedChange?: (paused: boolean) => void;
+  locationShadowAnimationMode?: 'Day' | 'Hour';
+  onLocationShadowAnimationModeChange?: (mode: 'Day' | 'Hour') => void;
+  locationShadowDateTimeLabel?: string;
   onChange: (values: { mode: Mode; height: number; gnomonType: GnomonType; positionMode?: PositionMode; position?: number; horizontalPosition?: number }) => void;
 }
 
@@ -47,6 +56,15 @@ const GnomonSettings: React.FC<Props> = ({
   lockHorizontalToCenter = false,
   gnomonPreviewMode = 'Dial',
   onGnomonPreviewModeChange,
+  locationShadowPreview = true,
+  onLocationShadowPreviewChange,
+  locationShadowAnimation = false,
+  onLocationShadowAnimationChange,
+  locationShadowAnimationPaused = false,
+  onLocationShadowAnimationPausedChange,
+  locationShadowAnimationMode = 'Day',
+  onLocationShadowAnimationModeChange,
+  locationShadowDateTimeLabel = '',
   onChange,
 }) => {
 
@@ -574,6 +592,115 @@ const GnomonSettings: React.FC<Props> = ({
             <p style={{ fontSize: '0.9em', color: '#718096', margin: 0 }}>
               Auto-calculated Position: <strong>{autoPosition} mm</strong> from edge 
             </p>
+          </div>
+        )}
+
+        {onLocationShadowPreviewChange && (
+          <div className="form-group" style={{ marginTop: '0.5rem', borderTop: '1px solid #e2e8f0', paddingTop: '0.75rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
+              <input
+                type="checkbox"
+                checked={locationShadowPreview}
+                onChange={(e) => {
+                  onLocationShadowPreviewChange(e.target.checked);
+                  if (!e.target.checked) {
+                    onLocationShadowAnimationPausedChange?.(false);
+                  }
+                }}
+              />
+              Live preview of on-location shadow
+            </label>
+
+            {locationShadowPreview && onLocationShadowAnimationChange && (
+              <div style={{ marginTop: '0.5rem', paddingLeft: '1.25rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={locationShadowAnimation}
+                      onChange={(e) => {
+                        onLocationShadowAnimationChange(e.target.checked);
+                        if (!e.target.checked) {
+                          onLocationShadowAnimationPausedChange?.(false);
+                        }
+                      }}
+                    />
+                    Animation:
+                  </label>
+                  {onLocationShadowAnimationModeChange && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{
+                        fontSize: '0.875rem',
+                        color: locationShadowAnimationMode === 'Day' ? '#2563eb' : '#9ca3af',
+                        fontWeight: locationShadowAnimationMode === 'Day' ? '600' : '400',
+                      }}>Day</span>
+                      <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={locationShadowAnimationMode === 'Hour'}
+                          onChange={(e) => onLocationShadowAnimationModeChange(e.target.checked ? 'Hour' : 'Day')}
+                          style={{ opacity: 0, width: 0, height: 0 }}
+                        />
+                        <span style={{
+                          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                          backgroundColor: locationShadowAnimationMode === 'Hour' ? '#2563eb' : '#cbd5e0',
+                          borderRadius: '24px',
+                          transition: 'background-color 0.3s',
+                          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
+                        }}>
+                          <span style={{
+                            position: 'absolute',
+                            height: '18px', width: '18px',
+                            left: locationShadowAnimationMode === 'Hour' ? '22px' : '3px',
+                            bottom: '3px',
+                            backgroundColor: 'white',
+                            borderRadius: '50%',
+                            transition: 'left 0.3s',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                          }} />
+                        </span>
+                      </label>
+                      <span style={{
+                        fontSize: '0.875rem',
+                        color: locationShadowAnimationMode === 'Hour' ? '#2563eb' : '#9ca3af',
+                        fontWeight: locationShadowAnimationMode === 'Hour' ? '600' : '400',
+                      }}>Hour</span>
+                    </div>
+                  )}
+                  {locationShadowAnimation && onLocationShadowAnimationPausedChange && (
+                    <button
+                      type="button"
+                      onClick={() => onLocationShadowAnimationPausedChange(!locationShadowAnimationPaused)}
+                      title={locationShadowAnimationPaused ? 'Resume animation' : 'Pause animation'}
+                      aria-label={locationShadowAnimationPaused ? 'Resume animation' : 'Pause animation'}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '28px',
+                        height: '28px',
+                        padding: 0,
+                        border: '1px solid #cbd5e0',
+                        borderRadius: '6px',
+                        background: locationShadowAnimationPaused ? '#edf2f7' : 'white',
+                        color: '#2563eb',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {locationShadowAnimationPaused ? <Play size={14} /> : <Pause size={14} />}
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  className="form-input"
+                  readOnly
+                  value={locationShadowDateTimeLabel}
+                  style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#4a5568', width: '100%' }}
+                  aria-label="Shadow preview date and time"
+                />
+              </div>
+            )}
           </div>
         )}
       </div>

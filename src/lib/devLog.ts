@@ -36,6 +36,11 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-06-25',
     content: "**Atmospheric Refraction** is now a live correction you can toggle. Earth's atmosphere bends sunlight near the horizon — making the sun appear slightly higher than it truly is. On a sundial this shifts the shadow position, most noticeably at low solar altitudes (early morning, late evening, and winter hours at higher latitudes). The correction uses **Bennett's formula** (R = 1.02 / tan(h + 10.3/(h + 5.11))), accurate to ~0.07 arcminutes. Open **Components of Correction** in the About card to experiment. Dial decoration text is now language-localized. On desktop, click the expand icon in the preview header to go full screen — the controls float in a draggable panel you can reposition or dismiss. — KDG (v2.19.0)",
   },
+  {
+    id: 7,
+    date: '2026-07-01',
+    content: "**Live on-location shadow preview** for popup gnomons. In Gnomon Settings, enable **Live preview of on-location shadow** to see a gray shadow on the dial for your chosen location and time. The umbra is a rubber-band convex hull around the popup triangle and the mean-sun shadow point. The penumbra (soft fringe at the tip) comes from the finite solar disc — eight limb positions projected through the same 3D dial geometry as hour lines, built into three nested envelope hulls with stacked opacity (no SVG blur). **Animate** sweeps a 30-second ping-pong cycle: **Day** mode moves civil time across your hour-line range at today's date; **Hour** mode holds clock time fixed and sweeps the year so you can watch solstice and equinox shadow length change. Pause/resume is supported. DST transitions use regional Sunday rules as days animate. Preview only — shadow is omitted from export. Technical details: docs/location-shadow-penumbra.md — KDG (v2.20.0)",
+  },
 ]
 
 export type LogPref =
