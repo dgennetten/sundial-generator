@@ -29,7 +29,30 @@
       "PowerShell(git push)",
       "PowerShell(git check-ignore .env.local)",
       "PowerShell(if \\($?\\) { \"OK: .env.local is gitignored\" } else { \"WARNING: .env.local is NOT ignored\" })",
-      "PowerShell(\"---\")"
+      "PowerShell(\"---\")",
+      "Bash(curl -s http://localhost:5174/)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:5174/)",
+      "Bash(echo \"HTTP: $\\(curl -s -o /dev/null -w '%{http_code}' http://localhost:5174/\\)\")",
+      "PowerShell(git log --oneline -i --grep=\"cent\" --grep=\"preview\" --grep=\"vertical\" --grep=\"jump\" --grep=\"scroll\" -E --all)",
+      "PowerShell(\"==== DIFF \\(css/preview only\\) ====\")",
+      "PowerShell(git log --oneline --all -i --grep=\"jump\")",
+      "PowerShell(git log --oneline --all -i --grep=\"flash\")",
+      "PowerShell(git log --oneline --all -i --grep=\"wobble\")",
+      "PowerShell(git log --oneline --all -i --grep=\"reflow\")",
+      "PowerShell(git log --oneline --all -i --grep=\"settle\")",
+      "PowerShell(git log --oneline --all -i --grep=\"initial render\")",
+      "PowerShell(git log --oneline --all -i --grep=\"too low\")",
+      "PowerShell(git log --oneline --all -i --grep=\"centered preview\")",
+      "PowerShell(\"----\")",
+      "PowerShell(git log --oneline -L '/sundial-preview-svg-host/,+4:src/App.css' 2>$null)",
+      "PowerShell(\"---- configHash introduced ----\")",
+      "PowerShell(npx tsc -b 2>&1 | Select-Object -Last 20; \"EXIT: $LASTEXITCODE\")",
+      "PowerShell(\"---- diff stat ----\")",
+      "PowerShell(npx tsc -b 2>&1 | Select-Object -Last 15; \"EXIT: $LASTEXITCODE\")",
+      "PowerShell(\"---- index.html clean? ----\")",
+      "PowerShell(\"---- probes gone? ----\")",
+      "PowerShell(if \\($LASTEXITCODE -ne 0\\) { \"No probe references found \\(clean\\)\" })",
+      "PowerShell(git pull)"
     ]
   }
 }
