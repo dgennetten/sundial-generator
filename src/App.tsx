@@ -37,6 +37,7 @@ import DeclinationLineOptions from './components/DeclinationLineOptions';
 import { loadDeclinationLines } from './components/declinationLineUtils';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
 import { getDisplayTiltAngle, calculateAutoGnomonHeight, getWallDeclinationForPreset, getCancerInclineWithDeclination, getCapricornInclineWithDeclination } from './utils/sundialMath';
+import { getAnalemmaPointsProjected } from './utils/analemmaGenerator';
 import type { CorrectionFlags } from './utils/sundialMath';
 import AboutCard from './components/AboutCard';
 // import VisitorMap from './components/VisitorMap';
@@ -110,9 +111,9 @@ const MobileTabBar: React.FC<{ onResetDefaults: () => void }> = ({ onResetDefaul
 };
 
 const App: React.FC = () => {
-  const [latitude, setLatitude] = useState(38.2530);
-  const [longitude, setLongitude] = useState(-85.7592);
-  const [tzMeridian, setTzMeridian] = useState(-75); // Eastern Standard Time meridian (EST = UTC-5 = -75°)
+  const [latitude, setLatitude] = useState(40.5853);
+  const [longitude, setLongitude] = useState(-105.0844);
+  const [tzMeridian, setTzMeridian] = useState(-105); // Mountain Standard Time meridian (MST = UTC-7 = -105°)
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
   const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base'>('popup-with-brace');
@@ -227,7 +228,7 @@ const App: React.FC = () => {
   const [sundialNotesPositionMode, setSundialNotesPositionMode] = useState<'auto' | 'manual'>('auto');
   const [sundialNotesOffset, setSundialNotesOffset] = useState<number>(0); // in mm
   const [sundialNotesOffsetHorizontal, setSundialNotesOffsetHorizontal] = useState<number>(0); // in mm
-  const [locationName, setLocationName] = useState<string>('NASS, Louisville, KY');
+  const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
   const [printedDialsMapRefreshTrigger, setPrintedDialsMapRefreshTrigger] = useState<number>(0);
   const [language, setLanguage] = useState<string>(
     () => (typeof window !== 'undefined' ? localStorage.getItem('sundial-welcome-language') : null) || 'en'
@@ -485,6 +486,30 @@ const App: React.FC = () => {
       : gnomonHeight
   ), [gnomonMode, pageHeight, gnomonHeight, autoGnomonHeight]);
 
+  // Auto vertical gnomon position (noon analemma centered on the page). Computed
+  // synchronously so the preview is correctly centered on the very first render;
+  // GnomonSettings pushes the same value via onChange, but relying on that alone
+  // made the dial visibly jump on load. Mirrors calculateAutoGnomonPosition there.
+  const autoGnomonVerticalPosition = useMemo(() => {
+    const noonPoints = getAnalemmaPointsProjected({
+      lat: latitude,
+      lng: longitude,
+      tzMeridian,
+      hour: 12,
+      styleHeight: effectiveGnomonHeight,
+      dialInclination,
+      dialDeclination,
+    });
+    if (!noonPoints.length) return Math.round(pageHeight * 0.2);
+    const yVals = noonPoints.map(p => p.y);
+    const centerY = (Math.min(...yVals) + Math.max(...yVals)) / 2;
+    return Math.round(pageHeight / 2 - centerY);
+  }, [latitude, longitude, tzMeridian, effectiveGnomonHeight, dialInclination, dialDeclination, pageHeight]);
+
+  // When in auto position mode, use the synchronously-computed position for rendering
+  // instead of the state value that GnomonSettings updates after mount.
+  const effectiveGnomonPosition = gnomonPositionMode === 'auto' ? autoGnomonVerticalPosition : gnomonPosition;
+
   const activeHourlineIntervals = useMemo(() =>
     hourlineIntervals.filter(i => i.active),
     [hourlineIntervals]
@@ -591,7 +616,7 @@ const App: React.FC = () => {
     dialShape,
     borderStyle,
     borderMargin,
-    gnomonPosition,
+    gnomonPosition: effectiveGnomonPosition,
     gnomonHorizontalPosition,
     showBackground,
     backgroundColor,
@@ -645,7 +670,7 @@ const App: React.FC = () => {
     dialShape,
     borderStyle,
     borderMargin,
-    gnomonPosition,
+    effectiveGnomonPosition,
     gnomonHorizontalPosition,
     showBackground,
     backgroundColor,
@@ -1089,7 +1114,7 @@ const App: React.FC = () => {
           onLogComplete={handleLogComplete}
           tzMeridian={tzMeridian}
           gnomonMode={gnomonMode}
-          gnomonPosition={gnomonPosition}
+          gnomonPosition={effectiveGnomonPosition}
           gnomonPositionMode={gnomonPositionMode}
           gnomonHorizontalPosition={gnomonHorizontalPosition}
           customUnits={customUnits}

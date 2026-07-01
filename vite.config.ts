@@ -5,6 +5,10 @@ import packageJson from './package.json'
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    // Honor the PORT env var when provided (e.g. by preview tooling); otherwise use Vite's default
+    ...(process.env.PORT ? { port: Number(process.env.PORT), strictPort: true } : {}),
+  },
   plugins: [
     react(),
     // Bundle analyzer - only in analyze mode

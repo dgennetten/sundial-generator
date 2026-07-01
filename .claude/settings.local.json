@@ -19,7 +19,17 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
-      "Bash(openssl passwd *)"
+      "Bash(openssl passwd *)",
+      "PowerShell(npm run build)",
+      "PowerShell(npm run deploy-sftp)",
+      "PowerShell(git add -A)",
+      "PowerShell(git restore --staged .claude/settings.local.json)",
+      "PowerShell(git config user.name \"Douglas Gennetten\")",
+      "PowerShell(git config user.email \"douglas@gennetten.com\")",
+      "PowerShell(git push)",
+      "PowerShell(git check-ignore .env.local)",
+      "PowerShell(if \\($?\\) { \"OK: .env.local is gitignored\" } else { \"WARNING: .env.local is NOT ignored\" })",
+      "PowerShell(\"---\")"
     ]
   }
 }
