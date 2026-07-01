@@ -86,6 +86,26 @@ const GnomonSettings: React.FC<Props> = ({
   const [autoPosition, setAutoPosition] = useState<number>(0);
   const userInitiatedChangeRef = useRef<boolean>(false);
 
+  // Crosshair gnomons cast no popup-body shadow, so the location-shadow preview is turned
+  // off and disabled while a crosshair type is selected, then restored to its prior state
+  // when a non-crosshair type is chosen again.
+  const prevShadowPreviewRef = useRef<boolean>(locationShadowPreview);
+  const wasCrosshairRef = useRef<boolean>(isCrosshair);
+  useEffect(() => {
+    if (isCrosshair && !wasCrosshairRef.current) {
+      // Entering crosshair: remember the current state and turn the preview off.
+      prevShadowPreviewRef.current = locationShadowPreview;
+      if (locationShadowPreview) {
+        onLocationShadowPreviewChange?.(false);
+        onLocationShadowAnimationPausedChange?.(false);
+      }
+    } else if (!isCrosshair && wasCrosshairRef.current) {
+      // Leaving crosshair: restore the previous preview state.
+      onLocationShadowPreviewChange?.(prevShadowPreviewRef.current);
+    }
+    wasCrosshairRef.current = isCrosshair;
+  }, [isCrosshair, locationShadowPreview, onLocationShadowPreviewChange, onLocationShadowAnimationPausedChange]);
+
   // Function to calculate gnomon height based on winter-to-summer solstice distance
   const calculateAutoGnomonHeight = (lat: number, lng: number, tz: number, pageH: number): number =>
     calcAutoHeight(lat, lng, tz, pageH, dialInclination, dialDeclination);
@@ -606,10 +626,16 @@ const GnomonSettings: React.FC<Props> = ({
 
         {onLocationShadowPreviewChange && (
           <div className="form-group" style={{ marginTop: '0.5rem', borderTop: '1px solid #e2e8f0', paddingTop: '0.75rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
+            <label style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              cursor: isCrosshair ? 'not-allowed' : 'pointer',
+              fontSize: '0.875rem',
+              color: isCrosshair ? '#9ca3af' : undefined,
+            }}>
               <input
                 type="checkbox"
-                checked={locationShadowPreview}
+                checked={locationShadowPreview && !isCrosshair}
+                disabled={isCrosshair}
                 onChange={(e) => {
                   onLocationShadowPreviewChange(e.target.checked);
                   if (!e.target.checked) {
@@ -623,16 +649,10 @@ const GnomonSettings: React.FC<Props> = ({
             {locationShadowPreview && onLocationShadowAnimationChange && (
               <div style={{ marginTop: '0.5rem', paddingLeft: '1.25rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                  <label style={{
-                    display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    cursor: isCrosshair ? 'not-allowed' : 'pointer',
-                    fontSize: '0.875rem',
-                    color: isCrosshair ? '#9ca3af' : undefined,
-                  }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem' }}>
                     <input
                       type="checkbox"
-                      checked={locationShadowAnimation && !isCrosshair}
-                      disabled={isCrosshair}
+                      checked={locationShadowAnimation}
                       onChange={(e) => {
                         onLocationShadowAnimationChange(e.target.checked);
                         if (!e.target.checked) {
