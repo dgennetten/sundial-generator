@@ -55,34 +55,22 @@ const GnomonShadowSVG: React.FC<GnomonShadowSVGProps> = ({
     ],
   );
 
-  const maskId = React.useId();
-
   if (!geometry) return null;
 
-  const { penumbraBands, triangle } = geometry;
+  const { penumbraBands } = geometry;
   const coverages = [1, 2, 3] as const;
-  const trianglePath = shadowPointsToSvgPath([triangle.tip, triangle.left, triangle.right]);
 
   return (
     <g className="gnomon-location-shadow" style={{ pointerEvents: 'none' }}>
-      {/* Mask keeps the shadow everywhere except the gnomon triangle, which is left unfilled. */}
-      <mask id={maskId} maskUnits="userSpaceOnUse">
-        {penumbraBands.map((band, i) => (
-          <path key={coverages[i]} d={shadowPointsToSvgPath(band)} fill="white" stroke="none" />
-        ))}
-        <path d={trianglePath} fill="black" stroke="none" />
-      </mask>
-      <g mask={`url(#${maskId})`}>
-        {penumbraBands.map((band, i) => (
-          <path
-            key={coverages[i]}
-            d={shadowPointsToSvgPath(band)}
-            fill={shadowFillForCoverage(coverages[i])}
-            stroke="none"
-            fillRule="nonzero"
-          />
-        ))}
-      </g>
+      {penumbraBands.map((band, i) => (
+        <path
+          key={coverages[i]}
+          d={shadowPointsToSvgPath(band)}
+          fill={shadowFillForCoverage(coverages[i])}
+          stroke="none"
+          fillRule="nonzero"
+        />
+      ))}
     </g>
   );
 };
