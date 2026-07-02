@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Info, Instagram, Mail, Coffee, Github, Globe, Send, Rss, FlaskConical } from 'lucide-react';
 import BuildDate from './BuildDate';
 import { sendFeedback } from '../utils/feedbackUtils';
@@ -72,6 +72,15 @@ const AboutCard: React.FC<AboutCardProps> = ({
   const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [feedbackError, setFeedbackError] = useState('');
   const [showCorrections, setShowCorrections] = useState(false);
+  const correctionsPanelRef = useRef<HTMLDivElement>(null);
+
+  // When the correction panel is expanded, scroll it into view so the newly
+  // exposed controls are visible instead of hidden below the fold.
+  useEffect(() => {
+    if (showCorrections) {
+      correctionsPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, [showCorrections]);
 
   const handleFeedbackSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -293,6 +302,7 @@ algorithm which "enables it to be calculated for any epoch within 30 centuries o
             {/* Expanded correction panel */}
             {showCorrections && correctionFlags && onCorrectionFlagsChange && (
               <div
+                ref={correctionsPanelRef}
                 style={{
                   marginTop: '0.75rem',
                   padding: '0.75rem',
