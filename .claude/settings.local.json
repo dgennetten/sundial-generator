@@ -55,7 +55,17 @@
       "PowerShell(git pull)",
       "PowerShell(npm run test:run -- gnomonShadowUtils 2>&1)",
       "PowerShell(\"---- status ----\")",
-      "PowerShell(\"---- recent ----\")"
+      "PowerShell(\"---- recent ----\")",
+      "PowerShell(git status *)",
+      "PowerShell(git status)",
+      "PowerShell(git commit *)",
+      "PowerShell(git add *)",
+      "PowerShell(git log *)",
+      "PowerShell(git show *)",
+      "PowerShell(git diff *)",
+      "PowerShell(git revert *)",
+      "PowerShell(git restore *)",
+      "PowerShell(npm run *)"
     ]
   }
 }
