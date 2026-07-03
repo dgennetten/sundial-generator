@@ -57,18 +57,21 @@ const GnomonShadowSVG: React.FC<GnomonShadowSVGProps> = ({
 
   if (!geometry) return null;
 
-  const { penumbraBands } = geometry;
+  const { penumbraBands, triangle } = geometry;
   const coverages = [1, 2, 3] as const;
+  // Gnomon triangle as a subtractable hole: appended to each band and rendered
+  // with evenodd so the triangle area is Boolean-subtracted from the shadow.
+  const trianglePath = shadowPointsToSvgPath([triangle.tip, triangle.left, triangle.right]);
 
   return (
     <g className="gnomon-location-shadow" style={{ pointerEvents: 'none' }}>
       {penumbraBands.map((band, i) => (
         <path
           key={coverages[i]}
-          d={shadowPointsToSvgPath(band)}
+          d={`${shadowPointsToSvgPath(band)} ${trianglePath}`}
           fill={shadowFillForCoverage(coverages[i])}
           stroke="none"
-          fillRule="nonzero"
+          fillRule="evenodd"
         />
       ))}
     </g>

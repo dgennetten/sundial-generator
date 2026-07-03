@@ -390,6 +390,8 @@ export interface GnomonShadowGeometry {
   outerHull: Point2[];
   gradientFrame: ShadowGradientFrame;
   blurRadius: number;
+  /** Popup-gnomon triangle (dial coords) — subtracted from the shadow so the gnomon is unfilled. */
+  triangle: PopupTriangleVertices;
 }
 
 const SOFT_OUTLINE_SAMPLES = 24;
@@ -798,6 +800,7 @@ export function computeGnomonShadowGeometry(
     outerHull,
     gradientFrame: shadowGradientFrame(ctx.triangle, meanApex),
     blurRadius: computePenumbraBlurRadius(meanApex, spread),
+    triangle: ctx.triangle,
   };
 }
 
