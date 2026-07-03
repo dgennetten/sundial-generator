@@ -12,7 +12,8 @@ function getTodayDateString(): string {
 
 /**
  * Expands Decoration text block placeholders into a single string, intended for logging/email.
- * Unlike on-dial rendering, this does NOT depend on whether a "Today" declination line is visible.
+ * The {today} placeholder is expanded only when the "Today" declination line is active,
+ * mirroring the on-dial rendering so the report matches the exported dial.
  */
 export function interpretDialTextBlockForEmail(template: string, ctx: {
   locationName?: string;
@@ -24,6 +25,7 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
   tiltAngle?: number;
   declinationType?: DeclinationType;
   declinationDegrees?: number;
+  todayLineActive?: boolean;
 }): string {
   if (!template) return '';
 
@@ -96,12 +98,20 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
     .replace(/\{incline\}/gi, inclineString)
     .replace(/\{decline\}/gi, (inclineString && declineString) ? `, ${declineString}` : declineString);
 
-  // Always expand {today} for email/logging (even if it isn't shown on the dial)
-  const todayDate = getTodayDateString();
-  processedText = processedText
-    .replace(/\*\*\{today\}\*\*/gi, `**${todayDate}**`)
-    .replace(/\*\{today\}\*/gi, `*${todayDate}*`)
-    .replace(/\{today\}/gi, `**${todayDate}**`);
+  // Expand {today} only when the Today line is active on the dial; otherwise
+  // strip the placeholder so the report matches what was actually exported.
+  if (ctx.todayLineActive) {
+    const todayDate = getTodayDateString();
+    processedText = processedText
+      .replace(/\*\*\{today\}\*\*/gi, `**${todayDate}**`)
+      .replace(/\*\{today\}\*/gi, `*${todayDate}*`)
+      .replace(/\{today\}/gi, `**${todayDate}**`);
+  } else {
+    processedText = processedText
+      .replace(/\*\*\{today\}\*\*/gi, '')
+      .replace(/\*\{today\}\*/gi, '')
+      .replace(/\{today\}/gi, '');
+  }
 
   // Strip [colorname] line prefixes — they're display-only markup, not meaningful in plain text
   processedText = processedText.replace(/^\[[a-zA-Z]+\]/gm, '');

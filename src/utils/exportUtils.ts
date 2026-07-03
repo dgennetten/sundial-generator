@@ -124,6 +124,7 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
       tiltAngle: options.tiltAngle,
       declinationType: options.declinationType,
       declinationDegrees: options.declinationDegrees,
+      todayLineActive: options.todayLineActive,
     });
 
     const logData = {
@@ -276,6 +277,7 @@ export async function logPrintActivity(options: {
       tiltAngle: options.tiltAngle,
       declinationType: options.declinationType,
       declinationDegrees: options.declinationDegrees,
+      todayLineActive: options.todayLineActive,
     });
 
     const logData = {
