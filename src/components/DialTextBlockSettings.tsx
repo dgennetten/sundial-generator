@@ -98,18 +98,63 @@ const DialTextBlockSettings: React.FC<Props> = ({
             <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end' }}>
               <div className="form-group" style={{ flex: '0 0 auto' }}>
                 <label className="form-label">Position</label>
-                <select
-                  className="form-select"
-                  value={sundialNotesPositionMode}
-                  onChange={(e) => setSundialNotesPositionMode(e.target.value as 'auto' | 'manual')}
-                  style={{
-                    width: '100px',
-                    backgroundColor: sundialNotesPositionMode === 'manual' ? '#dbeafe' : undefined,
-                  }}
-                >
-                  <option value="auto">Auto</option>
-                  <option value="manual">Manual</option>
-                </select>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  marginTop: '0.25rem'
+                }}>
+                  <span style={{
+                    fontSize: '0.875rem',
+                    color: sundialNotesPositionMode === 'auto' ? '#2563eb' : '#9ca3af',
+                    fontWeight: sundialNotesPositionMode === 'auto' ? '600' : '400',
+                    transition: 'all 0.2s'
+                  }}>Auto</span>
+                  <label style={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    width: '44px',
+                    height: '24px',
+                    cursor: 'pointer'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={sundialNotesPositionMode === 'manual'}
+                      onChange={(e) => setSundialNotesPositionMode(e.target.checked ? 'manual' : 'auto')}
+                      style={{ opacity: 0, width: 0, height: 0 }}
+                    />
+                    <span style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: sundialNotesPositionMode === 'manual' ? '#2563eb' : '#cbd5e0',
+                      borderRadius: '24px',
+                      transition: 'background-color 0.3s',
+                      boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
+                    }}>
+                      <span style={{
+                        position: 'absolute',
+                        content: '""',
+                        height: '18px',
+                        width: '18px',
+                        left: sundialNotesPositionMode === 'manual' ? '22px' : '3px',
+                        bottom: '3px',
+                        backgroundColor: 'white',
+                        borderRadius: '50%',
+                        transition: 'left 0.3s',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                      }} />
+                    </span>
+                  </label>
+                  <span style={{
+                    fontSize: '0.875rem',
+                    color: sundialNotesPositionMode === 'manual' ? '#2563eb' : '#9ca3af',
+                    fontWeight: sundialNotesPositionMode === 'manual' ? '600' : '400',
+                    transition: 'all 0.2s'
+                  }}>Manual</span>
+                </div>
               </div>
               {sundialNotesPositionMode === 'manual' && (
                 <>
