@@ -24,6 +24,9 @@ interface HourlineSettingsProps {
   declinationNoonmarks: boolean;
   showFullYearOnNoon: boolean;
   setShowFullYearOnNoon: (v: boolean) => void;
+  // Equation-of-Time correction — same flag as in About → Components of Correction
+  equationOfTimeCorrection: boolean;
+  setEquationOfTimeCorrection: (v: boolean) => void;
   showBelowHorizonHourLines: boolean;
   setShowBelowHorizonHourLines: (v: boolean) => void;
   syncBelowHorizon: boolean;
@@ -60,6 +63,8 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
   declinationNoonmarks,
   showFullYearOnNoon,
   setShowFullYearOnNoon,
+  equationOfTimeCorrection,
+  setEquationOfTimeCorrection,
   showBelowHorizonHourLines,
   setShowBelowHorizonHourLines,
   syncBelowHorizon,
@@ -190,6 +195,14 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
                 onChange={(e) => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, e.target.checked)}
               />
               Noon Date Marks
+            </label>
+            <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
+              <input
+                type="checkbox"
+                checked={equationOfTimeCorrection}
+                onChange={(e) => setEquationOfTimeCorrection(e.target.checked)}
+              />
+              EoT Correction
             </label>
             {dateRange !== 'FullYear' && (
               <label className="form-checkbox" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>

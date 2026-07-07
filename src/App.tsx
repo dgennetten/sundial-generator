@@ -1340,6 +1340,8 @@ const App: React.FC = () => {
             declinationNoonmarks={declinationNoonmarks}
             showFullYearOnNoon={showFullYearOnNoon}
             setShowFullYearOnNoon={setShowFullYearOnNoon}
+            equationOfTimeCorrection={correctionFlags.equationOfTime}
+            setEquationOfTimeCorrection={(v) => setCorrectionFlags(f => ({ ...f, equationOfTime: v }))}
             showBelowHorizonHourLines={showBelowHorizonHourLines}
             setShowBelowHorizonHourLines={(v) => {
               setShowBelowHorizonHourLines(v);
