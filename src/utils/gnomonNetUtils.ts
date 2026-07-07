@@ -73,32 +73,27 @@ export function buildGnomonNetSVGString(
   const fmt    = (v: number) => (Math.round(v * 10) / 10).toString();
 
   // ── Sundial directions (printed above the nets) ───────────────────────────
+  // Gnomon cutting/folding directions are appended to the end of this block.
   const sundialLines = [
     'Sundial face can be left flat, or, to create a popup greeting card,',
     'score and valley fold a vertical crease intersecting the gnomon',
     'point and the two tiny dots at the top and bottom border.',
-  ];
-  const sfs = 3.5;   // font size (mm)
-  const slh = 5;     // line height (mm)
-
-  // ── Gnomon directions (beside or below nets) ──────────────────────────────
-  const gnomonLines = [
     'Cut gnomons along solid lines.',
     'Valley fold dashed lines.',
     'Align A→A, B→B and glue to dial.',
   ];
-  const gfs = 5;
-  const glh = 7;
+  const sfs = 3.5;   // font size (mm)
+  const slh = 5;     // line height (mm)
 
-  // ── Header height: title + subtitle + sundial instructions + gap ──────────
+  // ── Header height: title + sundial/gnomon instructions + gap ──────────────
   //   margin+8 : title
-  //   margin+14: gnomon height subtitle
-  //   margin+18: sundial lines start
-  //   margin+18 + n*slh : sundial lines end
+  //   margin+14: instruction lines start
+  //   margin+14 + n*slh : instruction lines end
   //   + 8 gap before nets
-  const subtitleY = margin + 14;
-  const sundialY0 = margin + 18;
-  const headerH   = Math.ceil(18 + sundialLines.length * slh + 8);
+  //   (Gnomon-height subtitle is printed at the bottom of the page.)
+  const subtitleY = pageHeight - margin;
+  const sundialY0 = margin + 14;
+  const headerH   = Math.ceil(14 + sundialLines.length * slh + 8);
 
   const availW = pageWidth  - 2 * margin;
   const availH = pageHeight - 2 * margin - headerH;
@@ -273,7 +268,10 @@ export function buildGnomonNetSVGString(
     const parts = [`translate(${fmt(ox)},${fmt(oy)})`];
     if (scale !== 1) parts.push(`scale(${scale})`);
     if (inverted) {
-      parts.push(`translate(${fmt(gH)},${fmt(netH / 2)}) scale(1,-1) translate(${fmt(-gH)},${fmt(-netH / 2)})`);
+      // Rotate 180° about the net's center (scale(-1,-1)), NOT a vertical flip
+      // (scale(1,-1)) — a pure vertical flip turns the net upside down but also
+      // mirror-images it, reversing the split compass rose and A/B labels.
+      parts.push(`translate(${fmt(gH)},${fmt(netH / 2)}) scale(-1,-1) translate(${fmt(-gH)},${fmt(-netH / 2)})`);
     }
     return parts.join(' ');
   };
@@ -300,20 +298,6 @@ export function buildGnomonNetSVGString(
     })
     .join('\n');
 
-  // ── Gnomon directions: right of group if room, else left margin ───────────
-  const groupRight = pageOX + groupW;
-  const pageMidY   = pageHeight / 2 - 5;
-  const gInstrY0   = pageMidY - (gnomonLines.length * glh) / 2;
-  const gInstrX    = groupRight + 8;
-
-  const gnomonInstrSVG = gInstrX + 55 <= pageWidth - margin
-    ? gnomonLines.map((line, i) =>
-        `  <text x="${gInstrX}" y="${gInstrY0 + i * glh}" font-size="${gfs}" text-anchor="start" dominant-baseline="auto" font-family="sans-serif" fill="#222">${line}</text>`
-      ).join('\n')
-    : gnomonLines.map((line, i) =>
-        `  <text x="${margin}" y="${gInstrY0 + i * glh}" font-size="${gfs}" text-anchor="start" dominant-baseline="auto" font-family="sans-serif" fill="#222">${line}</text>`
-      ).join('\n');
-
   // ── Background and border ─────────────────────────────────────────────────
   const bgRect = showBackground
     ? `  <rect x="0" y="0" width="${pageWidth}" height="${pageHeight}" fill="${backgroundColor}"/>`
@@ -332,10 +316,9 @@ export function buildGnomonNetSVGString(
     bgRect,
     borderRect,
     `  <text x="${pageWidth / 2}" y="${margin + 8}" font-size="7" text-anchor="middle" font-family="sans-serif" font-weight="bold">Cut-and-Fold Gnomons</text>`,
-    `  <text x="${pageWidth / 2}" y="${subtitleY}" font-size="3.5" text-anchor="middle" font-family="sans-serif" fill="#555">Gnomon height: ${fmt(gnomonHeight)} mm</text>`,
     sundialInstrSVG,
     copiesSVG,
-    gnomonInstrSVG,
+    `  <text x="${pageWidth / 2}" y="${subtitleY}" font-size="3.5" text-anchor="middle" font-family="sans-serif" fill="#555">Gnomon height: ${fmt(gnomonHeight)} mm</text>`,
     `</svg>`,
   ].join('\n');
 }

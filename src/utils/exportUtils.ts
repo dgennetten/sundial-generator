@@ -8,7 +8,6 @@ import { buildGnomonNetSVGString } from './gnomonNetUtils';
 
 // Re-export types for backward compatibility
 export type { ExportFormat, PageSize } from '../types';
-// import { createSimpleSVGExport, downloadSimpleSVG } from './simpleSvgExport';
 
 const pageSizeMap: Record<Exclude<PageSize, 'Custom'>, { width: number; height: number }> = {
   Letter: { width: 8.5, height: 11 }, // inches

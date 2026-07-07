@@ -1,6 +1,7 @@
 import React from 'react';
 import type { JSX } from 'react';
-import { getAnalemmaPointsProjected, degreesToRadians, radiansToDegrees, getSolarDeclination, getEquationOfTime, computeShadowPoint, atmosphericRefraction } from '../utils/sundialMath';
+import { getAnalemmaPointsProjected, getSolarDeclination, getEquationOfTime } from '../utils/sundialMath';
+import { calculateShadowAtTime } from '../utils/shadowProjection';
 import type { CorrectionFlags } from '../utils/sundialMath';
 import type { DeclinationLine } from './DeclinationLineOptions';
 import type { LineStyle } from './LineSettings';
@@ -588,20 +589,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const firstH = phaseShift + Math.ceil((startHour - phaseShift) / dotInterval) * dotInterval;
 
     for (let h = firstH; h <= stopHour; h += dotInterval) {
-      const latRad = degreesToRadians(lat);
-      const declRad = degreesToRadians(decl);
-      const hourAngle = degreesToRadians(15 * (h - 12));
-      const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
-      const altitude = Math.asin(sinAlt);
-
       // Same altitude filtering as dash segments
-      const altitudeForShadow0 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
+      const { altitude, coords } = calculateShadowAtTime(lat, decl, h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
       if (altitude > altLimit) {
-        let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
-        cosAz = Math.max(-1, Math.min(1, cosAz));
-        let azimuth = Math.acos(cosAz);
-        if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-        const coords = computeShadowPoint(altitudeForShadow0, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination);
         if (!coords) continue;
         const x = scale * coords.x;
         const y = scale * coords.y;
@@ -651,20 +641,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const firstH = phaseShift + Math.ceil((startHour - phaseShift) / dotInterval) * dotInterval;
 
     for (let h = firstH; h <= stopHour; h += dotInterval) {
-      const latRad = degreesToRadians(lat);
-      const declRad = degreesToRadians(decl);
-      const hourAngle = degreesToRadians(15 * (h - 12));
-      const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
-      const altitude = Math.asin(sinAlt);
-
       // Same altitude filtering as other calculated styles
-      const altitudeForShadow1 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
+      const { altitude, coords } = calculateShadowAtTime(lat, decl, h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
       if (altitude > altLimit) {
-        let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
-        cosAz = Math.max(-1, Math.min(1, cosAz));
-        let azimuth = Math.acos(cosAz);
-        if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-        const coords = computeShadowPoint(altitudeForShadow1, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination);
         if (!coords) continue;
         const x = scale * coords.x;
         const y = scale * coords.y;
@@ -722,11 +701,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const firstH = phaseShift + Math.ceil((startHour - phaseShift) / dotInterval) * dotInterval;
 
     for (let h = firstH; h <= stopHour; h += dotInterval) {
-      const latRad = degreesToRadians(lat);
-      const declRad = degreesToRadians(decl);
-      const hourAngle = degreesToRadians(15 * (h - 12));
-      const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
-      const altitude = Math.asin(sinAlt);
+      const { altitude, coords } = calculateShadowAtTime(lat, decl, h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
 
       // If altitude is below threshold, break continuity
       if (altitude <= ALT_LIMIT) {
@@ -734,12 +709,6 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
         continue;
       }
 
-      const altitudeForShadow2 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
-      let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
-      cosAz = Math.max(-1, Math.min(1, cosAz));
-      let azimuth = Math.acos(cosAz);
-      if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-      const coords = computeShadowPoint(altitudeForShadow2, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination);
       if (!coords) { previousPoint = null; continue; }
 
       const currentPoint = { x: scale * coords.x, y: scale * coords.y };
@@ -807,23 +776,13 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const firstH = phaseShift + Math.ceil((startHour - phaseShift) / dotInterval) * dotInterval;
 
     for (let h = firstH; h <= stopHour; h += dotInterval) {
-      const latRad = degreesToRadians(lat);
-      const declRad = degreesToRadians(decl);
-      const hourAngle = degreesToRadians(15 * (h - 12));
-      const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
-      const altitude = Math.asin(sinAlt);
+      const { altitude, coords } = calculateShadowAtTime(lat, decl, h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
 
       if (altitude <= ALT_LIMIT) {
         previousPoint = null;
         continue;
       }
 
-      const altitudeForShadow3 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
-      let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
-      cosAz = Math.max(-1, Math.min(1, cosAz));
-      let azimuth = Math.acos(cosAz);
-      if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-      const coords = computeShadowPoint(altitudeForShadow3, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination);
       if (!coords) { previousPoint = null; continue; }
 
       const currentPoint = { x: scale * coords.x, y: scale * coords.y };
@@ -1844,18 +1803,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       // Equinox: draw a straight line for all hours, but clip to maxRadius
       const points = [];
       for (let h = startHour; h <= stopHour; h += 1 / 60) {
-        const latRad = degreesToRadians(lat);
-        const declRad = degreesToRadians(decl);
-        const hourAngle = degreesToRadians(15 * (h - 12));
-        const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
-        const altitude = Math.asin(sinAlt);
+        const { altitude, coords } = calculateShadowAtTime(lat, decl, h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
         if (!showBelowHorizonDateLines && altitude <= 0) continue;
-        const altitudeForShadow4 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
-        let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
-        cosAz = Math.max(-1, Math.min(1, cosAz));
-        let azimuth = Math.acos(cosAz);
-        if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-        const coords = computeShadowPoint(altitudeForShadow4, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination);
         if (!coords) continue;
         const x = scale * coords.x;
         const y = scale * coords.y;
@@ -1883,18 +1832,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const segments: { x: number; y: number }[][] = [];
     let currentSegment: { x: number; y: number }[] = [];
     for (let h = startHour; h <= stopHour; h += 1 / 60) { // one-minute increments for smooth, complete arcs
-      const latRad = degreesToRadians(lat);
-      const declRad = degreesToRadians(decl);
-      const hourAngle = degreesToRadians(15 * (h - 12));
-      const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
-      const altitude = Math.asin(sinAlt);
+      const { altitude, coords } = calculateShadowAtTime(lat, decl, h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
       if (altitude > 0 || showBelowHorizonDateLines) {
-        const altitudeForShadow5 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
-        let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
-        cosAz = Math.max(-1, Math.min(1, cosAz));
-        let azimuth = Math.acos(cosAz);
-        if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-        const coords = computeShadowPoint(altitudeForShadow5, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination);
         if (coords && Math.sqrt((scale * coords.x) ** 2 + (scale * coords.y) ** 2) <= maxRadius) {
           currentSegment.push({ x: scale * coords.x, y: scale * coords.y });
         } else if (currentSegment.length > 0) {
@@ -2145,18 +2084,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const collectPts = (strictY: boolean) => {
         const pts: { x: number; y: number }[] = [];
         for (let h = startHour; h <= stopHour; h += 1 / 30) {
-          const latRad = degreesToRadians(lat);
-          const declRad = degreesToRadians(decl);
-          const hourAngle = degreesToRadians(15 * (h - 12));
-          const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
-          const altitude = Math.asin(sinAlt);
+          const { altitude, coords } = calculateShadowAtTime(lat, decl, h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
           if (altitude <= 0 && !showBelowHorizonDateLines) continue;
-          const altitudeForShadow6 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
-          let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
-          cosAz = Math.max(-1, Math.min(1, cosAz));
-          let azimuth = Math.acos(cosAz);
-          if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-          const coords = computeShadowPoint(altitudeForShadow6, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination);
           if (!coords) continue;
           const x = scale * coords.x;
           const y = scale * coords.y;
@@ -2656,21 +2585,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Calculate y position for the text block based on dial orientation and incline
   const calculateTextBlockPosition = (): { x: number; y: number } => {
     // Use the same black circle positioning logic as the debug circles
-    const latRad = degreesToRadians(lat);
-    const hourAngle = degreesToRadians(15 * (12 - 12)); // Solar noon
-
     // Calculate solstice positions using the same method as debug circles
     function calculateSolsticePosition(declination: number) {
-      const declRad = degreesToRadians(declination);
-      const sinAlt = Math.sin(latRad) * Math.sin(declRad) + Math.cos(latRad) * Math.cos(declRad) * Math.cos(hourAngle);
-      const altitude = Math.asin(sinAlt);
-      const altitudeForShadow7 = correctionRefraction ? degreesToRadians(radiansToDegrees(altitude) + atmosphericRefraction(radiansToDegrees(altitude))) : altitude;
-      let cosAz = (Math.sin(declRad) - Math.sin(altitude) * Math.sin(latRad)) / (Math.cos(altitude) * Math.cos(latRad));
-      cosAz = Math.max(-1, Math.min(1, cosAz));
-      let azimuth = Math.acos(cosAz);
-      if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-
-      return computeShadowPoint(altitudeForShadow7, azimuth, gnomonHeight, lat, effectiveDialInclination, dialDeclination) ?? { x: 0, y: 0 };
+      // Solar noon (hour = 12)
+      return calculateShadowAtTime(lat, declination, 12, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction).coords ?? { x: 0, y: 0 };
     }
 
     const summerSolsticeDeclination = 23.44;   // June 21st

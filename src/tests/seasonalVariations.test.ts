@@ -3,7 +3,7 @@ import {
   getSolarPosition, 
   projectShadowToSurface, 
   getSolarDeclination 
-} from '../utils/analemmaGenerator';
+} from '../utils/sundialMath';
 
 describe('Seasonal Shadow Variations - Fort Collins', () => {
   const latitude = 40.5853;

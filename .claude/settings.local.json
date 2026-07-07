@@ -65,7 +65,11 @@
       "PowerShell(git diff *)",
       "PowerShell(git revert *)",
       "PowerShell(git restore *)",
-      "PowerShell(npm run *)"
+      "PowerShell(npm run *)",
+      "Bash(git stash *)",
+      "Bash(npx vitest *)",
+      "Bash(npm install *)",
+      "Bash(grep -E \"^[A-Z]:|\\\\.tsx?$|error|warning\")"
     ]
   }
 }

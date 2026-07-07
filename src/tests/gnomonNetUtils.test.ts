@@ -21,7 +21,10 @@ describe('buildGnomonNetSVGString layout', () => {
     const svg = buildGnomonNetSVGString(48, 279.4, 431.8);
     expect(countNetCopies(svg)).toBe(3);
     expect(usesShrunkNetCopies(svg)).toBe(false);
-    expect(svg).toMatch(/scale\(1,-1\)/);
+    // Inverted top copy is a 180° rotation (scale(-1,-1)), not a vertical
+    // flip (scale(1,-1)) — a flip would mirror the split rose and A/B labels.
+    expect(svg).toMatch(/scale\(-1,-1\)/);
+    expect(svg).not.toMatch(/scale\(1,-1\)/);
   });
 
   it('only shrinks when a single net cannot fit at actual size', () => {

@@ -37,7 +37,7 @@ import DeclinationLineOptions from './components/DeclinationLineOptions';
 import { loadDeclinationLines } from './components/declinationLineUtils';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
 import { getDisplayTiltAngle, calculateAutoGnomonHeight, getWallDeclinationForPreset, getCancerInclineWithDeclination, getCapricornInclineWithDeclination } from './utils/sundialMath';
-import { getAnalemmaPointsProjected } from './utils/analemmaGenerator';
+import { getAnalemmaPointsProjected } from './utils/sundialMath';
 import type { CorrectionFlags } from './utils/sundialMath';
 import AboutCard from './components/AboutCard';
 // import VisitorMap from './components/VisitorMap';

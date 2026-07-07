@@ -1,6 +1,6 @@
 // src/components/GnomonSettings.tsx
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { getAnalemmaPointsProjected } from '../utils/analemmaGenerator';
+import { getAnalemmaPointsProjected } from '../utils/sundialMath';
 import { calculateAutoGnomonHeight as calcAutoHeight } from '../utils/sundialMath';
 import { MoveUpRight, Pause, Play } from 'lucide-react';
 

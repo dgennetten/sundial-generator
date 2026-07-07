@@ -5,7 +5,7 @@ import {
   getSolarDeclination, 
   getEquationOfTime,
   degreesToRadians 
-} from '../utils/analemmaGenerator';
+} from '../utils/sundialMath';
 
 describe('Shadow Calculations - Fort Collins Test', () => {
   // Fort Collins coordinates

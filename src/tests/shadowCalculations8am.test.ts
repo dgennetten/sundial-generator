@@ -4,7 +4,7 @@ import {
   projectShadowToSurface, 
   getSolarDeclination, 
   getEquationOfTime 
-} from '../utils/analemmaGenerator';
+} from '../utils/sundialMath';
 
 describe('Shadow Calculations - Fort Collins 8 AM Test', () => {
   // Fort Collins coordinates
