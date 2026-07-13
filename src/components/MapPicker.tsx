@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import { MapPin, Search } from 'lucide-react';
+import { MapPin, Search, LocateFixed } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { log } from '../utils/logger';
@@ -39,6 +39,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
   const [selectedPlaceName, setSelectedPlaceName] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
   const [mapCenter, setMapCenter] = useState<[number, number]>(
     initialLat && initialLng ? [initialLat, initialLng] : [0, 0]
   );
@@ -89,6 +90,47 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
       setIsSearching(false);
     }
   }, [searchQuery]);
+
+  // Use the browser's Geolocation API to select the user's current position
+  const handleUseCurrentLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      log.error('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        setSelected({ lat, lng });
+        setSelectedPlaceName(null);
+        setMapCenter([lat, lng]);
+        setMapZoom(12);
+
+        // Best-effort reverse geocode to get a friendly place name
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+          );
+          const result = await response.json();
+          if (result && result.display_name) {
+            setSelectedPlaceName(result.display_name);
+          }
+        } catch (error) {
+          log.error('Reverse geocode failed:', error);
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      (error) => {
+        log.error('Geolocation failed:', error);
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }, []);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -174,6 +216,29 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
           >
             <Search size={16} />
             {isSearching ? 'Searching...' : 'Search'}
+          </button>
+        </div>
+
+        {/* Use current location */}
+        <div style={{ marginBottom: 16 }}>
+          <button
+            onClick={handleUseCurrentLocation}
+            disabled={isLocating}
+            style={{
+              padding: '8px 12px',
+              backgroundColor: isLocating ? '#f3f4f6' : '#fff',
+              border: '1px solid #d1d5db',
+              borderRadius: '6px',
+              color: isLocating ? '#9ca3af' : '#2563eb',
+              cursor: isLocating ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              fontSize: '14px',
+            }}
+          >
+            <LocateFixed size={16} />
+            {isLocating ? 'Locating...' : 'Use current location'}
           </button>
         </div>
 

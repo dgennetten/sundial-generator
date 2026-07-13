@@ -69,7 +69,18 @@
       "Bash(git stash *)",
       "Bash(npx vitest *)",
       "Bash(npm install *)",
-      "Bash(grep -E \"^[A-Z]:|\\\\.tsx?$|error|warning\")"
+      "Bash(grep -E \"^[A-Z]:|\\\\.tsx?$|error|warning\")",
+      "Bash(npx playwright *)",
+      "PowerShell(npx playwright --version 2>$null; node -e \"require\\('playwright'\\)\" 2>&1 | Select-Object -First 1)",
+      "PowerShell(node -e $script)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(npx tsx *)",
+      "PowerShell(Start-Process \"C:/Users/dougl/AppData/Local/Temp/gnomon-test.svg\")",
+      "Bash(git commit *)",
+      "Bash(python -c \"import zipfile; z=zipfile.ZipFile\\('PrecisionSundialGenerator-NASS.docx'\\); print\\('\\\\n'.join\\(z.namelist\\(\\)[:12]\\)\\)\")",
+      "PowerShell(npx tsc --noEmit -p tsconfig.app.json 2>&1)",
+      "PowerShell(npm run build-and-deploy 2>&1)",
+      "Bash(GIT_EDITOR=true git rebase --continue)"
     ]
   }
 }
