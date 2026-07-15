@@ -46,11 +46,13 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
   const [mapZoom, setMapZoom] = useState(selected ? 8 : 2);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Focus search box (location textbox) when modal opens
+  // Focus search box when modal opens (skip on touch devices — keyboard hides the footer)
   useEffect(() => {
     if (open) {
       setSearchQuery('');
-      // Use a slightly longer timeout to ensure the modal is fully rendered
+      const isCoarsePointer = typeof window !== 'undefined'
+        && window.matchMedia('(pointer: coarse)').matches;
+      if (isCoarsePointer) return;
       const timeoutId = setTimeout(() => {
         searchInputRef.current?.focus();
       }, 150);
@@ -153,12 +155,14 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
         position: 'fixed',
         top: 0,
         left: 0,
-        width: '100vw',
-        height: '100vh',
+        width: '100%',
+        height: '100dvh',
         background: 'rgba(0,0,0,0.4)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        padding: '16px',
+        boxSizing: 'border-box',
         zIndex: 1000,
       }}
       onClick={onClose}
@@ -167,106 +171,145 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
         style={{
           background: '#fff',
           borderRadius: 8,
-          padding: 24,
-          minWidth: 400,
-          maxWidth: '90vw',
-          maxHeight: '90vh',
+          width: '100%',
+          maxWidth: 'min(560px, 100%)',
+          maxHeight: 'calc(100dvh - 32px)',
           boxShadow: '0 2px 16px rgba(0,0,0,0.2)',
           position: 'relative',
           fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          boxSizing: 'border-box',
         }}
         onClick={e => e.stopPropagation()}
       >
-        <h3 style={{ marginTop: 0, marginBottom: 16, fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>
-          <MapPin color="#2563eb" size={20} style={{ marginRight: 6 }} /> Location
-        </h3>
-
-        {/* Search Box */}
-        <div style={{ marginBottom: 16, display: 'flex', gap: 8 }}>
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder="Search for a location..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={handleKeyPress}
-            style={{
-              flex: 1,
-              padding: '8px 12px',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              fontSize: '14px',
-              outline: 'none',
-            }}
-          />
-          <button
-            onClick={handleSearch}
-            disabled={isSearching || !searchQuery.trim()}
-            style={{
-              padding: '8px 12px',
-              backgroundColor: isSearching || !searchQuery.trim() ? '#f3f4f6' : '#2563eb',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              color: isSearching || !searchQuery.trim() ? '#9ca3af' : 'white',
-              cursor: isSearching || !searchQuery.trim() ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-            }}
-          >
-            <Search size={16} />
-            {isSearching ? 'Searching...' : 'Search'}
-          </button>
+        <div style={{ flexShrink: 0, padding: '24px 24px 0' }}>
+          <h3 style={{ marginTop: 0, marginBottom: 16, fontSize: '1.125rem', fontWeight: '600', color: '#1f2937' }}>
+            <MapPin color="#2563eb" size={20} style={{ marginRight: 6 }} /> Location
+          </h3>
         </div>
 
-        {/* Use current location */}
-        <div style={{ marginBottom: 16 }}>
-          <button
-            onClick={handleUseCurrentLocation}
-            disabled={isLocating}
-            style={{
-              padding: '8px 12px',
-              backgroundColor: isLocating ? '#f3f4f6' : '#fff',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              color: isLocating ? '#9ca3af' : '#2563eb',
-              cursor: isLocating ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              fontSize: '14px',
-            }}
-          >
-            <LocateFixed size={16} />
-            {isLocating ? 'Locating...' : 'Use current location'}
-          </button>
-        </div>
-
-        {/* Map */}
-        <div style={{ height: '400px', width: '100%', marginBottom: 16, border: '1px solid #d1d5db', borderRadius: '6px', overflow: 'hidden' }}>
-          <MapContainer
-            center={mapCenter}
-            zoom={mapZoom}
-            style={{ height: '100%', width: '100%' }}
-            key={`${mapCenter[0]}-${mapCenter[1]}-${mapZoom}`} // Force re-render when center/zoom changes
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        <div
+          style={{
+            flex: '1 1 auto',
+            minHeight: 0,
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            padding: '0 24px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {/* Search Box */}
+          <div style={{ marginBottom: 16, display: 'flex', gap: 8, flexShrink: 0 }}>
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search for a location..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={handleKeyPress}
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                fontSize: '14px',
+                outline: 'none',
+              }}
             />
-            <MapClickHandler onMapClick={handleMapClick} />
-            {selected && <Marker position={[selected.lat, selected.lng]} />}
-          </MapContainer>
+            <button
+              onClick={handleSearch}
+              disabled={isSearching || !searchQuery.trim()}
+              style={{
+                padding: '8px 12px',
+                backgroundColor: isSearching || !searchQuery.trim() ? '#f3f4f6' : '#2563eb',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                color: isSearching || !searchQuery.trim() ? '#9ca3af' : 'white',
+                cursor: isSearching || !searchQuery.trim() ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              <Search size={16} />
+              {isSearching ? 'Searching...' : 'Search'}
+            </button>
+          </div>
+
+          {/* Use current location */}
+          <div style={{ marginBottom: 16, flexShrink: 0 }}>
+            <button
+              onClick={handleUseCurrentLocation}
+              disabled={isLocating}
+              style={{
+                padding: '8px 12px',
+                backgroundColor: isLocating ? '#f3f4f6' : '#fff',
+                border: '1px solid #d1d5db',
+                borderRadius: '6px',
+                color: isLocating ? '#9ca3af' : '#2563eb',
+                cursor: isLocating ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: '14px',
+              }}
+            >
+              <LocateFixed size={16} />
+              {isLocating ? 'Locating...' : 'Use current location'}
+            </button>
+          </div>
+
+          {/* Map — shrinks on short viewports so the footer stays reachable */}
+          <div
+            style={{
+              flex: '1 1 auto',
+              height: 'min(400px, 40dvh)',
+              minHeight: 180,
+              width: '100%',
+              marginBottom: 16,
+              border: '1px solid #d1d5db',
+              borderRadius: '6px',
+              overflow: 'hidden',
+            }}
+          >
+            <MapContainer
+              center={mapCenter}
+              zoom={mapZoom}
+              style={{ height: '100%', width: '100%' }}
+              key={`${mapCenter[0]}-${mapCenter[1]}-${mapZoom}`} // Force re-render when center/zoom changes
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <MapClickHandler onMapClick={handleMapClick} />
+              {selected && <Marker position={[selected.lat, selected.lng]} />}
+            </MapContainer>
+          </div>
+
+          {/* Selected location info */}
+          {selected && (
+            <div style={{ marginBottom: 16, padding: '8px 12px', backgroundColor: '#f9fafb', borderRadius: '6px', fontSize: '14px', flexShrink: 0 }}>
+              <strong>Selected:</strong> {selectedPlaceName || `${selected.lat.toFixed(4)}, ${selected.lng.toFixed(4)}`}
+            </div>
+          )}
         </div>
 
-        {/* Selected location info */}
-        {selected && (
-          <div style={{ marginBottom: 16, padding: '8px 12px', backgroundColor: '#f9fafb', borderRadius: '6px', fontSize: '14px' }}>
-            <strong>Selected:</strong> {selectedPlaceName || `${selected.lat.toFixed(4)}, ${selected.lng.toFixed(4)}`}
-          </div>
-        )}
-
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        <div
+          style={{
+            flexShrink: 0,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 8,
+            padding: '16px 24px',
+            paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+            borderTop: '1px solid #e5e7eb',
+            background: '#fff',
+          }}
+        >
           <button
             onClick={onClose}
             className="form-input"

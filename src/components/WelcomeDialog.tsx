@@ -253,12 +253,14 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: langua
         position: 'fixed',
         top: 0,
         left: 0,
-        width: '100vw',
-        height: '100vh',
+        width: '100%',
+        height: '100dvh',
         background: 'rgba(0,0,0,0.5)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        padding: '16px',
+        boxSizing: 'border-box',
         zIndex: 10000,
       }}
       onClick={handleClose}
@@ -268,13 +270,15 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: langua
         style={{
           background: '#fff',
           borderRadius: '12px',
-          padding: '32px',
+          width: '100%',
           maxWidth: '600px',
-          maxHeight: '99vh',
-          overflowY: 'auto',
+          maxHeight: 'calc(100dvh - 32px)',
           boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
           position: 'relative',
-          margin: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          boxSizing: 'border-box',
         }}
         onClick={e => e.stopPropagation()}
       >
@@ -293,6 +297,7 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: langua
             justifyContent: 'center',
             borderRadius: '4px',
             transition: 'background-color 0.2s',
+            zIndex: 1,
           }}
           onMouseEnter={e => {
             e.currentTarget.style.backgroundColor = '#f0f0f0';
@@ -304,171 +309,188 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: langua
           <X size={20} color="#6b7280" />
         </button>
 
-        {/* Language Selector */}
-        <div dir="ltr" style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '4px',
-          marginBottom: '16px',
-          paddingBottom: '12px',
-          borderBottom: '1px solid #e5e7eb',
-        }}>
-          {languages.map((lang) => (
+        <div
+          style={{
+            flex: '1 1 auto',
+            minHeight: 0,
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            padding: '32px 32px 16px',
+          }}
+        >
+          {/* Language Selector */}
+          <div dir="ltr" style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '4px',
+            marginBottom: '16px',
+            paddingBottom: '12px',
+            borderBottom: '1px solid #e5e7eb',
+            flexWrap: 'wrap',
+          }}>
+            {languages.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => handleLanguageSelect(lang.code)}
+                style={{
+                  background: language === lang.code ? '#2563eb' : 'transparent',
+                  border: `1.5px solid ${language === lang.code ? '#2563eb' : '#e5e7eb'}`,
+                  borderRadius: '6px',
+                  padding: '4px 6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: '32px',
+                  height: '32px',
+                }}
+                onMouseEnter={e => {
+                  if (language !== lang.code) {
+                    e.currentTarget.style.borderColor = '#2563eb';
+                    e.currentTarget.style.backgroundColor = '#eff6ff';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (language !== lang.code) {
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
+                title={lang.name}
+                aria-label={`Switch to ${lang.name}`}
+              >
+                <img
+                  src={`https://flagicons.lipis.dev/flags/4x3/${lang.countryCode}.svg`}
+                  alt={`${lang.name} flag`}
+                  style={{
+                    width: '24px',
+                    height: '18px',
+                    objectFit: 'cover',
+                    borderRadius: '2px',
+                    display: 'block',
+                  }}
+                  onError={(e) => {
+                    // Hide image if it fails to load
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </button>
+            ))}
+          </div>
+
+          <h2 style={{ margin: '0 0 24px 0', fontSize: '1.5rem', fontWeight: '600', color: '#1f2937', display: 'flex', alignItems: 'center', gap: '12px', paddingInlineEnd: '28px' }}>
+            <Compass size={24} color="#2563eb" />
+            {translations[language].title}
+          </h2>
+
+          <div style={{ fontSize: '1rem', lineHeight: '1.5', color: '#4b5563' }}>
+            <ul style={{ paddingInlineStart: '24px', margin: 0 }}>
+              <li style={{ marginBottom: '5px' }}>
+                <strong>{translations[language].steps.location.label}</strong> {translations[language].steps.location.text}
+              </li>
+              <li style={{ marginBottom: '5px' }}>
+                <strong>{translations[language].steps.gnomon.label}</strong> {translations[language].steps.gnomon.text}
+              </li>
+              <li style={{ marginBottom: '5px' }}>
+                <strong>{translations[language].steps.dateRange.label}</strong>{translations[language].steps.dateRange.text}
+              </li>
+              <li style={{ marginBottom: '5px' }}>
+                <strong>{translations[language].steps.specialDates.label}</strong>{translations[language].steps.specialDates.text}
+              </li>
+              <li style={{ marginBottom: 0 }}>
+                <strong>{translations[language].steps.reset.label}</strong>{' '}
+                {translations[language].steps.reset.text}
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div
+          style={{
+            flexShrink: 0,
+            padding: '16px 32px',
+            paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+            borderTop: '1px solid #e5e7eb',
+            background: '#fff',
+          }}
+        >
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+            flexWrap: 'wrap',
+          }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              color: '#4b5563',
+            }}>
+              <input
+                type="checkbox"
+                checked={dontShowAgain}
+                onChange={e => setDontShowAgain(e.target.checked)}
+                style={{ cursor: 'pointer' }}
+              />
+              <span>{translations[language].dontShowAgain}</span>
+            </label>
+
             <button
-              key={lang.code}
-              onClick={() => handleLanguageSelect(lang.code)}
+              onClick={handleClose}
               style={{
-                background: language === lang.code ? '#2563eb' : 'transparent',
-                border: `1.5px solid ${language === lang.code ? '#2563eb' : '#e5e7eb'}`,
+                padding: '10px 24px',
+                backgroundColor: '#2563eb',
+                border: 'none',
                 borderRadius: '6px',
-                padding: '4px 6px',
+                color: 'white',
                 cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minWidth: '32px',
-                height: '32px',
+                fontSize: '0.95rem',
+                fontWeight: '500',
+                transition: 'background-color 0.2s',
               }}
               onMouseEnter={e => {
-                if (language !== lang.code) {
-                  e.currentTarget.style.borderColor = '#2563eb';
-                  e.currentTarget.style.backgroundColor = '#eff6ff';
-                }
+                e.currentTarget.style.backgroundColor = '#1d4ed8';
               }}
               onMouseLeave={e => {
-                if (language !== lang.code) {
-                  e.currentTarget.style.borderColor = '#e5e7eb';
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
+                e.currentTarget.style.backgroundColor = '#2563eb';
               }}
-              title={lang.name}
-              aria-label={`Switch to ${lang.name}`}
             >
-              <img
-                src={`https://flagicons.lipis.dev/flags/4x3/${lang.countryCode}.svg`}
-                alt={`${lang.name} flag`}
-                style={{
-                  width: '24px',
-                  height: '18px',
-                  objectFit: 'cover',
-                  borderRadius: '2px',
-                  display: 'block',
-                }}
-                onError={(e) => {
-                  // Hide image if it fails to load
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
+              {translations[language].gotIt}
             </button>
-          ))}
-        </div>
+          </div>
 
-        <h2 style={{ margin: '0 0 24px 0', fontSize: '1.5rem', fontWeight: '600', color: '#1f2937', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Compass size={24} color="#2563eb" />
-          {translations[language].title}
-        </h2>
-
-        <div style={{ fontSize: '1rem', lineHeight: '1.5', color: '#4b5563', marginBottom: '24px' }}>
-          <ul style={{ paddingInlineStart: '24px', margin: '0 0 12px 0' }}>
-            <li style={{ marginBottom: '5px' }}>
-              <strong>{translations[language].steps.location.label}</strong> {translations[language].steps.location.text}
-            </li>
-            <li style={{ marginBottom: '5px' }}>
-              <strong>{translations[language].steps.gnomon.label}</strong> {translations[language].steps.gnomon.text}
-            </li>
-            <li style={{ marginBottom: '5px' }}>
-              <strong>{translations[language].steps.dateRange.label}</strong>{translations[language].steps.dateRange.text}
-            </li>
-            <li style={{ marginBottom: '5px' }}>
-              <strong>{translations[language].steps.specialDates.label}</strong>{translations[language].steps.specialDates.text}
-            </li>
-            <li style={{ marginBottom: 0 }}>
-              <strong>{translations[language].steps.reset.label}</strong>{' '}
-              {translations[language].steps.reset.text}
-            </li>
-          </ul>
-        </div>
-
-        <div style={{ 
-          marginTop: '24px', 
-          paddingTop: '20px', 
-          borderTop: '1px solid #e5e7eb',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '16px',
-          flexWrap: 'wrap',
-        }}>
-          <label style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px', 
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            color: '#4b5563',
+          {/* Version number at center bottom */}
+          <div style={{
+            textAlign: 'center',
+            fontSize: '0.75rem',
+            color: '#9ca3af',
+            marginTop: '12px',
           }}>
-            <input
-              type="checkbox"
-              checked={dontShowAgain}
-              onChange={e => setDontShowAgain(e.target.checked)}
-              style={{ cursor: 'pointer' }}
-            />
-            <span>{translations[language].dontShowAgain}</span>
-          </label>
-
-          <button
-            onClick={handleClose}
-            style={{
-              padding: '10px 24px',
-              backgroundColor: '#2563eb',
-              border: 'none',
-              borderRadius: '6px',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '0.95rem',
-              fontWeight: '500',
-              transition: 'background-color 0.2s',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.backgroundColor = '#1d4ed8';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.backgroundColor = '#2563eb';
-            }}
-          >
-            {translations[language].gotIt}
-          </button>
-        </div>
-
-        {/* Version number at center bottom */}
-        <div style={{
-          textAlign: 'center',
-          fontSize: '0.75rem',
-          color: '#9ca3af',
-          marginTop: '0px',
-          marginBottom: '0px',
-        }}>
-          v{version} — <a
-            href="mailto:douglas@gennetten.org?subject=Sundial%20Feedback"
-            style={{
-              color: '#dc2626',
-              fontSize: '0.9rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.02em',
-              textDecoration: 'underline',
-              cursor: 'pointer',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = '#b91c1c';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#dc2626';
-            }}
-          >
-            {translations[language].sendFeedback}
-          </a>
+            v{version} — <a
+              href="mailto:douglas@gennetten.org?subject=Sundial%20Feedback"
+              style={{
+                color: '#dc2626',
+                fontSize: '0.9rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.02em',
+                textDecoration: 'underline',
+                cursor: 'pointer',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = '#b91c1c';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#dc2626';
+              }}
+            >
+              {translations[language].sendFeedback}
+            </a>
+          </div>
         </div>
       </div>
     </div>

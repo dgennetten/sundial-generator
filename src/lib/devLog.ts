@@ -41,6 +41,11 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-07-01',
     content: "**Live on-location shadow preview** for popup gnomons. In Gnomon Settings, enable **Live preview of on-location shadow** to see a gray shadow on the dial for your chosen location and time. The umbra is a rubber-band convex hull around the popup triangle and the mean-sun shadow point. The penumbra (soft fringe at the tip) comes from the finite solar disc — eight limb positions projected through the same 3D dial geometry as hour lines, built into three nested envelope hulls with stacked opacity (no SVG blur). **Animate** sweeps a 30-second cycle: **Day** mode moves civil time across your hour-line range at today's date; **Hour** mode holds clock time fixed and sweeps the year so you can watch solstice and equinox shadow length change. Pause/resume is supported. DST transitions use regional Sunday rules as days animate. Preview only — shadow is omitted from export. New **Full Screen** mode. — KDG (v2.20.0)",
   },
+  {
+    id: 8,
+    date: '2026-07-15',
+    content: "HUGE BUG FIX: I'm surprized no one complained about this sooner! On iPhone 15 the Location map picker's Cancel/Confirm buttons — and the How-to popup's Got it button — were completely unreachable, clipped below the fold under Safari chrome. Sticky action bars + a map that shrinks to fit, so those buttons stay tappable. — KDG (v2.21.1)",
+  },
 ]
 
 export type LogPref =
