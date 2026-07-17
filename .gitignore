@@ -13,6 +13,9 @@ logs/
 email-config.php
 db-config.php
 
+# User-submitted gallery photos (server-side only)
+gallery-uploads/
+
 # Personal/deployment files
 deploy.js
 localDeploy.js

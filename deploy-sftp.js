@@ -53,7 +53,13 @@ if (!config.host || !config.username || !config.password) {
 }
 
 const localPath = path.join(__dirname, 'dist');
-const phpFiles = ['export-logger.php', 'feedback.php', '.htaccess', 'email-config.php', 'sundial-prints-api.php']; // PHP and config files to deploy alongside the app
+const phpFiles = [
+  'export-logger.php', 'feedback.php', '.htaccess', 'email-config.php', 'sundial-prints-api.php',
+  // Photo gallery API
+  'gallery-config.php', 'gallery-auth.php', 'gallery-request-otp.php', 'gallery-verify-otp.php',
+  'gallery-session.php', 'gallery-photos.php', 'gallery-upload.php', 'gallery-moderate.php',
+  'gallery-delete.php',
+]; // PHP and config files to deploy alongside the app
 const docsPath = path.join(__dirname, 'public', 'docs'); // Documents directory
 
 console.log('🚀 Starting SFTP deployment...');
@@ -176,8 +182,9 @@ async function deployWithSFTP() {
       console.log('📁 Directory is empty or newly created');
     }
 
-    // Files/directories to preserve on the server during cleanup
-    const preserveOnServer = new Set(['.', '..', 'docs', 'config.php', 'notify.php', 'client-snippet-php.js', 'email-config.php', 'db-config.php']);
+    // Files/directories to preserve on the server during cleanup.
+    // gallery-uploads holds user-submitted photos — deleting it would destroy them.
+    const preserveOnServer = new Set(['.', '..', 'docs', 'config.php', 'notify.php', 'client-snippet-php.js', 'email-config.php', 'db-config.php', 'gallery-uploads', '.htaccess']);
 
     // Delete existing files (except preserved files)
     for (const file of existingFiles) {
@@ -197,7 +204,7 @@ async function deployWithSFTP() {
       }
     }
 
-    console.log('🧹 Cleared remote directory (preserved docs, config.php, notify.php, client-snippet-php.js)');
+    console.log('🧹 Cleared remote directory (preserved docs, gallery-uploads, config.php, notify.php, client-snippet-php.js)');
 
     // Upload dist directory
     console.log('📤 Uploading dist files...');

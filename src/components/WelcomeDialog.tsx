@@ -1,7 +1,11 @@
 // src/components/WelcomeDialog.tsx
-import React, { useState, useEffect } from 'react';
-import { X, Compass } from 'lucide-react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { X, Compass, Camera } from 'lucide-react';
 import { version } from '../../package.json';
+import { galleryTranslations } from './gallery/galleryTranslations';
+
+// Pulls in the lightbox bundle — only loaded once the gallery is opened.
+const PhotoGallery = lazy(() => import('./gallery/PhotoGallery'));
 
 const WELCOME_DISMISSED_KEY = 'sundial-welcome-dismissed';
 
@@ -203,6 +207,7 @@ export const DIAL_LABELS: Record<Language, { latitude: string; longitude: string
 
 const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: languageProp, onLanguageChange }) => {
   const [showDialog, setShowDialog] = useState(false);
+  const [showGallery, setShowGallery] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [internalLanguage, setInternalLanguage] = useState<Language>('en');
 
@@ -248,6 +253,7 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: langua
   const isRTL = language === 'ar';
 
   return (
+    <>
     <div
       style={{
         position: 'fixed',
@@ -440,28 +446,58 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: langua
               <span>{translations[language].dontShowAgain}</span>
             </label>
 
-            <button
-              onClick={handleClose}
-              style={{
-                padding: '10px 24px',
-                backgroundColor: '#2563eb',
-                border: 'none',
-                borderRadius: '6px',
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: '0.95rem',
-                fontWeight: '500',
-                transition: 'background-color 0.2s',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = '#1d4ed8';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = '#2563eb';
-              }}
-            >
-              {translations[language].gotIt}
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <button
+                onClick={() => setShowGallery(true)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 20px',
+                  backgroundColor: '#eff6ff',
+                  border: '1.5px solid #2563eb',
+                  borderRadius: '6px',
+                  color: '#2563eb',
+                  cursor: 'pointer',
+                  fontSize: '0.95rem',
+                  fontWeight: '600',
+                  boxShadow: '0 1px 2px rgba(37,99,235,0.15)',
+                  transition: 'background-color 0.2s',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = '#dbeafe';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = '#eff6ff';
+                }}
+              >
+                <Camera size={16} />
+                {galleryTranslations[language].photos}
+              </button>
+
+              <button
+                onClick={handleClose}
+                style={{
+                  padding: '10px 24px',
+                  backgroundColor: '#2563eb',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontSize: '0.95rem',
+                  fontWeight: '500',
+                  transition: 'background-color 0.2s',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = '#1d4ed8';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = '#2563eb';
+                }}
+              >
+                {translations[language].gotIt}
+              </button>
+            </div>
           </div>
 
           {/* Version number at center bottom */}
@@ -494,6 +530,13 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: langua
         </div>
       </div>
     </div>
+
+    {showGallery && (
+      <Suspense fallback={null}>
+        <PhotoGallery language={language} onClose={() => setShowGallery(false)} />
+      </Suspense>
+    )}
+    </>
   );
 };
 

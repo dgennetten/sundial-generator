@@ -1,7 +1,12 @@
 // src/components/DesignExport.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import ReactDOM, { flushSync } from 'react-dom';
-import { Download, Save, FolderUp, Undo } from 'lucide-react';
+import { Download, Save, FolderUp, Undo, Camera } from 'lucide-react';
+import type { Language } from './WelcomeDialog';
+import { galleryTranslations } from './gallery/galleryTranslations';
+
+// Pulls in the lightbox bundle only when the gallery is opened.
+const PhotoGallery = lazy(() => import('./gallery/PhotoGallery'));
 import { exportSundial, logPrintActivity, type ExportFormat, type PageSize } from '../utils/exportUtils';
 import { createSVGExport } from '../utils/svgExportUtils';
 import type { GnomonType, InclineType } from '../types/sundial';
@@ -72,6 +77,7 @@ interface DesignExportProps {
   onRestoreDial?: (config: SavedDialConfig['config']) => void;
   onSetTodayLineActive?: (active: boolean) => void;
   onResetDefaults: () => void;
+  language?: string;
 }
 
 
@@ -86,8 +92,11 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   dialOrientation, showBelowHorizonHourLines, showBelowHorizonDateLines, syncBelowHorizon,
   onRestoreDial,
   onSetTodayLineActive,
-  onResetDefaults
+  onResetDefaults,
+  language
 }) => {
+  const galleryLang: Language = (language && language in galleryTranslations ? language : 'en') as Language;
+  const [showGallery, setShowGallery] = useState(false);
   const [format, setFormat] = useState<ExportFormat>('PDF');
   const [dpi, setDpi] = useState<number>(600);
   const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -679,6 +688,36 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
               </label>
               <button
                 type="button"
+                className="btn"
+                onClick={() => setShowGallery(true)}
+                title={galleryTranslations[galleryLang].photos}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 'auto',
+                  padding: '0.5rem 0.6rem',
+                  gap: '4px',
+                  backgroundColor: '#eff6ff',
+                  border: '1.5px solid #2563eb',
+                  color: '#2563eb',
+                  fontWeight: 600,
+                  boxShadow: '0 1px 2px rgba(37,99,235,0.15)',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#dbeafe'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#eff6ff'; }}
+              >
+                <Camera size={18} />
+                {galleryTranslations[galleryLang].photos}
+              </button>
+            </div>
+
+            <div className="form-group" style={{ flex: '0 0 auto' }}>
+              <label className="form-label" style={{ visibility: 'hidden' }} aria-hidden>
+                {'\u00a0'}
+              </label>
+              <button
+                type="button"
                 className="btn btn-primary"
                 onClick={handlePrintClick}
                 style={{
@@ -813,6 +852,16 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
             </div>
           </div>
         </div>,
+        document.body
+      )}
+
+      {showGallery && ReactDOM.createPortal(
+        // Portalled to <body> so the gallery's position:fixed is relative to the
+        // viewport. Rendered in place, a transformed ancestor of the card becomes
+        // its containing block and traps the "full screen" overlay inside the card.
+        <Suspense fallback={null}>
+          <PhotoGallery language={galleryLang} onClose={() => setShowGallery(false)} />
+        </Suspense>,
         document.body
       )}
     </div>

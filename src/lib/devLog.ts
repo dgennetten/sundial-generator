@@ -46,6 +46,11 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-07-15',
     content: "HUGE BUG FIX: I'm surprized no one complained about this sooner! On iPhone 15 the Location map picker's Cancel/Confirm buttons — and the How-to popup's Got it button — were completely unreachable, clipped below the fold under Safari chrome. Sticky action bars + a map that shrinks to fit, so those buttons stay tappable. — KDG (v2.21.1)",
   },
+  {
+    id: 9,
+    date: '2026-07-17',
+    content: "**New Photo Gallery — share your sundial!** Click **Photos** (in the How-to-Build popup, or right next to the Print button) to open a full-screen gallery of dials built by fellow makers. Want to add yours? Sign in with a one-time code emailed to you — no password or account needed — then upload a photo with a caption. Submissions appear once approved. — KDG (v2.22.0)",
+  },
 ]
 
 export type LogPref =

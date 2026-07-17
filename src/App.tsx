@@ -1149,6 +1149,7 @@ const App: React.FC = () => {
           onRestoreDial={handleRestoreDial}
           onSetTodayLineActive={handleSetTodayLineActive}
           onResetDefaults={handleResetDefaults}
+          language={language}
         /></div>
 
         <div id="card-location"><LocationInputs
