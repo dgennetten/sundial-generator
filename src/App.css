@@ -954,6 +954,33 @@
   color: #718096;
 }
 
+/* Preview-toggle hint: a red left-pointing arrow that blinks a few times
+   after the greeting-card gnomon flash, nudging the eye toward the toggle. */
+@keyframes previewToggleHint {
+  0%, 100% { opacity: 0; }
+  6% { opacity: 1; transform: translateX(-3px); }
+  12% { opacity: 1; transform: translateX(0); }
+  18% { opacity: 0; }
+  31% { opacity: 1; transform: translateX(-3px); }
+  37% { opacity: 1; transform: translateX(0); }
+  43% { opacity: 0; }
+  56% { opacity: 1; transform: translateX(-3px); }
+  62% { opacity: 1; transform: translateX(0); }
+  68% { opacity: 0; }
+  81% { opacity: 1; transform: translateX(-3px); }
+  87% { opacity: 1; transform: translateX(0); }
+  93% { opacity: 0; }
+}
+
+.preview-toggle-hint {
+  color: #dc2626;
+  display: inline-flex;
+  align-items: center;
+  pointer-events: none;
+  opacity: 0;
+  animation: previewToggleHint 3.2s ease-in-out;
+}
+
 /* Spin animation for refresh button */
 @keyframes spin {
   from {

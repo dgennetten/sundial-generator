@@ -118,6 +118,9 @@ const App: React.FC = () => {
   const [gnomonHeight, setGnomonHeight] = useState(10);
   const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base'>('popup-with-brace');
   const [gnomonPreviewMode, setGnomonPreviewMode] = useState<'Dial' | 'Gnomon'>('Dial');
+  // Bumped each time the greeting-card gnomon settles back to Dial; drives the
+  // one-shot red arrow hint pointing at the Preview toggle.
+  const [previewHintKey, setPreviewHintKey] = useState(0);
   const [locationShadowPreview, setLocationShadowPreview] = useState(true);
   const [locationShadowAnimation, setLocationShadowAnimation] = useState(false);
   const [locationShadowAnimationPaused, setLocationShadowAnimationPaused] = useState(false);
@@ -453,11 +456,20 @@ const App: React.FC = () => {
     [pageWidth, pageHeight] = [pageHeight, pageWidth];
   }
 
-  // Reset gnomon preview to Dial when switching away from glued-popup-base
+  // When the greeting-card popup gnomon is selected, briefly flash the Gnomon
+  // preview and settle back to Dial so the user notices the Preview toggle.
+  // Switching to any other gnomon just resets to Dial.
   useEffect(() => {
     if (gnomonType !== 'glued-popup-base') {
       setGnomonPreviewMode('Dial');
+      return;
     }
+    setGnomonPreviewMode('Gnomon');
+    const t = setTimeout(() => {
+      setGnomonPreviewMode('Dial');
+      setPreviewHintKey((k) => k + 1);
+    }, 700);
+    return () => clearTimeout(t);
   }, [gnomonType]);
 
   useEffect(() => {
@@ -1245,6 +1257,7 @@ const App: React.FC = () => {
           lockHorizontalToCenter={declinationType !== 'Manual' || Math.abs(dialDeclination) < 1e-6}
           gnomonPreviewMode={gnomonPreviewMode}
           onGnomonPreviewModeChange={setGnomonPreviewMode}
+          previewHintKey={previewHintKey}
           locationShadowPreview={locationShadowPreview}
           onLocationShadowPreviewChange={setLocationShadowPreview}
           locationShadowAnimation={locationShadowAnimation}

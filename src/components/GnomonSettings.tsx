@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { getAnalemmaPointsProjected } from '../utils/sundialMath';
 import { calculateAutoGnomonHeight as calcAutoHeight } from '../utils/sundialMath';
-import { MoveUpRight, Pause, Play } from 'lucide-react';
+import { MoveUpRight, Pause, Play, ArrowLeft } from 'lucide-react';
 
 type Mode = 'auto' | 'manual';
 type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base';
@@ -27,6 +27,8 @@ interface Props {
   /** Preview toggle for Glued Popup Base: 'Gnomon' shows the cut-and-fold net, 'Dial' shows normal preview */
   gnomonPreviewMode?: 'Dial' | 'Gnomon';
   onGnomonPreviewModeChange?: (mode: 'Dial' | 'Gnomon') => void;
+  /** Bumped by the parent to trigger a one-shot red arrow hint at the Preview toggle. */
+  previewHintKey?: number;
   locationShadowPreview?: boolean;
   onLocationShadowPreviewChange?: (enabled: boolean) => void;
   locationShadowAnimation?: boolean;
@@ -56,6 +58,7 @@ const GnomonSettings: React.FC<Props> = ({
   lockHorizontalToCenter = false,
   gnomonPreviewMode = 'Dial',
   onGnomonPreviewModeChange,
+  previewHintKey = 0,
   locationShadowPreview = true,
   onLocationShadowPreviewChange,
   locationShadowAnimation = false,
@@ -105,6 +108,16 @@ const GnomonSettings: React.FC<Props> = ({
     }
     wasCrosshairRef.current = isCrosshair;
   }, [isCrosshair, locationShadowPreview, onLocationShadowPreviewChange, onLocationShadowAnimationPausedChange]);
+
+  // One-shot red arrow hint at the Preview toggle, triggered by the parent after
+  // the greeting-card gnomon flash. Visible only for the animation's duration.
+  const [showToggleHint, setShowToggleHint] = useState(false);
+  useEffect(() => {
+    if (!previewHintKey) return;
+    setShowToggleHint(true);
+    const t = setTimeout(() => setShowToggleHint(false), 3300);
+    return () => clearTimeout(t);
+  }, [previewHintKey]);
 
   // Function to calculate gnomon height based on winter-to-summer solstice distance
   const calculateAutoGnomonHeight = (lat: number, lng: number, tz: number, pageH: number): number =>
@@ -274,6 +287,11 @@ const GnomonSettings: React.FC<Props> = ({
                   fontWeight: gnomonPreviewMode === 'Dial' ? '600' : '400',
                   transition: 'all 0.2s',
                 }}>Dial</span>
+                {showToggleHint && (
+                  <span key={previewHintKey} className="preview-toggle-hint" aria-hidden="true">
+                    <ArrowLeft size={20} strokeWidth={3} />
+                  </span>
+                )}
               </div>
             </div>
           )}
