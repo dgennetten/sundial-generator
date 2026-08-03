@@ -1,7 +1,7 @@
 // src/components/DesignExport.tsx
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import ReactDOM, { flushSync } from 'react-dom';
-import { Download, Save, FolderUp, Undo, Camera } from 'lucide-react';
+import { Download, Save, FolderUp, Undo, Camera, Printer } from 'lucide-react';
 import type { Language } from './WelcomeDialog';
 import { galleryTranslations } from './gallery/galleryTranslations';
 
@@ -730,7 +730,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                   gap: '4px',
                 }}
               >
-                <Download size={18} stroke="#fff" strokeWidth={2} />
+                <Printer size={18} stroke="#fff" strokeWidth={2} />
                 Print
               </button>
             </div>
