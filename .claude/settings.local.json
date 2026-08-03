@@ -80,7 +80,17 @@
       "Bash(python -c \"import zipfile; z=zipfile.ZipFile\\('PrecisionSundialGenerator-NASS.docx'\\); print\\('\\\\n'.join\\(z.namelist\\(\\)[:12]\\)\\)\")",
       "PowerShell(npx tsc --noEmit -p tsconfig.app.json 2>&1)",
       "PowerShell(npm run build-and-deploy 2>&1)",
-      "Bash(GIT_EDITOR=true git rebase --continue)"
+      "Bash(GIT_EDITOR=true git rebase --continue)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+      "Bash(git checkout *)",
+      "Bash(git commit -q --amend -m 'Add user photo gallery with OTP upload, moderation, and delete \\(v2.22.0\\) *)",
+      "Bash(git fetch *)",
+      "Bash(git rev-list *)",
+      "Bash(curl -s https://precisionsundial.com/)",
+      "Bash(curl -s -o /dev/null -w \"gallery-photos.php: HTTP %{http_code}\\\\n\" https://precisionsundial.com/gallery-photos.php)",
+      "Bash(curl -s -o /dev/null -w \"gallery-delete.php \\(POST no-auth\\): HTTP %{http_code}\\\\n\" -X POST https://precisionsundial.com/gallery-delete.php)",
+      "WebFetch(domain:precisionsundial.com)"
     ]
   }
 }

@@ -9,6 +9,42 @@ import { buildGnomonNetSVGString } from './gnomonNetUtils';
 // Re-export types for backward compatibility
 export type { ExportFormat, PageSize } from '../types';
 
+/**
+ * Detects the "stale chunk" error that occurs when a user has the app open
+ * across a new deploy: the export libraries (jsPDF, svg2pdf, html2canvas) are
+ * lazy-loaded via dynamic import() only when Export is clicked, and by then the
+ * old hashed chunk file has been replaced on the server, so the fetch 404s.
+ */
+function isStaleChunkError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed/i.test(
+    message
+  );
+}
+
+// Guards against a reload loop if the fetch keeps failing for some other reason.
+const RELOAD_GUARD_KEY = 'sundial-export-chunk-reload';
+
+/**
+ * When a stale-chunk error is detected, reload the page once so the browser
+ * pulls the current index.html (and its up-to-date chunk hashes). Returns true
+ * if a reload was triggered, false if we've already tried reloading this session.
+ */
+function recoverFromStaleChunk(): boolean {
+  try {
+    if (sessionStorage.getItem(RELOAD_GUARD_KEY)) {
+      return false; // Already reloaded once this session — don't loop.
+    }
+    sessionStorage.setItem(RELOAD_GUARD_KEY, String(Date.now()));
+  } catch {
+    // sessionStorage unavailable (private mode, etc.) — fall through to reload anyway.
+  }
+  log.warn('Export chunk is stale (app updated since page load); reloading to update…');
+  alert('A new version of the sundial designer is available. The page will reload — please click Export again.');
+  window.location.reload();
+  return true;
+}
+
 const pageSizeMap: Record<Exclude<PageSize, 'Custom'>, { width: number; height: number }> = {
   Letter: { width: 8.5, height: 11 }, // inches
   A4: { width: 8.27, height: 11.69 }, // inches
@@ -432,6 +468,12 @@ export async function exportSundial(options: ExportOptions): Promise<void> {
     await logExportActivity(options);
   } catch (error) {
     log.error(`Error exporting ${options.format}:`, error);
+    // A stale lazy-loaded chunk (app updated since the page was opened) is not a
+    // real export failure — reload once so the fresh chunks load, then let the
+    // user retry rather than surfacing a confusing "Failed to fetch module" error.
+    if (isStaleChunkError(error) && recoverFromStaleChunk()) {
+      return;
+    }
     throw error;
   }
 }
