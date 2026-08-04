@@ -122,7 +122,7 @@ const App: React.FC = () => {
   // one-shot red arrow hint pointing at the Preview toggle.
   const [previewHintKey, setPreviewHintKey] = useState(0);
   const [locationShadowPreview, setLocationShadowPreview] = useState(true);
-  const [locationShadowAnimation, setLocationShadowAnimation] = useState(false);
+  const [locationShadowAnimation, setLocationShadowAnimation] = useState(true);
   const [locationShadowAnimationPaused, setLocationShadowAnimationPaused] = useState(false);
   const [locationShadowAnimationMode, setLocationShadowAnimationMode] = useState<'Day' | 'Hour'>('Day');
   const [pageSize, setPageSize] = useState<'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom'>('Letter');
