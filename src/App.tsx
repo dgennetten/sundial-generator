@@ -868,6 +868,7 @@ const App: React.FC = () => {
         'sundial-declination-lines',
         'sundial-hourline-intervals',
         'sundial-hourline-overrides',
+        'sundial-dateline-labels', // default (true) turns date-line labels back on
       ];
       keysToRemove.forEach(key => localStorage.removeItem(key));
       clearWelcomeDismissed();
