@@ -711,7 +711,6 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                 type="button"
                 className="btn"
                 onClick={() => setShowGallery(true)}
-                onMouseEnter={() => { void importPhotoGallery(); }}
                 onFocus={() => { void importPhotoGallery(); }}
                 title={galleryTranslations[galleryLang].photos}
                 style={{
@@ -727,7 +726,10 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                   fontWeight: 600,
                   boxShadow: '0 1px 2px rgba(37,99,235,0.15)',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#dbeafe'; }}
+                onMouseEnter={e => {
+                  void importPhotoGallery();
+                  e.currentTarget.style.backgroundColor = '#dbeafe';
+                }}
                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#eff6ff'; }}
               >
                 <Camera size={18} />

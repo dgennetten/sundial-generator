@@ -452,7 +452,6 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: langua
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button
                 onClick={() => setShowGallery(true)}
-                onMouseEnter={() => { void importPhotoGallery(); }}
                 onFocus={() => { void importPhotoGallery(); }}
                 style={{
                   display: 'inline-flex',
@@ -470,6 +469,7 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: langua
                   transition: 'background-color 0.2s',
                 }}
                 onMouseEnter={e => {
+                  void importPhotoGallery();
                   e.currentTarget.style.backgroundColor = '#dbeafe';
                 }}
                 onMouseLeave={e => {
