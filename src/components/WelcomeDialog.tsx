@@ -4,6 +4,7 @@ import { X, Compass, Camera } from 'lucide-react';
 import { version } from '../../package.json';
 import { galleryTranslations } from './gallery/galleryTranslations';
 import GalleryLoadingFallback from './gallery/GalleryLoadingFallback';
+import GalleryErrorBoundary from './gallery/GalleryErrorBoundary';
 
 // Pulls in the lightbox bundle — only loaded once the gallery is opened.
 // Shared import so hover-prefetch and the lazy component reuse the same request.
@@ -537,9 +538,11 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: langua
     </div>
 
     {showGallery && (
-      <Suspense fallback={<GalleryLoadingFallback />}>
-        <PhotoGallery language={language} onClose={() => setShowGallery(false)} />
-      </Suspense>
+      <GalleryErrorBoundary onClose={() => setShowGallery(false)}>
+        <Suspense fallback={<GalleryLoadingFallback />}>
+          <PhotoGallery language={language} onClose={() => setShowGallery(false)} />
+        </Suspense>
+      </GalleryErrorBoundary>
     )}
     </>
   );

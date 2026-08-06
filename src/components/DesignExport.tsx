@@ -5,6 +5,7 @@ import { Download, Save, FolderUp, Undo, Camera, Printer } from 'lucide-react';
 import type { Language } from './WelcomeDialog';
 import { galleryTranslations } from './gallery/galleryTranslations';
 import GalleryLoadingFallback from './gallery/GalleryLoadingFallback';
+import GalleryErrorBoundary from './gallery/GalleryErrorBoundary';
 
 // Pulls in the lightbox bundle only when the gallery is opened.
 // Shared import so hover-prefetch and the lazy component reuse the same
@@ -884,9 +885,11 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         // Portalled to <body> so the gallery's position:fixed is relative to the
         // viewport. Rendered in place, a transformed ancestor of the card becomes
         // its containing block and traps the "full screen" overlay inside the card.
-        <Suspense fallback={<GalleryLoadingFallback />}>
-          <PhotoGallery language={galleryLang} onClose={() => setShowGallery(false)} />
-        </Suspense>,
+        <GalleryErrorBoundary onClose={() => setShowGallery(false)}>
+          <Suspense fallback={<GalleryLoadingFallback />}>
+            <PhotoGallery language={galleryLang} onClose={() => setShowGallery(false)} />
+          </Suspense>
+        </GalleryErrorBoundary>,
         document.body
       )}
 
