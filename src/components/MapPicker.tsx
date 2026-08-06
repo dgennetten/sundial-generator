@@ -39,6 +39,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
   const [selectedPlaceName, setSelectedPlaceName] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [mapCenter, setMapCenter] = useState<[number, number]>(
     initialLat && initialLng ? [initialLat, initialLng] : [0, 0]
@@ -50,6 +51,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
   useEffect(() => {
     if (open) {
       setSearchQuery('');
+      setSearchError(null);
       const isCoarsePointer = typeof window !== 'undefined'
         && window.matchMedia('(pointer: coarse)').matches;
       if (isCoarsePointer) return;
@@ -67,27 +69,56 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
 
   // Simple geocoding using Nominatim (OpenStreetMap)
   const handleSearch = useCallback(async () => {
-    if (!searchQuery.trim()) return;
+    // Collapse newlines / repeated whitespace from pasted multi-line addresses.
+    const query = searchQuery.replace(/\s+/g, ' ').trim();
+    if (!query) return;
 
     setIsSearching(true);
-    try {
+    setSearchError(null);
+
+    // The public Nominatim server throttles heavily and intermittently replies
+    // with an HTML "Access denied" page instead of JSON. Detect that, and retry
+    // once after a short pause before giving up.
+    const fetchResults = async (): Promise<unknown[] | null> => {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`
+        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=0&limit=1&q=${encodeURIComponent(query)}`
       );
-      const results = await response.json();
-
-      if (results && results.length > 0) {
-        const result = results[0];
-        const lat = parseFloat(result.lat);
-        const lng = parseFloat(result.lon);
-
-        setSelected({ lat, lng });
-        setSelectedPlaceName(result.display_name);
-        setMapCenter([lat, lng]);
-        setMapZoom(10);
+      const contentType = response.headers.get('content-type') || '';
+      if (!response.ok || !contentType.includes('json')) {
+        // Rate-limited / blocked — not a real "no results" answer.
+        return null;
       }
+      return response.json();
+    };
+
+    try {
+      let results = await fetchResults();
+      if (results === null) {
+        await new Promise((resolve) => setTimeout(resolve, 1100));
+        results = await fetchResults();
+      }
+
+      if (results === null) {
+        setSearchError('Location search is temporarily unavailable. Please try again in a moment.');
+        return;
+      }
+
+      if (results.length === 0) {
+        setSearchError('No matching location found. Try a nearby town, or drop a pin on the map.');
+        return;
+      }
+
+      const result = results[0] as { lat: string; lon: string; display_name: string };
+      const lat = parseFloat(result.lat);
+      const lng = parseFloat(result.lon);
+
+      setSelected({ lat, lng });
+      setSelectedPlaceName(result.display_name);
+      setMapCenter([lat, lng]);
+      setMapZoom(10);
     } catch (error) {
       log.error('Search failed:', error);
+      setSearchError('Location search is temporarily unavailable. Please try again in a moment.');
     } finally {
       setIsSearching(false);
     }
@@ -208,7 +239,10 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
               type="text"
               placeholder="Search for a location..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (searchError) setSearchError(null);
+              }}
               onKeyPress={handleKeyPress}
               style={{
                 flex: 1,
@@ -238,6 +272,22 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
               {isSearching ? 'Searching...' : 'Search'}
             </button>
           </div>
+
+          {/* Search feedback (no results / rate-limited) */}
+          {searchError && (
+            <div
+              role="alert"
+              style={{
+                marginTop: -8,
+                marginBottom: 16,
+                fontSize: '13px',
+                color: '#b91c1c',
+                flexShrink: 0,
+              }}
+            >
+              {searchError}
+            </div>
+          )}
 
           {/* Use current location */}
           <div style={{ marginBottom: 16, flexShrink: 0 }}>

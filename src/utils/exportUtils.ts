@@ -147,6 +147,26 @@ function findPreviewContainer(): HTMLElement | null {
 /**
  * Logs export activity to the server
  */
+/**
+ * POSTs JSON with a hard timeout. The export/print logger does server-side
+ * reverse-geocoding and SMTP email, which can be slow or hang; without a bound
+ * an awaited fetch here would freeze the export UI. Aborts after timeoutMs.
+ */
+async function postJSONWithTimeout(url: string, body: unknown, timeoutMs = 15000): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function logExportActivity(options: ExportOptions): Promise<void> {
   try {
     const dialTextBlockInterpreted = interpretDialTextBlockForEmail(options.dialTextBlock || '', {
@@ -185,13 +205,7 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
 
     log.debug('Using logger URL:', loggerUrl);
 
-    const response = await fetch(loggerUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(logData)
-    });
+    const response = await postJSONWithTimeout(loggerUrl, logData);
 
     if (!response.ok) {
       log.warn('Failed to log export activity:', response.status, response.statusText);
@@ -338,13 +352,7 @@ export async function logPrintActivity(options: {
 
     log.debug('Using logger URL:', loggerUrl);
 
-    const response = await fetch(loggerUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(logData)
-    });
+    const response = await postJSONWithTimeout(loggerUrl, logData);
 
     if (!response.ok) {
       log.warn('Failed to log print activity:', response.status, response.statusText);
@@ -399,7 +407,7 @@ export async function logPrintActivity(options: {
 /**
  * Exports the sundial design in the specified format
  */
-export async function exportSundial(options: ExportOptions): Promise<void> {
+export async function exportSundial(options: ExportOptions, onLogged?: () => void): Promise<void> {
   log.info('Starting export with options:', options);
   
   // findPreviewContainer now returns the SVG container directly
@@ -464,8 +472,11 @@ export async function exportSundial(options: ExportOptions): Promise<void> {
       log.info('PDF export completed successfully');
     }
 
-    // Log the export activity after successful export
-    await logExportActivity(options);
+    // Analytics/logging must never block the export UI: the file is already
+    // downloaded at this point. Fire the logging in the background so the caller
+    // can reset its "Exporting…" state immediately, and refresh the recent-prints
+    // map only once logging (including the MySQL save) settles.
+    void logExportActivity(options).finally(() => onLogged?.());
   } catch (error) {
     log.error(`Error exporting ${options.format}:`, error);
     // A stale lazy-loaded chunk (app updated since the page was opened) is not a

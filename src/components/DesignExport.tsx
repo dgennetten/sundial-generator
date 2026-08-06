@@ -13,6 +13,7 @@ import type { GnomonType, InclineType } from '../types/sundial';
 import { saveDialConfig, loadAllSavedConfigs, deleteSavedConfig, hasSavedConfigs, type SavedDialConfig } from '../utils/dialSaveRestore';
 import SaveDialDialog from './SaveDialDialog';
 import RestoreDialDialog from './RestoreDialDialog';
+import FeedbackNudgeModal from './FeedbackNudgeModal';
 import type { HourlineInterval } from './hourlineUtils';
 import type { LineStyle } from './LineSettings';
 import type { DeclinationLine } from './DeclinationLineOptions';
@@ -107,6 +108,18 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
 
   const [pendingAction, setPendingAction] = useState<'print' | 'export' | null>(null);
   const [includeTodayLine, setIncludeTodayLine] = useState(false);
+
+  // Feedback nudge: after the user's *second* successful export/print this session, invite
+  // feedback once. Firing on the second (not the first) gives them a chance to open and
+  // review a printout before we ask how it went. The counter is only ever exactly 2 one
+  // time, so this is naturally once-per-session.
+  const [showFeedbackNudge, setShowFeedbackNudge] = useState(false);
+  const maybeShowFeedbackNudge = () => {
+    const FEEDBACK_NUDGE_COUNT_KEY = 'sundial-export-count';
+    const count = Number(sessionStorage.getItem(FEEDBACK_NUDGE_COUNT_KEY) || '0') + 1;
+    sessionStorage.setItem(FEEDBACK_NUDGE_COUNT_KEY, String(count));
+    if (count === 2) setShowFeedbackNudge(true);
+  };
 
   // Glued Popup Base export options
   const [exportGnomonNet, setExportGnomonNet] = useState(true);
@@ -348,33 +361,37 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
     // Trigger the browser print dialog
     window.print();
 
-    // Log the print activity
-    try {
-      await logPrintActivity({
-        pageSize,
-        orientation,
-        customWidth,
-        customHeight,
-        dateRange,
-        gnomonType,
-        locationName,
-        sundialNotesMode,
-        dialTextBlock,
-        latitude,
-        longitude,
-        gnomonHeight,
-        inclineType,
-        tiltAngle,
-        declinationType: declinationType as import('../types').DeclinationType | undefined,
-        declinationDegrees,
-        todayLineActive: hasTodayLineActive,
-        configJson: JSON.stringify(collectCurrentConfig()),
-      });
-      log.info('Print activity logged successfully');
-      onLogComplete?.();
-    } catch (error) {
-      log.error('Failed to log print activity:', error);
-    }
+    // Log the print activity in the background — logging must never block the
+    // UI or the cleanup below. Refresh the recent-prints map once it settles.
+    logPrintActivity({
+      pageSize,
+      orientation,
+      customWidth,
+      customHeight,
+      dateRange,
+      gnomonType,
+      locationName,
+      sundialNotesMode,
+      dialTextBlock,
+      latitude,
+      longitude,
+      gnomonHeight,
+      inclineType,
+      tiltAngle,
+      declinationType: declinationType as import('../types').DeclinationType | undefined,
+      declinationDegrees,
+      todayLineActive: hasTodayLineActive,
+      configJson: JSON.stringify(collectCurrentConfig()),
+    })
+      .then(() => {
+        log.info('Print activity logged successfully');
+      })
+      .catch((error) => {
+        log.error('Failed to log print activity:', error);
+      })
+      .finally(() => onLogComplete?.());
+
+    maybeShowFeedbackNudge();
 
     // Clean up after the print dialog closes
     setTimeout(() => {
@@ -425,9 +442,9 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         pageWidthMm,
         pageHeightMm,
         borderMarginMm: (borderMargin ?? 0) * 25.4,
-      });
+      }, () => onLogComplete?.()); // Map refresh fires when background logging settles
       log.info('Export completed successfully');
-      onLogComplete?.(); // Trigger map refresh
+      maybeShowFeedbackNudge();
     } catch (error) {
       log.error('Export failed:', error);
       // You could add user-facing error handling here, like showing a toast notification
@@ -863,6 +880,15 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
           <PhotoGallery language={galleryLang} onClose={() => setShowGallery(false)} />
         </Suspense>,
         document.body
+      )}
+
+      {showFeedbackNudge && (
+        <FeedbackNudgeModal
+          latitude={latitude}
+          longitude={longitude}
+          locationName={locationName}
+          onClose={() => setShowFeedbackNudge(false)}
+        />
       )}
     </div>
   );
