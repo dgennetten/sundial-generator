@@ -36,7 +36,7 @@ const translations: Record<Language, Translations> = {
     title: 'How to Build Your Custom Sundial',
     steps: {
       location: { label: 'Location:', text: 'Use the dropdown menu, the interactive map, or enter latitude and longitude directly.' },
-      gnomon: { label: 'Gnomon Style:', text: 'Don\'t miss the innovative popup gnomons, especially the new greeting card popup, perfect for paper dials and hands‑on experimentation.' },
+      gnomon: { label: 'Gnomon Style:', text: 'Don\'t miss the innovative popup gnomons, especially the new greeting card popup, perfect for paper dials (see gallery photos).' },
       dateRange: { label: 'Full/Half Year:', text: ': Choose Winter–Spring or Fall–Summer for a cleaner, easier‑to‑read layout.' },
       specialDates: { label: 'Special Dates:', text: ': Display any Special Dates. Uncheck \'Today\' to remove the red line with today\'s date.' },
       reset: { label: 'Reset to Defaults:', text: 'Click Reset button to restore defaults and bring back this popup.' },

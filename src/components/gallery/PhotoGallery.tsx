@@ -1,5 +1,5 @@
 // src/components/gallery/PhotoGallery.tsx
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { X, Upload, Expand, Loader2, Camera, LogOut, Trash2 } from 'lucide-react';
 import Lightbox from 'yet-another-react-lightbox';
 import Fullscreen from 'yet-another-react-lightbox/plugins/fullscreen';
@@ -229,12 +229,22 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ language, onClose }) => {
     }
   };
 
-  const slides: GallerySlide[] = photos.map(p => ({
-    src: galleryImageUrl(p.image_src),
-    alt: p.caption ?? '',
-    galleryCaption: p.caption,
-    galleryPending: p.status === 'pending',
-  }));
+  // Memoize so the array keeps a stable reference across unrelated re-renders.
+  // yet-another-react-lightbox resets its current slide back to the `index` prop
+  // whenever the `slides` prop changes by reference — so a fresh array on every
+  // render (e.g. while the location-shadow animation re-renders the tree ~60×/s)
+  // would snap the lightbox back to the opened photo every frame, making the
+  // ‹ › navigation buttons appear dead.
+  const slides: GallerySlide[] = useMemo(
+    () =>
+      photos.map(p => ({
+        src: galleryImageUrl(p.image_src),
+        alt: p.caption ?? '',
+        galleryCaption: p.caption,
+        galleryPending: p.status === 'pending',
+      })),
+    [photos],
+  );
 
   return (
     <div
@@ -518,6 +528,9 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({ language, onClose }) => {
         open={lightboxIndex >= 0}
         close={() => setLightboxIndex(-1)}
         index={lightboxIndex}
+        // Track the current slide so the controlled `index` prop stays in sync
+        // with navigation; otherwise any re-render re-pins it to the opened photo.
+        on={{ view: ({ index }) => setLightboxIndex(index) }}
         slides={slides}
         plugins={[Fullscreen]}
         // Must clear the gallery shell (10020) and its child modals (10030).
