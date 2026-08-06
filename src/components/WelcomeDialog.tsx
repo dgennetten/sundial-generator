@@ -3,9 +3,12 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { X, Compass, Camera } from 'lucide-react';
 import { version } from '../../package.json';
 import { galleryTranslations } from './gallery/galleryTranslations';
+import GalleryLoadingFallback from './gallery/GalleryLoadingFallback';
 
 // Pulls in the lightbox bundle — only loaded once the gallery is opened.
-const PhotoGallery = lazy(() => import('./gallery/PhotoGallery'));
+// Shared import so hover-prefetch and the lazy component reuse the same request.
+const importPhotoGallery = () => import('./gallery/PhotoGallery');
+const PhotoGallery = lazy(importPhotoGallery);
 
 const WELCOME_DISMISSED_KEY = 'sundial-welcome-dismissed';
 
@@ -449,6 +452,8 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: langua
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button
                 onClick={() => setShowGallery(true)}
+                onMouseEnter={() => { void importPhotoGallery(); }}
+                onFocus={() => { void importPhotoGallery(); }}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -532,7 +537,7 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: langua
     </div>
 
     {showGallery && (
-      <Suspense fallback={null}>
+      <Suspense fallback={<GalleryLoadingFallback />}>
         <PhotoGallery language={language} onClose={() => setShowGallery(false)} />
       </Suspense>
     )}

@@ -4,9 +4,13 @@ import ReactDOM, { flushSync } from 'react-dom';
 import { Download, Save, FolderUp, Undo, Camera, Printer } from 'lucide-react';
 import type { Language } from './WelcomeDialog';
 import { galleryTranslations } from './gallery/galleryTranslations';
+import GalleryLoadingFallback from './gallery/GalleryLoadingFallback';
 
 // Pulls in the lightbox bundle only when the gallery is opened.
-const PhotoGallery = lazy(() => import('./gallery/PhotoGallery'));
+// Shared import so hover-prefetch and the lazy component reuse the same
+// module request — warming it on hover makes the click open instantly.
+const importPhotoGallery = () => import('./gallery/PhotoGallery');
+const PhotoGallery = lazy(importPhotoGallery);
 import { exportSundial, logPrintActivity, type ExportFormat, type PageSize } from '../utils/exportUtils';
 import { createSVGExport } from '../utils/svgExportUtils';
 import type { GnomonType, InclineType } from '../types/sundial';
@@ -707,6 +711,8 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                 type="button"
                 className="btn"
                 onClick={() => setShowGallery(true)}
+                onMouseEnter={() => { void importPhotoGallery(); }}
+                onFocus={() => { void importPhotoGallery(); }}
                 title={galleryTranslations[galleryLang].photos}
                 style={{
                   display: 'inline-flex',
@@ -876,7 +882,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         // Portalled to <body> so the gallery's position:fixed is relative to the
         // viewport. Rendered in place, a transformed ancestor of the card becomes
         // its containing block and traps the "full screen" overlay inside the card.
-        <Suspense fallback={null}>
+        <Suspense fallback={<GalleryLoadingFallback />}>
           <PhotoGallery language={galleryLang} onClose={() => setShowGallery(false)} />
         </Suspense>,
         document.body
