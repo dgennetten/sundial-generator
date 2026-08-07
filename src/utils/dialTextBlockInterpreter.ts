@@ -34,11 +34,11 @@ export function interpretDialTextBlockForEmail(template: string, ctx: {
 
   let locationString = ctx.locationName || '';
   if (!locationString && typeof displayLat === 'number' && typeof displayLng === 'number') {
-    locationString = `Lat: ${displayLat.toFixed(3)}, Lon: ${displayLng.toFixed(3)}`;
+    locationString = `Lat: ${displayLat.toFixed(2)}, Lon: ${displayLng.toFixed(2)}`;
   }
 
-  const latStr = typeof displayLat === 'number' ? displayLat.toFixed(3) : '';
-  const lngStr = typeof displayLng === 'number' ? displayLng.toFixed(3) : '';
+  const latStr = typeof displayLat === 'number' ? displayLat.toFixed(2) : '';
+  const lngStr = typeof displayLng === 'number' ? displayLng.toFixed(2) : '';
 
   const halfYearString =
     ctx.dateRange === 'FullYear'

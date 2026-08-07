@@ -2408,10 +2408,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const displayLat = typeof originalLatitude === 'number' ? originalLatitude : lat;
   if (!locationString && typeof displayLat === 'number' && typeof lng === 'number') {
     // Fallback if no location name is provided
-    locationString = 'Lat: ' + displayLat.toFixed(3) + ', Lon: ' + lng.toFixed(3);
+    locationString = 'Lat: ' + displayLat.toFixed(2) + ', Lon: ' + lng.toFixed(2);
   }
-  const latStr = typeof displayLat === 'number' ? displayLat.toFixed(3) : '';
-  const lngStr = typeof lng === 'number' ? lng.toFixed(3) : '';
+  const latStr = typeof displayLat === 'number' ? displayLat.toFixed(2) : '';
+  const lngStr = typeof lng === 'number' ? lng.toFixed(2) : '';
 
 
   let textBlockLines: Array<Array<{ text: string; bold: boolean; italic: boolean; color?: string }>> = [];
