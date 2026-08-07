@@ -1,17 +1,15 @@
 // src/components/DesignExport.tsx
-import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM, { flushSync } from 'react-dom';
 import { Download, Save, FolderUp, Undo, Camera, Printer } from 'lucide-react';
 import type { Language } from './WelcomeDialog';
 import { galleryTranslations } from './gallery/galleryTranslations';
-import GalleryLoadingFallback from './gallery/GalleryLoadingFallback';
 import GalleryErrorBoundary from './gallery/GalleryErrorBoundary';
-
-// Pulls in the lightbox bundle only when the gallery is opened.
-// Shared import so hover-prefetch and the lazy component reuse the same
-// module request — warming it on hover makes the click open instantly.
-const importPhotoGallery = () => import('./gallery/PhotoGallery');
-const PhotoGallery = lazy(importPhotoGallery);
+// Imported statically (not React.lazy) on purpose. Lazy-loading it as a separate
+// chunk left some devices with a dynamic import() that never resolved — the
+// gallery opened to a bare, endless spinner. Bundling it with the main app,
+// which loads reliably, removes that failure mode entirely.
+import PhotoGallery from './gallery/PhotoGallery';
 import { exportSundial, logPrintActivity, type ExportFormat, type PageSize } from '../utils/exportUtils';
 import { createSVGExport } from '../utils/svgExportUtils';
 import type { GnomonType, InclineType } from '../types/sundial';
@@ -712,7 +710,6 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                 type="button"
                 className="btn"
                 onClick={() => setShowGallery(true)}
-                onFocus={() => { void importPhotoGallery(); }}
                 title={galleryTranslations[galleryLang].photos}
                 style={{
                   display: 'inline-flex',
@@ -727,10 +724,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
                   fontWeight: 600,
                   boxShadow: '0 1px 2px rgba(37,99,235,0.15)',
                 }}
-                onMouseEnter={e => {
-                  void importPhotoGallery();
-                  e.currentTarget.style.backgroundColor = '#dbeafe';
-                }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#dbeafe'; }}
                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#eff6ff'; }}
               >
                 <Camera size={18} />
@@ -886,9 +880,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         // viewport. Rendered in place, a transformed ancestor of the card becomes
         // its containing block and traps the "full screen" overlay inside the card.
         <GalleryErrorBoundary onClose={() => setShowGallery(false)}>
-          <Suspense fallback={<GalleryLoadingFallback />}>
-            <PhotoGallery language={galleryLang} onClose={() => setShowGallery(false)} />
-          </Suspense>
+          <PhotoGallery language={galleryLang} onClose={() => setShowGallery(false)} />
         </GalleryErrorBoundary>,
         document.body
       )}
