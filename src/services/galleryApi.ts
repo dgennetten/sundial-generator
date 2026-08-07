@@ -21,12 +21,31 @@ interface PhotosResponse {
   error?: string;
 }
 
+// A stalled request (flaky connection, unresponsive server) must not leave the
+// gallery spinning forever — abort after this long so the caller can show its
+// error/retry state instead.
+const PHOTOS_TIMEOUT_MS = 15_000;
+
 /** Approved photos, plus the caller's own pending ones when a token is passed. */
 export async function fetchGalleryPhotos(token?: string | null): Promise<GalleryPhoto[]> {
-  const res = await fetch(galleryUrl('/gallery-photos.php'), {
-    cache: 'no-store',
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), PHOTOS_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(galleryUrl('/gallery-photos.php'), {
+      cache: 'no-store',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      signal: controller.signal,
+    });
+  } catch {
+    // AbortError (timeout) or TypeError ("Failed to fetch") — the request never
+    // completed. Surface it so loadPhotos falls into its error state.
+    throw new GalleryNetworkError();
+  } finally {
+    clearTimeout(timer);
+  }
+
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = (await res.json()) as PhotosResponse;
   return data.photos ?? [];
