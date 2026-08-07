@@ -3,7 +3,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { X, Upload, Expand, Loader2, Camera, LogOut, Trash2 } from 'lucide-react';
 import Lightbox from 'yet-another-react-lightbox';
 import Fullscreen from 'yet-another-react-lightbox/plugins/fullscreen';
-import 'yet-another-react-lightbox/styles.css';
+// NOTE: the lightbox stylesheet is imported eagerly in main.tsx, not here — see
+// the comment there. Importing it in this lazy chunk made the dynamic import
+// wait on the stylesheet <link> load event, which could hang forever on mobile.
 import type { Language } from '../WelcomeDialog';
 import type { GalleryPhoto, GalleryUser } from '../../types/gallery';
 import { fetchGalleryPhotos, deleteGalleryPhoto, galleryImageUrl } from '../../services/galleryApi';
