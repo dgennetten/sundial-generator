@@ -1,5 +1,5 @@
 // src/components/DesignExport.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ReactDOM, { flushSync } from 'react-dom';
 import { Download, Save, FolderUp, Undo, Camera, Printer } from 'lucide-react';
 import type { Language } from './WelcomeDialog';
@@ -468,6 +468,21 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       handlePrint();
     }
   };
+
+  // Keyboard shortcut: Ctrl/Cmd+P runs the app's Print (the two-page assembly),
+  // intercepting the browser's native print dialog.
+  const printClickRef = useRef<() => void>(() => {});
+  printClickRef.current = handlePrintClick;
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) return;
+      if (e.key !== 'p' && e.key !== 'P') return;
+      e.preventDefault();
+      printClickRef.current();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   const handleExportClick = () => {
     if (isExporting) return;
