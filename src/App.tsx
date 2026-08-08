@@ -1456,6 +1456,7 @@ const App: React.FC = () => {
                     config={previewConfig}
                     pageWidthMm={pageWidth}
                     pageHeightMm={pageHeight}
+                    gnomonOffset={effectiveGnomonPosition - autoGnomonVerticalPosition}
                     isFullscreen={isPreviewFullscreen}
                     onToggleFullscreen={handleTogglePreviewFullscreen}
                   />

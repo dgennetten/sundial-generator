@@ -25,6 +25,12 @@ interface DualDialPreviewProps {
   config: SundialProps;   // the shared previewConfig (gnomon auto-sized to the half)
   pageWidthMm: number;    // full (landscape) card width in mm
   pageHeightMm: number;   // full card height in mm
+  /**
+   * Manual gnomon offset from the auto-centered position, in mm (0 in auto mode).
+   * Applied to both dials along the noon axis, so a manual move shifts both
+   * gnomons together (toward/away from the crease after the 90° turn).
+   */
+  gnomonOffset?: number;
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
 }
@@ -33,6 +39,7 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
   config,
   pageWidthMm: W,
   pageHeightMm: H,
+  gnomonOffset = 0,
   isFullscreen = false,
   onToggleFullscreen,
 }) => {
@@ -75,7 +82,7 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
     dialInclination: 0,
     dialDeclination: 0,
     gnomonHorizontalPosition: undefined, // centered → feet mirror across the crease
-    gnomonPosition: autoVPos,
+    gnomonPosition: autoVPos + gnomonOffset,
     gnomonType: 'crosshair',
     // Scale text down to match the reduced dial size.
     fontSize: (config.fontSize ?? 20) * fontReduction,
