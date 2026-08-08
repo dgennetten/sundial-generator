@@ -41,6 +41,11 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
   const halfPreW = H;
   const halfPreH = W / 2;
 
+  // Each dial is rendered at ~this fraction of the full-page dial's linear scale
+  // (half-page auto-gnomon basis W/2 vs full-page basis H). Hour-label and
+  // decoration text are scaled by it so they read equivalently smaller.
+  const fontReduction = H > 0 ? W / (2 * H) : 1;
+
   // Auto vertical gnomon position: center the noon analemma within the half's
   // (pre-rotation) height, using the half-sized gnomon from the config. Both
   // halves share it, so the feet sit at matching, mirrored positions.
@@ -72,6 +77,9 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
     gnomonHorizontalPosition: undefined, // centered → feet mirror across the crease
     gnomonPosition: autoVPos,
     gnomonType: 'crosshair',
+    // Scale text down to match the reduced dial size.
+    fontSize: (config.fontSize ?? 20) * fontReduction,
+    dialTextBlockFontSize: (config.dialTextBlockFontSize ?? 14) * fontReduction,
   };
 
   const leftConfig: SundialProps = { ...config, ...halfOverride, dateRange: 'SummerToFall' };
