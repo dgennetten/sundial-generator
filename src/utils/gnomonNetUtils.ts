@@ -322,3 +322,135 @@ export function buildGnomonNetSVGString(
     `</svg>`,
   ].join('\n');
 }
+
+/**
+ * Builds the Dual-Dial gnomon net SVG as an XML string.
+ *
+ * Each dual-dial gnomon is a square post (an uncapped cube). Its net is a
+ * rectangular strip:
+ *   height = cube side.
+ *   width  = 4 × cube side (the four faces) + a glue tab.
+ * Dashed valley-fold lines divide the four faces; the trailing glue tab closes
+ * the tube. Card-attachment tabs are intentionally not part of this net yet.
+ *
+ * Two identical nets are printed one above the other — one gnomon per dial.
+ *
+ * The cube side equals `gnomonHeight`, which is already the half-sized dial's
+ * gnomon (the dials are drawn natively for the half, so no further reduction is
+ * needed — the physical cube matches the printed dial directly).
+ *
+ * @param gnomonHeight   dial gnomon height in mm (the half-sized cube side)
+ * @param pageWidth      page width in mm
+ * @param pageHeight     page height in mm
+ * @param showBackground fill page background
+ * @param backgroundColor CSS color string
+ * @param borderMarginMm border inset in mm (0 = none)
+ */
+export function buildDualDialNetSVGString(
+  gnomonHeight: number,
+  pageWidth: number,
+  pageHeight: number,
+  showBackground = false,
+  backgroundColor = 'white',
+  borderMarginMm = 0
+): string {
+  const gH = Math.max(5, gnomonHeight);
+  const tabW = Math.min(10, 0.5 * gH);   // glue tab: ~10 mm, capped for tiny gnomons
+  const netW = 4 * gH + tabW;            // four cube faces + glue tab
+  const netH = gH;                       // strip height = cube side
+
+  const margin = Math.max(8, borderMarginMm + 4);
+  const fmt    = (v: number) => (Math.round(v * 10) / 10).toString();
+
+  // ── Instructions (printed above the nets) ─────────────────────────────────
+  const sundialLines = [
+    'One gnomon per dial. Cut around each solid outline.',
+    'Valley fold the dashed lines into a square tube (open top and bottom).',
+    'Overlap and glue the GLUE tab inside the opposite edge to close the tube.',
+  ];
+  const sfs = 3.5;   // font size (mm)
+  const slh = 5;     // line height (mm)
+
+  const subtitleY = pageHeight - margin;
+  const sundialY0 = margin + 14;
+  const headerH   = Math.ceil(14 + sundialLines.length * slh + 8);
+
+  const availW = pageWidth  - 2 * margin;
+  const availH = pageHeight - 2 * margin - headerH;
+
+  // Two identical strips, stacked one above the other.
+  const copies = 2;
+  const vgap   = Math.max(12, gH);       // gap between the stacked strips
+  const groupW = netW;
+  const groupH = copies * netH + (copies - 1) * vgap;
+  const scale  = Math.min(availW / groupW, availH / groupH, 1);
+  const sW = groupW * scale;
+  const sH = groupH * scale;
+  const pageOX = margin + (availW - sW) / 2;
+  const pageOY = margin + headerH + (availH - sH) / 2;
+
+  const labelSize = Math.max(3, Math.min(gH * 0.17, 11));
+
+  // ── Net elements in natural gH coordinates (origin = strip top-left) ───────
+  const foldXs = [gH, 2 * gH, 3 * gH, 4 * gH];
+  const foldLines = foldXs.map(x =>
+    `<line x1="${fmt(x)}" y1="0" x2="${fmt(x)}" y2="${fmt(netH)}" stroke="#333" stroke-width="0.35" stroke-dasharray="2,2"/>`
+  ).join('\n        ');
+
+  // Faint face labels (1–4) centered in each panel; meaning of each face is
+  // deferred, so these are neutral placeholders in the same outline style as
+  // the triangular net's A/B labels.
+  const faceLabels = [0, 1, 2, 3].map(i => {
+    const cx = (i + 0.5) * gH;
+    return `<text x="${fmt(cx)}" y="${fmt(netH / 2)}" font-size="${labelSize}" text-anchor="middle" dominant-baseline="middle"`
+      + ` font-family="sans-serif" font-weight="bold" fill="none" stroke="lightgray" stroke-width="0.5">${i + 1}</text>`;
+  }).join('\n        ');
+
+  // GLUE tab label — rotated 90° so it reads within the narrow tab.
+  const tabCx = 4 * gH + tabW / 2;
+  const tabLabel =
+    `<text x="${fmt(tabCx)}" y="${fmt(netH / 2)}" font-size="${fmt(Math.min(labelSize, tabW * 0.5))}" text-anchor="middle" dominant-baseline="middle"`
+    + ` transform="rotate(-90 ${fmt(tabCx)} ${fmt(netH / 2)})" font-family="sans-serif" fill="none" stroke="lightgray" stroke-width="0.4">GLUE</text>`;
+
+  const stripElements = [
+    `<path d="M 0,0 L ${fmt(netW)},0 L ${fmt(netW)},${fmt(netH)} L 0,${fmt(netH)} Z"`
+      + ` stroke="black" stroke-width="0.5" fill="none"/>`,
+    foldLines,
+    faceLabels,
+    tabLabel,
+  ].join('\n        ');
+
+  const copiesSVG = Array.from({ length: copies }, (_, i) =>
+    `    <g transform="translate(0,${fmt(i * (netH + vgap))})">
+        ${stripElements}
+    </g>`
+  ).join('\n');
+
+  const stripSVG =
+    `  <g transform="translate(${fmt(pageOX)},${fmt(pageOY)})${scale !== 1 ? ` scale(${scale})` : ''}">
+${copiesSVG}
+  </g>`;
+
+  // ── Background and border ─────────────────────────────────────────────────
+  const bgRect = showBackground
+    ? `  <rect x="0" y="0" width="${pageWidth}" height="${pageHeight}" fill="${backgroundColor}"/>`
+    : '';
+  const borderRect = borderMarginMm > 0
+    ? `  <rect x="${borderMarginMm}" y="${borderMarginMm}" width="${pageWidth - 2 * borderMarginMm}" height="${pageHeight - 2 * borderMarginMm}" fill="none" stroke="black" stroke-width="0.25"/>`
+    : '';
+
+  const sundialInstrSVG = sundialLines.map((line, i) =>
+    `  <text x="${pageWidth / 2}" y="${sundialY0 + i * slh}" font-size="${sfs}" text-anchor="middle" dominant-baseline="auto" font-family="sans-serif" fill="#333" font-style="italic">${line}</text>`
+  ).join('\n');
+
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${pageWidth}mm" height="${pageHeight}mm" viewBox="0 0 ${pageWidth} ${pageHeight}">`,
+    bgRect,
+    borderRect,
+    `  <text x="${pageWidth / 2}" y="${margin + 8}" font-size="7" text-anchor="middle" font-family="sans-serif" font-weight="bold">Cut-and-Fold Gnomons (Dual Dial)</text>`,
+    sundialInstrSVG,
+    stripSVG,
+    `  <text x="${pageWidth / 2}" y="${subtitleY}" font-size="3.5" text-anchor="middle" font-family="sans-serif" fill="#555">Gnomon height: ${fmt(gH)} mm</text>`,
+    `</svg>`,
+  ].join('\n');
+}

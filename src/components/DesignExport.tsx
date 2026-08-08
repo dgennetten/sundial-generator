@@ -21,7 +21,8 @@ import type { HourlineInterval } from './hourlineUtils';
 import type { LineStyle } from './LineSettings';
 import type { DeclinationLine } from './DeclinationLineOptions';
 import { log } from '../utils/logger';
-import { buildGnomonNetSVGString, computePageMM } from '../utils/gnomonNetUtils';
+import { buildGnomonNetSVGString, buildDualDialNetSVGString, computePageMM } from '../utils/gnomonNetUtils';
+import { isTwoPagePopup } from '../types/sundial';
 
 
 
@@ -30,7 +31,7 @@ interface DesignExportProps {
   orientation: 'Landscape' | 'Portrait';
   customWidth?: number;
   customHeight?: number;
-  dateRange?: 'FullYear' | 'SummerToFall' | 'WinterToSpring';
+  dateRange?: 'FullYear' | 'SummerToFall' | 'WinterToSpring' | 'DualHalf';
   gnomonType?: GnomonType;
   locationName?: string;
   showBackground: boolean;
@@ -127,7 +128,8 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   // Glued Popup Base export options
   const [exportGnomonNet, setExportGnomonNet] = useState(true);
   const [exportSundialFace, setExportSundialFace] = useState(true);
-  const isGluedPopup = gnomonType === 'glued-popup-base';
+  const isTwoPage = isTwoPagePopup(gnomonType ?? 'popup-with-brace');
+  const isDualDial = gnomonType === 'dual-dial-popup';
 
   const hasTodayLineActive = declinationLines?.some(line => line.id === 'today' && line.active) ?? false;
 
@@ -294,8 +296,8 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
     document.head.appendChild(pageStyle);
 
     // ── Determine what to print (checkboxes, independent of preview state) ───
-    const includeSundialFace = !isGluedPopup || exportSundialFace;
-    const includeGnomonNet   = isGluedPopup && exportGnomonNet;
+    const includeSundialFace = !isTwoPage || exportSundialFace;
+    const includeGnomonNet   = isTwoPage && exportGnomonNet;
 
     // ── Build isolated print container ───────────────────────────────────────
     // This is completely independent of which preview tab is currently shown.
@@ -333,7 +335,8 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
     if (includeGnomonNet) {
       const { pageWidthMm, pageHeightMm } = computePageMM(pageSize, orientation, customWidth, customHeight);
       const borderMm = (borderMargin ?? 0) * 25.4;
-      const gnomSvg  = buildGnomonNetSVGString(
+      const buildNet = isDualDial ? buildDualDialNetSVGString : buildGnomonNetSVGString;
+      const gnomSvg  = buildNet(
         gnomonHeight || 10, pageWidthMm, pageHeightMm, showBackground, backgroundColor, borderMm
       );
       const page = document.createElement('div');
@@ -412,7 +415,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
 
     log.info('Starting export, format:', format);
     setIsExporting(true);
-    const { pageWidthMm, pageHeightMm } = isGluedPopup
+    const { pageWidthMm, pageHeightMm } = isTwoPage
       ? computePageMM(pageSize, orientation, customWidth, customHeight)
       : { pageWidthMm: undefined, pageHeightMm: undefined };
 
@@ -440,8 +443,8 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         declinationDegrees,
         todayLineActive: hasTodayLineActive,
         configJson: JSON.stringify(collectCurrentConfig()),
-        exportGnomonNet: isGluedPopup ? exportGnomonNet : false,
-        exportSundialFace: isGluedPopup ? exportSundialFace : true,
+        exportGnomonNet: isTwoPage ? exportGnomonNet : false,
+        exportSundialFace: isTwoPage ? exportSundialFace : true,
         pageWidthMm,
         pageHeightMm,
         borderMarginMm: (borderMargin ?? 0) * 25.4,
@@ -531,7 +534,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
           }}
         >
           {/* Glued Popup Base: page selection checkboxes */}
-          {isGluedPopup && (
+          {isTwoPage && (
             <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem', alignItems: 'center', padding: '4px 0 2px' }}>
               <span style={{ fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>Pages:</span>
               <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.875rem', color: '#374151', cursor: 'pointer', userSelect: 'none' }}>
@@ -554,7 +557,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
               </label>
             </div>
           )}
-          {isGluedPopup && (
+          {isTwoPage && (
             <div style={{ fontSize: '0.78rem', color: '#b45309', padding: '0 0 2px', lineHeight: 1.3 }}>
               Print / export at 100% actual size — never "Fit to Page"
             </div>

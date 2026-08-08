@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface GnomonSVGProps {
-  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base';
+  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base' | 'dual-dial-popup';
   gnomonHeight: number;
   lat?: number;
   inclineType?: string;

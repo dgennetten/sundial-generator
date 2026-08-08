@@ -4,7 +4,26 @@ import type { ExportOptions, PageSize } from '../types';
 import { interpretDialTextBlockForEmail } from './dialTextBlockInterpreter';
 import { saveSundialPrint, computeInclinationDegrees } from './sundialPrintUtils';
 import { log } from './logger';
-import { buildGnomonNetSVGString } from './gnomonNetUtils';
+import { buildGnomonNetSVGString, buildDualDialNetSVGString } from './gnomonNetUtils';
+import { isTwoPagePopup } from '../types/sundial';
+
+/** True when this export should also emit a second gnomon-net page. */
+function includesGnomonNet(options: ExportOptions): boolean {
+  return options.exportGnomonNet === true && !!options.gnomonType && isTwoPagePopup(options.gnomonType);
+}
+
+/** Builds the gnomon-net SVG for this export, picking the dual-dial variant. */
+function buildNetSVGForExport(options: ExportOptions, pageWidthMm: number, pageHeightMm: number): string {
+  const build = options.gnomonType === 'dual-dial-popup' ? buildDualDialNetSVGString : buildGnomonNetSVGString;
+  return build(
+    options.gnomonHeight || 10,
+    pageWidthMm,
+    pageHeightMm,
+    options.showBackground,
+    options.backgroundColor,
+    options.borderMarginMm
+  );
+}
 import { isStaleChunkError, recoverFromStaleChunk } from './staleChunk';
 
 // Re-export types for backward compatibility
@@ -394,7 +413,7 @@ export async function exportSundial(options: ExportOptions, onLogged?: () => voi
   log.debug('Found SVG element:', svgElement);
 
   const includeSundial = options.exportSundialFace !== false;
-  const includeGnomon  = options.exportGnomonNet === true && options.gnomonType === 'glued-popup-base';
+  const includeGnomon  = includesGnomonNet(options);
 
   try {
     if (options.format === 'PNG') {
@@ -423,14 +442,7 @@ export async function exportSundial(options: ExportOptions, onLogged?: () => voi
         log.info('SVG sundial export completed');
       }
       if (includeGnomon && options.pageWidthMm && options.pageHeightMm) {
-        const gnomSVG = buildGnomonNetSVGString(
-          options.gnomonHeight || 10,
-          options.pageWidthMm,
-          options.pageHeightMm,
-          options.showBackground,
-          options.backgroundColor,
-          options.borderMarginMm
-        );
+        const gnomSVG = buildNetSVGForExport(options, options.pageWidthMm, options.pageHeightMm);
         downloadFile(gnomSVG, buildFilename(options, 'svg').replace('.svg', '-gnomon.svg'), 'image/svg+xml');
         log.info('SVG gnomon export completed');
       }
@@ -469,7 +481,7 @@ async function exportGnomonNetPNG(options: ExportOptions, filename: string): Pro
   const pxW = Math.round(w * mmToIn * dpi);
   const pxH = Math.round(h * mmToIn * dpi);
 
-  const svgStr = buildGnomonNetSVGString(options.gnomonHeight || 10, w, h, options.showBackground, options.backgroundColor, options.borderMarginMm);
+  const svgStr = buildNetSVGForExport(options, w, h);
 
   const container = document.createElement('div');
   container.style.cssText = `position:fixed;top:-9999px;left:-9999px;width:${pxW}px;height:${pxH}px;background:white;`;
@@ -661,7 +673,7 @@ async function exportPDF(options: ExportOptions): Promise<void> {
   processNorthPointForPdf(svgEl);
 
   const includeSundial = options.exportSundialFace !== false;
-  const includeGnomon  = options.exportGnomonNet === true && options.gnomonType === 'glued-popup-base';
+  const includeGnomon  = includesGnomonNet(options);
 
   if (includeSundial) {
     // Render SVG without forcing a different width/height (prevents stroke/dash scaling)
@@ -673,7 +685,7 @@ async function exportPDF(options: ExportOptions): Promise<void> {
     const pageW = options.pageWidthMm;
     const pageH = options.pageHeightMm;
     if (pageW && pageH) {
-      const gnomSVGStr = buildGnomonNetSVGString(options.gnomonHeight || 10, pageW, pageH, options.showBackground, options.backgroundColor, options.borderMarginMm);
+      const gnomSVGStr = buildNetSVGForExport(options, pageW, pageH);
       const gnomParsed = new DOMParser().parseFromString(gnomSVGStr, 'image/svg+xml');
       const gnomEl = gnomParsed.documentElement as unknown as SVGSVGElement;
 

@@ -2,7 +2,7 @@
 // Preview component for the cut-and-fold gnomon net page.
 import React from 'react';
 import { MoveUpRight } from 'lucide-react';
-import { buildGnomonNetSVGString } from '../utils/gnomonNetUtils';
+import { buildGnomonNetSVGString, buildDualDialNetSVGString } from '../utils/gnomonNetUtils';
 
 interface GnomonNetSVGProps {
   gnomonHeight: number;       // mm — standing height of gnomon
@@ -11,13 +11,17 @@ interface GnomonNetSVGProps {
   showBackground?: boolean;
   backgroundColor?: string;
   borderMarginMm?: number;    // border inset in mm (0 = no border)
+  /** 'triangular' = classic greeting-popup net; 'dual' = dual-dial cube net. */
+  variant?: 'triangular' | 'dual';
 }
 
 const GnomonNetSVG: React.FC<GnomonNetSVGProps> = ({
   gnomonHeight, pageWidth, pageHeight,
   showBackground = false, backgroundColor = 'white', borderMarginMm = 0,
+  variant = 'triangular',
 }) => {
-  const svgString = buildGnomonNetSVGString(
+  const build = variant === 'dual' ? buildDualDialNetSVGString : buildGnomonNetSVGString;
+  const svgString = build(
     gnomonHeight, pageWidth, pageHeight, showBackground, backgroundColor, borderMarginMm
   );
 
