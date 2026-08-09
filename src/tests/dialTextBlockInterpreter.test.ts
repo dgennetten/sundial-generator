@@ -29,7 +29,7 @@ describe('interpretDialTextBlockForEmail', () => {
 
   it('derives a Lat/Lon location string when no name is supplied', () => {
     const out = interpretDialTextBlockForEmail('{location}', { latitude: 40.5853, longitude: -105.0844 });
-    expect(out).toBe('Lat: 40.585, Lon: -105.084');
+    expect(out).toBe('Lat: 40.59, Lon: -105.08');
   });
 
   it('strips {location} (and bold/italic wrappers) for the "Custom Lat/Long" sentinel', () => {
@@ -43,7 +43,7 @@ describe('interpretDialTextBlockForEmail', () => {
       '{latitude-label}: {latitude}, {longitude-label}: {longitude}',
       { latitude: 40.5853, longitude: -105.0844 },
     );
-    expect(out).toBe('Latitude: 40.585, Longitude: -105.084');
+    expect(out).toBe('Latitude: 40.59, Longitude: -105.08');
   });
 
   it('maps {half-year} for each date range', () => {
