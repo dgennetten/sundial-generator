@@ -1,6 +1,7 @@
 // src/components/PageSettings.tsx
 import { getDisplayTiltAngle, getWallDeclinationForPreset } from '../utils/sundialMath';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { StickyNote } from 'lucide-react';
 import type { LineStyle } from './LineSettings';
 
@@ -177,7 +178,7 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   const [declinationStep, setDeclinationStep] = useState<number>(1.0);
 
   // Responsive: detect mobile
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
+  const isMobile = useIsMobile(500);
 
   // Dial Facing (North/South) is only for flat horizontal dials — same ~0.05° threshold as incline labeling
   const dialFacingEnabled = inclineType === 'Horizontal' && Math.abs(tiltAngle) < 0.05;

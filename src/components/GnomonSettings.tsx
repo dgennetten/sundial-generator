@@ -1,5 +1,6 @@
 // src/components/GnomonSettings.tsx
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { getAnalemmaPointsProjected } from '../utils/sundialMath';
 import { calculateAutoGnomonHeight as calcAutoHeight } from '../utils/sundialMath';
 import { MoveUpRight, Pause, Play, ArrowLeft } from 'lucide-react';
@@ -72,7 +73,7 @@ const GnomonSettings: React.FC<Props> = ({
 }) => {
 
   // Responsive: detect mobile
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
+  const isMobile = useIsMobile(500);
   // Crosshair gnomons have no popup body to cast a shadow, so animation is not applicable
   const isCrosshair = gnomonType.startsWith('crosshair');
   // Initialize autoHeight synchronously so the auto gnomon position is correct on the

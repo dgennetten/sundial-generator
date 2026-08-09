@@ -1,4 +1,5 @@
 import React from 'react';
+import { useIsMobile } from '../hooks/useIsMobile';
 import type { LineStyle } from './LineSettings';
 import { Clock } from 'lucide-react';
 import { saveHourlineIntervals, saveHourlineOverrides, type HourlineInterval } from './hourlineUtils';
@@ -73,7 +74,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
 }) => {
 
   // Responsive: detect mobile
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+  const isMobile = useIsMobile(768);
 
 
   const handleChange = (idx: number, field: keyof HourlineInterval, value: string | boolean) => {

@@ -1,6 +1,7 @@
 // src/components/DesignExport.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM, { flushSync } from 'react-dom';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { Download, Save, FolderUp, Undo, Camera, Printer } from 'lucide-react';
 import type { Language } from './WelcomeDialog';
 import { galleryTranslations } from './gallery/galleryTranslations';
@@ -132,7 +133,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   const hasTodayLineActive = declinationLines?.some(line => line.id === 'today' && line.active) ?? false;
 
   // Responsive: detect mobile
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 500;
+  const isMobile = useIsMobile(500);
 
   // Check for saved configs on mount and when dialogs close
   useEffect(() => {
