@@ -84,6 +84,10 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
     gnomonHorizontalPosition: undefined, // centered → feet mirror across the crease
     gnomonPosition: autoVPos + gnomonOffset,
     gnomonType: 'crosshair',
+    // No per-dial border or inset: the faces run all the way to the crease so the
+    // two dials touch (no gap). One border is drawn around the whole card below.
+    borderStyle: 'none',
+    borderMargin: 0,
     // Scale text down to match the reduced dial size.
     fontSize: (config.fontSize ?? 20) * fontReduction,
     dialTextBlockFontSize: (config.dialTextBlockFontSize ?? 14) * fontReduction,
@@ -102,6 +106,15 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
   // the half's dimensions, so rotation alone fills the half without distortion.
   const leftPlacement = `translate(${-W / 4},0) rotate(-90)`;
   const rightPlacement = `translate(${W / 4},0) rotate(90)`;
+
+  // One border around both dials, inset by the configured border margin. The
+  // dials are clipped to this rect so they keep an outer margin but still touch
+  // at the crease (x = 0, which is inside the rect).
+  const borderMm = (config.borderMargin ?? 0.25) * 25.4;
+  const innerX = -W / 2 + borderMm;
+  const innerY = -H / 2 + borderMm;
+  const innerW = W - 2 * borderMm;
+  const innerH = H - 2 * borderMm;
 
   return (
     <div className="card" style={{ width: '100%', margin: 0 }}>
@@ -138,20 +151,31 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
             fill={config.showBackground ? config.backgroundColor : '#fff'}
           />
           <g transform={`scale(${parentSF})`}>
-            <SundialPreview
-              config={leftConfig}
-              renderAsGroup
-              idSuffix="L"
-              placementTransform={leftPlacement}
-            />
-            <SundialPreview
-              config={rightConfig}
-              renderAsGroup
-              idSuffix="R"
-              placementTransform={rightPlacement}
-            />
+            <defs>
+              <clipPath id="dual-card-clip">
+                <rect x={innerX} y={innerY} width={innerW} height={innerH} />
+              </clipPath>
+            </defs>
+            {/* Both dials clipped to the single card rect: they abut at the crease
+                with no gap, and keep the outer margin. */}
+            <g clipPath="url(#dual-card-clip)">
+              <SundialPreview
+                config={leftConfig}
+                renderAsGroup
+                idSuffix="L"
+                placementTransform={leftPlacement}
+              />
+              <SundialPreview
+                config={rightConfig}
+                renderAsGroup
+                idSuffix="R"
+                placementTransform={rightPlacement}
+              />
+            </g>
             {/* Center crease — valley fold */}
-            <line x1={0} y1={-H / 2} x2={0} y2={H / 2} stroke="#999" strokeWidth={0.3} strokeDasharray="2,2" />
+            <line x1={0} y1={innerY} x2={0} y2={innerY + innerH} stroke="#999" strokeWidth={0.3} strokeDasharray="2,2" />
+            {/* One border surrounding both dials */}
+            <rect x={innerX} y={innerY} width={innerW} height={innerH} fill="none" stroke="black" strokeWidth={0.5} />
           </g>
         </svg>
       </div>

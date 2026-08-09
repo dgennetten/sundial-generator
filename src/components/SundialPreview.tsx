@@ -2346,8 +2346,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     )
   ) : null;
 
-  // Show clipping boundary when border is not visible (for debugging)
-  const clippingBoundary = !showBorder ? (
+  // Show clipping boundary when border is not visible (for debugging). Never in
+  // embedded (group) mode — DualDialPreview draws its own single border, and a
+  // per-half boundary would reintroduce the seam between the two dials.
+  const clippingBoundary = (!showBorder && !renderAsGroup) ? (
     dialShape === 'Oval' ? (
       <ellipse
         cx={0}
