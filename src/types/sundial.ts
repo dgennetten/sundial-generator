@@ -189,6 +189,8 @@ export interface ExportOptions {
   pageHeightMm?: number;
   /** Border inset for gnomon net page, in mm */
   borderMarginMm?: number;
+  /** Dual-dial cube net: each face's width in mm (gnomon-feet separation / √2). */
+  cubeSideMm?: number;
 }
 
 /**

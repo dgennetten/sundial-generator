@@ -13,17 +13,18 @@ interface GnomonNetSVGProps {
   borderMarginMm?: number;    // border inset in mm (0 = no border)
   /** 'triangular' = classic greeting-popup net; 'dual' = dual-dial cube net. */
   variant?: 'triangular' | 'dual';
+  /** Dual variant only: each cube face's width in mm (gnomon-feet separation / √2). */
+  cubeSideMm?: number;
 }
 
 const GnomonNetSVG: React.FC<GnomonNetSVGProps> = ({
   gnomonHeight, pageWidth, pageHeight,
   showBackground = false, backgroundColor = 'white', borderMarginMm = 0,
-  variant = 'triangular',
+  variant = 'triangular', cubeSideMm,
 }) => {
-  const build = variant === 'dual' ? buildDualDialNetSVGString : buildGnomonNetSVGString;
-  const svgString = build(
-    gnomonHeight, pageWidth, pageHeight, showBackground, backgroundColor, borderMarginMm
-  );
+  const svgString = variant === 'dual'
+    ? buildDualDialNetSVGString(gnomonHeight, pageWidth, pageHeight, showBackground, backgroundColor, borderMarginMm, cubeSideMm)
+    : buildGnomonNetSVGString(gnomonHeight, pageWidth, pageHeight, showBackground, backgroundColor, borderMarginMm);
 
   // Inject width:100%;height:auto so the SVG scales to fit the card rather than
   // rendering at its physical mm size (which creates whitespace on screen).

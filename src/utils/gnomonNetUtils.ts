@@ -326,25 +326,26 @@ export function buildGnomonNetSVGString(
 /**
  * Builds the Dual-Dial gnomon net SVG as an XML string.
  *
- * Each dual-dial gnomon is a square post (an uncapped cube). Its net is a
- * rectangular strip:
- *   height = cube side.
+ * Each dual-dial gnomon is a square post. Its net is a rectangular strip:
+ *   height = gnomonHeight (the physical standing height).
  *   width  = 4 × cube side (the four faces) + a glue tab.
  * Dashed valley-fold lines divide the four faces; the trailing glue tab closes
  * the tube. Card-attachment tabs are intentionally not part of this net yet.
  *
  * Two identical nets are printed one above the other — one gnomon per dial.
  *
- * The cube side equals `gnomonHeight`, which is already the half-sized dial's
- * gnomon (the dials are drawn natively for the half, so no further reduction is
- * needed — the physical cube matches the printed dial directly).
+ * The cube side (face width) is `cubeSideMm`, chosen so the assembled square
+ * base's diagonal equals the distance between the two gnomon feet (base corners
+ * on the gnomons and on the fold): cubeSideMm = feetSeparation / √2. When it is
+ * omitted the face width falls back to gnomonHeight.
  *
- * @param gnomonHeight   dial gnomon height in mm (the half-sized cube side)
+ * @param gnomonHeight   strip height in mm (the physical gnomon standing height)
  * @param pageWidth      page width in mm
  * @param pageHeight     page height in mm
  * @param showBackground fill page background
  * @param backgroundColor CSS color string
  * @param borderMarginMm border inset in mm (0 = none)
+ * @param cubeSideMm     each cube face's width in mm (defaults to gnomonHeight)
  */
 export function buildDualDialNetSVGString(
   gnomonHeight: number,
@@ -352,12 +353,14 @@ export function buildDualDialNetSVGString(
   pageHeight: number,
   showBackground = false,
   backgroundColor = 'white',
-  borderMarginMm = 0
+  borderMarginMm = 0,
+  cubeSideMm?: number
 ): string {
-  const gH = Math.max(5, gnomonHeight);
-  const tabW = Math.min(10, 0.5 * gH);   // glue tab: ~10 mm, capped for tiny gnomons
-  const netW = 4 * gH + tabW;            // four cube faces + glue tab
-  const netH = gH;                       // strip height = cube side
+  const gH = Math.max(5, gnomonHeight);                   // strip height = gnomon height
+  const faceW = Math.max(5, cubeSideMm ?? gnomonHeight);  // each cube face's width
+  const tabW = Math.min(10, 0.5 * faceW); // glue tab: ~10 mm, capped for tiny faces
+  const netW = 4 * faceW + tabW;          // four cube faces + glue tab
+  const netH = gH;                        // strip height = gnomon height
 
   const margin = Math.max(8, borderMarginMm + 4);
   const fmt    = (v: number) => (Math.round(v * 10) / 10).toString();
@@ -389,10 +392,10 @@ export function buildDualDialNetSVGString(
   const pageOX = margin + (availW - sW) / 2;
   const pageOY = margin + headerH + (availH - sH) / 2;
 
-  const labelSize = Math.max(3, Math.min(gH * 0.17, 11));
+  const labelSize = Math.max(3, Math.min(Math.min(gH, faceW) * 0.17, 11));
 
-  // ── Net elements in natural gH coordinates (origin = strip top-left) ───────
-  const foldXs = [gH, 2 * gH, 3 * gH, 4 * gH];
+  // ── Net elements in natural mm coordinates (origin = strip top-left) ───────
+  const foldXs = [faceW, 2 * faceW, 3 * faceW, 4 * faceW];
   const foldLines = foldXs.map(x =>
     `<line x1="${fmt(x)}" y1="0" x2="${fmt(x)}" y2="${fmt(netH)}" stroke="#333" stroke-width="0.35" stroke-dasharray="2,2"/>`
   ).join('\n        ');
@@ -401,13 +404,13 @@ export function buildDualDialNetSVGString(
   // deferred, so these are neutral placeholders in the same outline style as
   // the triangular net's A/B labels.
   const faceLabels = [0, 1, 2, 3].map(i => {
-    const cx = (i + 0.5) * gH;
+    const cx = (i + 0.5) * faceW;
     return `<text x="${fmt(cx)}" y="${fmt(netH / 2)}" font-size="${labelSize}" text-anchor="middle" dominant-baseline="middle"`
       + ` font-family="sans-serif" font-weight="bold" fill="none" stroke="lightgray" stroke-width="0.5">${i + 1}</text>`;
   }).join('\n        ');
 
   // GLUE tab label — rotated 90° so it reads within the narrow tab.
-  const tabCx = 4 * gH + tabW / 2;
+  const tabCx = 4 * faceW + tabW / 2;
   const tabLabel =
     `<text x="${fmt(tabCx)}" y="${fmt(netH / 2)}" font-size="${fmt(Math.min(labelSize, tabW * 0.5))}" text-anchor="middle" dominant-baseline="middle"`
     + ` transform="rotate(-90 ${fmt(tabCx)} ${fmt(netH / 2)})" font-family="sans-serif" fill="none" stroke="lightgray" stroke-width="0.4">GLUE</text>`;
@@ -450,7 +453,7 @@ ${copiesSVG}
     `  <text x="${pageWidth / 2}" y="${margin + 8}" font-size="7" text-anchor="middle" font-family="sans-serif" font-weight="bold">Cut-and-Fold Gnomons (Dual Dial)</text>`,
     sundialInstrSVG,
     stripSVG,
-    `  <text x="${pageWidth / 2}" y="${subtitleY}" font-size="3.5" text-anchor="middle" font-family="sans-serif" fill="#555">Gnomon height: ${fmt(gH)} mm</text>`,
+    `  <text x="${pageWidth / 2}" y="${subtitleY}" font-size="3.5" text-anchor="middle" font-family="sans-serif" fill="#555">Gnomon height: ${fmt(gH)} mm · Cube side: ${fmt(faceW)} mm</text>`,
     `</svg>`,
   ].join('\n');
 }

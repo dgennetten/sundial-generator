@@ -252,6 +252,12 @@ const App: React.FC = () => {
   const [floatingPos, setFloatingPos] = useState<{ x: number; y: number } | null>(null);
   const floatingDragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
 
+  // Distance between the two dual-dial gnomon feet (reported by DualDialPreview).
+  // The page-2 cube net is sized so the assembled base's diagonal equals it, i.e.
+  // each cube face's width = separation / √2.
+  const [dualGnomonSeparation, setDualGnomonSeparation] = useState(0);
+  const dualCubeSideMm = dualGnomonSeparation / Math.SQRT2;
+
   // Toggle the preview into/out of browser fullscreen. Shared by SundialPreview
   // and DualDialPreview.
   const handleTogglePreviewFullscreen = useCallback(() => {
@@ -1142,6 +1148,7 @@ const App: React.FC = () => {
           customHeight={customHeight}
           dateRange={hourlineDateRange}
           gnomonType={gnomonType}
+          cubeSideMm={dualCubeSideMm}
           locationName={locationName}
           showBackground={showBackground}
           backgroundColor={backgroundColor}
@@ -1440,6 +1447,7 @@ const App: React.FC = () => {
                 backgroundColor={backgroundColor}
                 borderMarginMm={borderMargin * 25.4}
                 variant={gnomonType === 'dual-dial-popup' ? 'dual' : 'triangular'}
+                cubeSideMm={dualCubeSideMm}
               />
             )}
             {/* SundialPreview stays in the DOM even when gnomon tab is active
@@ -1457,6 +1465,7 @@ const App: React.FC = () => {
                     pageWidthMm={pageWidth}
                     pageHeightMm={pageHeight}
                     gnomonOffset={effectiveGnomonPosition - autoGnomonVerticalPosition}
+                    onGnomonSeparationChange={setDualGnomonSeparation}
                     isFullscreen={isPreviewFullscreen}
                     onToggleFullscreen={handleTogglePreviewFullscreen}
                   />

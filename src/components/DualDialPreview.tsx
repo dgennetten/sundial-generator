@@ -16,7 +16,7 @@
 // Both dials are emitted as <g> groups inside ONE <svg> (via SundialPreview's
 // renderAsGroup mode) so the DOM-scraping export/print path reads a single SVG.
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Sun, Minimize2, Maximize2 } from 'lucide-react';
 import SundialPreview, { type Props as SundialProps } from './SundialPreview';
 import { getAnalemmaPointsProjected } from '../utils/sundialMath';
@@ -31,6 +31,9 @@ interface DualDialPreviewProps {
    * gnomons together (toward/away from the crease after the 90° turn).
    */
   gnomonOffset?: number;
+  /** Reports the distance between the two gnomon feet (mm) so the parent can size
+   *  the page-2 cube net (its base diagonal = this distance). */
+  onGnomonSeparationChange?: (mm: number) => void;
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
 }
@@ -40,6 +43,7 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
   pageWidthMm: W,
   pageHeightMm: H,
   gnomonOffset = 0,
+  onGnomonSeparationChange,
   isFullscreen = false,
   onToggleFullscreen,
 }) => {
@@ -68,6 +72,17 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
   const ys = noonPoints.map(p => p.y);
   const centerY = ys.length ? (Math.min(...ys) + Math.max(...ys)) / 2 : 0;
   const autoVPos = Math.round(halfPreH / 2 - centerY);
+
+  // Distance between the two mirrored gnomon feet (both at card y=0). Each foot's
+  // card-x = ±(W/4 − fy), so the separation is |W/2 − 2·fy|. Reported to the
+  // parent to size the page-2 cube net (base diagonal = this distance).
+  const isNorthFacing =
+    (config.dialOrientation ?? ((config.originalLatitude ?? config.lat) >= 0 ? 'North' : 'South')) === 'North';
+  const footChildY = (autoVPos + gnomonOffset) - halfPreH / 2;
+  const gnomonSeparationMm = Math.abs(W / 2 - 2 * (isNorthFacing ? -footChildY : footChildY));
+  useEffect(() => {
+    onGnomonSeparationChange?.(gnomonSeparationMm);
+  }, [gnomonSeparationMm, onGnomonSeparationChange]);
 
   // Shared per-half overrides. Each gnomon foot shows a popup triangle marker.
   const halfOverride: Partial<SundialProps> = {

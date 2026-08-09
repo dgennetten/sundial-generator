@@ -14,8 +14,18 @@ function includesGnomonNet(options: ExportOptions): boolean {
 
 /** Builds the gnomon-net SVG for this export, picking the dual-dial variant. */
 function buildNetSVGForExport(options: ExportOptions, pageWidthMm: number, pageHeightMm: number): string {
-  const build = options.gnomonType === 'dual-dial-popup' ? buildDualDialNetSVGString : buildGnomonNetSVGString;
-  return build(
+  if (options.gnomonType === 'dual-dial-popup') {
+    return buildDualDialNetSVGString(
+      options.gnomonHeight || 10,
+      pageWidthMm,
+      pageHeightMm,
+      options.showBackground,
+      options.backgroundColor,
+      options.borderMarginMm,
+      options.cubeSideMm
+    );
+  }
+  return buildGnomonNetSVGString(
     options.gnomonHeight || 10,
     pageWidthMm,
     pageHeightMm,

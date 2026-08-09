@@ -33,6 +33,8 @@ interface DesignExportProps {
   customHeight?: number;
   dateRange?: 'FullYear' | 'SummerToFall' | 'WinterToSpring' | 'DualHalf';
   gnomonType?: GnomonType;
+  /** Dual-dial cube net: each face's width in mm (gnomon-feet separation / √2). */
+  cubeSideMm?: number;
   locationName?: string;
   showBackground: boolean;
   backgroundColor: string;
@@ -88,7 +90,7 @@ interface DesignExportProps {
 
 
 const DesignExport: React.FC<DesignExportProps> = React.memo(({
-  pageSize, orientation, customWidth, customHeight, dateRange, gnomonType, locationName, showBackground, backgroundColor,
+  pageSize, orientation, customWidth, customHeight, dateRange, gnomonType, cubeSideMm, locationName, showBackground, backgroundColor,
   sundialNotesMode, dialTextBlock, latitude, longitude, gnomonHeight, inclineType, tiltAngle, onLogComplete,
   tzMeridian, gnomonMode, gnomonPosition, gnomonPositionMode, gnomonHorizontalPosition, customUnits, declinationType, declinationDegrees,
   dialShape, borderStyle, borderMargin, hourlineIntervals, lineStyles, declinationLines,
@@ -335,10 +337,9 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
     if (includeGnomonNet) {
       const { pageWidthMm, pageHeightMm } = computePageMM(pageSize, orientation, customWidth, customHeight);
       const borderMm = (borderMargin ?? 0) * 25.4;
-      const buildNet = isDualDial ? buildDualDialNetSVGString : buildGnomonNetSVGString;
-      const gnomSvg  = buildNet(
-        gnomonHeight || 10, pageWidthMm, pageHeightMm, showBackground, backgroundColor, borderMm
-      );
+      const gnomSvg  = isDualDial
+        ? buildDualDialNetSVGString(gnomonHeight || 10, pageWidthMm, pageHeightMm, showBackground, backgroundColor, borderMm, cubeSideMm)
+        : buildGnomonNetSVGString(gnomonHeight || 10, pageWidthMm, pageHeightMm, showBackground, backgroundColor, borderMm);
       const page = document.createElement('div');
       if (!firstPage) {
         // Force a page break before the second page.
@@ -448,6 +449,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         pageWidthMm,
         pageHeightMm,
         borderMarginMm: (borderMargin ?? 0) * 25.4,
+        cubeSideMm,
       }, () => onLogComplete?.()); // Map refresh fires when background logging settles
       log.info('Export completed successfully');
       maybeShowFeedbackNudge();
