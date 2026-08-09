@@ -105,6 +105,9 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
     // Scale text down to match the reduced dial size.
     fontSize: (config.fontSize ?? 20) * fontReduction,
     dialTextBlockFontSize: (config.dialTextBlockFontSize ?? 14) * fontReduction,
+    // Decoration for the dual dial: each half labels its own season, in blue.
+    // {half-year} resolves per the half's date range (Summer - Fall / Winter - Spring).
+    dialTextBlock: '[blue]{half-year}',
   };
 
   const leftConfig: SundialProps = { ...config, ...halfOverride, dateRange: 'SummerToFall' };
@@ -201,8 +204,8 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
                 allowLocationShadow={!shadowInSummerHalf}
               />
             </g>
-            {/* Center crease — valley fold */}
-            <line x1={0} y1={innerY} x2={0} y2={innerY + innerH} stroke="#999" strokeWidth={0.3} strokeDasharray="2,2" />
+            {/* Center crease — valley fold (half as dark) */}
+            <line x1={0} y1={innerY} x2={0} y2={innerY + innerH} stroke="#999" strokeOpacity={0.5} strokeWidth={0.3} strokeDasharray="2,2" />
             {/* One border surrounding both dials */}
             <rect x={innerX} y={innerY} width={innerW} height={innerH} fill="none" stroke="black" strokeWidth={0.5} />
           </g>
