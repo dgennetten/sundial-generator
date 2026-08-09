@@ -361,6 +361,10 @@ export function buildDualDialNetSVGString(
   const tabW = Math.min(10, 0.5 * faceW); // glue tab: ~10 mm, capped for tiny faces
   const netW = 4 * faceW + tabW;          // four cube faces + glue tab
   const netH = gH;                        // strip height = gnomon height
+  // Attachment tabs below faces 2 & 3: right-isosceles triangles (legs = face
+  // width), vertical edge on the outer fold, apexes meeting at the strip's
+  // bottom centre. These hold the assembled cube to the card.
+  const tabH = faceW;
 
   const margin = Math.max(8, borderMarginMm + 4);
   const fmt    = (v: number) => (Math.round(v * 10) / 10).toString();
@@ -383,9 +387,10 @@ export function buildDualDialNetSVGString(
 
   // Two identical strips, stacked one above the other.
   const copies = 2;
+  const stripFullH = netH + tabH;        // strip plus its attachment tabs
   const vgap   = Math.max(12, gH);       // gap between the stacked strips
   const groupW = netW;
-  const groupH = copies * netH + (copies - 1) * vgap;
+  const groupH = copies * stripFullH + (copies - 1) * vgap;
   const scale  = Math.min(availW / groupW, availH / groupH, 1);
   const sW = groupW * scale;
   const sH = groupH * scale;
@@ -415,16 +420,23 @@ export function buildDualDialNetSVGString(
     `<text x="${fmt(tabCx)}" y="${fmt(netH / 2)}" font-size="${fmt(Math.min(labelSize, tabW * 0.5))}" text-anchor="middle" dominant-baseline="middle"`
     + ` transform="rotate(-90 ${fmt(tabCx)} ${fmt(netH / 2)})" font-family="sans-serif" fill="none" stroke="lightgray" stroke-width="0.4">GLUE</text>`;
 
-  const stripElements = [
-    `<path d="M 0,0 L ${fmt(netW)},0 L ${fmt(netW)},${fmt(netH)} L 0,${fmt(netH)} Z"`
-      + ` stroke="black" stroke-width="0.5" fill="none"/>`,
-    foldLines,
-    faceLabels,
-    tabLabel,
-  ].join('\n        ');
+  // Cut outline: the rectangle plus the two triangular tabs hanging below faces
+  // 2 & 3 (down each outer fold, up to the shared apex at the bottom centre).
+  const outline =
+    `<path d="M 0,0 L ${fmt(netW)},0 L ${fmt(netW)},${fmt(netH)}`
+    + ` L ${fmt(3 * faceW)},${fmt(netH)} L ${fmt(3 * faceW)},${fmt(netH + tabH)}`
+    + ` L ${fmt(2 * faceW)},${fmt(netH)} L ${fmt(faceW)},${fmt(netH + tabH)}`
+    + ` L ${fmt(faceW)},${fmt(netH)} L 0,${fmt(netH)} Z"`
+    + ` stroke="black" stroke-width="0.5" fill="none"/>`;
+  // The strip's bottom edge between faces 2 and 3 is now a fold (tabs attach there).
+  const bottomFold =
+    `<line x1="${fmt(faceW)}" y1="${fmt(netH)}" x2="${fmt(3 * faceW)}" y2="${fmt(netH)}"`
+    + ` stroke="#333" stroke-width="0.35" stroke-dasharray="2,2"/>`;
+
+  const stripElements = [outline, foldLines, bottomFold, faceLabels, tabLabel].join('\n        ');
 
   const copiesSVG = Array.from({ length: copies }, (_, i) =>
-    `    <g transform="translate(0,${fmt(i * (netH + vgap))})">
+    `    <g transform="translate(0,${fmt(i * (stripFullH + vgap))})">
         ${stripElements}
     </g>`
   ).join('\n');
