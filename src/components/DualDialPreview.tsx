@@ -69,8 +69,7 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
   const centerY = ys.length ? (Math.min(...ys) + Math.max(...ys)) / 2 : 0;
   const autoVPos = Math.round(halfPreH / 2 - centerY);
 
-  // Shared per-half overrides. A crosshair marks each gnomon foot for now (the
-  // real dual-dial gnomon glyph is still deferred).
+  // Shared per-half overrides. Each gnomon foot shows a popup triangle marker.
   const halfOverride: Partial<SundialProps> = {
     pageSize: 'Custom',
     // Force Portrait so SundialPreview uses these dimensions verbatim. Its page
@@ -83,7 +82,7 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
     dialDeclination: 0,
     gnomonHorizontalPosition: undefined, // centered → feet mirror across the crease
     gnomonPosition: autoVPos + gnomonOffset,
-    gnomonType: 'crosshair',
+    gnomonType: 'popup',
     // No per-dial border or inset: the faces run all the way to the crease so the
     // two dials touch (no gap). One border is drawn around the whole card below.
     borderStyle: 'none',
