@@ -116,6 +116,19 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
   const innerW = W - 2 * borderMm;
   const innerH = H - 2 * borderMm;
 
+  // Location-shadow animation: each half is only valid for its own half-year, so
+  // show the shadow on the half whose season contains the current shadow date.
+  // (SummerToFall vs WinterToSpring are complementary, so exactly one is valid.)
+  const geoLat = config.originalLatitude ?? config.lat;
+  const isNorthern = geoLat >= 0;
+  const shadowDay = config.locationShadowDateTime?.dayOfYear;
+  const shadowInSummerHalf =
+    shadowDay == null
+      ? false
+      : isNorthern
+        ? shadowDay >= 172 && shadowDay <= 355     // summer→winter solstice
+        : shadowDay >= 355 || shadowDay <= 172;    // southern wrap-around
+
   return (
     <div className="card" style={{ width: '100%', margin: 0 }}>
       <div className="card-header sundial-preview-header">
@@ -164,12 +177,14 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
                 renderAsGroup
                 idSuffix="L"
                 placementTransform={leftPlacement}
+                allowLocationShadow={shadowInSummerHalf}
               />
               <SundialPreview
                 config={rightConfig}
                 renderAsGroup
                 idSuffix="R"
                 placementTransform={rightPlacement}
+                allowLocationShadow={!shadowInSummerHalf}
               />
             </g>
             {/* Center crease — valley fold */}

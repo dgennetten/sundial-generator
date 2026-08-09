@@ -94,6 +94,9 @@ type SundialPreviewProps = ({ config: Props } | Props) & {
   placementTransform?: string;
   idSuffix?: string;
   extraLabelRotationDeg?: number;
+  /** Override the gnomon-type gate on the location-shadow preview (the dual dial
+      uses a crosshair placeholder but should still show the animated shadow). */
+  allowLocationShadow?: boolean;
 };
 
 const SundialPreview = React.memo((props: SundialPreviewProps) => {
@@ -109,6 +112,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const placementTransform = (props as { placementTransform?: string }).placementTransform;
   const idSuffix = (props as { idSuffix?: string }).idSuffix ?? '';
   const extraLabelRotationDeg = (props as { extraLabelRotationDeg?: number }).extraLabelRotationDeg ?? 0;
+  const allowLocationShadow = (props as { allowLocationShadow?: boolean }).allowLocationShadow;
   const {
     lat,
     lng,
@@ -2308,10 +2312,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const scaledHeight = height * viewBoxScaleFactor;
   const scaledBorderMargin = borderMarginMm * viewBoxScaleFactor;
   const gnomonContentTransform = `translate(${(gnomonHorizontalPosition ?? width / 2) - width / 2}, ${(gnomonPosition ?? 0) - (height / 2)})${dialInclination === 0 && dialDeclination !== 0 ? ` rotate(${dialDeclination})` : ''}`;
+  const gnomonCastsLocationShadow =
+    gnomonType === 'popup' || gnomonType === 'popup-with-brace' || gnomonType === 'glued-popup-base';
   const showLocationShadow =
     locationShadowPreview &&
-    locationShadowDateTime &&
-    (gnomonType === 'popup' || gnomonType === 'popup-with-brace' || gnomonType === 'glued-popup-base');
+    !!locationShadowDateTime &&
+    (allowLocationShadow ?? gnomonCastsLocationShadow);
 
   // Show border when borderStyle is not 'none'
   const showBorder = borderStyle !== 'none';
