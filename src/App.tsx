@@ -27,6 +27,8 @@ import GnomonSettings from './components/GnomonSettings';
 import DesignExport from './components/DesignExport';
 import SundialPreview from './components/SundialPreview';
 import GnomonNetSVG from './components/GnomonNetSVG';
+import DualDialPreview from './components/DualDialPreview';
+import { isTwoPagePopup } from './types/sundial';
 import { useLocationShadowTime } from './hooks/useLocationShadowTime';
 import HourlineSettings from './components/HourlineSettings';
 import { loadHourlineIntervals, type HourlineInterval, saveHourlineOverrides } from './components/hourlineUtils';
@@ -116,7 +118,7 @@ const App: React.FC = () => {
   const [tzMeridian, setTzMeridian] = useState(-105); // Mountain Standard Time meridian (MST = UTC-7 = -105°)
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
-  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base'>('popup-with-brace');
+  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base' | 'dual-dial-popup'>('popup-with-brace');
   const [gnomonPreviewMode, setGnomonPreviewMode] = useState<'Dial' | 'Gnomon'>('Dial');
   // Bumped each time the greeting-card gnomon settles back to Dial; drives the
   // one-shot red arrow hint pointing at the Preview toggle.
@@ -150,7 +152,7 @@ const App: React.FC = () => {
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
   }, []);
-  const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToFall' | 'WinterToSpring'>('FullYear');
+  const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToFall' | 'WinterToSpring' | 'DualHalf'>('FullYear');
   const [lineStyles, setLineStyles] = useState<LineStyle[]>(() => {
     return loadLineStyles();
   });
@@ -160,7 +162,7 @@ const App: React.FC = () => {
   const [declinationLines, setDeclinationLines] = useState<DeclinationLine[]>(() => {
     return loadDeclinationLines();
   });
-  const handleDateRangeChange = useCallback((range: 'FullYear' | 'SummerToFall' | 'WinterToSpring') => {
+  const handleDateRangeChange = useCallback((range: 'FullYear' | 'SummerToFall' | 'WinterToSpring' | 'DualHalf') => {
     setHourlineDateRange(range);
     if (range === 'FullYear') {
       setShowFullYearOnNoon(false);
@@ -249,6 +251,35 @@ const App: React.FC = () => {
   const [showFloatingControls, setShowFloatingControls] = useState(true);
   const [floatingPos, setFloatingPos] = useState<{ x: number; y: number } | null>(null);
   const floatingDragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
+
+  // Distance between the two dual-dial gnomon feet (reported by DualDialPreview).
+  // The page-2 cube net is sized so the assembled base's diagonal equals it, i.e.
+  // each cube face's width = separation / √2.
+  const [dualGnomonSeparation, setDualGnomonSeparation] = useState(0);
+  const dualCubeSideMm = dualGnomonSeparation / Math.SQRT2;
+
+  // Toggle the preview into/out of browser fullscreen. Shared by SundialPreview
+  // and DualDialPreview.
+  const handleTogglePreviewFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => {
+        setIsPreviewFullscreen(true);
+        setShowFloatingControls(true);
+        setFloatingPos(null);
+      }).catch(() => {
+        // Fallback: CSS-only fullscreen if browser blocks the API
+        setIsPreviewFullscreen(true);
+        setShowFloatingControls(true);
+        setFloatingPos(null);
+      });
+    } else {
+      document.exitFullscreen().then(() => {
+        setIsPreviewFullscreen(false);
+        setShowFloatingControls(true);
+        setFloatingPos(null);
+      });
+    }
+  }, []);
 
   // Sync React state with browser fullscreen changes (e.g. user presses Escape)
   useEffect(() => {
@@ -460,7 +491,7 @@ const App: React.FC = () => {
   // preview and settle back to Dial so the user notices the Preview toggle.
   // Switching to any other gnomon just resets to Dial.
   useEffect(() => {
-    if (gnomonType !== 'glued-popup-base') {
+    if (!isTwoPagePopup(gnomonType)) {
       setGnomonPreviewMode('Dial');
       return;
     }
@@ -482,7 +513,7 @@ const App: React.FC = () => {
   // Dial inclination: tilt from horizontal in degrees (0 = flat, 90 = vertical).
   // Cancer and Capricorn use the declination-aware formula so the gnomon stays on the solstice line.
   const dialInclination = useMemo(() => {
-    if (gnomonType === 'glued-popup-base') return 0;
+    if (isTwoPagePopup(gnomonType)) return 0;
     if (inclineType === 'Cancer') return getCancerInclineWithDeclination(latitude, dialDeclination);
     if (inclineType === 'Capricorn') return getCapricornInclineWithDeclination(latitude, dialDeclination);
     return getDisplayTiltAngle(inclineType, latitude, tiltAngle);
@@ -492,11 +523,14 @@ const App: React.FC = () => {
     return calculateAutoGnomonHeight(latitude, longitude, tzMeridian, pageHeight, dialInclination, dialDeclination);
   }, [latitude, longitude, tzMeridian, dialInclination, dialDeclination]);
 
-  const effectiveGnomonHeight = useMemo(() => (
-    gnomonMode === 'auto'
-      ? autoGnomonHeight(pageHeight)
-      : gnomonHeight
-  ), [gnomonMode, pageHeight, gnomonHeight, autoGnomonHeight]);
+  const effectiveGnomonHeight = useMemo(() => {
+    if (gnomonMode !== 'auto') return gnomonHeight;
+    // Dual-Dial Pop-up: each dial is a native horizontal dial on a half page
+    // whose (pre-rotation) height is pageWidth/2, so size the gnomon to the half.
+    const basis = gnomonType === 'dual-dial-popup' ? pageWidth / 2 : pageHeight;
+    // Gnomon heights are always whole millimetres.
+    return Math.round(autoGnomonHeight(basis));
+  }, [gnomonMode, gnomonType, pageWidth, pageHeight, gnomonHeight, autoGnomonHeight]);
 
   // Auto vertical gnomon position (noon analemma centered on the page). Computed
   // synchronously so the preview is correctly centered on the very first render;
@@ -1114,6 +1148,7 @@ const App: React.FC = () => {
           customHeight={customHeight}
           dateRange={hourlineDateRange}
           gnomonType={gnomonType}
+          cubeSideMm={dualCubeSideMm}
           locationName={locationName}
           showBackground={showBackground}
           backgroundColor={backgroundColor}
@@ -1238,7 +1273,7 @@ const App: React.FC = () => {
           showBackground={showBackground}
           backgroundColor={backgroundColor}
           onInclineTypeChange={() => setGnomonPositionMode('auto')}
-          disableInclination={gnomonType === 'glued-popup-base'}
+          disableInclination={isTwoPagePopup(gnomonType)}
         /></div>
 
         <div id="card-gnomon"><GnomonSettings
@@ -1326,8 +1361,9 @@ const App: React.FC = () => {
             setDatelineLabelLocation={setDatelineLabelLocation}
           /></div>
           <div id="card-hourlines"><HourlineSettings
-            dateRange={hourlineDateRange}
+            dateRange={gnomonType === 'dual-dial-popup' ? 'DualHalf' : hourlineDateRange}
             setDateRange={handleDateRangeChange}
+            dateRangeLocked={gnomonType === 'dual-dial-popup'}
             lineStyles={lineStyles}
             hourlineIntervals={hourlineIntervals}
             setHourlineIntervals={setHourlineIntervals}
@@ -1402,7 +1438,7 @@ const App: React.FC = () => {
       >
         <div className="mobile-preview-slot">
           <div className="mobile-preview-slot-inner">
-            {gnomonType === 'glued-popup-base' && gnomonPreviewMode === 'Gnomon' && (
+            {isTwoPagePopup(gnomonType) && gnomonPreviewMode === 'Gnomon' && (
               <GnomonNetSVG
                 gnomonHeight={effectiveGnomonHeight}
                 pageWidth={pageWidth}
@@ -1410,6 +1446,8 @@ const App: React.FC = () => {
                 showBackground={showBackground}
                 backgroundColor={backgroundColor}
                 borderMarginMm={borderMargin * 25.4}
+                variant={gnomonType === 'dual-dial-popup' ? 'dual' : 'triangular'}
+                cubeSideMm={dualCubeSideMm}
               />
             )}
             {/* SundialPreview stays in the DOM even when gnomon tab is active
@@ -1417,34 +1455,27 @@ const App: React.FC = () => {
                 display:contents when visible → transparent to the flex layout,
                 so SundialPreview's card is a direct flex child of .preview-panel
                 exactly as before this wrapper was added. */}
-            <div style={{ display: gnomonType === 'glued-popup-base' && gnomonPreviewMode === 'Gnomon' ? 'none' : 'contents' }}>
+            <div style={{ display: isTwoPagePopup(gnomonType) && gnomonPreviewMode === 'Gnomon' ? 'none' : 'contents' }}>
               <React.Profiler id="SundialPreview" onRender={(id, phase, actualDuration) => {
                 if (phase === 'update') log.perf(id, phase, actualDuration);
               }}>
-                <SundialPreview
-                  config={previewConfig}
-                  isFullscreen={isPreviewFullscreen}
-                  onToggleFullscreen={() => {
-                    if (!document.fullscreenElement) {
-                      document.documentElement.requestFullscreen().then(() => {
-                        setIsPreviewFullscreen(true);
-                        setShowFloatingControls(true);
-                        setFloatingPos(null);
-                      }).catch(() => {
-                        // Fallback: CSS-only fullscreen if browser blocks the API
-                        setIsPreviewFullscreen(true);
-                        setShowFloatingControls(true);
-                        setFloatingPos(null);
-                      });
-                    } else {
-                      document.exitFullscreen().then(() => {
-                        setIsPreviewFullscreen(false);
-                        setShowFloatingControls(true);
-                        setFloatingPos(null);
-                      });
-                    }
-                  }}
-                />
+                {gnomonType === 'dual-dial-popup' ? (
+                  <DualDialPreview
+                    config={previewConfig}
+                    pageWidthMm={pageWidth}
+                    pageHeightMm={pageHeight}
+                    gnomonOffset={effectiveGnomonPosition - autoGnomonVerticalPosition}
+                    onGnomonSeparationChange={setDualGnomonSeparation}
+                    isFullscreen={isPreviewFullscreen}
+                    onToggleFullscreen={handleTogglePreviewFullscreen}
+                  />
+                ) : (
+                  <SundialPreview
+                    config={previewConfig}
+                    isFullscreen={isPreviewFullscreen}
+                    onToggleFullscreen={handleTogglePreviewFullscreen}
+                  />
+                )}
               </React.Profiler>
             </div>
           </div>

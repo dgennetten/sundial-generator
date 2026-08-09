@@ -15,7 +15,7 @@ const DeclinationLineOptions: React.FC<{
   lineStyles: LineStyle[];
   declinationLines: DeclinationLine[];
   setDeclinationLines: (lines: DeclinationLine[]) => void;
-  dateRange?: 'FullYear' | 'SummerToFall' | 'WinterToSpring';
+  dateRange?: 'FullYear' | 'SummerToFall' | 'WinterToSpring' | 'DualHalf';
   lat?: number;
   showBelowHorizonDateLines?: boolean;
   setShowBelowHorizonDateLines?: (v: boolean) => void;

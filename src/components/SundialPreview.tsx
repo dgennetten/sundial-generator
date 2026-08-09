@@ -23,14 +23,14 @@ const pageSizeMap = {
 
 type DialShape = 'Rectangle' | 'Oval';
 
-type Props = {
+export type Props = {
   lat: number;
   lng: number;
   originalLat?: number; // Original geographic latitude for hemisphere detection
   tzMeridian: number;
   scale: number;
   gnomonHeight: number;
-  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base';
+  gnomonType: 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base' | 'dual-dial-popup';
   startHour: number;
   stopHour: number;
   use24Hour: boolean;
@@ -38,7 +38,7 @@ type Props = {
   pageSize: 'A4' | 'Letter' | '11x17' | '10x15cm Postcard' | 'Custom';
   customWidth?: number;
   customHeight?: number;
-  dateRange: 'FullYear' | 'SummerToFall' | 'WinterToSpring';
+  dateRange: 'FullYear' | 'SummerToFall' | 'WinterToSpring' | 'DualHalf';
   hourlineIntervals?: HourlineInterval[];
   declinationLines?: DeclinationLine[];
   lineStyles?: LineStyle[];
@@ -82,6 +82,8 @@ type Props = {
   correctionFlags?: CorrectionFlags;
   locationShadowPreview?: boolean;
   locationShadowDateTime?: LocationDateTime;
+  /** Show a "GLUE" label on the popup gnomon triangle (dual dial). */
+  gnomonGlueLabel?: boolean;
 };
 // Note: App now prefers passing a single `config` prop. To keep JSX happy where only `config` is provided,
 // we use a union props type here and normalize to a single `p` object.
@@ -89,12 +91,30 @@ type Props = {
 type SundialPreviewProps = ({ config: Props } | Props) & {
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
+  // Embedded "render-as-group" controls (used by DualDialPreview).
+  renderAsGroup?: boolean;
+  placementTransform?: string;
+  idSuffix?: string;
+  extraLabelRotationDeg?: number;
+  /** Override the gnomon-type gate on the location-shadow preview (the dual dial
+      uses a crosshair placeholder but should still show the animated shadow). */
+  allowLocationShadow?: boolean;
 };
 
 const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const p: Props = (props as { config?: Props }).config ?? (props as Props);
   const isFullscreen = (props as { isFullscreen?: boolean }).isFullscreen ?? false;
   const onToggleFullscreen = (props as { onToggleFullscreen?: () => void }).onToggleFullscreen;
+  // Embedded "render-as-group" mode: emit an inner <g> (placed by placementTransform)
+  // instead of the card+<svg> shell, so DualDialPreview can compose two dials in
+  // one SVG. idSuffix disambiguates otherwise-colliding element ids between the
+  // two instances; extraLabelRotationDeg keeps labels upright under the half's
+  // extra rotation applied by the parent.
+  const renderAsGroup = (props as { renderAsGroup?: boolean }).renderAsGroup ?? false;
+  const placementTransform = (props as { placementTransform?: string }).placementTransform;
+  const idSuffix = (props as { idSuffix?: string }).idSuffix ?? '';
+  const extraLabelRotationDeg = (props as { extraLabelRotationDeg?: number }).extraLabelRotationDeg ?? 0;
+  const allowLocationShadow = (props as { allowLocationShadow?: boolean }).allowLocationShadow;
   const {
     lat,
     lng,
@@ -152,6 +172,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     correctionFlags,
     locationShadowPreview = false,
     locationShadowDateTime,
+    gnomonGlueLabel = false,
   } = p;
 
   // Compute effective parameters based on correction flags.
@@ -220,7 +241,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   let viewBoxScaleFactor = 1;
 
   const minPageDim = Math.min(width, height);
-  if (minPageDim > 0 && minPageDim < minViewBoxSize) {
+  // In render-as-group mode the parent (DualDialPreview) owns all scaling, so emit
+  // at raw mm scale (factor 1) and skip the small-page upscaling.
+  if (!renderAsGroup && minPageDim > 0 && minPageDim < minViewBoxSize) {
     viewBoxScaleFactor = minViewBoxSize / minPageDim;
     viewBoxWidth = width * viewBoxScaleFactor;
     viewBoxHeight = height * viewBoxScaleFactor;
@@ -251,7 +274,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Removed noonYCenter as it was unused
 
   // Helper to check if a day is in the date range (handles wrap-around)
-  function isDayInRange(day: number, dateRange: 'FullYear' | 'SummerToFall' | 'WinterToSpring'): boolean {
+  function isDayInRange(day: number, dateRange: 'FullYear' | 'SummerToFall' | 'WinterToSpring' | 'DualHalf'): boolean {
     if (dateRange === 'FullYear') return true;
 
     const isNorthernHemisphere = isGeoNorthern;
@@ -2292,10 +2315,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const scaledHeight = height * viewBoxScaleFactor;
   const scaledBorderMargin = borderMarginMm * viewBoxScaleFactor;
   const gnomonContentTransform = `translate(${(gnomonHorizontalPosition ?? width / 2) - width / 2}, ${(gnomonPosition ?? 0) - (height / 2)})${dialInclination === 0 && dialDeclination !== 0 ? ` rotate(${dialDeclination})` : ''}`;
+  const gnomonCastsLocationShadow =
+    gnomonType === 'popup' || gnomonType === 'popup-with-brace' || gnomonType === 'glued-popup-base';
   const showLocationShadow =
     locationShadowPreview &&
-    locationShadowDateTime &&
-    (gnomonType === 'popup' || gnomonType === 'popup-with-brace' || gnomonType === 'glued-popup-base');
+    !!locationShadowDateTime &&
+    (allowLocationShadow ?? gnomonCastsLocationShadow);
 
   // Show border when borderStyle is not 'none'
   const showBorder = borderStyle !== 'none';
@@ -2330,8 +2355,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     )
   ) : null;
 
-  // Show clipping boundary when border is not visible (for debugging)
-  const clippingBoundary = !showBorder ? (
+  // Show clipping boundary when border is not visible (for debugging). Never in
+  // embedded (group) mode — DualDialPreview draws its own single border, and a
+  // per-half boundary would reintroduce the seam between the two dials.
+  const clippingBoundary = (!showBorder && !renderAsGroup) ? (
     dialShape === 'Oval' ? (
       <ellipse
         cx={0}
@@ -2648,40 +2675,35 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     lineStyles: lineStyles.map(s => ({ id: s.id, calculatedType: s.calculatedType }))
   });
 
-  return (
-    <div className="card" style={{ width: '100%', margin: 0 }}>
-      <div className="card-header sundial-preview-header">
-        <h3 className="card-title"><Sun color="#2563eb" size={20} style={{ marginRight: 6 }} /> Sundial Preview ({orientation}, {pageSize})</h3>
-        {onToggleFullscreen && (
-          <button
-            onClick={onToggleFullscreen}
-            className="preview-fullscreen-btn"
-            title={isFullscreen ? 'Exit fullscreen' : 'Expand preview'}
-          >
-            {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-          </button>
-        )}
-      </div>
-      <div className="sundial-preview-svg-host" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible' }}>
-        <svg
-          key={configHash}
-          width="100%"
-          height="100%"
-          viewBox={`-${viewBoxWidth / 2} -${viewBoxHeight / 2} ${viewBoxWidth} ${viewBoxHeight}`}
-          style={{ display: 'block', border: '1px solid #ccc', background: 'transparent', width: '100%', height: '100%', objectFit: 'contain' }}
-          preserveAspectRatio="xMidYMid meet"
-        >
-          {/* Background rect scoped to page dimensions so it never bleeds outside the dial area */}
-          <rect
-            x={-scaledWidth / 2}
-            y={-scaledHeight / 2}
-            width={scaledWidth}
-            height={scaledHeight}
-            fill={showBackground ? backgroundColor : '#fff'}
-          />
+  // Unique clip id per instance so two embedded dials don't share a clip path.
+  const dialClipId = `dial-clip-${dialShape.toLowerCase()}${idSuffix ? `-${idSuffix}` : ''}`;
+
+  // Labels must stay upright under the total content rotation: the North 180°
+  // flip (applied by the main group) plus any extra rotation the parent applies
+  // to this half. Counter-rotate each label about its own anchor by the negative
+  // of that total. (rotate(-180) == rotate(180), so single-dial behavior is
+  // unchanged when extraLabelRotationDeg is 0.)
+  const northDeg = effectiveDialOrientation === 'North' ? 180 : 0;
+  const labelCounterDeg = (((northDeg + extraLabelRotationDeg) % 360) + 360) % 360;
+  const labelCounterRotate = (x: number, y: number): string | undefined =>
+    labelCounterDeg !== 0 ? `rotate(${-labelCounterDeg} ${x} ${y})` : undefined;
+
+  const svgChildren = (
+    <>
+      {/* Background rect scoped to page dimensions so it never bleeds outside the
+          dial area. Skipped in group mode — the parent draws the page background. */}
+      {!renderAsGroup && (
+        <rect
+          x={-scaledWidth / 2}
+          y={-scaledHeight / 2}
+          width={scaledWidth}
+          height={scaledHeight}
+          fill={showBackground ? backgroundColor : '#fff'}
+        />
+      )}
           {/* Define clipping paths for dial shapes */}
           <defs>
-            <clipPath id={`dial-clip-${dialShape.toLowerCase()}`}>
+            <clipPath id={dialClipId}>
               {dialShape === 'Oval' ? (
                 <ellipse
                   cx={0}
@@ -2705,7 +2727,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           {/* Main content group — North-facing dials rotate 180° so noon shadow points up */}
           <g
             transform={`${effectiveDialOrientation === 'North' ? 'rotate(180) ' : ''}scale(${viewBoxScaleFactor})`}
-            clipPath={`url(#dial-clip-${dialShape.toLowerCase()})`}
+            clipPath={`url(#${dialClipId})`}
           >
             {/* Content positioned relative to gnomon.
                 For horizontal dials (dialInclination=0), declining is a plate rotation: rotate by dialDeclination.
@@ -2725,6 +2747,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 dialInclination={dialInclination}
                 fontSize={fontSize}
                 originalLatitude={originalLatitude}
+                glueLabel={gnomonGlueLabel}
               />
 
               {/* Hour labels — counter-rotate to keep readable when main group is flipped */}
@@ -2732,7 +2755,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 const { x, y } = label.props;
                 return React.cloneElement(label, {
                   key: `label-${index}`,
-                  transform: effectiveDialOrientation === 'North' ? `rotate(180 ${x} ${y})` : undefined
+                  transform: labelCounterRotate(x, y)
                 });
               })}
 
@@ -2750,7 +2773,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   textAnchor="middle"
                   fontFamily={dialTextBlockFontFamily}
                   style={{ userSelect: 'none', pointerEvents: 'none' }}
-                  transform={effectiveDialOrientation === 'North' ? `rotate(180 ${adjustedTextBlockX} ${adjustedTextBlockY})` : undefined}
+                  transform={labelCounterRotate(adjustedTextBlockX, adjustedTextBlockY)}
                 >
                   {textBlockLines.map((line, lineIndex) => (
                     <tspan
@@ -3075,7 +3098,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={effectiveDialOrientation === 'North' ? `rotate(180 ${summerQuarter.x - 10} ${equinoxLine.y1 - 8})` : undefined}
+                              transform={labelCounterRotate(summerQuarter.x - 10, equinoxLine.y1 - 8)}
                             >
                               {sl.spring}
                             </text>
@@ -3091,7 +3114,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={effectiveDialOrientation === 'North' ? `rotate(180 ${fallQuarter.x + 12} ${equinoxLine.y1 - 8})` : undefined}
+                              transform={labelCounterRotate(fallQuarter.x + 12, equinoxLine.y1 - 8)}
                             >
                               {sl.summer}
                             </text>
@@ -3107,7 +3130,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={effectiveDialOrientation === 'North' ? `rotate(180 ${winterQuarter.x - 9} ${equinoxLine.y1 + 8})` : undefined}
+                              transform={labelCounterRotate(winterQuarter.x - 9, equinoxLine.y1 + 8)}
                             >
                               {sl.fall}
                             </text>
@@ -3123,7 +3146,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                               fontSize={dialTextBlockFontSize * 0.3528 * 0.8}
                               fontFamily={dialTextBlockFontFamily}
                               fill="#2563eb"
-                              transform={effectiveDialOrientation === 'North' ? `rotate(180 ${springQuarter.x + 10} ${equinoxLine.y1 + 8})` : undefined}
+                              transform={labelCounterRotate(springQuarter.x + 10, equinoxLine.y1 + 8)}
                             >
                               {sl.winter}
                             </text>
@@ -3244,6 +3267,39 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               </g>
             </g>
           )}
+    </>
+  );
+
+  // Embedded mode: emit just the placed <g> so DualDialPreview can host two
+  // dials inside one <svg> (preserving the single-SVG export contract).
+  if (renderAsGroup) {
+    return <g transform={placementTransform}>{svgChildren}</g>;
+  }
+
+  return (
+    <div className="card" style={{ width: '100%', margin: 0 }}>
+      <div className="card-header sundial-preview-header">
+        <h3 className="card-title"><Sun color="#2563eb" size={20} style={{ marginRight: 6 }} /> Sundial Preview ({orientation}, {pageSize})</h3>
+        {onToggleFullscreen && (
+          <button
+            onClick={onToggleFullscreen}
+            className="preview-fullscreen-btn"
+            title={isFullscreen ? 'Exit fullscreen' : 'Expand preview'}
+          >
+            {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+          </button>
+        )}
+      </div>
+      <div className="sundial-preview-svg-host" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'visible' }}>
+        <svg
+          key={configHash}
+          width="100%"
+          height="100%"
+          viewBox={`-${viewBoxWidth / 2} -${viewBoxHeight / 2} ${viewBoxWidth} ${viewBoxHeight}`}
+          style={{ display: 'block', border: '1px solid #ccc', background: 'transparent', width: '100%', height: '100%', objectFit: 'contain' }}
+          preserveAspectRatio="xMidYMid meet"
+        >
+          {svgChildren}
         </svg>
       </div>
     </div>

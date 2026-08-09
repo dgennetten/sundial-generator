@@ -4,11 +4,13 @@ import type { LineStyle } from './LineSettings';
 import { Clock } from 'lucide-react';
 import { saveHourlineIntervals, saveHourlineOverrides, type HourlineInterval } from './hourlineUtils';
 
-type DateRange = 'FullYear' | 'SummerToFall' | 'WinterToSpring';
+type DateRange = 'FullYear' | 'SummerToFall' | 'WinterToSpring' | 'DualHalf';
 
 interface HourlineSettingsProps {
   dateRange: DateRange;
   setDateRange: (range: DateRange) => void;
+  /** When true, the Date Range is fixed to "Dual-Half" and the control is disabled. */
+  dateRangeLocked?: boolean;
   lineStyles: LineStyle[];
   hourlineIntervals: HourlineInterval[];
   setHourlineIntervals: (intervals: HourlineInterval[]) => void;
@@ -49,6 +51,7 @@ interface HourlineSettingsProps {
 const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
   dateRange,
   setDateRange,
+  dateRangeLocked = false,
   lineStyles,
   hourlineIntervals,
   setHourlineIntervals,
@@ -113,11 +116,14 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
               className="form-select form-select-primary"
               value={dateRange}
               onChange={e => setDateRange(e.target.value as DateRange)}
+              disabled={dateRangeLocked}
+              title={dateRangeLocked ? 'Dual-Dial Pop-up uses a fixed summer + winter split' : undefined}
               style={{ minWidth: isMobile ? '100px' : 'auto', padding: '0.5rem 0.6rem' }}
             >
               <option value="FullYear">Full Year</option>
               <option value="SummerToFall">Summer - Fall</option>
               <option value="WinterToSpring">Winter - Spring</option>
+              <option value="DualHalf" disabled>Dual-Half Year</option>
             </select>
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>

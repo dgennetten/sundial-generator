@@ -58,7 +58,16 @@ export type DeclinationType = 'North' | 'NNE' | 'NE' | 'ENE' | 'East' | 'ESE' | 
 /**
  * Gnomon types for sundial shadow casting
  */
-export type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base';
+export type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base' | 'dual-dial-popup';
+
+/**
+ * True for the two-page folding-card popup gnomon types. Both produce a dial
+ * face on page 1 and a cut-and-fold gnomon net on page 2, and share the same
+ * preview toggle / forced-flat / two-page export plumbing.
+ */
+export function isTwoPagePopup(type: GnomonType): boolean {
+  return type === 'glued-popup-base' || type === 'dual-dial-popup';
+}
 
 /**
  * Gnomon configuration
@@ -79,7 +88,7 @@ export interface GnomonConfig {
 /**
  * Date range options for hourline generation
  */
-export type DateRange = 'FullYear' | 'SummerToFall' | 'WinterToSpring';
+export type DateRange = 'FullYear' | 'SummerToFall' | 'WinterToSpring' | 'DualHalf';
 
 /**
  * Solar position data
@@ -180,6 +189,8 @@ export interface ExportOptions {
   pageHeightMm?: number;
   /** Border inset for gnomon net page, in mm */
   borderMarginMm?: number;
+  /** Dual-dial cube net: each face's width in mm (gnomon-feet separation / √2). */
+  cubeSideMm?: number;
 }
 
 /**

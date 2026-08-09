@@ -4,9 +4,10 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import { getAnalemmaPointsProjected } from '../utils/sundialMath';
 import { calculateAutoGnomonHeight as calcAutoHeight } from '../utils/sundialMath';
 import { MoveUpRight, Pause, Play, ArrowLeft } from 'lucide-react';
+import { isTwoPagePopup } from '../types/sundial';
 
 type Mode = 'auto' | 'manual';
-type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base';
+type GnomonType = 'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base' | 'dual-dial-popup';
 type PositionMode = 'auto' | 'manual';
 
 interface Props {
@@ -241,12 +242,13 @@ const GnomonSettings: React.FC<Props> = ({
               <option value="popup">Cut-n-Fold Popup</option>
               <option value="popup-with-brace">Popup with Brace</option>
               <option value="glued-popup-base">Greeting Popup - 2 pages</option>
+              <option value="dual-dial-popup">Dual-Dial Pop-up - 2 pages</option>
             </select>
           </div>
 
           {/* Preview toggle — only visible for Glued Popup Base.
               flex: 1 matches the Position column in the row below. */}
-          {gnomonType === 'glued-popup-base' && onGnomonPreviewModeChange && (
+          {isTwoPagePopup(gnomonType) && onGnomonPreviewModeChange && (
             <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1', minWidth: 0 }}>
               <label className="form-label">Preview</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
