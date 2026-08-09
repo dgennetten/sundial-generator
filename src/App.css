@@ -1,3 +1,18 @@
+/* Global box-sizing reset: sized elements include their padding/border, so
+   width:100% + padding no longer overflows its container. Without this, the
+   controls panel and cards spilled past the right edge on mobile. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Reset the browser's default 8px body margin (this app loads App.css, not
+   index.css, so that reset must live here). */
+body {
+  margin: 0;
+}
+
 #root {
   max-width: none;
   margin: 0;
