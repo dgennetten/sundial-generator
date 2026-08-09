@@ -53,8 +53,10 @@ describe('buildDualDialNetSVGString geometry', () => {
 
     // Two strips fit at actual size on Letter landscape → no shrink.
     expect(svg).not.toMatch(/ scale\(0\./);
-    // Two identical strips → two glue tabs.
-    expect((svg.match(/>GLUE</g) || []).length).toBe(2);
+    // Each strip has one tube GLUE tab (rotated) plus two attachment-tab GLUE
+    // labels → 3 per strip, 6 across the two strips.
+    expect((svg.match(/>GLUE</g) || []).length).toBe(6);
+    expect((svg.match(/rotate\(-90 [^)]*\)" font-family="sans-serif" fill="none" stroke="lightgray" stroke-width="0\.4">GLUE</g) || []).length).toBe(2);
     // Fold lines at gH, 2gH, 3gH, 4gH — one set per copy (8 total).
     const xs = foldLineXs(svg);
     expect(xs.length).toBe(8);

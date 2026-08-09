@@ -82,6 +82,8 @@ export type Props = {
   correctionFlags?: CorrectionFlags;
   locationShadowPreview?: boolean;
   locationShadowDateTime?: LocationDateTime;
+  /** Show a "GLUE" label on the popup gnomon triangle (dual dial). */
+  gnomonGlueLabel?: boolean;
 };
 // Note: App now prefers passing a single `config` prop. To keep JSX happy where only `config` is provided,
 // we use a union props type here and normalize to a single `p` object.
@@ -170,6 +172,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     correctionFlags,
     locationShadowPreview = false,
     locationShadowDateTime,
+    gnomonGlueLabel = false,
   } = p;
 
   // Compute effective parameters based on correction flags.
@@ -2744,6 +2747,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 dialInclination={dialInclination}
                 fontSize={fontSize}
                 originalLatitude={originalLatitude}
+                glueLabel={gnomonGlueLabel}
               />
 
               {/* Hour labels — counter-rotate to keep readable when main group is flipped */}

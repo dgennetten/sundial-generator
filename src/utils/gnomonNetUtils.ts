@@ -361,10 +361,11 @@ export function buildDualDialNetSVGString(
   const tabW = Math.min(10, 0.5 * faceW); // glue tab: ~10 mm, capped for tiny faces
   const netW = 4 * faceW + tabW;          // four cube faces + glue tab
   const netH = gH;                        // strip height = gnomon height
-  // Attachment tabs below faces 2 & 3: right-isosceles triangles (legs = face
-  // width), vertical edge on the outer fold, apexes meeting at the strip's
-  // bottom centre. These hold the assembled cube to the card.
-  const tabH = faceW;
+  // Attachment tabs below faces 2 & 3: right-isosceles triangles identical to the
+  // gnomon triangle (legs = gnomon height), vertical edge on the outer fold
+  // (faces 1|2 and 3|4), extending inward. These hold the assembled cube to the
+  // card.
+  const tabH = gH;
 
   const margin = Math.max(8, borderMarginMm + 4);
   const fmt    = (v: number) => (Math.round(v * 10) / 10).toString();
@@ -374,6 +375,7 @@ export function buildDualDialNetSVGString(
     'One gnomon per dial. Cut around each solid outline.',
     'Valley fold the dashed lines into a square tube (open top and bottom).',
     'Overlap and glue the GLUE tab inside the opposite edge to close the tube.',
+    'Fold the triangle tabs in and glue them to the matching triangles on the dial face.',
   ];
   const sfs = 3.5;   // font size (mm)
   const slh = 5;     // line height (mm)
@@ -388,7 +390,7 @@ export function buildDualDialNetSVGString(
   // Two identical strips, stacked one above the other.
   const copies = 2;
   const stripFullH = netH + tabH;        // strip plus its attachment tabs
-  const vgap   = Math.max(12, gH);       // gap between the stacked strips
+  const vgap   = Math.max(2, Math.max(12, gH) - 10); // gap between strips (bottom net nudged up 10 mm)
   const groupW = netW;
   const groupH = copies * stripFullH + (copies - 1) * vgap;
   const scale  = Math.min(availW / groupW, availH / groupH, 1);
@@ -420,20 +422,27 @@ export function buildDualDialNetSVGString(
     `<text x="${fmt(tabCx)}" y="${fmt(netH / 2)}" font-size="${fmt(Math.min(labelSize, tabW * 0.5))}" text-anchor="middle" dominant-baseline="middle"`
     + ` transform="rotate(-90 ${fmt(tabCx)} ${fmt(netH / 2)})" font-family="sans-serif" fill="none" stroke="lightgray" stroke-width="0.4">GLUE</text>`;
 
+  // GLUE label centred in each attachment tab (glues to the dial's gnomon triangle).
+  const tabGlueSize = fmt(Math.min(labelSize, gH * 0.22));
+  const tabGlueLabels = [faceW + gH / 3, 3 * faceW - gH / 3].map(cx =>
+    `<text x="${fmt(cx)}" y="${fmt(netH + gH / 3)}" font-size="${tabGlueSize}" text-anchor="middle" dominant-baseline="middle"`
+    + ` font-family="sans-serif" fill="none" stroke="lightgray" stroke-width="0.4">GLUE</text>`
+  ).join('\n        ');
+
   // Cut outline: the rectangle plus the two triangular tabs hanging below faces
   // 2 & 3 (down each outer fold, up to the shared apex at the bottom centre).
   const outline =
     `<path d="M 0,0 L ${fmt(netW)},0 L ${fmt(netW)},${fmt(netH)}`
-    + ` L ${fmt(3 * faceW)},${fmt(netH)} L ${fmt(3 * faceW)},${fmt(netH + tabH)}`
-    + ` L ${fmt(2 * faceW)},${fmt(netH)} L ${fmt(faceW)},${fmt(netH + tabH)}`
-    + ` L ${fmt(faceW)},${fmt(netH)} L 0,${fmt(netH)} Z"`
+    + ` L ${fmt(3 * faceW)},${fmt(netH)} L ${fmt(3 * faceW)},${fmt(netH + tabH)} L ${fmt(3 * faceW - gH)},${fmt(netH)}`
+    + ` L ${fmt(faceW + gH)},${fmt(netH)} L ${fmt(faceW)},${fmt(netH + tabH)} L ${fmt(faceW)},${fmt(netH)}`
+    + ` L 0,${fmt(netH)} Z"`
     + ` stroke="black" stroke-width="0.5" fill="none"/>`;
-  // The strip's bottom edge between faces 2 and 3 is now a fold (tabs attach there).
+  // Each tab's top edge (where it meets the strip) is a fold, dashed.
   const bottomFold =
-    `<line x1="${fmt(faceW)}" y1="${fmt(netH)}" x2="${fmt(3 * faceW)}" y2="${fmt(netH)}"`
-    + ` stroke="#333" stroke-width="0.35" stroke-dasharray="2,2"/>`;
+    `<line x1="${fmt(faceW)}" y1="${fmt(netH)}" x2="${fmt(faceW + gH)}" y2="${fmt(netH)}" stroke="#333" stroke-width="0.35" stroke-dasharray="2,2"/>`
+    + `\n        <line x1="${fmt(3 * faceW - gH)}" y1="${fmt(netH)}" x2="${fmt(3 * faceW)}" y2="${fmt(netH)}" stroke="#333" stroke-width="0.35" stroke-dasharray="2,2"/>`;
 
-  const stripElements = [outline, foldLines, bottomFold, faceLabels, tabLabel].join('\n        ');
+  const stripElements = [outline, foldLines, bottomFold, faceLabels, tabLabel, tabGlueLabels].join('\n        ');
 
   const copiesSVG = Array.from({ length: copies }, (_, i) =>
     `    <g transform="translate(0,${fmt(i * (stripFullH + vgap))})">

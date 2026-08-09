@@ -8,6 +8,8 @@ interface GnomonSVGProps {
   dialInclination?: number;
   fontSize?: number;
   originalLatitude?: number;
+  /** Show a "GLUE" label on the popup triangle (the dual dial glues its net tab here). */
+  glueLabel?: boolean;
 }
 
 const GnomonSVG: React.FC<GnomonSVGProps> = ({
@@ -17,6 +19,7 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
   dialInclination = 0,
   fontSize = 20,
   originalLatitude,
+  glueLabel = false,
 }) => {
   // Convert fontSize from pt to mm for SVG (1 pt = 25.4/72 mm = 0.3528 mm)
   const fontSizeMm = fontSize * 0.3528;
@@ -113,41 +116,58 @@ const GnomonSVG: React.FC<GnomonSVGProps> = ({
     // For popup orientation, we need to flip the triangle if pointing up
     const flipTransform = popupOrientation === 'up' ? 'scale(1, -1)' : '';
     return (
-      <g transform={flipTransform || undefined}>
-        {/* Popup: right triangle pointing down with dashed left side */}
-        {/* Right side (solid) */}
-        <line
-          x1={0}
-          y1={0}
-          x2={gnomonHeight / Math.SQRT2}
-          y2={-gnomonHeight / Math.SQRT2}
-          stroke="red"
-          strokeWidth={1}
-          vectorEffect="non-scaling-stroke"
-        />
-        {/* Base side (solid) */}
-        <line
-          x1={-gnomonHeight / Math.SQRT2}
-          y1={-gnomonHeight / Math.SQRT2}
-          x2={gnomonHeight / Math.SQRT2}
-          y2={-gnomonHeight / Math.SQRT2}
-          stroke="red"
-          strokeWidth={1}
-          vectorEffect="non-scaling-stroke"
-        />
-        {/* Left side (dashed) */}
-        <line
-          x1={0}
-          y1={0}
-          x2={-gnomonHeight / Math.SQRT2}
-          y2={-gnomonHeight / Math.SQRT2}
-          stroke="red"
-          strokeWidth={1}
-          strokeDasharray="3,3"
-          fill="none"
-          vectorEffect="non-scaling-stroke"
-        />
-      </g>
+      <>
+        <g transform={flipTransform || undefined}>
+          {/* Popup: right triangle pointing down with dashed left side */}
+          {/* Right side (solid) */}
+          <line
+            x1={0}
+            y1={0}
+            x2={gnomonHeight / Math.SQRT2}
+            y2={-gnomonHeight / Math.SQRT2}
+            stroke="red"
+            strokeWidth={1}
+            vectorEffect="non-scaling-stroke"
+          />
+          {/* Base side (solid) */}
+          <line
+            x1={-gnomonHeight / Math.SQRT2}
+            y1={-gnomonHeight / Math.SQRT2}
+            x2={gnomonHeight / Math.SQRT2}
+            y2={-gnomonHeight / Math.SQRT2}
+            stroke="red"
+            strokeWidth={1}
+            vectorEffect="non-scaling-stroke"
+          />
+          {/* Left side (dashed) */}
+          <line
+            x1={0}
+            y1={0}
+            x2={-gnomonHeight / Math.SQRT2}
+            y2={-gnomonHeight / Math.SQRT2}
+            stroke="red"
+            strokeWidth={1}
+            strokeDasharray="3,3"
+            fill="none"
+            vectorEffect="non-scaling-stroke"
+          />
+        </g>
+        {/* "GLUE" centred in the triangle (the dual dial's net tab glues here).
+            Drawn outside the flip group and placed at the post-flip centroid so
+            it stays upright. */}
+        {glueLabel && (
+          <text
+            x={0}
+            y={(popupOrientation === 'up' ? 1 : -1) * (2 * (gnomonHeight / Math.SQRT2) / 3)}
+            fontSize={gnomonHeight * 0.16}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="red"
+            fontFamily="sans-serif"
+            style={{ pointerEvents: 'none', userSelect: 'none' }}
+          >GLUE</text>
+        )}
+      </>
     );
   }
 

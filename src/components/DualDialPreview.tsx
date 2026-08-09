@@ -84,6 +84,13 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
     onGnomonSeparationChange?.(gnomonSeparationMm);
   }, [gnomonSeparationMm, onGnomonSeparationChange]);
 
+  // Decoration: keep the user's full text block, but tint the {half-year} line
+  // blue (it resolves per the half's date range: Summer - Fall / Winter - Spring).
+  const dualTextBlock = (config.dialTextBlock ?? '').replace(
+    /^([^\n]*\{half-year\}[^\n]*)$/im,
+    line => (/^\s*\[[a-z]+\]/i.test(line) ? line : `[blue]${line}`),
+  );
+
   // Shared per-half overrides. Each gnomon foot shows a popup triangle marker.
   const halfOverride: Partial<SundialProps> = {
     pageSize: 'Custom',
@@ -98,6 +105,8 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
     gnomonHorizontalPosition: undefined, // centered → feet mirror across the crease
     gnomonPosition: autoVPos + gnomonOffset,
     gnomonType: 'popup',
+    gnomonGlueLabel: true, // the net's triangle tab glues onto this popup triangle
+
     // No per-dial border or inset: the faces run all the way to the crease so the
     // two dials touch (no gap). One border is drawn around the whole card below.
     borderStyle: 'none',
@@ -105,9 +114,8 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
     // Scale text down to match the reduced dial size.
     fontSize: (config.fontSize ?? 20) * fontReduction,
     dialTextBlockFontSize: (config.dialTextBlockFontSize ?? 14) * fontReduction,
-    // Decoration for the dual dial: each half labels its own season, in blue.
-    // {half-year} resolves per the half's date range (Summer - Fall / Winter - Spring).
-    dialTextBlock: '[blue]{half-year}',
+    // Full text block, with the {half-year} line tinted blue (computed above).
+    dialTextBlock: dualTextBlock,
   };
 
   const leftConfig: SundialProps = { ...config, ...halfOverride, dateRange: 'SummerToFall' };
