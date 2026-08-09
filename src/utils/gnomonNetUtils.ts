@@ -361,11 +361,12 @@ export function buildDualDialNetSVGString(
   const tabW = Math.min(10, 0.5 * faceW); // glue tab: ~10 mm, capped for tiny faces
   const netW = 4 * faceW + tabW;          // four cube faces + glue tab
   const netH = gH;                        // strip height = gnomon height
-  // Attachment tabs below faces 2 & 3: right-isosceles triangles identical to the
-  // gnomon triangle (legs = gnomon height), vertical edge on the outer fold
-  // (faces 1|2 and 3|4), extending inward. These hold the assembled cube to the
-  // card.
-  const tabH = gH;
+  // Attachment tabs below faces 2 & 3: right-isosceles triangles matching the
+  // dial's gnomon triangle, vertical edge on the outer fold (faces 1|2 and 3|4),
+  // extending inward. When the two gnomons are close (cube side < gnomon height)
+  // the dial triangles are cropped at the hypotenuse down to leg = cube side, so
+  // the tab uses that same (possibly cropped) leg length.
+  const tabH = Math.min(gH, faceW);
 
   const margin = Math.max(8, borderMarginMm + 4);
   const fmt    = (v: number) => (Math.round(v * 10) / 10).toString();
@@ -388,14 +389,19 @@ export function buildDualDialNetSVGString(
   const availH = pageHeight - 2 * margin - headerH;
 
   // Two identical strips, stacked one above the other.
-  const copies = 2;
   const stripFullH = netH + tabH;        // strip plus its attachment tabs
   const vgap   = Math.max(2, Math.max(12, gH) - 10); // gap between strips (bottom net nudged up 10 mm)
   const groupW = netW;
+  // Prefer two nets at actual size; if two don't fit, print just one. Never
+  // shrink — a scaled net would print at the wrong physical size — so if even one
+  // net overflows the page, print it full size and flag it instead.
+  const twoFit = netW <= availW && (2 * stripFullH + vgap) <= availH;
+  const copies = twoFit ? 2 : 1;
   const groupH = copies * stripFullH + (copies - 1) * vgap;
-  const scale  = Math.min(availW / groupW, availH / groupH, 1);
-  const sW = groupW * scale;
-  const sH = groupH * scale;
+  const scale  = 1;
+  const cropped = groupW > availW || groupH > availH;
+  const sW = groupW;
+  const sH = groupH;
   const pageOX = margin + (availW - sW) / 2;
   const pageOY = margin + headerH + (availH - sH) / 2;
 
@@ -423,9 +429,9 @@ export function buildDualDialNetSVGString(
     + ` transform="rotate(-90 ${fmt(tabCx)} ${fmt(netH / 2)})" font-family="sans-serif" fill="none" stroke="lightgray" stroke-width="0.4">GLUE</text>`;
 
   // GLUE label centred in each attachment tab (glues to the dial's gnomon triangle).
-  const tabGlueSize = fmt(Math.min(labelSize, gH * 0.22));
-  const tabGlueLabels = [faceW + gH / 3, 3 * faceW - gH / 3].map(cx =>
-    `<text x="${fmt(cx)}" y="${fmt(netH + gH / 3)}" font-size="${tabGlueSize}" text-anchor="middle" dominant-baseline="middle"`
+  const tabGlueSize = fmt(Math.min(labelSize, tabH * 0.3));
+  const tabGlueLabels = [faceW + tabH / 3, 3 * faceW - tabH / 3].map(cx =>
+    `<text x="${fmt(cx)}" y="${fmt(netH + tabH / 3)}" font-size="${tabGlueSize}" text-anchor="middle" dominant-baseline="middle"`
     + ` font-family="sans-serif" fill="none" stroke="lightgray" stroke-width="0.4">GLUE</text>`
   ).join('\n        ');
 
@@ -433,14 +439,14 @@ export function buildDualDialNetSVGString(
   // 2 & 3 (down each outer fold, up to the shared apex at the bottom centre).
   const outline =
     `<path d="M 0,0 L ${fmt(netW)},0 L ${fmt(netW)},${fmt(netH)}`
-    + ` L ${fmt(3 * faceW)},${fmt(netH)} L ${fmt(3 * faceW)},${fmt(netH + tabH)} L ${fmt(3 * faceW - gH)},${fmt(netH)}`
-    + ` L ${fmt(faceW + gH)},${fmt(netH)} L ${fmt(faceW)},${fmt(netH + tabH)} L ${fmt(faceW)},${fmt(netH)}`
+    + ` L ${fmt(3 * faceW)},${fmt(netH)} L ${fmt(3 * faceW)},${fmt(netH + tabH)} L ${fmt(3 * faceW - tabH)},${fmt(netH)}`
+    + ` L ${fmt(faceW + tabH)},${fmt(netH)} L ${fmt(faceW)},${fmt(netH + tabH)} L ${fmt(faceW)},${fmt(netH)}`
     + ` L 0,${fmt(netH)} Z"`
     + ` stroke="black" stroke-width="0.5" fill="none"/>`;
   // Each tab's top edge (where it meets the strip) is a fold, dashed.
   const bottomFold =
-    `<line x1="${fmt(faceW)}" y1="${fmt(netH)}" x2="${fmt(faceW + gH)}" y2="${fmt(netH)}" stroke="#333" stroke-width="0.35" stroke-dasharray="2,2"/>`
-    + `\n        <line x1="${fmt(3 * faceW - gH)}" y1="${fmt(netH)}" x2="${fmt(3 * faceW)}" y2="${fmt(netH)}" stroke="#333" stroke-width="0.35" stroke-dasharray="2,2"/>`;
+    `<line x1="${fmt(faceW)}" y1="${fmt(netH)}" x2="${fmt(faceW + tabH)}" y2="${fmt(netH)}" stroke="#333" stroke-width="0.35" stroke-dasharray="2,2"/>`
+    + `\n        <line x1="${fmt(3 * faceW - tabH)}" y1="${fmt(netH)}" x2="${fmt(3 * faceW)}" y2="${fmt(netH)}" stroke="#333" stroke-width="0.35" stroke-dasharray="2,2"/>`;
 
   const stripElements = [outline, foldLines, bottomFold, faceLabels, tabLabel, tabGlueLabels].join('\n        ');
 
@@ -467,6 +473,12 @@ ${copiesSVG}
     `  <text x="${pageWidth / 2}" y="${sundialY0 + i * slh}" font-size="${sfs}" text-anchor="middle" dominant-baseline="auto" font-family="sans-serif" fill="#333" font-style="italic">${line}</text>`
   ).join('\n');
 
+  // Overflow warning: the net is printed full size (never shrunk); if it runs off
+  // the page, tell the user to reduce the gnomon height.
+  const croppedWarning = cropped
+    ? `  <text x="${pageWidth / 2}" y="${subtitleY - 5}" font-size="5" text-anchor="middle" font-family="sans-serif" font-weight="bold" fill="red">CROPPED - Reduce Gnomon Height</text>`
+    : '';
+
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${pageWidth}mm" height="${pageHeight}mm" viewBox="0 0 ${pageWidth} ${pageHeight}">`,
     bgRect,
@@ -474,6 +486,7 @@ ${copiesSVG}
     `  <text x="${pageWidth / 2}" y="${margin + 8}" font-size="7" text-anchor="middle" font-family="sans-serif" font-weight="bold">Cut-and-Fold Gnomons (Dual Dial)</text>`,
     sundialInstrSVG,
     stripSVG,
+    croppedWarning,
     `  <text x="${pageWidth / 2}" y="${subtitleY}" font-size="3.5" text-anchor="middle" font-family="sans-serif" fill="#555">Gnomon height: ${fmt(gH)} mm · Cube side: ${fmt(faceW)} mm</text>`,
     `</svg>`,
   ].join('\n');

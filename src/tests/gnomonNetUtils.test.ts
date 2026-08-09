@@ -66,9 +66,25 @@ describe('buildDualDialNetSVGString geometry', () => {
     expect(svg).toContain('Gnomon height: 30 mm');
   });
 
-  it('shrinks the strips when they do not fit', () => {
-    // gH = 80 → strip width 320 + 10 = 330 mm, wider than a 100×150 card.
+  it('prints a single net (no shrink) when two do not fit but one does', () => {
+    // gH 45 → two strips exceed the page height, but one fits.
+    const svg = buildDualDialNetSVGString(45, 279.4, 215.9);
+    expect(svg).not.toMatch(/ scale\(0\./);          // never shrunk
+    expect(svg).not.toContain('CROPPED');
+    expect((svg.match(/>GLUE</g) || []).length).toBe(3); // one strip = 3 GLUE labels
+  });
+
+  it('prints one full-size net with a CROPPED warning when even one overflows', () => {
+    // gH 80 → strip ~330 mm wide, wider than a 100×150 card.
     const svg = buildDualDialNetSVGString(80, 100, 150);
-    expect(svg).toMatch(/ scale\(0\./);
+    expect(svg).not.toMatch(/ scale\(0\./);          // full size, not shrunk
+    expect(svg).toContain('CROPPED - Reduce Gnomon Height');
+  });
+
+  it('crops the attachment tab leg to the cube side when the gnomons are close', () => {
+    // gnomon 60 mm, cube side 40 mm → tab leg = min(60, 40) = 40, so the tab
+    // bottom is at netH + 40 = 100 (not netH + 60 = 120).
+    const svg = buildDualDialNetSVGString(60, 431.8, 279.4, false, 'white', 0, 40);
+    expect(svg).toContain('40,100');
   });
 });
