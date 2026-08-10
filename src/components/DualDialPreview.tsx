@@ -116,6 +116,10 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
     dialTextBlockFontSize: (config.dialTextBlockFontSize ?? 14) * fontReduction,
     // Full text block, with the {half-year} line tinted blue (computed above).
     dialTextBlock: dualTextBlock,
+    // Push the dateline labels inboard so they clear the card clip below (the
+    // halves run to the card edge at borderMargin 0, so without this the labels
+    // land in the clipped-away outer margin band and vanish).
+    datelineLabelInsetMm: (config.borderMargin ?? 0.25) * 25.4,
   };
 
   const leftConfig: SundialProps = { ...config, ...halfOverride, dateRange: 'SummerToFall' };

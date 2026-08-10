@@ -84,6 +84,9 @@ export type Props = {
   locationShadowDateTime?: LocationDateTime;
   /** Show a "GLUE" label on the popup gnomon triangle (dual dial). */
   gnomonGlueLabel?: boolean;
+  /** Extra inboard inset (mm) for the dateline-label column only, so the dual
+      dial's labels clear the parent card clip without moving the dial lines. */
+  datelineLabelInsetMm?: number;
 };
 // Note: App now prefers passing a single `config` prop. To keep JSX happy where only `config` is provided,
 // we use a union props type here and normalize to a single `p` object.
@@ -115,6 +118,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const idSuffix = (props as { idSuffix?: string }).idSuffix ?? '';
   const extraLabelRotationDeg = (props as { extraLabelRotationDeg?: number }).extraLabelRotationDeg ?? 0;
   const allowLocationShadow = (props as { allowLocationShadow?: boolean }).allowLocationShadow;
+  // Extra inboard inset (mm) for the dateline-label column only. The dual-dial
+  // parent clips the card to an inset rect; with the halves at borderMargin 0 the
+  // labels would sit in that clipped-away outer band. This pushes just the labels
+  // inside the clip without moving the dial lines (so the crease stays gapless).
+  const datelineLabelInsetMm = p.datelineLabelInsetMm ?? 0;
   const {
     lat,
     lng,
@@ -2100,7 +2108,9 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const isNorthFacing = effectiveDialOrientation === 'North';
 
     // Fixed label column: 2 em-widths inside the visual right border (in content coordinates).
-    const labelMargin = 1.5 * labelFontSize;
+    // datelineLabelInsetMm adds extra inboard inset for the dual dial so the labels
+    // clear the parent's card clip (see prop comment above).
+    const labelMargin = 1.5 * labelFontSize + datelineLabelInsetMm;
     const labelColX = isNorthFacing ? leftBound + labelMargin : rightBound - labelMargin;
 
     function computeDeclinationLabelInfo(decl: number, targetX = labelColX): { y: number; angle: number } | null {
