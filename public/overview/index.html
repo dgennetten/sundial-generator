@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sundials You Can Mail &mdash; Precision Sundial</title>
+<meta name="description" content="An illustrated field note on the Precision Sundial studio and its two fold-flat, pop-up paper sundials.">
+<meta name="theme-color" content="#FBFAF6">
+<meta property="og:title" content="Sundials You Can Mail">
+<meta property="og:description" content="Two paper instruments that fold flat, pop up, and tell true solar time on a windowsill.">
+<meta property="og:type" content="article">
+<meta property="og:image" content="img/fig1-11am.jpg">
+<link rel="icon" href="/sun-icon.svg">
+<style>html,body{margin:0;padding:0}body{background:#FBFAF6}@media (prefers-color-scheme:dark){body{background:#16140E}}:root[data-theme=dark] body{background:#16140E}:root[data-theme=light] body{background:#FBFAF6}</style>
+</head>
+<body>
+<style>
+  :root{
+    --paper:#FBFAF6; --raise:#FFFFFF; --mount:#F4EFE2;
+    --ink:#201D17; --ink-soft:#4A443A; --ink-faint:#6E665A;
+    --brass:#8F6222; --brass-bright:#A9762E; --indigo:#2C4A63; --red:#AF3A2E;
+    --rule:rgba(32,29,23,.14); --rule-strong:rgba(32,29,23,.28);
+    --shadow:0 1px 2px rgba(32,29,23,.06),0 8px 30px rgba(32,29,23,.08);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --mono:"SF Mono",ui-monospace,"Cascadia Mono",Menlo,Consolas,monospace;
+    --maxw:680px; --plate:980px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --paper:#16140E; --raise:#1F1C14; --mount:#211D14;
+      --ink:#ECE5D5; --ink-soft:#B7AF9C; --ink-faint:#8C8471;
+      --brass:#CDA05E; --brass-bright:#DDB273; --indigo:#8DB1CE; --red:#DB7666;
+      --rule:rgba(236,229,213,.14); --rule-strong:rgba(236,229,213,.26);
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 34px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="light"]{
+    --paper:#FBFAF6; --raise:#FFFFFF; --mount:#F4EFE2;
+    --ink:#201D17; --ink-soft:#4A443A; --ink-faint:#6E665A;
+    --brass:#8F6222; --brass-bright:#A9762E; --indigo:#2C4A63; --red:#AF3A2E;
+    --rule:rgba(32,29,23,.14); --rule-strong:rgba(32,29,23,.28);
+    --shadow:0 1px 2px rgba(32,29,23,.06),0 8px 30px rgba(32,29,23,.08);
+  }
+  :root[data-theme="dark"]{
+    --paper:#16140E; --raise:#1F1C14; --mount:#211D14;
+    --ink:#ECE5D5; --ink-soft:#B7AF9C; --ink-faint:#8C8471;
+    --brass:#CDA05E; --brass-bright:#DDB273; --indigo:#8DB1CE; --red:#DB7666;
+    --rule:rgba(236,229,213,.14); --rule-strong:rgba(236,229,213,.26);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 34px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box}
+  .page{background:var(--paper);color:var(--ink);font-family:var(--serif);
+    font-size:19px;line-height:1.62;-webkit-font-smoothing:antialiased;
+    font-feature-settings:"kern" 1,"liga" 1;padding:0 22px 6rem;}
+  .wrap{max-width:var(--maxw);margin:0 auto;}
+  .plate{max-width:var(--plate);margin-left:auto;margin-right:auto;}
+
+  /* ---- shared type ---- */
+  .eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--brass);font-weight:600;}
+  h1,h2,h3{font-weight:600;text-wrap:balance;line-height:1.12;letter-spacing:-.01em;}
+  p{margin:0 0 1.05em;}
+  a{color:var(--indigo);text-underline-offset:2px;}
+  strong{font-weight:600;}
+  em.term{font-style:italic;color:var(--ink);}
+
+  /* ---- masthead ---- */
+  .masthead{max-width:var(--plate);margin:0 auto;padding:clamp(3rem,7vw,5.5rem) 0 2rem;
+    display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:end;
+    border-bottom:1px solid var(--rule-strong);}
+  .mh-kicker{display:flex;gap:.9rem;align-items:center;margin-bottom:1.4rem;}
+  .mh-kicker .dot{width:5px;height:5px;border-radius:50%;background:var(--brass);}
+  .masthead h1{font-size:clamp(2.3rem,6.4vw,4rem);margin:.1em 0 .35em;}
+  .masthead .sub{font-size:clamp(1.05rem,2.4vw,1.3rem);color:var(--ink-soft);
+    font-style:italic;max-width:34ch;}
+  .analemma{width:clamp(84px,13vw,132px);height:auto;color:var(--brass);
+    opacity:.9;justify-self:end;}
+  .byline{max-width:var(--plate);margin:1.1rem auto 0;font-family:var(--mono);
+    font-size:.74rem;letter-spacing:.03em;color:var(--ink-faint);
+    display:flex;flex-wrap:wrap;gap:.4rem 1.4rem;}
+  .byline b{color:var(--ink-soft);font-weight:600;}
+
+  /* ---- hero figure ---- */
+  figure{margin:2.4rem auto;}
+  .fig-hero{margin-top:2.6rem;}
+  figure img{display:block;width:100%;height:auto;border-radius:6px;
+    background:var(--mount);box-shadow:var(--shadow);}
+  figcaption{font-family:var(--mono);font-size:.74rem;line-height:1.5;
+    color:var(--ink-faint);margin-top:.7rem;letter-spacing:.01em;
+    display:flex;gap:.7rem;}
+  figcaption .n{color:var(--brass);font-weight:600;white-space:nowrap;}
+
+  /* ---- abstract / lede ---- */
+  .lede{font-size:1.16rem;line-height:1.55;color:var(--ink-soft);
+    margin:2.6rem auto 0;}
+  .lede .drop::first-letter{}
+
+  /* ---- sections ---- */
+  section{margin-top:3.2rem;}
+  .sec-head{display:flex;gap:1rem;align-items:baseline;margin-bottom:1.1rem;}
+  .sec-head .num{font-family:var(--mono);font-size:.82rem;color:var(--brass);
+    font-weight:600;letter-spacing:.04em;padding-top:.25rem;}
+  .sec-head h2{font-size:clamp(1.5rem,3.4vw,1.95rem);}
+  .rule{height:1px;background:var(--rule);border:0;margin:0 0 0;}
+
+  /* pull-quote / key claim */
+  .claim{font-size:1.28rem;line-height:1.4;color:var(--ink);
+    border-left:2px solid var(--brass);padding:.1rem 0 .1rem 1.2rem;
+    margin:1.8rem 0;font-style:italic;}
+  .claim b{font-style:normal;color:var(--brass-bright);}
+
+  /* spec chip row */
+  .spec{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.4rem 0 1.7rem;padding:0;list-style:none;}
+  .spec li{font-family:var(--mono);font-size:.74rem;letter-spacing:.02em;
+    color:var(--ink-soft);background:var(--raise);border:1px solid var(--rule);
+    border-radius:100px;padding:.32rem .8rem;}
+  .spec li b{color:var(--brass-bright);font-weight:600;}
+
+  /* two-up figure grid */
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:1.3rem;
+    max-width:var(--plate);margin:2.4rem auto;}
+  .duo figure{margin:0;}
+  @media (max-width:720px){ .duo{grid-template-columns:1fr;} .masthead{grid-template-columns:1fr;} .analemma{display:none;} }
+
+  /* summer/winter tag */
+  .tag{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;
+    text-transform:uppercase;font-weight:600;padding:.12rem .5rem;border-radius:4px;
+    vertical-align:.12em;}
+  .tag.summer{color:var(--brass-bright);background:color-mix(in srgb,var(--brass) 15%,transparent);}
+  .tag.winter{color:var(--indigo);background:color-mix(in srgb,var(--indigo) 16%,transparent);}
+
+  /* build steps */
+  ol.steps{counter-reset:s;list-style:none;padding:0;margin:1.6rem 0;}
+  ol.steps li{position:relative;padding-left:2.6rem;margin:0 0 1.1rem;}
+  ol.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:.05em;
+    width:1.7rem;height:1.7rem;border:1px solid var(--brass);color:var(--brass-bright);
+    border-radius:50%;font-family:var(--mono);font-size:.8rem;font-weight:600;
+    display:flex;align-items:center;justify-content:center;}
+
+  /* aside / open question */
+  .aside{background:var(--raise);border:1px solid var(--rule);border-radius:10px;
+    padding:1.5rem 1.6rem;margin:2rem auto;box-shadow:var(--shadow);}
+  .aside .eyebrow{color:var(--indigo);}
+  .aside h3{font-size:1.15rem;margin:.5rem 0 .7rem;}
+
+  /* colophon */
+  .colophon{max-width:var(--plate);margin:4.5rem auto 0;padding-top:1.6rem;
+    border-top:1px solid var(--rule-strong);font-family:var(--mono);
+    font-size:.74rem;line-height:1.7;color:var(--ink-faint);
+    display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;}
+  .colophon b{color:var(--ink-soft);font-weight:600;}
+  @media (max-width:600px){ .colophon{grid-template-columns:1fr;} }
+
+  @media (prefers-reduced-motion:no-preference){
+    .fade{opacity:0;transform:translateY(10px);animation:rise .8s cubic-bezier(.2,.7,.2,1) forwards;}
+    .fade.d1{animation-delay:.05s}.fade.d2{animation-delay:.13s}
+    @keyframes rise{to{opacity:1;transform:none}}
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead fade">
+    <div>
+      <div class="mh-kicker">
+        <span class="eyebrow">Precision Sundial &middot; Field Notes</span>
+      </div>
+      <h1>Sundials You Can Mail</h1>
+      <p class="sub">Two paper instruments that fold flat, pop&nbsp;up, and tell true solar time on a windowsill.</p>
+    </div>
+    <svg class="analemma" viewBox="0 0 120 200" fill="none" stroke="currentColor" aria-hidden="true">
+      <path d="M60 12 C40 34 40 58 56 78 C74 100 78 128 66 156 C58 176 60 190 60 190
+               C60 190 92 172 90 140 C88 112 66 96 52 74 C40 54 42 34 60 12 Z"
+            stroke-width="1.4" opacity=".85"/>
+      <circle cx="60" cy="12" r="2.4" fill="currentColor" stroke="none"/>
+      <circle cx="60" cy="190" r="2.4" fill="currentColor" stroke="none"/>
+      <line x1="18" y1="101" x2="102" y2="101" stroke-width=".8" opacity=".4"/>
+      <text x="106" y="16" font-family="var(--mono)" font-size="9" fill="currentColor" stroke="none" opacity=".7">Jun</text>
+      <text x="104" y="196" font-family="var(--mono)" font-size="9" fill="currentColor" stroke="none" opacity=".7">Dec</text>
+    </svg>
+  </header>
+
+  <div class="byline fade d1">
+    <span><b>K. Douglas Gennetten</b></span>
+    <span>precisionsundial.com</span>
+    <span>Cut-and-fold pop-up dials</span>
+    <span>Rev. August 2026</span>
+  </div>
+
+  <div class="wrap">
+    <p class="lede fade d2">A sundial is usually a heavy, permanent thing &mdash; stone, bronze, bolted to a plinth. It need not be. Given an accurate line drawing and a pair of scissors, a horizontal dial can be printed on a single sheet, folded into a greeting card, and dropped in an envelope. This is a note on two such designs: the original single-dial pop-up, and a new <em class="term">dual-dial</em> card that splits the year in half to read the sun more precisely.</p>
+  </div>
+
+  <figure class="plate fig-hero">
+    <img src="img/fig1-11am.jpg" alt="An assembled dual-dial pop-up card on a stone patio, held portrait so the crease runs across the middle. The summer-fall dial reads upright at the top, the winter-spring dial is inverted below, and a paper tube gnomon stands at the center, its shadow crossing the eleven o'clock line.">
+    <figcaption><span class="n">Fig. 1</span><span>Eleven o'clock in Fort Collins, Colorado. Held this way the summer&ndash;fall dial reads upright (top); the winter&ndash;spring dial waits, inverted, below the crease. The tube gnomon's shadow crosses the 11&nbsp;line on the August date&nbsp;curve &mdash; true solar time, read straight off the paper.</span></figcaption>
+  </figure>
+
+  <div class="wrap">
+
+    <section>
+      <div class="sec-head"><span class="num">&sect;1</span><h2>The software behind the paper</h2></div>
+      <p><strong>Precision Sundial</strong> is a browser-based design studio for printable sundials. You give it a place &mdash; click a map, or type a city and it resolves the coordinates and time zone offline &mdash; and it computes a dial for that exact latitude and longitude: hour lines, seasonal date lines, a sized gnomon, decorative text, and a border. You then export to PNG, SVG, or PDF and print at true physical scale.</p>
+      <p>What sets it apart is that it does the <em class="term">astronomy</em> honestly rather than approximately:</p>
+      <ul class="spec">
+        <li><b>Equation of time</b> &amp; analemma</li>
+        <li><b>Atmospheric refraction</b> &middot; Bennett's formula</li>
+        <li><b>Solar declination</b> date lines</li>
+        <li><b>Live shadow</b> preview &amp; animation</li>
+        <li>PNG / SVG / PDF at true scale</li>
+      </ul>
+      <p>Beyond the flat dials, it can unfold a gnomon <em class="term">from the same sheet of paper</em> &mdash; no separate rod, no glue-on hardware. That single capability is what makes a mailable sundial possible, and it is the subject of the rest of this note.</p>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="num">&sect;2</span><h2>Designing the dial</h2></div>
+      <p>You need no astronomy to drive it. The whole instrument is exposed as plain controls &mdash; where you are, which lines you want, how each is drawn &mdash; and the dial redraws the instant you touch one. Three parts of that panel do most of the work.</p>
+    </section>
+  </div>
+
+  <figure class="plate">
+    <img src="img/ui-map.jpg" alt="The location picker: a search box, a Use current location button, and an OpenStreetMap map with a pin on Fort Collins, showing the selected coordinates 40.5853, -105.0844.">
+    <figcaption><span class="n">Fig. 2</span><span>Location by map. Drop a pin or search a city and the latitude, longitude, and time-zone meridian come back automatically &mdash; resolved offline from a built-in table of cities, no internet required.</span></figcaption>
+  </figure>
+
+  <div class="wrap">
+    <p><strong>Location, from a map.</strong> The one input the mathematics truly needs is where you stand. Drop a pin, type a city, or tap <em class="term">Use current location</em>; the app fills in your coordinates and picks the correct time-zone meridian for the longitude correction.</p>
+    <p><strong>Every line, on your terms.</strong> Both families of curves are yours to shape. Switch hour intervals on or off &mdash; hours, halves, quarters, down to two-minute lines &mdash; set the daily range, and toggle equation-of-time correction, atmospheric refraction, and automatic daylight time. The date lines are just as open: solstices, equinoxes, the first of each month, or a single day such as <em class="term">today</em>, each in a style you choose.</p>
+  </div>
+
+  <div class="duo">
+    <figure>
+      <img src="img/ui-hourlines.jpg" alt="The Hour Lines panel: date range, hour range, a table of intervals (hour, half-hour, quarter-hour, minute lines) each with a line style and active checkbox, and toggles for equation-of-time correction and daylight time.">
+      <figcaption><span class="n">Fig. 3</span><span>Hour lines &mdash; every interval, range, and correction is a switch.</span></figcaption>
+    </figure>
+    <figure>
+      <img src="img/ui-datelines.jpg" alt="The Date Lines panel: a list of dates (solstices, equinox, first of the month, today) each with a line style and active checkbox, plus label-placement options.">
+      <figcaption><span class="n">Fig. 4</span><span>Date lines &mdash; solstices, month firsts, or a single day, each styled independently.</span></figcaption>
+    </figure>
+  </div>
+
+  <div class="wrap">
+    <p><strong>Lines that carry a scale.</strong> Styles go past solid and dashed. The <em class="term">calculated</em> styles turn a curve into a row of ticks that <em class="term">mean</em> something: a two-minute dot lays a mark every two minutes of real time along a date line; a day-count dash steps along an hour line by the calendar. A single printed curve then carries its own fine scale to interpolate against &mdash; <span class="tag summer">D</span> styles for date lines, <span class="tag winter">H</span> for hour lines.</p>
+  </div>
+
+  <figure class="plate">
+    <img src="img/ui-linestyles.jpg" alt="The Line Styles table: named styles with width, color, and a Style column. Two rows read 'D: 2min dot' and 'H: 2/2 day dash' with a greyed 'Calculate' style, illustrating the calculated tick styles.">
+    <figcaption><span class="n">Fig. 5</span><span>Line styles, including the calculated ticks &mdash; <span style="font-family:var(--mono)">D: 2min dot</span> and <span style="font-family:var(--mono)">H: 2/2 day dash</span> place marks at true time intervals along a curve, rather than a cosmetic dash.</span></figcaption>
+  </figure>
+
+  <div class="wrap">
+
+    <section>
+      <div class="sec-head"><span class="num">&sect;3</span><h2>How a horizontal dial reads</h2></div>
+      <p>A horizontal dial has two families of curves. The <strong>hour lines</strong> radiate from the gnomon's foot; the sun's shadow crosses them to give the time. The <strong>date lines</strong> run the other way &mdash; each marks where the shadow tip lands on a given date, so the shadow's <em class="term">position along</em> its hour line reveals the season. Noon, tracked across a whole year, traces the familiar figure-eight of the analemma, a direct consequence of the equation of time.</p>
+      <p>That figure-eight is also the problem. On a full-year dial every date line has a twin: the sun stands at the same declination on a spring date and again on a matching autumn date, so the lines double back on themselves and bunch together near the solstices. The drawing gets crowded exactly where you most want to read it.</p>
+      <p class="claim">Split the year in two, and each half-year dial carries <b>only one pass of the sun</b> &mdash; unambiguous date lines, wider spacing, and far easier interpolation between the hours.</p>
+      <p>This is the idea both pop-ups exploit, and the one the dual-dial card takes all the way.</p>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="num">&sect;4</span><h2>The original pop-up</h2></div>
+      <p>The first design is a single horizontal dial with a <strong>triangular gnomon</strong> that folds up out of the page. The sheet can be left flat, or scored down the middle and stood up as a greeting card. The gnomon is a right triangle you cut free, valley-fold along its centre, and glue down &mdash; corner <span class="tag summer">A&rarr;A</span> corner <span class="tag winter">B&rarr;B</span> &mdash; so its sloping edge becomes the shadow-casting style.</p>
+    </section>
+  </div>
+
+  <figure class="plate">
+    <img src="img/original-popup.jpg" alt="A printed single-dial pop-up sundial lying on a wooden floor, with a triangular paper gnomon standing at the center printed with a compass rose and the North American Sundial Society mark.">
+    <figcaption><span class="n">Fig. 6</span><span>The original pop-up, printed for Louisville, Kentucky (a summer&ndash;fall half-year dial, 48&nbsp;mm gnomon). The standing triangle carries a compass rose and the North American Sundial Society mark on its faces.</span></figcaption>
+  </figure>
+
+  <div class="duo">
+    <figure>
+      <img src="img/orig-face.jpg" alt="Screenshot of the app's dial face for the original pop-up: a single horizontal dial with hour lines, date lines, and a red triangular gnomon marked A and B at the foot.">
+      <figcaption><span class="n">Fig. 7</span><span>App view &mdash; the dial face. The red triangle marks where the pop-up gnomon lands.</span></figcaption>
+    </figure>
+    <figure>
+      <img src="img/orig-net.jpg" alt="Screenshot of the cut-and-fold gnomon net for the original pop-up: three triangular gnomons printed with compass roses and A/B glue markers.">
+      <figcaption><span class="n">Fig. 8</span><span>App view &mdash; the gnomon net (page two). Cut, valley-fold, align A&rarr;A / B&rarr;B, glue.</span></figcaption>
+    </figure>
+  </div>
+
+  <div class="wrap">
+    <p>It works, and it mails beautifully. But a single dial inherits the full-year crowding of &sect;3 &mdash; and if you want precision across the <em class="term">whole</em> year, one dial has to compromise. That is what the second design set out to fix.</p>
+
+    <section>
+      <div class="sec-head"><span class="num">&sect;5</span><h2>The dual-dial pop-up</h2></div>
+      <p>The dual-dial card carries <em class="term">two</em> half-year dials on one landscape sheet, meeting at a vertical crease. The <span class="tag summer">Summer&ndash;Fall</span> dial fills the left half; the <span class="tag winter">Winter&ndash;Spring</span> dial fills the right. Each is a genuine, undistorted horizontal dial computed for your location, then rotated ninety degrees so its noon points outward and it fills its half of the card. Because each covers only half the year, both enjoy the wider spacing and clean date lines that a single dial cannot.</p>
+      <p>You use whichever dial is in season, turning the card so that half reads upright. Together the pair covers all twelve months &mdash; the convenience of a year-round dial, without a year's worth of crowding on either face.</p>
+    </section>
+  </div>
+
+  <div class="duo">
+    <figure>
+      <img src="img/dual-face.jpg" alt="Screenshot of the dual-dial card face: two horizontal dials mirrored across a dashed center crease, summer-fall on the left, winter-spring on the right, each with a red pop-up gnomon triangle near the crease.">
+      <figcaption><span class="n">Fig. 9</span><span>App view &mdash; both dials on one card. Note the mirrored gnomon feet flanking the crease.</span></figcaption>
+    </figure>
+    <figure>
+      <img src="img/dual-net.jpg" alt="Screenshot of the dual-dial gnomon net: two identical rectangular strips of four panels plus a glue tab, with triangular fold-in tabs, that each fold into a square tube.">
+      <figcaption><span class="n">Fig. 10</span><span>App view &mdash; the tube-gnomon net. Each strip folds into a square tube (page two).</span></figcaption>
+    </figure>
+  </div>
+
+  <div class="wrap">
+    <p>The gnomon is the clever part. The two dials place their gnomon feet directly across the crease from one another, a fixed distance apart. A single <strong>square paper tube</strong> stands there on its diagonal: two opposite vertical edges land exactly on the two feet, so one tube serves both dials at once &mdash; the near edge casts for whichever half is in use. The tube's side is set so its base diagonal equals that foot-to-foot distance:</p>
+    <p class="claim" style="font-style:normal;font-family:var(--mono);font-size:1.05rem;"><b>side&nbsp;=&nbsp;(foot&nbsp;separation)&nbsp;&divide;&nbsp;&radic;2</b></p>
+    <p>which keeps the printed gnomon height in exact agreement with the dial it drives. Fold-in triangular tabs glue the tube's own shadow-triangles to matching triangles on the dial face, locking it upright. Stand the card up like a greeting card and the tube rises at the fold; lay it flat and it becomes a small permanent horizontal dial for a shelf or sill.</p>
+  </div>
+
+  <figure class="plate">
+    <img src="img/dual-folded.jpg" alt="The dual-dial card stood up like an open greeting card in low sun, its two dials angled apart along the crease and the paper tube gnomon rising at the fold.">
+    <figcaption><span class="n">Fig. 11</span><span>Stood up as a card &mdash; the crease becomes a spine and the tube gnomon rises at the fold. Flatten it again and it lies down to a windowsill dial.</span></figcaption>
+  </figure>
+
+  <div class="wrap">
+    <section>
+      <div class="sec-head"><span class="num">&sect;6</span><h2>The paper engineering, and an open question</h2></div>
+      <p>Two gnomon strategies now coexist: the <strong>folded triangle</strong> of the original pop-up (simple, self-evident, but a little floppy and reliant on a clean glue line), and the <strong>square tube</strong> of the dual dial (rigid, self-bracing, dual-purpose, but fiddlier to assemble). Both fold from the same sheet as the dial, and both must land at a height that matches the drawing to within a millimetre or the hours drift.</p>
+      <p>When the two dial gnomons crowd close together &mdash; a low sun angle, or a hand-tuned gnomon height &mdash; their triangles are cropped at the crease so they still fit, and the net's tabs crop to match. When a full-size net will not fit the page, the app prints fewer copies rather than shrink them, because a scaled gnomon prints at the wrong physical height and quietly ruins the dial.</p>
+      <div class="aside">
+        <span class="eyebrow">Open problem</span>
+        <h3>Better than a glued tube?</h3>
+        <p style="margin-bottom:0">The tube is the current best compromise, but it is not obviously the last word. Is there a fold that self-erects from the crease with no glue at all &mdash; a true pop-up driven by opening the card? A slot-and-lock tab instead of adhesive? A stiffer prism that uses less paper? The shadow only needs one clean edge at a known height; everything else is structure. Ideas are genuinely welcome.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><span class="num">&sect;7</span><h2>Make one</h2></div>
+      <ol class="steps">
+        <li>Open <strong>precisionsundial.com</strong> and set your location by map or city name.</li>
+        <li>In <strong>Gnomon Type</strong>, choose <em class="term">Greeting Pop-up</em> for a single dial, or <em class="term">Dual-Dial Pop-up</em> for the two-season card.</li>
+        <li>Adjust hour range, date lines, and text to taste; use the <strong>Preview</strong> toggle to check the dial face and the gnomon net.</li>
+        <li>Export to PDF and print <strong>at 100% / actual size</strong> &mdash; scale is what makes it accurate.</li>
+        <li>Cut, score the crease, fold and glue the gnomon, and set it out in the sun. Photograph it and add it to the gallery.</li>
+      </ol>
+      <p>Correct for your longitude within the time zone and for the equation of time using the date lines, and a well-printed paper dial will hold its own against far heavier instruments &mdash; then fold flat and slip back into a drawer.</p>
+    </section>
+  </div>
+
+  <div class="colophon">
+    <div>
+      <b>Precision Sundial</b><br>
+      A browser studio for printable, astronomically accurate sundials.<br>
+      precisionsundial.com
+    </div>
+    <div>
+      <b>Colophon</b><br>
+      Figures 1, 6 &amp; 11 photographed from printed cards; Figures 2&ndash;5 &amp; 7&ndash;10 are app screen captures.<br>
+      Set in Iowan Old Style with monospace annotation.
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
