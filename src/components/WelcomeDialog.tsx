@@ -1,6 +1,6 @@
 // src/components/WelcomeDialog.tsx
 import React, { useState, useEffect } from 'react';
-import { X, Compass, Camera } from 'lucide-react';
+import { X, Compass, Camera, BookOpen } from 'lucide-react';
 import { version } from '../../package.json';
 import { galleryTranslations } from './gallery/galleryTranslations';
 import GalleryErrorBoundary from './gallery/GalleryErrorBoundary';
@@ -29,6 +29,7 @@ interface Translations {
   dontShowAgain: string;
   gotIt: string;
   sendFeedback: string;
+  overviewLink: string;
 }
 
 const translations: Record<Language, Translations> = {
@@ -44,6 +45,7 @@ const translations: Record<Language, Translations> = {
     dontShowAgain: 'Don\'t show again',
     gotIt: 'Got it',
     sendFeedback: 'send feedback!',
+    overviewLink: 'Illustrated overview of the pop-up dials →',
   },
   es: {
     title: 'Cómo Construir Tu Reloj de Sol Personalizado',
@@ -57,6 +59,7 @@ const translations: Record<Language, Translations> = {
     dontShowAgain: 'No volver a mostrar',
     gotIt: 'Entendido',
     sendFeedback: '¡enviar comentarios!',
+    overviewLink: 'Resumen ilustrado de los relojes emergentes →',
   },
   fr: {
     title: 'Comment Construire Votre Cadran Solaire Personnalisé',
@@ -70,6 +73,7 @@ const translations: Record<Language, Translations> = {
     dontShowAgain: 'Ne plus afficher',
     gotIt: 'Compris',
     sendFeedback: 'envoyer des commentaires!',
+    overviewLink: 'Aperçu illustré des cadrans pop-up →',
   },
   de: {
     title: 'So Bauen Sie Ihre Individuelle Sonnenuhr',
@@ -83,6 +87,7 @@ const translations: Record<Language, Translations> = {
     dontShowAgain: 'Nicht mehr anzeigen',
     gotIt: 'Verstanden',
     sendFeedback: 'Feedback senden!',
+    overviewLink: 'Illustrierte Übersicht der Pop-up-Zifferblätter →',
   },
   it: {
     title: 'Come Costruire la Tua Meridiana Personalizzata',
@@ -96,6 +101,7 @@ const translations: Record<Language, Translations> = {
     dontShowAgain: 'Non mostrare più',
     gotIt: 'Capito',
     sendFeedback: 'invia feedback!',
+    overviewLink: 'Panoramica illustrata dei quadranti pop-up →',
   },
   pt: {
     title: 'Como Construir Seu Relógio de Sol Personalizado',
@@ -109,6 +115,7 @@ const translations: Record<Language, Translations> = {
     dontShowAgain: 'Não mostrar novamente',
     gotIt: 'Entendi',
     sendFeedback: 'enviar feedback!',
+    overviewLink: 'Visão geral ilustrada dos relógios pop-up →',
   },
   zh: {
     title: '如何制作您的定制日晷',
@@ -122,6 +129,7 @@ const translations: Record<Language, Translations> = {
     dontShowAgain: '不再显示',
     gotIt: '知道了',
     sendFeedback: '发送反馈！',
+    overviewLink: '弹出式日晷图解概览 →',
   },
   ja: {
     title: 'カスタム日時計の作り方',
@@ -135,6 +143,7 @@ const translations: Record<Language, Translations> = {
     dontShowAgain: '再表示しない',
     gotIt: '了解しました',
     sendFeedback: 'フィードバックを送信！',
+    overviewLink: 'ポップアップ日時計の図解概要 →',
   },
   ko: {
     title: '맞춤형 해시계 만들기',
@@ -148,6 +157,7 @@ const translations: Record<Language, Translations> = {
     dontShowAgain: '다시 표시하지 않음',
     gotIt: '알겠습니다',
     sendFeedback: '피드백 보내기!',
+    overviewLink: '팝업 해시계 그림 개요 →',
   },
   ru: {
     title: 'Как Создать Свой Персональный Солнечные Часы',
@@ -161,6 +171,7 @@ const translations: Record<Language, Translations> = {
     dontShowAgain: 'Больше не показывать',
     gotIt: 'Понятно',
     sendFeedback: 'отправить отзыв!',
+    overviewLink: 'Иллюстрированный обзор всплывающих циферблатов →',
   },
   ar: {
     title: 'كيفية بناء ساعتك الشمسية المخصصة',
@@ -174,6 +185,7 @@ const translations: Record<Language, Translations> = {
     dontShowAgain: 'لا تظهر مرة أخرى',
     gotIt: 'فهمت',
     sendFeedback: 'إرسال الملاحظات!',
+    overviewLink: 'نظرة عامة مصوّرة على الساعات الشمسية المنبثقة ←',
   },
 };
 
@@ -410,6 +422,29 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: langua
                 {translations[language].steps.reset.text}
               </li>
             </ul>
+
+            <a
+              href="/overview/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginTop: '18px',
+                padding: '10px 16px',
+                backgroundColor: '#eff6ff',
+                border: '1.5px solid #2563eb',
+                borderRadius: '8px',
+                color: '#2563eb',
+                fontSize: '0.9rem',
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
+            >
+              <BookOpen size={16} />
+              {translations[language].overviewLink}
+            </a>
           </div>
         </div>
 
