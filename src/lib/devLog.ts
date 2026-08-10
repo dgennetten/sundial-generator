@@ -54,7 +54,7 @@ export const LOG_ENTRIES: LogEntry[] = [
   {
     id: 10,
     date: '2026-08-09',
-    content: "**NEW — Dual-Dial Pop-up!** Two dials on one folding card: a **Summer** dial and a **Winter** dial, each a true horizontal dial rotated to fill its half. Splitting the year in two gives each dial wider hour spacing — more **precision and readability** — while the pair together keeps the **full-year convenience** of a single dial without the crowding. Fold it into a **greeting card**, or lay it flat as a **permanent horizontal dial** (see gallery photos). Pick **Dual-Dial Pop-up** in the gnomon dropdown. Still refining the cut-and-fold gnomon paper engineering — ideas welcome! — KDG (v2.23.1)",
+    content: "**NEW — Dual-Dial Pop-up!** Two dials on one folding card: a **Summer** dial and a **Winter** dial, each a true horizontal dial rotated to fill its half. Splitting the year in two gives each dial superior hour line interpolation and readability, while the pair together keeps the **full-year convenience** of a single dial without the crowding. Fold it into a **greeting card**, or lay it flat as a **permanent horizontal dial** (see gallery photos). Pick **Dual-Dial Pop-up** in the gnomon dropdown. Still refining the cut-and-fold gnomon paper engineering — ideas welcome! — KDG (v2.23.1)",
   },
 ]
 
