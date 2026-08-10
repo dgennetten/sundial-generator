@@ -51,6 +51,11 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-07-17',
     content: "**New Photo Gallery — share your sundial!** Click **Photos** (in the How-to-Build popup, or right next to the Print button) to open a full-screen gallery of dials built by fellow makers. Want to add yours? Sign in with a one-time code emailed to you — no password or account needed — then upload a photo with a caption. Submissions appear once approved. — KDG (v2.22.0)",
   },
+  {
+    id: 10,
+    date: '2026-08-09',
+    content: "**NEW — Dual-Dial Pop-up!** Two dials on one folding card: a **Summer** dial and a **Winter** dial, each a true horizontal dial rotated to fill its half. Splitting the year in two gives each dial wider hour spacing — more **precision and readability** — while the pair together keeps the **full-year convenience** of a single dial without the crowding. Fold it into a **greeting card**, or lay it flat as a **permanent horizontal dial** (see gallery photos). Pick **Dual-Dial Pop-up** in the gnomon dropdown. Still refining the cut-and-fold gnomon paper engineering — ideas welcome! — KDG (v2.23.1)",
+  },
 ]
 
 export type LogPref =
