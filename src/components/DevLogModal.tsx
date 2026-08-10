@@ -3,8 +3,19 @@ import { X, Rss } from 'lucide-react';
 import { LOG_ENTRIES, setLogPref, type LogPref } from '../lib/devLog';
 
 function renderContent(text: string): React.ReactNode {
-  const parts = text.split(/\*\*(.+?)\*\*/g);
-  return parts.map((part, i) => i % 2 === 1 ? <strong key={i}>{part}</strong> : part);
+  // Tokenize on **bold** and [label](url) links, keeping the delimiters.
+  const parts = text.split(/(\*\*.+?\*\*|\[[^\]]+\]\([^)]+\))/g);
+  return parts.map((part, i) => {
+    const bold = /^\*\*(.+)\*\*$/.exec(part);
+    if (bold) return <strong key={i}>{bold[1]}</strong>;
+    const link = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(part);
+    if (link) return (
+      <a key={i} href={link[2]} target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 600 }}>
+        {link[1]}
+      </a>
+    );
+    return part;
+  });
 }
 
 interface DevLogModalProps {
