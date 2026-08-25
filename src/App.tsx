@@ -55,6 +55,21 @@ import { getControlsScrollerElement } from './utils/controlsScroller';
 
 const DEFAULT_DIAL_TEXTBLOCK = `**{location}**\n{latitude-label}: {latitude}, {longitude-label}: {longitude}\n{half-year}\n*{incline}{decline}*\n*{gnomon}*\n[red]**{today}**`;
 
+// Pick the half-year (Summer - Fall vs Winter - Spring) that contains today.
+// SummerToFall runs summer solstice -> winter solstice; WinterToSpring is the other half.
+function currentHalfYear(latitude: number): 'SummerToFall' | 'WinterToSpring' {
+  const isNorthern = latitude >= 0;
+  const summerSolsticeDay = isNorthern ? 172 : 355;
+  const winterSolsticeDay = isNorthern ? 355 : 172;
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const day = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const inSummerToFall = isNorthern
+    ? day >= summerSolsticeDay && day <= winterSolsticeDay
+    : day >= summerSolsticeDay || day <= winterSolsticeDay;
+  return inSummerToFall ? 'SummerToFall' : 'WinterToSpring';
+}
+
 const MOBILE_TABS = [
   { id: 'card-export',     icon: Download,    label: 'Export' },
   { id: 'card-location',   icon: MapPin,      label: 'Location' },
@@ -152,7 +167,7 @@ const App: React.FC = () => {
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
   }, []);
-  const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToFall' | 'WinterToSpring' | 'DualHalf'>('FullYear');
+  const [hourlineDateRange, setHourlineDateRange] = useState<'FullYear' | 'SummerToFall' | 'WinterToSpring' | 'DualHalf'>(() => currentHalfYear(latitude));
   const [lineStyles, setLineStyles] = useState<LineStyle[]>(() => {
     return loadLineStyles();
   });
@@ -189,6 +204,18 @@ const App: React.FC = () => {
       });
       return updated;
     });
+  }, []);
+
+  // On first mount, apply the half-year interval styling to match the auto-selected
+  // half-year default (mirrors selecting a half-year from the Date Range dropdown).
+  const didInitHalfYearRef = useRef(false);
+  useEffect(() => {
+    if (didInitHalfYearRef.current) return;
+    didInitHalfYearRef.current = true;
+    if (isRestoringRef.current) return;
+    if (hourlineDateRange === 'FullYear') return;
+    handleDateRangeChange(hourlineDateRange);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [startHour, setStartHour] = useState<number>(5);
