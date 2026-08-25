@@ -191,8 +191,8 @@ const App: React.FC = () => {
     });
   }, []);
 
-  const [startHour, setStartHour] = useState<number>(4);
-  const [stopHour, setStopHour] = useState<number>(20);
+  const [startHour, setStartHour] = useState<number>(6);
+  const [stopHour, setStopHour] = useState<number>(18);
   const [use24Hour, setUse24Hour] = useState<boolean>(false);
   const [labelWinterSide, setLabelWinterSide] = useState<boolean>(true);
   const [labelSummerSide, setLabelSummerSide] = useState<boolean>(true);
