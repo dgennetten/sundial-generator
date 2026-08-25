@@ -118,7 +118,7 @@ const App: React.FC = () => {
   const [tzMeridian, setTzMeridian] = useState(-105); // Mountain Standard Time meridian (MST = UTC-7 = -105°)
   const [gnomonMode, setGnomonMode] = useState<'auto' | 'manual'>('auto');
   const [gnomonHeight, setGnomonHeight] = useState(10);
-  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base' | 'dual-dial-popup'>('popup-with-brace');
+  const [gnomonType, setGnomonType] = useState<'crosshair' | 'popup' | 'popup-with-brace' | 'crosshair-with-north' | 'crosshair-with-height' | 'glued-popup-base' | 'dual-dial-popup'>('popup');
   const [gnomonPreviewMode, setGnomonPreviewMode] = useState<'Dial' | 'Gnomon'>('Dial');
   // Bumped each time the greeting-card gnomon settles back to Dial; drives the
   // one-shot red arrow hint pointing at the Preview toggle.
