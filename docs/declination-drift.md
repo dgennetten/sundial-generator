@@ -152,47 +152,60 @@ drawn as two crossing curves and cross-quarter pairs separating — I could not 
 accessible literature. I can't rule out that it appears in specialist print sources the open
 web doesn't index well.
 
-What the record does show:
+What the record does show (with a caveat on sourcing — see below):
 
-1. **The intra-day variation is a recognized, deliberately-dropped term.** General references
-   deriving the shadow's conic path state the geometry holds *"to first order, ignoring the
-   variation in declination of the Sun over the course of a day,"* and that *"variation in the
-   Sun's declination during the day is negligible."* So the effect is not unknown — it is named
-   precisely as the approximation being made. Declination Drift is simply the choice to keep
-   that term rather than drop it.
+1. **The intra-day variation is treated as negligible, usually without even being stated.**
+   General dialing and astronomy references draw declination arcs from a single per-day
+   declination and describe the equinox path as a straight east-west line. Notably, in trying
+   to find a source that *explicitly* says "declination is held constant across the day when
+   laying out date lines," I could not pin down a clean verbatim statement — the assumption
+   appears so ingrained that it is rarely spelled out. That absence is itself weak evidence
+   that the effect is assumed away rather than examined.
 
-2. **Amateurs have argued the specific question.** "*Is the shadow of a sundial a straight line
-   on the equinox day?*" has been debated in astronomy forums — evidence the phenomenon is
-   folklore-known, but treated as a yes/no curiosity rather than developed into a drawn
-   correction.
+2. **Amateurs have argued the specific question.** A thread titled "*Shadow of sundial a
+   straight line on equinox day?*" exists on sci.astro.amateur — evidence the phenomenon is
+   folklore-known and discussed as a yes/no curiosity, rather than developed into a drawn
+   correction. (Thread title verified; I have not read the full discussion.)
 
-3. **Practical dialing guides treat the equinox line as straight.** Construction primers
-   describe the equinox path as "a straight line running east-west" and do not discuss intra-day
-   declination change or distinguish the spring and autumn traces (e.g. the mySUNDIAL.ca
-   declination-lines primer).
+3. **Practical dialing guides treat the equinox line as straight.** The mySUNDIAL.ca
+   declination-lines primer (verified) describes the equinox path as "a straight line running
+   east-west" and does **not** discuss intra-day declination change or distinguish the spring
+   and autumn traces.
 
-4. **The known spring/autumn asymmetry is usually pinned on the *equation of time*, not on
+4. **A possible earlier mention in patents (unverified lead).** An exact-phrase search
+   surfaced a "Sun compass" patent (US 4,028,813) reportedly noting that the *central* reading
+   of a day does not lie on a straight line drawn between the day's first and last readings —
+   which is essentially this effect. I have **not** verified the patent text (the USPTO copy is
+   a scanned image), so treat this as a lead to chase, not a confirmed citation.
+
+5. **The known spring/autumn asymmetry is usually pinned on the *equation of time*, not on
    declination drift.** Precise dials famously need two sets of civil-time marks because the
    EoT-vs-declination relationship differs between the winter/spring and summer/fall halves of
    the year. That is a *different* asymmetry (clock time, the analemma's lobes) and is easy to
    conflate with this one.
 
+**Sourcing caveat (added after a fact-check):** an earlier draft of this section carried a
+"quotation" about the geometry holding *"to first order, ignoring the variation in declination
+… over the course of a day"* and cited Shadows Pro among the sources. On direct inspection,
+Shadows Pro does **not** mention intra-day declination at all, and that quoted phrase could not
+be traced to any specific source — it was a search paraphrase, not a verbatim citation. Both
+have been removed. Take the assessment below as reasoned inference from the sources actually
+checked, not as resting on a canonical quote.
+
 **Honest assessment:** the physics is textbook and the "equinox line isn't perfectly straight"
 observation is old and informally known, but framing it as an explicit, quantified correction —
 drawn as the equinox splitting into two noon-crossing curves and the cross-quarter pairs
-separating — is not something I can find written up. Whether it is genuinely novel or simply
-buried in a NASS *Compendium* article, a BSS *Bulletin*, or a specialist monograph (de Vries,
-Rohr, Mayall, Waugh, Savoie) that isn't web-searchable, I can't say with confidence. If novelty
-matters for a paper, a targeted check of those print sources is worth doing before claiming
-priority.
+separating — is not something I can find written up. Whether it is genuinely novel, sitting in
+the patent literature (see the unverified lead above), or buried in a NASS *Compendium*
+article, a BSS *Bulletin*, or a specialist monograph (de Vries, Rohr, Mayall, Waugh, Savoie)
+that isn't web-searchable, I can't say with confidence. If novelty matters for a paper, verify
+US 4,028,813 and do a targeted check of those print sources before claiming priority.
 
-### Sources
+### Sources (checked)
 
-- [Shadow of sundial a straight line on equinox day? — sci.astro.amateur](https://groups.google.com/g/sci.astro.amateur/c/PRq-rTjl37c)
-- [The Sundial Primer — Declination Lines (mySUNDIAL.ca)](https://www.mysundial.ca/tsp/declination_lines.html)
-- [The Sun's Declination, the Equinoxes and the Solstices — Astro Navigation Demystified](https://astronavigationdemystified.com/the-suns-declination-the-equinoxes-and-the-solstices/)
-- [Understanding sundials — Shadows Pro](https://www.shadowspro.com/en/sundials.html)
-- [The mathematics of sundials — Jill Vincent (ERIC EJ802706)](https://files.eric.ed.gov/fulltext/EJ802706.pdf)
+- [Shadow of sundial a straight line on equinox day? — sci.astro.amateur](https://groups.google.com/g/sci.astro.amateur/c/PRq-rTjl37c) — thread title only.
+- [The Sundial Primer — Declination Lines (mySUNDIAL.ca)](https://www.mysundial.ca/tsp/declination_lines.html) — read; treats the equinox line as straight, no intra-day discussion.
+- Unverified lead: US Patent 4,028,813 ("Sun compass") — reportedly notes the central daily reading is off the straight line between first/last readings.
 
 ## Related
 
