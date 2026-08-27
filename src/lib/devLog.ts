@@ -64,7 +64,7 @@ export const LOG_ENTRIES: LogEntry[] = [
   {
     id: 12,
     date: '2026-08-27',
-    content: "**New correction — Declination Drift.** The Sun's declination keeps changing *through* the day (fastest at the equinoxes, near zero at the solstices), so a date line isn't really a single fixed-declination snapshot. Toggle **Declination Drift** in **Components of Correction** (About card) to redraw every date line as its true morning-to-evening trace. The most striking result: the equinox — long drawn as one straight line — splits into **two curves that cross at noon** (the vernal trace rising through zero, the autumnal falling), and each cross-quarter pair (Imbolc/Samhain, Beltane/Lughnasadh) separates in the same way. Defaults **on for half-year dials** (where the split is most relevant) and **off for full-year dials**. — KDG (v2.23.18)",
+    content: "**New correction — Declination Drift.** The Sun's declination keeps changing *through* the day (fastest at the equinoxes, near zero at the solstices), so a date line isn't really a single fixed-declination snapshot. Toggle **Declination Drift** in **Components of Correction** (About card) to redraw every date line as its true morning-to-evening trace. The most striking result: the equinox — long drawn as one straight line — splits into **two curves that cross at noon** (the vernal trace rising through zero, the autumnal falling), and each cross-quarter pair (Imbolc/Samhain, Beltane/Lughnasadh) separates in the same way. Defaults **on for half-year dials** (where the split is most relevant) and **off for full-year dials**. — KDG (v2.24.0)",
   },
 ]
 
