@@ -182,6 +182,9 @@ const App: React.FC = () => {
     if (range === 'FullYear') {
       setShowFullYearOnNoon(false);
     }
+    // Declination Drift default follows the dial type: ON for half-year dials (where the
+    // equinox split and cross-quarter separation are most relevant), OFF for full year.
+    setCorrectionFlags(f => ({ ...f, declinationDrift: range !== 'FullYear' }));
     setHourlineIntervals(prev => {
       const updated = prev.map(i => {
         if (i.id === 'half-hour') {
@@ -270,6 +273,10 @@ const App: React.FC = () => {
     longitude: true,
     equationOfTime: true,
     solarDeclination: true,
+    // Declination Drift defaults ON for half-year dials, OFF for full year. The initial
+    // date range (currentHalfYear) is always a half-year, so it starts ON here;
+    // handleDateRangeChange keeps it in sync when the range changes.
+    declinationDrift: true,
     refraction: true,
     mysteryError: false,
   });

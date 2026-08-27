@@ -293,6 +293,79 @@ export function getSolarDeclination(dayOfYear: number, year: number = new Date()
   return radiansToDegrees(declinationRad);
 }
 
+/**
+ * Solar ecliptic (apparent) longitude in degrees, normalized to [0, 360).
+ * 0° = Vernal Equinox, 90° = Summer Solstice, 180° = Autumnal Equinox,
+ * 270° = Winter Solstice. The cross-quarter days fall at 45°, 135°, 225°, 315°.
+ */
+export function getSolarEclipticLongitude(dayOfYear: number, year: number = new Date().getFullYear()): number {
+  const params = getAstronomicalParameters(dayOfYear, year);
+  let lon = params.eclipticLong % 360;
+  if (lon < 0) lon += 360;
+  return lon;
+}
+
+export interface SolarLongitudeDate {
+  /** Day of year (1-based) the Sun reaches the target ecliptic longitude. */
+  dayOfYear: number;
+  /** Calendar year that day falls in. */
+  year: number;
+  /** Solar declination (degrees) on that day. */
+  decl: number;
+}
+
+/**
+ * Find the calendar date in the upcoming ~12 months when the Sun's apparent
+ * ecliptic longitude reaches `targetLonDeg`. Anchors:
+ *   0° Vernal Equinox · 90° Summer Solstice · 180° Autumnal Equinox · 270° Winter Solstice
+ *   45°/135°/225°/315° the four cross-quarter days.
+ * Scans just over one year (each longitude occurs exactly once) to bracket the day, then
+ * refines to the sub-day crossing. Returning the exact (fractional) crossing day matters:
+ * pairs that share a longitude magnitude — e.g. Imbolc (315°) & Samhain (225°), whose
+ * sin(λ) and therefore declination are identical — then get the SAME declination and
+ * coincide into one crisp line when Declination Drift is off (integer-day rounding would
+ * leave them ~0.1–0.3° apart, showing as a doubled line).
+ * @param targetLonDeg target ecliptic longitude in degrees
+ * @param from         start of the search window (defaults to today)
+ */
+export function solarLongitudeDate(targetLonDeg: number, from: Date = new Date()): SolarLongitudeDate {
+  const start = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  let bestDay = 1;
+  let bestYear = start.getFullYear();
+  let bestAbs = Infinity;
+  for (let i = 0; i <= 366; i++) {
+    const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    const year = d.getFullYear();
+    const startOfYear = new Date(year, 0, 1);
+    const dayOfYear = Math.floor((d.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const lon = getSolarEclipticLongitude(dayOfYear, year);
+    // Smallest wrapped angular distance to the target longitude, in [0, 180].
+    const delta = Math.abs(((targetLonDeg - lon + 540) % 360) - 180);
+    if (delta < bestAbs) {
+      bestAbs = delta;
+      bestDay = dayOfYear;
+      bestYear = year;
+    }
+  }
+
+  // Refine to the exact sub-day crossing by bisection. The signed wrapped longitude
+  // difference decreases through zero as the day advances (longitude rises ~1°/day), so
+  // the crossing is bracketed by [bestDay − 1, bestDay + 1].
+  const signedDiff = (day: number): number =>
+    ((targetLonDeg - getSolarEclipticLongitude(day, bestYear) + 540) % 360) - 180;
+  let lo = bestDay - 1;
+  let hi = bestDay + 1;
+  if (signedDiff(lo) > 0 && signedDiff(hi) < 0) {
+    for (let iter = 0; iter < 40; iter++) {
+      const mid = (lo + hi) / 2;
+      if (signedDiff(mid) > 0) lo = mid; else hi = mid;
+    }
+    bestDay = (lo + hi) / 2;
+  }
+
+  return { dayOfYear: bestDay, year: bestYear, decl: getSolarDeclination(bestDay, bestYear) };
+}
+
 // ============================================================================
 // Solar Position and Shadow Projection
 // ============================================================================
@@ -329,6 +402,7 @@ export interface CorrectionFlags {
   longitude: boolean;      // shift hour lines per longitude offset from time-zone meridian
   equationOfTime: boolean; // apply equation of time (creates analemma figure-8 shape)
   solarDeclination: boolean; // show date/declination lines on dial face
+  declinationDrift: boolean; // model the intra-day change in solar declination on date lines
   refraction: boolean;       // atmospheric refraction (not yet implemented)
   mysteryError: boolean;     // mystery error (not yet implemented)
 }
@@ -338,6 +412,7 @@ export const DEFAULT_CORRECTION_FLAGS: CorrectionFlags = {
   longitude: true,
   equationOfTime: true,
   solarDeclination: true,
+  declinationDrift: false,
   refraction: false,
   mysteryError: false,
 };

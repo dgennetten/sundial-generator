@@ -4,6 +4,7 @@ export const BUILTIN_DECLINATION_LINES: DeclinationLine[] = [
   { active: true, date: 'Summer Solstice', styleId: '0.5mm-black', fixed: true, id: 'summer-solstice' },
   { active: true, date: 'Equinox', styleId: '0.5mm-black', fixed: true, id: 'equinox' },
   { active: true, date: 'Winter Solstice', styleId: '0.5mm-black', fixed: true, id: 'winter-solstice' },
+  { active: true, date: 'Cross-Quarter Days', styleId: 'default-hairline', fixed: true, id: 'cross-quarter-days' },
   { active: true, date: '1st of the Month', styleId: 'declination-2min-dot', fixed: true, id: 'month-boundaries' },
   { active: false, date: '1st and 15th', styleId: 'declination-2min-dash', fixed: true, id: 'first-and-fifteenth' },
   { active: true, date: 'Today', styleId: 'red-dashed-hairline', fixed: false, id: 'today' },

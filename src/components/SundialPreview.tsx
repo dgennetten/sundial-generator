@@ -1,6 +1,6 @@
 import React from 'react';
 import type { JSX } from 'react';
-import { getAnalemmaPointsProjected, getSolarDeclination, getEquationOfTime } from '../utils/sundialMath';
+import { getAnalemmaPointsProjected, getSolarDeclination, solarLongitudeDate, getEquationOfTime } from '../utils/sundialMath';
 import { calculateShadowAtTime } from '../utils/shadowProjection';
 import type { CorrectionFlags } from '../utils/sundialMath';
 import type { DeclinationLine } from './DeclinationLineOptions';
@@ -193,6 +193,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   const correctionEoT         = !correctionFlags || correctionFlags.equationOfTime !== false;
   const correctionDeclination = !correctionFlags || correctionFlags.solarDeclination !== false;
   const correctionRefraction  = correctionFlags?.refraction === true;
+  // Declination Drift OFF (default): date lines use a single fixed declination for the whole
+  // day. ON: each date line is redrawn from its calendar date with the Sun's declination
+  // evaluated per hour, so the equinox splits into two crossing curves.
+  const correctionDeclinationDrift = correctionFlags?.declinationDrift === true;
 
   const geoLat = originalLatitude ?? lat;
   const isGeoNorthern = geoLat >= 0;
@@ -315,7 +319,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Check whether a date string (e.g., 'Today' or 'March 12') falls within selected dateRange
   function isDateStringInRange(dateStr: string): boolean {
     if (dateRange === 'FullYear') return true;
-    if (!dateStr || dateStr === '1st of the Month' || dateStr === '1st and 15th' || dateStr === 'Equinox' || dateStr === 'Summer Solstice' || dateStr === 'Winter Solstice') return true;
+    if (!dateStr || dateStr === '1st of the Month' || dateStr === '1st and 15th' || dateStr === 'Cross-Quarter Days' || dateStr === 'Equinox' || dateStr === 'Summer Solstice' || dateStr === 'Winter Solstice') return true;
     if (dateStr === 'Today') {
       const today = new Date();
       const startOfYear = new Date(today.getFullYear(), 0, 1);
@@ -598,7 +602,17 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   }
 
   // Helper to create dots at 2-minute intervals for declination lines
-  function create2MinuteDots(decl: number, style: LineStyle | undefined): JSX.Element[] {
+  // Solar declination at local hour `h` for a date line. With Declination Drift on and a
+  // date context supplied, the Sun's declination is evaluated at that instant (offset from
+  // local noon); otherwise the fixed daily value is used. Shared by every date-line renderer
+  // so the whole family responds to the correction uniformly.
+  function declAtHour(baseDecl: number, h: number, dateCtx?: { dayOfYear: number; year: number }): number {
+    return correctionDeclinationDrift && dateCtx
+      ? getSolarDeclination(dateCtx.dayOfYear + (h - 12) / 24, dateCtx.year)
+      : baseDecl;
+  }
+
+  function create2MinuteDots(decl: number, style: LineStyle | undefined, dateCtx?: { dayOfYear: number; year: number }): JSX.Element[] {
     if (!style) return [];
 
     const dots: JSX.Element[] = [];
@@ -621,7 +635,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     for (let h = firstH; h <= stopHour; h += dotInterval) {
       // Same altitude filtering as dash segments
-      const { altitude, coords } = calculateShadowAtTime(lat, decl, h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
+      const { altitude, coords } = calculateShadowAtTime(lat, declAtHour(decl, h, dateCtx), h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
       if (altitude > altLimit) {
         if (!coords) continue;
         const x = scale * coords.x;
@@ -650,7 +664,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   }
 
   // Helper to create 5-minute dots for declination lines
-  function create5MinuteDots(decl: number, style: LineStyle | undefined): JSX.Element[] {
+  function create5MinuteDots(decl: number, style: LineStyle | undefined, dateCtx?: { dayOfYear: number; year: number }): JSX.Element[] {
     if (!style) return [];
 
     const dots: JSX.Element[] = [];
@@ -673,7 +687,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     for (let h = firstH; h <= stopHour; h += dotInterval) {
       // Same altitude filtering as other calculated styles
-      const { altitude, coords } = calculateShadowAtTime(lat, decl, h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
+      const { altitude, coords } = calculateShadowAtTime(lat, declAtHour(decl, h, dateCtx), h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
       if (altitude > altLimit) {
         if (!coords) continue;
         const x = scale * coords.x;
@@ -702,7 +716,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   }
 
   // Helper to create 2/2 minute dash segments for declination lines
-  function create2MinuteDashSegments(decl: number, style: LineStyle | undefined): JSX.Element[] {
+  function create2MinuteDashSegments(decl: number, style: LineStyle | undefined, dateCtx?: { dayOfYear: number; year: number }): JSX.Element[] {
     if (!style) return [];
 
     const segments: JSX.Element[] = [];
@@ -732,7 +746,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const firstH = phaseShift + Math.ceil((startHour - phaseShift) / dotInterval) * dotInterval;
 
     for (let h = firstH; h <= stopHour; h += dotInterval) {
-      const { altitude, coords } = calculateShadowAtTime(lat, decl, h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
+      const { altitude, coords } = calculateShadowAtTime(lat, declAtHour(decl, h, dateCtx), h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
 
       // If altitude is below threshold, break continuity
       if (altitude <= ALT_LIMIT) {
@@ -784,7 +798,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   }
 
   // Helper to create 5/5 minute dash segments for declination lines
-  function create5MinuteDashSegments(decl: number, style: LineStyle | undefined): JSX.Element[] {
+  function create5MinuteDashSegments(decl: number, style: LineStyle | undefined, dateCtx?: { dayOfYear: number; year: number }): JSX.Element[] {
     if (!style) return [];
 
     const segments: JSX.Element[] = [];
@@ -807,7 +821,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const firstH = phaseShift + Math.ceil((startHour - phaseShift) / dotInterval) * dotInterval;
 
     for (let h = firstH; h <= stopHour; h += dotInterval) {
-      const { altitude, coords } = calculateShadowAtTime(lat, decl, h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
+      const { altitude, coords } = calculateShadowAtTime(lat, declAtHour(decl, h, dateCtx), h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
 
       if (altitude <= ALT_LIMIT) {
         previousPoint = null;
@@ -1631,6 +1645,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       // This is handled separately in getFirstAndFifteenthDeclinations
       return null;
     }
+    if (line.date === 'Cross-Quarter Days') {
+      // This is handled separately in getCrossQuarterDeclinations
+      return null;
+    }
     if (line.date === 'Today') {
       const today = new Date();
       const startOfYear = new Date(today.getFullYear(), 0, 1);
@@ -1700,6 +1718,25 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     }
 
     return monthBoundaries;
+  }
+
+  // Helper to get the four cross-quarter-day declinations, dated to the upcoming year.
+  // Cross-quarter days sit midway (in solar ecliptic longitude) between each solstice
+  // and equinox, at longitudes 315° (Imbolc), 45° (Beltane), 135° (Lughnasadh) and
+  // 225° (Samhain). Rather than a fixed nominal date, we locate the exact calendar day
+  // the Sun reaches each longitude in the coming 12 months and use that day's solar
+  // declination, so the lines are correct for the upcoming year.
+  function getCrossQuarterDeclinations(): { name: string; day: number; year: number; decl: number }[] {
+    const targets = [
+      { name: 'Imbolc', lon: 315 },
+      { name: 'Beltane', lon: 45 },
+      { name: 'Lughnasadh', lon: 135 },
+      { name: 'Samhain', lon: 225 },
+    ];
+    return targets.map(t => {
+      const { dayOfYear, year, decl } = solarLongitudeDate(t.lon);
+      return { name: t.name, day: dayOfYear, year, decl };
+    });
   }
 
   // Helper to get 1st and 15th declinations within the date range
@@ -1807,30 +1844,31 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   }
 
   // Helper function to render a single declination line
-  function renderDeclinationLine(decl: number, style: LineStyle | undefined, key: string) {
+  function renderDeclinationLine(decl: number, style: LineStyle | undefined, key: string, dateCtx?: { dayOfYear: number; year: number }) {
     const maxRadius = Math.sqrt(width * width + height * height);
+    const useDrift = correctionDeclinationDrift && !!dateCtx;
 
     // Handle calculated 2-minute dot style
     if (style?.style === 'calculated' && style?.calculatedType === 'declination-2min-dot') {
-      return create2MinuteDots(decl, style);
+      return create2MinuteDots(decl, style, dateCtx);
     }
 
     // Handle calculated 5-minute dot style
     if (style?.style === 'calculated' && style?.calculatedType === 'declination-5min-dot') {
-      return create5MinuteDots(decl, style);
+      return create5MinuteDots(decl, style, dateCtx);
     }
 
     // Handle calculated 2-minute dash style
     if (style?.style === 'calculated' && style?.calculatedType === 'declination-2min-dash') {
-      return create2MinuteDashSegments(decl, style);
+      return create2MinuteDashSegments(decl, style, dateCtx);
     }
 
     // Handle calculated 5-minute dash style
     if (style?.style === 'calculated' && style?.calculatedType === 'declination-5min-dash') {
-      return create5MinuteDashSegments(decl, style);
+      return create5MinuteDashSegments(decl, style, dateCtx);
     }
 
-    if (decl === 0) {
+    if (decl === 0 && !useDrift) {
       // Equinox: draw a straight line for all hours, but clip to maxRadius
       const points = [];
       for (let h = startHour; h <= stopHour; h += 1 / 60) {
@@ -1863,7 +1901,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const segments: { x: number; y: number }[][] = [];
     let currentSegment: { x: number; y: number }[] = [];
     for (let h = startHour; h <= stopHour; h += 1 / 60) { // one-minute increments for smooth, complete arcs
-      const { altitude, coords } = calculateShadowAtTime(lat, decl, h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
+      const { altitude, coords } = calculateShadowAtTime(lat, declAtHour(decl, h, dateCtx), h, gnomonHeight, effectiveDialInclination, dialDeclination, correctionRefraction);
       if (altitude > 0 || showBelowHorizonDateLines) {
         if (coords && Math.sqrt((scale * coords.x) ** 2 + (scale * coords.y) ** 2) <= maxRadius) {
           currentSegment.push({ x: scale * coords.x, y: scale * coords.y });
@@ -1901,11 +1939,52 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     });
   }
 
+  // Parse a "Month Day" string (e.g. "Jul 4") into a month index + day, or null.
+  function parseMonthDay(s: string): { monthIndex: number; day: number } | null {
+    const m = /^([A-Za-z]+)\s+(\d{1,2})$/.exec(String(s || '').trim());
+    if (!m) return null;
+    const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    const mi = months.indexOf(m[1].slice(0, 3).toLowerCase());
+    const day = parseInt(m[2], 10);
+    if (mi < 0 || day < 1 || day > 31) return null;
+    return { monthIndex: mi, day };
+  }
+
+  // Resolve a date line to a concrete { dayOfYear, year } for the upcoming year, so the
+  // Declination Drift correction can evaluate the Sun's declination per hour. Returns null
+  // when the drift correction is off (so the fixed-declination path is untouched) or for
+  // keyword rows that expand elsewhere and supply their own date context.
+  function getDateContextForLine(line: DeclinationLine): { dayOfYear: number; year: number } | null {
+    if (!correctionDeclinationDrift) return null;
+    const date = line.date;
+    if (!date || date === 'Equinox' || date === '1st of the Month' || date === '1st and 15th' || date === 'Cross-Quarter Days') return null;
+    if (date === 'Summer Solstice') { const r = solarLongitudeDate(90); return { dayOfYear: r.dayOfYear, year: r.year }; }
+    if (date === 'Winter Solstice') { const r = solarLongitudeDate(270); return { dayOfYear: r.dayOfYear, year: r.year }; }
+    let year: number;
+    let cand: Date;
+    if (date === 'Today') {
+      cand = new Date();
+    } else {
+      const parsed = parseMonthDay(date);
+      if (!parsed) return null;
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      year = today.getFullYear();
+      cand = new Date(year, parsed.monthIndex, parsed.day);
+      if (cand.getTime() < today.getTime()) cand = new Date(year + 1, parsed.monthIndex, parsed.day);
+    }
+    year = cand.getFullYear();
+    const startOfYear = new Date(year, 0, 1);
+    const dayOfYear = Math.floor((cand.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    return { dayOfYear, year };
+  }
+
   // Draw declination lines
   if (effectiveDeclinationLines.length > 0) {
 
     log.debug('Declination lines to render:', effectiveDeclinationLines.map(l => ({ date: l.date, active: l.active, styleId: l.styleId, id: l.id, decl: getDeclinationForLine(l) })));
   }
+
+  const driftYear = new Date().getFullYear();
 
   const declinationLineElements = effectiveDeclinationLines.flatMap((line, idx) => {
     if (!line.active) return [];
@@ -1919,7 +1998,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const monthBoundaries = getMonthBoundaryDeclinations();
 
       return monthBoundaries.flatMap((boundary, boundaryIdx) => {
-        const elements = renderDeclinationLine(boundary.decl, style, `${line.id || line.date || idx}-${boundary.month}-${boundaryIdx}`);
+        const elements = renderDeclinationLine(boundary.decl, style, `${line.id || line.date || idx}-${boundary.month}-${boundaryIdx}`, { dayOfYear: boundary.day, year: driftYear });
         return elements || [];
       });
     }
@@ -1929,16 +2008,39 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const firstAndFifteenthDays = getFirstAndFifteenthDeclinations();
 
       return firstAndFifteenthDays.flatMap((day, dayIdx) => {
-        const elements = renderDeclinationLine(day.decl, style, `${line.id || line.date || idx}-${day.month}-${day.dayOfMonth}-${dayIdx}`);
+        const elements = renderDeclinationLine(day.decl, style, `${line.id || line.date || idx}-${day.month}-${day.dayOfMonth}-${dayIdx}`, { dayOfYear: day.day, year: driftYear });
         return elements || [];
       });
+    }
+
+    // Handle Cross-Quarter Days as a special case: expand into the four cross-quarter
+    // date lines, each at its exact declination for the upcoming year. With Declination
+    // Drift on, each of the four distinct dates carries its own drift, so the two matched
+    // pairs (Imbolc/Samhain, Beltane/Lughnasadh) separate into crossing curves.
+    if (line.date === 'Cross-Quarter Days') {
+      return getCrossQuarterDeclinations()
+        .filter(cq => isDayInRange(cq.day, dateRange))
+        .flatMap(cq => renderDeclinationLine(cq.decl, style, `${line.id || line.date || idx}-${cq.name}`, { dayOfYear: cq.day, year: cq.year }) || []);
+    }
+
+    // Handle Equinox: the fixed model draws one straight decl=0 line. With Declination Drift
+    // on, it splits into the vernal and autumnal traces — each dated to the upcoming year —
+    // which cross near solar noon. Each half-year range shows only the equinox it contains.
+    if (line.date === 'Equinox') {
+      if (!correctionDeclinationDrift) {
+        return renderDeclinationLine(0, style, `${line.id || line.date || idx}`) || [];
+      }
+      const equinoxes = [solarLongitudeDate(0), solarLongitudeDate(180)]; // vernal, autumnal
+      return equinoxes
+        .filter(e => isDayInRange(e.dayOfYear, dateRange))
+        .flatMap((e, i) => renderDeclinationLine(e.decl, style, `${line.id || line.date || idx}-eq${i}`, { dayOfYear: e.dayOfYear, year: e.year }) || []);
     }
 
     // Handle regular declination lines
     const decl = getDeclinationForLine(line);
     if (decl === null) return [];
 
-    const elements = renderDeclinationLine(decl, style, line.id || line.date || idx.toString());
+    const elements = renderDeclinationLine(decl, style, line.id || line.date || idx.toString(), getDateContextForLine(line) ?? undefined);
     return elements || [];
   });
 
@@ -2056,6 +2158,27 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           />
         ];
       });
+    }
+
+    // Handle Cross-Quarter Days as a special case
+    if (line.date === 'Cross-Quarter Days') {
+      return getCrossQuarterDeclinations()
+        .filter(cq => isDayInRange(cq.day, dateRange))
+        .flatMap(cq => {
+          const intersectionPoint = findDeclinationAnalemmaIntersection(cq.decl);
+          if (!intersectionPoint) return [];
+          return [
+            <circle
+              key={`noonmark-${line.id || line.date || idx}-${cq.name}`}
+              cx={scale * intersectionPoint.x}
+              cy={scale * intersectionPoint.y}
+              r={circleRadius}
+              fill={style.color || 'black'}
+              stroke="none"
+              vectorEffect="non-scaling-stroke"
+            />
+          ];
+        });
     }
 
     // Handle regular declination lines

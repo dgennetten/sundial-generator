@@ -72,7 +72,7 @@ const DeclinationLineOptions: React.FC<{
   };
 
   const isDateStringInRange = (dateStr: string): boolean => {
-    if (!dateStr || dateStr === '1st of the Month' || dateStr === '1st and 15th' || dateStr === 'Equinox' || dateStr === 'Summer Solstice' || dateStr === 'Winter Solstice') return true;
+    if (!dateStr || dateStr === '1st of the Month' || dateStr === '1st and 15th' || dateStr === 'Cross-Quarter Days' || dateStr === 'Equinox' || dateStr === 'Summer Solstice' || dateStr === 'Winter Solstice') return true;
     if (dateStr === 'Today') {
       const today = new Date();
       const startOfYear = new Date(today.getFullYear(), 0, 1);

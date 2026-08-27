@@ -56,6 +56,16 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-08-09',
     content: "**NEW — Dual-Dial Pop-up!** Two dials on one folding card: a **Summer** dial and a **Winter** dial, each a true horizontal dial rotated to fill its half. Splitting the year in two gives each dial superior hour line interpolation and readability, while the pair together keeps the **full-year convenience** of a single dial without the crowding. Fold it into a **greeting card**, or lay it flat as a **permanent horizontal dial** (see gallery photos). Pick **Dual-Dial Pop-up** in the gnomon dropdown. Still refining the cut-and-fold gnomon paper engineering — ideas welcome! — KDG (v2.23.1)\n\n📖 New illustrated overview of both pop-up dials: [precisionsundial.com/overview](https://precisionsundial.com/overview/)",
   },
+  {
+    id: 11,
+    date: '2026-08-27',
+    content: "**Cross-Quarter Days** — a new checkbox in the Date Lines section (on by default) draws the four cross-quarter days as black hairline date lines: **Imbolc** (Groundhog Day / Candlemas), **Beltane** (May Day), **Lughnasadh** (Lammas) and **Samhain** (Halloween). These are the dates midway between each solstice and equinox. Rather than a fixed nominal date, each line is placed at the Sun's exact declination on the day it truly falls in the upcoming year. — KDG (v2.23.17)",
+  },
+  {
+    id: 12,
+    date: '2026-08-27',
+    content: "**New correction — Declination Drift.** The Sun's declination keeps changing *through* the day (fastest at the equinoxes, near zero at the solstices), so a date line isn't really a single fixed-declination snapshot. Toggle **Declination Drift** in **Components of Correction** (About card) to redraw every date line as its true morning-to-evening trace. The most striking result: the equinox — long drawn as one straight line — splits into **two curves that cross at noon** (the vernal trace rising through zero, the autumnal falling), and each cross-quarter pair (Imbolc/Samhain, Beltane/Lughnasadh) separates in the same way. Defaults **on for half-year dials** (where the split is most relevant) and **off for full-year dials**. — KDG (v2.23.18)",
+  },
 ]
 
 export type LogPref =
