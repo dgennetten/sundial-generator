@@ -144,6 +144,56 @@ screen the two equinox curves sit ~1–2 px apart (widening toward the low-sun e
 noon) — subtle at preview scale, more apparent at print DPI. The split itself is deterministic
 and proven; the physics, not the pixels, is the point.
 
+## Has this been written up before? (as far as I can tell)
+
+Short version: **the underlying fact is known and explicitly named as the thing usually
+ignored; a quantified, toggleable "correction" applied to printed date lines — with the equinox
+drawn as two crossing curves and cross-quarter pairs separating — I could not find** in the
+accessible literature. I can't rule out that it appears in specialist print sources the open
+web doesn't index well.
+
+What the record does show:
+
+1. **The intra-day variation is a recognized, deliberately-dropped term.** General references
+   deriving the shadow's conic path state the geometry holds *"to first order, ignoring the
+   variation in declination of the Sun over the course of a day,"* and that *"variation in the
+   Sun's declination during the day is negligible."* So the effect is not unknown — it is named
+   precisely as the approximation being made. Declination Drift is simply the choice to keep
+   that term rather than drop it.
+
+2. **Amateurs have argued the specific question.** "*Is the shadow of a sundial a straight line
+   on the equinox day?*" has been debated in astronomy forums — evidence the phenomenon is
+   folklore-known, but treated as a yes/no curiosity rather than developed into a drawn
+   correction.
+
+3. **Practical dialing guides treat the equinox line as straight.** Construction primers
+   describe the equinox path as "a straight line running east-west" and do not discuss intra-day
+   declination change or distinguish the spring and autumn traces (e.g. the mySUNDIAL.ca
+   declination-lines primer).
+
+4. **The known spring/autumn asymmetry is usually pinned on the *equation of time*, not on
+   declination drift.** Precise dials famously need two sets of civil-time marks because the
+   EoT-vs-declination relationship differs between the winter/spring and summer/fall halves of
+   the year. That is a *different* asymmetry (clock time, the analemma's lobes) and is easy to
+   conflate with this one.
+
+**Honest assessment:** the physics is textbook and the "equinox line isn't perfectly straight"
+observation is old and informally known, but framing it as an explicit, quantified correction —
+drawn as the equinox splitting into two noon-crossing curves and the cross-quarter pairs
+separating — is not something I can find written up. Whether it is genuinely novel or simply
+buried in a NASS *Compendium* article, a BSS *Bulletin*, or a specialist monograph (de Vries,
+Rohr, Mayall, Waugh, Savoie) that isn't web-searchable, I can't say with confidence. If novelty
+matters for a paper, a targeted check of those print sources is worth doing before claiming
+priority.
+
+### Sources
+
+- [Shadow of sundial a straight line on equinox day? — sci.astro.amateur](https://groups.google.com/g/sci.astro.amateur/c/PRq-rTjl37c)
+- [The Sundial Primer — Declination Lines (mySUNDIAL.ca)](https://www.mysundial.ca/tsp/declination_lines.html)
+- [The Sun's Declination, the Equinoxes and the Solstices — Astro Navigation Demystified](https://astronavigationdemystified.com/the-suns-declination-the-equinoxes-and-the-solstices/)
+- [Understanding sundials — Shadows Pro](https://www.shadowspro.com/en/sundials.html)
+- [The mathematics of sundials — Jill Vincent (ERIC EJ802706)](https://files.eric.ed.gov/fulltext/EJ802706.pdf)
+
 ## Related
 
 - This is **not** the "Mystery Error" placeholder in the same panel — that refers to the
