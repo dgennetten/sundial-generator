@@ -47,16 +47,16 @@ const CORRECTIONS: {
     implemented: true,
   },
   {
-    key: 'declinationDrift',
-    label: 'Declination Drift',
-    description: "The Sun's declination keeps changing through the day — fastest at the equinoxes, near zero at the solstices. Redraws each date line as its true morning-to-evening trace instead of a fixed-declination snapshot, so the equinox becomes two curves that cross near noon and each cross-quarter pair separates. Note: defaults ON for half-year dials and OFF for full-year dials.",
-    implemented: true,
-  },
-  {
     key: 'mysteryError',
     label: 'Mystery Error',
     description: 'What un-corrected source of error is not yet addressed in today\'s dials or software? It\'s a larger error than Refraction. Sometimes much larger. See my 2027 NASS Presentation and accompanying Compendium paper.',
     implemented: false,
+  },
+  {
+    key: 'declinationDrift',
+    label: 'Declination Drift',
+    description: "The Sun's declination keeps changing through the day — fastest at the equinoxes, near zero at the solstices. Redraws each date line as its true morning-to-evening trace instead of a fixed-declination snapshot, so the equinox becomes two curves that cross near noon and each cross-quarter pair separates. Note: defaults ON for half-year dials and OFF for full-year dials.",
+    implemented: true,
   },
   {
     key: 'refraction',
