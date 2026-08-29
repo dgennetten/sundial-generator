@@ -403,6 +403,8 @@ export interface CorrectionFlags {
   equationOfTime: boolean; // apply equation of time (creates analemma figure-8 shape)
   solarDeclination: boolean; // show date/declination lines on dial face
   declinationDrift: boolean; // model the intra-day change in solar declination on date lines
+  currentYearAnchoring: boolean; // ON: anchor date-line declinations to this specific year;
+                                 // OFF: average over the 4-year leap cycle for a durable print
   refraction: boolean;       // atmospheric refraction (not yet implemented)
   mysteryError: boolean;     // mystery error (not yet implemented)
 }
@@ -413,6 +415,7 @@ export const DEFAULT_CORRECTION_FLAGS: CorrectionFlags = {
   equationOfTime: true,
   solarDeclination: true,
   declinationDrift: false,
+  currentYearAnchoring: true,
   refraction: false,
   mysteryError: false,
 };

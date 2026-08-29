@@ -64,6 +64,12 @@ const CORRECTIONS: {
     description: "The Sun's declination keeps changing through the day — fastest at the equinoxes, near zero at the solstices. Redraws each date line as its true morning-to-evening trace instead of a fixed-declination snapshot, so the equinox becomes two curves that cross near noon and each cross-quarter pair separates. Note: defaults ON for half-year dials and OFF for full-year dials.",
     implemented: true,
   },
+  {
+    key: 'currentYearAnchoring',
+    label: 'Current-Year Anchoring',
+    description: "Anchors each date-line declination to this specific year's Sun. The equinox and solstice instants drift about ±¾ day across the 4-year leap cycle, so a fixed calendar date lands on a slightly different declination each year (up to ~0.3° near the equinoxes; negligible near the solstices). Checked (default) = dead-on for the current year. Uncheck to average over the whole leap cycle — never more than ~⅜ day off in any year, best for a dial printed once and used for years.",
+    implemented: true,
+  },
 ];
 
 const AboutCard: React.FC<AboutCardProps> = ({

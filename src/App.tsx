@@ -277,6 +277,9 @@ const App: React.FC = () => {
     // date range (currentHalfYear) is always a half-year, so it starts ON here;
     // handleDateRangeChange keeps it in sync when the range changes.
     declinationDrift: true,
+    // Anchor date-line declinations to this specific year (default). Uncheck to average over
+    // the 4-year leap cycle for a dial that stays accurate across all four years.
+    currentYearAnchoring: true,
     refraction: true,
     mysteryError: false,
   });

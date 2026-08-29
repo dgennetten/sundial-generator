@@ -66,6 +66,16 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-08-27',
     content: "**New correction — Declination Drift.** The Sun's declination keeps changing *through* the day (fastest at the equinoxes, near zero at the solstices), so a date line isn't really a single fixed-declination snapshot. Toggle **Declination Drift** in **Components of Correction** (About card) to redraw every date line as its true morning-to-evening trace. The most striking result: the equinox — long drawn as one straight line — splits into **two curves that cross at noon** (the vernal trace rising through zero, the autumnal falling), and each cross-quarter pair (Imbolc/Samhain, Beltane/Lughnasadh) separates in the same way. Defaults **on for half-year dials** (where the split is most relevant) and **off for full-year dials**. — KDG (v2.24.0)",
   },
+  {
+    id: 13,
+    date: '2026-08-29',
+    content: "**Declination Drift — now timed to your longitude.** A sharp-eyed report from a Waikiki dial exposed two bugs. First, toggling Drift shifted every plotted date after February by a full day (a leap-year off-by-one in how a \"Month Day\" was dated). Second, and bigger: Drift sampled the Sun's declination as if your dial sat on the Greenwich meridian, mistiming the whole intra-day curve by your distance from it — about **10.5 hours in Hawaii**. The upshot was that on the equinox *day* the date line never actually reached the equinox line during daylight. Both are fixed: a date line now crosses the equinox line at the true equinox instant for **your** location (Waikiki's Sept 22 line crosses at ~2:05 pm HST), and dials near Greenwich are essentially unchanged. — KDG (v2.24.4)",
+  },
+  {
+    id: 14,
+    date: '2026-08-29',
+    content: "**New correction — Current-Year Anchoring.** The equinox and solstice *instants* drift about ±¾ day across the four-year leap cycle, so a fixed calendar date (say Sept 22) lands on a slightly different declination each year — up to ~0.3° near the equinoxes, next to nothing near the solstices. New checkbox in **Components of Correction**: **checked (default)** anchors your date lines dead-on to *this* year; **uncheck** to average over the whole leap cycle — never more than ~⅜ day off in any year, the better setting for a dial you print once and use for years. Affects dated lines only; the equinox, solstice and cross-quarter lines are defined by the Sun's longitude and are already year-stable. — KDG (v2.24.5)",
+  },
 ]
 
 export type LogPref =

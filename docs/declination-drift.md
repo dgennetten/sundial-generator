@@ -97,14 +97,28 @@ it by hand in **Components of Correction**. It is session state (not persisted).
 ## Implementation
 
 The mechanism rests on one fact: `getSolarDeclination(dayOfYear, year)` accepts a **fractional**
-day, so the instantaneous declination at local hour `h` is just
+day, so the instantaneous declination at dial hour `h` is a sample at the matching fractional day.
+
+The dial hour `h` is **local apparent solar time** (`hourAngle = 15·(h − 12)`), but the
+declination model is anchored to **12:00 UT**. So `h` is first converted to its UT instant —
+`UT = h − lng/15 − EoT` — before sampling (see the v2.24.4 note below):
 
 ```
-declAtHour(h) = getSolarDeclination(dayOfYear + (h − 12) / 24, year)
+declAtHour(h) = getSolarDeclination(dayOfYear + (UT − 12) / 24, year)     // UT as above
 ```
 
-This is deliberately self-consistent: at `h = 12` it returns the day's base declination, so the
-drifted curve passes through the same noon point (and noon-mark) as the fixed line.
+> **Update (v2.24.4) — longitude/EoT now applied.** An earlier version sampled
+> `dayOfYear + (h − 12)/24` directly, treating the dial's local-apparent noon as if it were
+> 12:00 UT. That mistimed the intra-day drift by the observer's distance from Greenwich (~10.5 h
+> in Hawaii), so on the equinox day a date line never crossed the equinox line during daylight.
+> `declAtHour` now converts `h` to UT first, and the astronomically-anchored lines
+> (equinox/solstice/cross-quarter) — which carried a *fractional* 12:00-UT crossing day from
+> `solarLongitudeDate` — are mapped onto the dial's **local calendar day** (`toLocalCalendarDay`)
+> so the whole family stays timed consistently for the observer's longitude. Verified: Waikiki's
+> Sep 22 line now crosses declination 0 at the ~2:05 pm HST equinox and coincides with the
+> equinox trace; a Greenwich dial is essentially unchanged. Two related date-resolution fixes
+> shipped just ahead of it (v2.24.3): a leap-year off-by-one that shifted every post-February
+> date line one day when drift toggled, now resolved through a shared `resolveLineDateContext`.
 
 | File | Change |
 |------|--------|
@@ -120,8 +134,10 @@ drifted curve passes through the same noon point (and noon-mark) as the fixed li
 - Hour lines and the analemma are unaffected (they already sweep the full year of
   declinations).
 - Noon date-marks stay anchored to each date's **noon** declination.
-- The longitude / equation-of-time sub-offset *inside* the intra-day declination is deferred
-  (second-order on an already-small effect).
+- The longitude / equation-of-time sub-offset *inside* the intra-day declination **is now
+  applied** (v2.24.4) — it is the dominant term for dials far from Greenwich, not second-order.
+- *Which year(s)* the declination is sampled from is a separate correction — see
+  [Current-Year Anchoring](current-year-anchoring.md).
 
 ## Verification
 

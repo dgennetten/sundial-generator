@@ -197,6 +197,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // day. ON: each date line is redrawn from its calendar date with the Sun's declination
   // evaluated per hour, so the equinox splits into two crossing curves.
   const correctionDeclinationDrift = correctionFlags?.declinationDrift === true;
+  // Current-Year Anchoring ON (default): date-line declinations use this specific year.
+  // OFF: average each declination over the 4-year leap cycle so a printed dial stays accurate
+  // across all four years (the equinox/solstice instants slew ~±¾ day over the cycle).
+  const correctionCurrentYear = !correctionFlags || correctionFlags.currentYearAnchoring !== false;
 
   const geoLat = originalLatitude ?? lat;
   const isGeoNorthern = geoLat >= 0;
@@ -612,11 +616,24 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // otherwise the intra-day drift is mistimed by the observer's distance from Greenwich
   // (≈10.5 h in Hawaii), which pushes the equinox-day zero-crossing right off the daylit dial.
   //   LAST = UT + lng/15 + EoT   ⇒   UT = h − lng/15 − EoT
+  // Solar declination for a CALENDAR date, honoring Current-Year Anchoring. With anchoring on
+  // (default) it's just this year's value; with it off the declination is averaged over the
+  // 4-year leap cycle (year … year+3), so a fixed calendar date — which lands on a slightly
+  // different declination each year as the equinox/solstice instants slew — settles on a
+  // cycle-representative value. Longitude-anchored lines (equinox/solstice/cross-quarter) get
+  // their declination from solar longitude and are already year-stable, so they don't use this.
+  function sampleDecl(fractionalDayOfYear: number, year: number): number {
+    if (correctionCurrentYear) return getSolarDeclination(fractionalDayOfYear, year);
+    let sum = 0;
+    for (let k = 0; k < 4; k++) sum += getSolarDeclination(fractionalDayOfYear, year + k);
+    return sum / 4;
+  }
+
   function declAtHour(baseDecl: number, h: number, dateCtx?: { dayOfYear: number; year: number }): number {
     if (!(correctionDeclinationDrift && dateCtx)) return baseDecl;
     const eotHours = getEquationOfTime(dateCtx.dayOfYear, dateCtx.year) / 60;
     const utHour = h - lng / 15 - eotHours;
-    return getSolarDeclination(dateCtx.dayOfYear + (utHour - 12) / 24, dateCtx.year);
+    return sampleDecl(dateCtx.dayOfYear + (utHour - 12) / 24, dateCtx.year);
   }
 
   // Convert a fractional, 12:00-UT-referenced day-of-year (as returned by solarLongitudeDate
@@ -1671,7 +1688,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const today = new Date();
       const startOfYear = new Date(today.getFullYear(), 0, 1);
       const dayOfYear = Math.floor((today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      return getSolarDeclination(dayOfYear);
+      return sampleDecl(dayOfYear, today.getFullYear());
     }
     // Parse arbitrary "Month Day" strings via the shared resolver, so the fixed declination
     // is evaluated on the same upcoming-year day-of-year the Declination Drift path uses.
@@ -1680,7 +1697,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // whole set by a day.)
     const ctx = resolveLineDateContext(line);
     if (ctx) {
-      const decl = getSolarDeclination(ctx.dayOfYear, ctx.year);
+      const decl = sampleDecl(ctx.dayOfYear, ctx.year);
       if (line.date && line.id && !line.fixed) {
         log.debug(`User declination line: ${line.date} => day ${ctx.dayOfYear}, decl ${decl}`);
       }
@@ -1716,7 +1733,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       if (isDayInRange(monthStart.day, dateRange)) {
         monthBoundaries.push({
           day: monthStart.day,
-          decl: getSolarDeclination(monthStart.day),
+          decl: sampleDecl(monthStart.day, driftYear),
           month: monthStart.month
         });
       }
@@ -1776,7 +1793,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       if (isDayInRange(firstDay, dateRange)) {
         firstAndFifteenthDays.push({
           day: firstDay,
-          decl: getSolarDeclination(firstDay),
+          decl: sampleDecl(firstDay, driftYear),
           month: monthStart.month,
           dayOfMonth: 1
         });
@@ -1786,7 +1803,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       if (isDayInRange(fifteenthDay, dateRange)) {
         firstAndFifteenthDays.push({
           day: fifteenthDay,
-          decl: getSolarDeclination(fifteenthDay),
+          decl: sampleDecl(fifteenthDay, driftYear),
           month: monthStart.month,
           dayOfMonth: 15
         });
