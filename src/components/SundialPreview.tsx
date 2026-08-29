@@ -1655,29 +1655,16 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const dayOfYear = Math.floor((today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
       return getSolarDeclination(dayOfYear);
     }
-    // Try to parse user date as month/day
-    let date = new Date(line.date + ' 2000'); // year doesn't matter for declination
-    if (isNaN(date.getTime())) {
-      // Try parsing as 'MMM DD' or 'MMMM D'
-      const tryFormats = [
-        line.date,
-        line.date.replace(/([A-Za-z]+) (\d+)/, '$1 $2'),
-        line.date.replace(/(\d+) ([A-Za-z]+)/, '$2 $1'),
-      ];
-      for (const fmt of tryFormats) {
-        date = new Date(fmt + ' 2000');
-        if (!isNaN(date.getTime())) break;
-      }
-    }
-    if (!isNaN(date.getTime())) {
-      // Day of year (1-365)
-      const start = new Date(date.getFullYear(), 0, 0);
-      const diff = date.getTime() - start.getTime();
-      const day = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const decl = getSolarDeclination(day);
+    // Parse arbitrary "Month Day" strings via the shared resolver, so the fixed declination
+    // is evaluated on the same upcoming-year day-of-year the Declination Drift path uses.
+    // (Previously this anchored the day count to the year 2000 — a leap year — which pushed
+    // every post-February date one day past the drift path, so toggling drift shifted the
+    // whole set by a day.)
+    const ctx = resolveLineDateContext(line);
+    if (ctx) {
+      const decl = getSolarDeclination(ctx.dayOfYear, ctx.year);
       if (line.date && line.id && !line.fixed) {
-        // Debug log for user dates
-        log.debug(`User declination line: ${line.date} => day ${day}, decl ${decl}`);
+        log.debug(`User declination line: ${line.date} => day ${ctx.dayOfYear}, decl ${decl}`);
       }
       return decl;
     }
@@ -1950,32 +1937,42 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     return { monthIndex: mi, day };
   }
 
-  // Resolve a date line to a concrete { dayOfYear, year } for the upcoming year, so the
-  // Declination Drift correction can evaluate the Sun's declination per hour. Returns null
-  // when the drift correction is off (so the fixed-declination path is untouched) or for
-  // keyword rows that expand elsewhere and supply their own date context.
-  function getDateContextForLine(line: DeclinationLine): { dayOfYear: number; year: number } | null {
-    if (!correctionDeclinationDrift) return null;
+  // Resolve a date line to a concrete { dayOfYear, year } for the upcoming year. Shared by
+  // both the fixed-declination path (getDeclinationForLine) and the Declination Drift path
+  // (getDateContextForLine) so the two agree on which calendar day a line represents.
+  // Returns null for keyword rows that expand elsewhere and supply their own date context.
+  //
+  // Day-of-year is computed in UTC so a Daylight Saving transition between Jan 1 and the
+  // target date can't shave an hour off the span and round the day down.
+  function resolveLineDateContext(line: DeclinationLine): { dayOfYear: number; year: number } | null {
     const date = line.date;
     if (!date || date === 'Equinox' || date === '1st of the Month' || date === '1st and 15th' || date === 'Cross-Quarter Days') return null;
     if (date === 'Summer Solstice') { const r = solarLongitudeDate(90); return { dayOfYear: r.dayOfYear, year: r.year }; }
     if (date === 'Winter Solstice') { const r = solarLongitudeDate(270); return { dayOfYear: r.dayOfYear, year: r.year }; }
     let year: number;
-    let cand: Date;
+    let monthIndex: number;
+    let day: number;
     if (date === 'Today') {
-      cand = new Date();
+      const t = new Date();
+      year = t.getFullYear(); monthIndex = t.getMonth(); day = t.getDate();
     } else {
       const parsed = parseMonthDay(date);
       if (!parsed) return null;
       const today = new Date(); today.setHours(0, 0, 0, 0);
       year = today.getFullYear();
-      cand = new Date(year, parsed.monthIndex, parsed.day);
-      if (cand.getTime() < today.getTime()) cand = new Date(year + 1, parsed.monthIndex, parsed.day);
+      monthIndex = parsed.monthIndex; day = parsed.day;
+      // Roll to next year if the date has already passed, matching the drift resolution.
+      if (new Date(year, monthIndex, day).getTime() < today.getTime()) year += 1;
     }
-    year = cand.getFullYear();
-    const startOfYear = new Date(year, 0, 1);
-    const dayOfYear = Math.floor((cand.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const dayOfYear = Math.floor((Date.UTC(year, monthIndex, day) - Date.UTC(year, 0, 1)) / 86400000) + 1;
     return { dayOfYear, year };
+  }
+
+  // Date context for the Declination Drift correction: null when drift is off (leaving the
+  // fixed-declination path untouched), otherwise the shared upcoming-year resolution.
+  function getDateContextForLine(line: DeclinationLine): { dayOfYear: number; year: number } | null {
+    if (!correctionDeclinationDrift) return null;
+    return resolveLineDateContext(line);
   }
 
   // Draw declination lines
