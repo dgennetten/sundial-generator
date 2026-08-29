@@ -601,16 +601,34 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     return (eotMinutes + longCorrMinutes) / 60;
   }
 
-  // Helper to create dots at 2-minute intervals for declination lines
-  // Solar declination at local hour `h` for a date line. With Declination Drift on and a
-  // date context supplied, the Sun's declination is evaluated at that instant (offset from
-  // local noon); otherwise the fixed daily value is used. Shared by every date-line renderer
-  // so the whole family responds to the correction uniformly.
+  // Solar declination at dial hour `h` for a date line. With Declination Drift on and a date
+  // context supplied, the Sun's declination is evaluated at that instant; otherwise the fixed
+  // daily value is used. Shared by every date-line renderer so the whole family responds to
+  // the correction uniformly.
+  //
+  // The dial hour h is LOCAL APPARENT solar time (calculateShadowAtTime uses
+  // hourAngle = 15·(h−12), so h=12 is the Sun on the meridian). The declination model, though,
+  // is anchored to 12:00 UT, so h must be converted to its UT instant before sampling —
+  // otherwise the intra-day drift is mistimed by the observer's distance from Greenwich
+  // (≈10.5 h in Hawaii), which pushes the equinox-day zero-crossing right off the daylit dial.
+  //   LAST = UT + lng/15 + EoT   ⇒   UT = h − lng/15 − EoT
   function declAtHour(baseDecl: number, h: number, dateCtx?: { dayOfYear: number; year: number }): number {
-    return correctionDeclinationDrift && dateCtx
-      ? getSolarDeclination(dateCtx.dayOfYear + (h - 12) / 24, dateCtx.year)
-      : baseDecl;
+    if (!(correctionDeclinationDrift && dateCtx)) return baseDecl;
+    const eotHours = getEquationOfTime(dateCtx.dayOfYear, dateCtx.year) / 60;
+    const utHour = h - lng / 15 - eotHours;
+    return getSolarDeclination(dateCtx.dayOfYear + (utHour - 12) / 24, dateCtx.year);
   }
+
+  // Convert a fractional, 12:00-UT-referenced day-of-year (as returned by solarLongitudeDate
+  // for the equinoxes, solstices and cross-quarter days) into the integer calendar day at the
+  // dial's location. Regular "Month Day" lines already carry an integer calendar day, so this
+  // brings the astronomically-anchored lines onto the same footing before declAtHour samples
+  // them — keeping the whole family's drift timing consistent for the observer's longitude.
+  function toLocalCalendarDay(fractionalDayOfYear: number): number {
+    return Math.round(fractionalDayOfYear + lng / 15 / 24);
+  }
+
+  // Helper to create dots at 2-minute intervals for declination lines
 
   function create2MinuteDots(decl: number, style: LineStyle | undefined, dateCtx?: { dayOfYear: number; year: number }): JSX.Element[] {
     if (!style) return [];
@@ -1947,8 +1965,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   function resolveLineDateContext(line: DeclinationLine): { dayOfYear: number; year: number } | null {
     const date = line.date;
     if (!date || date === 'Equinox' || date === '1st of the Month' || date === '1st and 15th' || date === 'Cross-Quarter Days') return null;
-    if (date === 'Summer Solstice') { const r = solarLongitudeDate(90); return { dayOfYear: r.dayOfYear, year: r.year }; }
-    if (date === 'Winter Solstice') { const r = solarLongitudeDate(270); return { dayOfYear: r.dayOfYear, year: r.year }; }
+    if (date === 'Summer Solstice') { const r = solarLongitudeDate(90); return { dayOfYear: toLocalCalendarDay(r.dayOfYear), year: r.year }; }
+    if (date === 'Winter Solstice') { const r = solarLongitudeDate(270); return { dayOfYear: toLocalCalendarDay(r.dayOfYear), year: r.year }; }
     let year: number;
     let monthIndex: number;
     let day: number;
@@ -2017,7 +2035,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     if (line.date === 'Cross-Quarter Days') {
       return getCrossQuarterDeclinations()
         .filter(cq => isDayInRange(cq.day, dateRange))
-        .flatMap(cq => renderDeclinationLine(cq.decl, style, `${line.id || line.date || idx}-${cq.name}`, { dayOfYear: cq.day, year: cq.year }) || []);
+        .flatMap(cq => renderDeclinationLine(cq.decl, style, `${line.id || line.date || idx}-${cq.name}`, { dayOfYear: toLocalCalendarDay(cq.day), year: cq.year }) || []);
     }
 
     // Handle Equinox: the fixed model draws one straight decl=0 line. With Declination Drift
@@ -2030,7 +2048,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const equinoxes = [solarLongitudeDate(0), solarLongitudeDate(180)]; // vernal, autumnal
       return equinoxes
         .filter(e => isDayInRange(e.dayOfYear, dateRange))
-        .flatMap((e, i) => renderDeclinationLine(e.decl, style, `${line.id || line.date || idx}-eq${i}`, { dayOfYear: e.dayOfYear, year: e.year }) || []);
+        .flatMap((e, i) => renderDeclinationLine(e.decl, style, `${line.id || line.date || idx}-eq${i}`, { dayOfYear: toLocalCalendarDay(e.dayOfYear), year: e.year }) || []);
     }
 
     // Handle regular declination lines
