@@ -666,6 +666,9 @@ const App: React.FC = () => {
   // registered updater to rewrite the shadow paths directly, so the dial isn't re-rendered per
   // frame. A stable ref → safe to thread through the memoized previewConfig.
   const shadowUpdatersRef = useRef<Set<ShadowFrameUpdater>>(new Set());
+  // Ref to the date/time label input, so the animation loop can write it imperatively (no
+  // per-frame React state → no re-render while the shadow sweeps).
+  const shadowLabelRef = useRef<HTMLInputElement | null>(null);
   const locationShadowTime = useLocationShadowTime(
     locationShadowPreview,
     locationShadowAnimation,
@@ -678,6 +681,7 @@ const App: React.FC = () => {
     startHour,
     stopHour,
     shadowUpdatersRef,
+    shadowLabelRef,
   );
 
   const previewConfig = useMemo(() => ({
@@ -1353,6 +1357,7 @@ const App: React.FC = () => {
           locationShadowAnimationMode={locationShadowAnimationMode}
           onLocationShadowAnimationModeChange={setLocationShadowAnimationMode}
           locationShadowDateTimeLabel={locationShadowTime.dateTimeLabel}
+          shadowLabelRef={shadowLabelRef}
           onChange={useCallback(({ mode, height, gnomonType, positionMode, position, horizontalPosition }) => {
             setGnomonMode(mode);
             setGnomonHeight(height);

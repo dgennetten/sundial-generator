@@ -81,6 +81,11 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-08-30',
     content: "The **live on-location shadow animation** now plays **50% faster** — a full sweep cycles in 20 seconds instead of 30. Applies to both **Day** mode (time-of-day sweep) and **Hour** mode (year sweep). — KDG (v2.24.6)",
   },
+  {
+    id: 16,
+    date: '2026-08-30',
+    content: "**Smoother shadow animation — now a full 60 fps.** The live on-location shadow sweep used to redraw the *entire* dial on every frame, which bogged it down on busier dials and modest devices. Under the hood it now updates only the moving shadow each frame and leaves the dial untouched, so the motion is fluid while keeping the soft-penumbra detail. — KDG (v2.24.8)",
+  },
 ]
 
 export type LogPref =

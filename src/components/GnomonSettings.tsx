@@ -40,6 +40,8 @@ interface Props {
   locationShadowAnimationMode?: 'Day' | 'Hour';
   onLocationShadowAnimationModeChange?: (mode: 'Day' | 'Hour') => void;
   locationShadowDateTimeLabel?: string;
+  /** Ref to the date/time label input so the shadow animation loop can update it imperatively. */
+  shadowLabelRef?: React.Ref<HTMLInputElement>;
   onChange: (values: { mode: Mode; height: number; gnomonType: GnomonType; positionMode?: PositionMode; position?: number; horizontalPosition?: number }) => void;
 }
 
@@ -70,6 +72,7 @@ const GnomonSettings: React.FC<Props> = ({
   locationShadowAnimationMode = 'Day',
   onLocationShadowAnimationModeChange,
   locationShadowDateTimeLabel = '',
+  shadowLabelRef,
   onChange,
 }) => {
 
@@ -747,6 +750,7 @@ const GnomonSettings: React.FC<Props> = ({
                     </button>
                   )}
                   <input
+                    ref={shadowLabelRef}
                     type="text"
                     className="form-input"
                     readOnly

@@ -48,6 +48,7 @@ export function useLocationShadowTime(
   startHour: number,
   stopHour: number,
   shadowUpdaters: MutableRefObject<Set<ShadowFrameUpdater>>,
+  labelRef: MutableRefObject<HTMLInputElement | null>,
 ): LocationShadowTimeState {
   const [dateTime, setDateTime] = useState<LocationDateTime>(() =>
     getLocationDateTime(tzMeridian, useDST, lat, new Date(), lng),
@@ -81,13 +82,23 @@ export function useLocationShadowTime(
       return;
     }
 
-    // Playing: pin the dial to the anchor (stable → no per-frame re-render) and drive the shadow
-    // imperatively. Prime the registered updaters with the current frame so there's no flash.
-    setDateTime(anchor);
-    const start = performance.now() - progressRef.current * ANIMATION_CYCLE_MS;
+    // Playing: pin the dial to the anchor (stable → no per-frame re-render) and drive BOTH the
+    // shadow and the date/time label imperatively. Nothing calls setState per frame, so App
+    // never re-renders during a steady sweep — commits/sec drops to ~0. The two one-off setState
+    // calls below just align React's fallbacks (the frozen dial + the label's controlled value)
+    // so a stray re-render doesn't flash a stale time; live values go straight to the DOM.
+    const firstDt = getAnimatedLocationDateTime(animationMode, progressRef.current, anchor, startHour, stopHour);
     const emit = (dt: LocationDateTime) => shadowUpdaters.current.forEach((u) => u(dt));
-    emit(getAnimatedLocationDateTime(animationMode, progressRef.current, anchor, startHour, stopHour));
+    const writeLabel = (dt: LocationDateTime) => {
+      const el = labelRef.current;
+      if (el) el.value = formatLocationDateTime(dt);
+    };
+    setDateTime(anchor);
+    setLabel(formatLocationDateTime(firstDt));
+    emit(firstDt);
+    writeLabel(firstDt);
 
+    const start = performance.now() - progressRef.current * ANIMATION_CYCLE_MS;
     let frame = 0;
     let lastLabelAt = 0;
     const tick = (now: number) => {
@@ -97,13 +108,13 @@ export function useLocationShadowTime(
       emit(dt);
       if (now - lastLabelAt >= LABEL_THROTTLE_MS) {
         lastLabelAt = now;
-        setLabel(formatLocationDateTime(dt));
+        writeLabel(dt);
       }
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [enabled, animate, paused, animationMode, tzMeridian, useDST, lat, lng, startHour, stopHour, shadowUpdaters]);
+  }, [enabled, animate, paused, animationMode, tzMeridian, useDST, lat, lng, startHour, stopHour, shadowUpdaters, labelRef]);
 
   return { dateTime, dateTimeLabel: label };
 }
