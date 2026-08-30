@@ -47,6 +47,15 @@ export interface LocationDateTime {
   hour: number;
 }
 
+/**
+ * Imperative per-frame shadow updater. During the location-shadow animation the frame loop
+ * calls every registered updater with the current instant; each shadow instance recomputes
+ * its own geometry and writes the new path `d` attributes directly to the DOM — bypassing a
+ * React re-render of the ~2,300-element dial. Registered in a Set so the dual-dial's two
+ * shadows can both be driven from the one loop.
+ */
+export type ShadowFrameUpdater = (dateTime: LocationDateTime) => void;
+
 export interface PopupTriangleVertices {
   tip: { x: number; y: number };
   left: { x: number; y: number };

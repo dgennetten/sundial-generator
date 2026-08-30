@@ -26,10 +26,13 @@ import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
 import DesignExport from './components/DesignExport';
 import SundialPreview from './components/SundialPreview';
+import PerfOverlay from './components/PerfOverlay';
+import { recordRenderDuration, perfOverlayEnabled } from './lib/animationPerf';
 import GnomonNetSVG from './components/GnomonNetSVG';
 import DualDialPreview from './components/DualDialPreview';
 import { isTwoPagePopup } from './types/sundial';
 import { useLocationShadowTime } from './hooks/useLocationShadowTime';
+import type { ShadowFrameUpdater } from './utils/gnomonShadowUtils';
 import HourlineSettings from './components/HourlineSettings';
 import { loadHourlineIntervals, type HourlineInterval, saveHourlineOverrides } from './components/hourlineUtils';
 import LineSettings from './components/LineSettings';
@@ -659,6 +662,10 @@ const App: React.FC = () => {
     })(),
     [declinationLines]
   );
+  // Registry of imperative shadow updaters. During animation the hook's frame loop calls each
+  // registered updater to rewrite the shadow paths directly, so the dial isn't re-rendered per
+  // frame. A stable ref → safe to thread through the memoized previewConfig.
+  const shadowUpdatersRef = useRef<Set<ShadowFrameUpdater>>(new Set());
   const locationShadowTime = useLocationShadowTime(
     locationShadowPreview,
     locationShadowAnimation,
@@ -670,6 +677,7 @@ const App: React.FC = () => {
     longitude,
     startHour,
     stopHour,
+    shadowUpdatersRef,
   );
 
   const previewConfig = useMemo(() => ({
@@ -729,6 +737,9 @@ const App: React.FC = () => {
     correctionFlags,
     locationShadowPreview,
     locationShadowDateTime: locationShadowTime.dateTime,
+    // Actively sweeping → animate the shadow imperatively (dial not re-rendered per frame).
+    locationShadowAnimating: locationShadowPreview && locationShadowAnimation && !locationShadowAnimationPaused,
+    shadowUpdaters: shadowUpdatersRef,
   }), [
     latitude,
     longitude,
@@ -784,6 +795,8 @@ const App: React.FC = () => {
     correctionFlags,
     locationShadowPreview,
     locationShadowTime.dateTime,
+    locationShadowAnimation,
+    locationShadowAnimationPaused,
   ]);
 
   // Callback to restore dial configuration from saved config
@@ -1494,7 +1507,7 @@ const App: React.FC = () => {
                 exactly as before this wrapper was added. */}
             <div style={{ display: isTwoPagePopup(gnomonType) && gnomonPreviewMode === 'Gnomon' ? 'none' : 'contents' }}>
               <React.Profiler id="SundialPreview" onRender={(id, phase, actualDuration) => {
-                if (phase === 'update') log.perf(id, phase, actualDuration);
+                if (phase === 'update') { log.perf(id, phase, actualDuration); recordRenderDuration(actualDuration); }
               }}>
                 {gnomonType === 'dual-dial-popup' ? (
                   <DualDialPreview
@@ -1529,6 +1542,11 @@ const App: React.FC = () => {
         <MobileTabBar onResetDefaults={handleResetDefaults} />
       </div>
 
+      {perfOverlayEnabled() && (
+        <PerfOverlay
+          animating={locationShadowPreview && locationShadowAnimation && !locationShadowAnimationPaused}
+        />
+      )}
     </div>
   );
 };

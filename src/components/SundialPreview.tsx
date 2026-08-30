@@ -1,5 +1,5 @@
 import React from 'react';
-import type { JSX } from 'react';
+import type { JSX, MutableRefObject } from 'react';
 import { getAnalemmaPointsProjected, getSolarDeclination, solarLongitudeDate, getEquationOfTime } from '../utils/sundialMath';
 import { calculateShadowAtTime } from '../utils/shadowProjection';
 import type { CorrectionFlags } from '../utils/sundialMath';
@@ -9,7 +9,7 @@ import type { HourlineInterval } from './hourlineUtils';
 import { Sun, Maximize2, Minimize2 } from 'lucide-react';
 import GnomonSVG from './GnomonSVG';
 import GnomonShadowSVG from './GnomonShadowSVG';
-import type { LocationDateTime } from '../utils/gnomonShadowUtils';
+import type { LocationDateTime, ShadowFrameUpdater } from '../utils/gnomonShadowUtils';
 import { log } from '../utils/logger';
 import { DIAL_LABELS } from './WelcomeDialog';
 import type { Language } from './WelcomeDialog';
@@ -82,6 +82,11 @@ export type Props = {
   correctionFlags?: CorrectionFlags;
   locationShadowPreview?: boolean;
   locationShadowDateTime?: LocationDateTime;
+  /** True while the location shadow is actively sweeping (animation on, not paused). The shadow
+      then animates imperatively (see GnomonShadowSVG) so the dial isn't re-rendered per frame. */
+  locationShadowAnimating?: boolean;
+  /** Registry the imperative shadow updater registers into; the animation loop drives it. */
+  shadowUpdaters?: MutableRefObject<Set<ShadowFrameUpdater>>;
   /** Show a "GLUE" label on the popup gnomon triangle (dual dial). */
   gnomonGlueLabel?: boolean;
   /** Extra inboard inset (mm) for the dateline-label column only, so the dual
@@ -180,6 +185,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     correctionFlags,
     locationShadowPreview = false,
     locationShadowDateTime,
+    locationShadowAnimating = false,
+    shadowUpdaters,
     gnomonGlueLabel = false,
   } = p;
 
@@ -3428,6 +3435,8 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   dialDeclination={dialDeclination}
                   originalLatitude={originalLatitude}
                   shadowDateTime={locationShadowDateTime}
+                  animating={locationShadowAnimating}
+                  shadowUpdaters={shadowUpdaters}
                 />
               </g>
             </g>
