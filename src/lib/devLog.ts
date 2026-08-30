@@ -76,6 +76,11 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-08-29',
     content: "**New correction — Current-Year Anchoring.** The equinox and solstice *instants* drift about ±¾ day across the four-year leap cycle, so a fixed calendar date (say Sept 22) lands on a slightly different declination each year — up to ~0.3° near the equinoxes, next to nothing near the solstices. New checkbox in **Components of Correction**: **checked (default)** anchors your date lines dead-on to *this* year; **uncheck** to average over the whole leap cycle — never more than ~⅜ day off in any year, the better setting for a dial you print once and use for years. Affects dated lines only; the equinox, solstice and cross-quarter lines are defined by the Sun's longitude and are already year-stable. — KDG (v2.24.5)",
   },
+  {
+    id: 15,
+    date: '2026-08-30',
+    content: "The **live on-location shadow animation** now plays **50% faster** — a full sweep cycles in 20 seconds instead of 30. Applies to both **Day** mode (time-of-day sweep) and **Hour** mode (year sweep). — KDG (v2.24.6)",
+  },
 ]
 
 export type LogPref =

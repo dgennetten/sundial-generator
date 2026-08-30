@@ -6,7 +6,7 @@ import {
   type LocationDateTime,
 } from '../utils/gnomonShadowUtils';
 
-const ANIMATION_CYCLE_MS = 30_000;
+const ANIMATION_CYCLE_MS = 20_000; // full sweep per cycle — 50% faster than the original 30s
 const STATIC_REFRESH_MS = 30_000;
 
 function cycleProgress(elapsedMs: number): number {
