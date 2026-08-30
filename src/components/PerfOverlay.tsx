@@ -23,6 +23,7 @@ interface Display extends RenderStats {
  */
 const PerfOverlay: React.FC<PerfOverlayProps> = ({ animating }) => {
   const [d, setD] = useState<Display>({ fps: 0, avg: 0, max: 0, count: 0 });
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     let raf = 0;
@@ -41,6 +42,8 @@ const PerfOverlay: React.FC<PerfOverlayProps> = ({ animating }) => {
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
   }, []);
+
+  if (dismissed) return null;
 
   const fpsColor = d.fps >= 50 ? '#22c55e' : d.fps >= 30 ? '#f59e0b' : '#ef4444';
   const budget = 16.7;
@@ -64,11 +67,30 @@ const PerfOverlay: React.FC<PerfOverlayProps> = ({ animating }) => {
         minWidth: 132,
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
         <span style={{ opacity: 0.7 }}>perf</span>
         <span style={{ color: animating ? '#38bdf8' : '#6b7280' }}>
           {animating ? '● animating' : '○ idle'}
         </span>
+        <button
+          type="button"
+          onClick={() => setDismissed(true)}
+          aria-label="Hide performance overlay"
+          title="Hide (reload with ?perf=1 to show again)"
+          style={{
+            pointerEvents: 'auto',
+            cursor: 'pointer',
+            background: 'none',
+            border: 'none',
+            color: '#9ca3af',
+            font: 'inherit',
+            fontSize: 13,
+            lineHeight: 1,
+            padding: '0 0 0 2px',
+          }}
+        >
+          ×
+        </button>
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
         <span style={{ opacity: 0.7 }}>fps</span>
