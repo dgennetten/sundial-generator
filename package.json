@@ -1,11 +1,11 @@
 {
   "name": "sundial-generator",
-  "version": "2.24.8",
+  "version": "2.24.9",
   "license": "CC-BY-NC-SA-4.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && cross-env NODE_ENV=production vite build",
     "build:analyze": "cross-env ANALYZE=true npm run build",
     "test": "vitest",
     "test:run": "vitest run",

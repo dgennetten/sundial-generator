@@ -86,6 +86,11 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-08-30',
     content: "**Smoother shadow animation — now a full 60 fps.** The live on-location shadow sweep used to redraw the *entire* dial on every frame, which bogged it down on busier dials and modest devices. Under the hood it now updates only the moving shadow each frame and leaves the dial untouched, so the motion is fluid while keeping the soft-penumbra detail. — KDG (v2.24.8)",
   },
+  {
+    id: 17,
+    date: '2026-08-30',
+    content: "**Faster, lighter load.** A build-configuration fix means the app now ships in true production mode — the main bundle is about a third smaller and the whole app runs quicker, especially on modest devices. — KDG (v2.24.9)",
+  },
 ]
 
 export type LogPref =
