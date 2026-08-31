@@ -1833,6 +1833,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       dialInclination: effectiveDialInclination,
       dialDeclination,
       eotMinutes: eotMinutesOverride,
+      applyRefraction,
     });
 
     // Filter points by date range
