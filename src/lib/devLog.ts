@@ -86,16 +86,6 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-08-30',
     content: "**Smoother shadow animation — now a full 60 fps.** The live on-location shadow sweep used to redraw the *entire* dial on every frame, which bogged it down on busier dials and modest devices. Under the hood it now updates only the moving shadow each frame and leaves the dial untouched, so the motion is fluid while keeping the soft-penumbra detail. — KDG (v2.24.8)",
   },
-  {
-    id: 17,
-    date: '2026-08-30',
-    content: "**Faster, lighter load.** A build-configuration fix means the app now ships in true production mode — the main bundle is about a third smaller and the whole app runs quicker, especially on modest devices. — KDG (v2.24.9)",
-  },
-  {
-    id: 18,
-    date: '2026-08-31',
-    content: "**Refraction now moves the noon date marks too.** Toggling **Atmospheric Refraction** correctly shifted every hour line and date line, but the noon date marks stayed put — they were pinned to a noon analemma that was always computed without refraction. They now track the refracted noon shadow and move in step with the rest of the dial. — KDG (v2.24.11)",
-  },
 ]
 
 export type LogPref =
