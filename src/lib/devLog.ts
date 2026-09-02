@@ -91,6 +91,11 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-09-02',
     content: "**Easier Latitude / Longitude entry.** Typing a new coordinate by hand was maddening: select-all, type the first digit, and the field would instantly snap to something like \"4.000\" — swallowing your cursor so the second digit landed in the wrong place. The fields now show exactly what you type and only tidy up to three decimals once you click away, so entering a value like 41 just works. — KDG (v2.24.12)",
   },
+  {
+    id: 18,
+    date: '2026-09-02',
+    content: "**Season labels now follow your language.** On a half-year dial the decoration text names the range — \"Summer - Fall\" or \"Winter - Spring\" — but it stayed stubbornly in English even after you switched languages. It's now translated along with everything else on the dial (e.g. \"Verano - Otoño\", \"Invierno - Primavera\", \"Sommer - Herbst\"). — KDG (v2.24.13)",
+  },
 ]
 
 export type LogPref =
