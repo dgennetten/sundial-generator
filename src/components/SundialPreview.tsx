@@ -2667,7 +2667,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       .replace(/\{longitude-label\}/gi, dialLabels.longitude)
       .replace(/\{latitude\}/gi, latStr)
       .replace(/\{longitude\}/gi, lngStr)
-      .replace(/\{half-year\}/gi, dateRange === 'FullYear' ? '' : dateRange === 'SummerToFall' ? 'Summer - Fall' : 'Winter - Spring')
+      .replace(/\{half-year\}/gi, dateRange === 'FullYear' ? '' : dateRange === 'SummerToFall' ? `${dialLabels.summer} - ${dialLabels.fall}` : `${dialLabels.winter} - ${dialLabels.spring}`)
       .replace(/\{gnomon\}/gi, `${(DIAL_LABELS[language as Language] ?? DIAL_LABELS.en).height}: ${gnomonHeight} mm`)
       .replace(/\{incline\}/gi, inclineString)
       .replace(/\{decline\}/gi, (inclineString && declineString) ? `, ${declineString}` : declineString);
