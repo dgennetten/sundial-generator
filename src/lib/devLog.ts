@@ -86,6 +86,11 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-08-30',
     content: "**Smoother shadow animation — now a full 60 fps.** The live on-location shadow sweep used to redraw the *entire* dial on every frame, which bogged it down on busier dials and modest devices. Under the hood it now updates only the moving shadow each frame and leaves the dial untouched, so the motion is fluid while keeping the soft-penumbra detail. — KDG (v2.24.8)",
   },
+  {
+    id: 17,
+    date: '2026-09-02',
+    content: "**Easier Latitude / Longitude entry.** Typing a new coordinate by hand was maddening: select-all, type the first digit, and the field would instantly snap to something like \"4.000\" — swallowing your cursor so the second digit landed in the wrong place. The fields now show exactly what you type and only tidy up to three decimals once you click away, so entering a value like 41 just works. — KDG (v2.24.12)",
+  },
 ]
 
 export type LogPref =

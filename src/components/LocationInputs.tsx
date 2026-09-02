@@ -168,6 +168,25 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
   const [foundLocationName, setFoundLocationName] = useState<string | null>(null);
   const tzFetchGeneration = useRef(0);
 
+  // Local draft strings for the lat/long number inputs so the field shows exactly
+  // what the user is typing. Committing straight to the parent would re-render the
+  // value as `toFixed(3)` mid-edit (e.g. typing "4" snaps to "4.000"), stealing the
+  // cursor and making multi-digit entry impossible. We only reformat on blur.
+  const [latInput, setLatInput] = useState<string>(latitude.toFixed(3));
+  const [lngInput, setLngInput] = useState<string>(longitude.toFixed(3));
+  const latFocused = useRef(false);
+  const lngFocused = useRef(false);
+
+  // Keep drafts in sync when the coordinate changes from outside the field
+  // (map picker, location dropdown). Skip while the field is focused so we
+  // never clobber what the user is actively typing.
+  useEffect(() => {
+    if (!latFocused.current) setLatInput(latitude.toFixed(3));
+  }, [latitude]);
+  useEffect(() => {
+    if (!lngFocused.current) setLngInput(longitude.toFixed(3));
+  }, [longitude]);
+
   // Responsive: detect layout mode using media query
   const [layoutMode, setLayoutMode] = useState<'desktop' | 'mobile-portrait' | 'mobile-landscape'>('desktop');
 
@@ -428,8 +447,14 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                 step={0.001}
                 min={-90}
                 max={90}
-                value={latitude.toFixed(3)}
+                value={latInput}
+                onFocus={() => { latFocused.current = true; }}
+                onBlur={() => {
+                  latFocused.current = false;
+                  setLatInput(latitude.toFixed(3));
+                }}
                 onChange={async (e) => {
+                  setLatInput(e.target.value);
                   const newLat = parseFloat(e.target.value);
                   if (Number.isNaN(newLat) || newLat < -90 || newLat > 90) return;
                   setFoundLocationName(null);
@@ -457,8 +482,14 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
                 step={0.001}
                 min={-180}
                 max={180}
-                value={longitude.toFixed(3)}
+                value={lngInput}
+                onFocus={() => { lngFocused.current = true; }}
+                onBlur={() => {
+                  lngFocused.current = false;
+                  setLngInput(longitude.toFixed(3));
+                }}
                 onChange={async (e) => {
+                  setLngInput(e.target.value);
                   const newLng = parseFloat(e.target.value);
                   if (Number.isNaN(newLng) || newLng < -180 || newLng > 180) return;
                   setFoundLocationName(null);
