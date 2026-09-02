@@ -48,6 +48,7 @@ import AboutCard from './components/AboutCard';
 // import VisitorMap from './components/VisitorMap';
 import DialTextBlockSettings from './components/DialTextBlockSettings';
 import PrintedDialsMap from './components/PrintedDialsMap';
+import ComponentsOfCorrectionCard from './components/ComponentsOfCorrectionCard';
 import WelcomeDialog, { clearWelcomeDismissed } from './components/WelcomeDialog';
 import DevLogModal from './components/DevLogModal';
 import { shouldShowLog, clearLogPref } from './lib/devLog';
@@ -1470,12 +1471,13 @@ const App: React.FC = () => {
             declinationLines={declinationLines}
           /></div>
         </React.Profiler>
+        <div id="card-corrections"><ComponentsOfCorrectionCard correctionFlags={correctionFlags} onCorrectionFlagsChange={setCorrectionFlags} /></div>
         <div id="card-map"><PrintedDialsMap
           onPinClick={handlePinClick}
           refreshTrigger={printedDialsMapRefreshTrigger}
         /></div>
         {/* <VisitorMap /> */}
-        <div id="card-about"><AboutCard latitude={latitude} longitude={longitude} locationName={locationName} onShowDevLog={() => { clearLogPref(); setShowDevLog(true); }} correctionFlags={correctionFlags} onCorrectionFlagsChange={setCorrectionFlags} /></div>
+        <div id="card-about"><AboutCard latitude={latitude} longitude={longitude} locationName={locationName} onShowDevLog={() => { clearLogPref(); setShowDevLog(true); }} /></div>
         </div>
       </div>
       )}
