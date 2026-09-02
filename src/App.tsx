@@ -19,7 +19,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Download, MapPin, StickyNote, MoveUpRight, Text, Calendar, Clock, PenLine, Map, Info, Undo, X } from 'lucide-react';
+import { Download, MapPin, StickyNote, MoveUpRight, Text, Calendar, Clock, PenLine, Map, Info, FlaskConical, X } from 'lucide-react';
 
 import PageSettings, { type InclineType, type DeclinationType, type DialShape } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
@@ -82,12 +82,13 @@ const MOBILE_TABS = [
   { id: 'card-decoration', icon: Text,        label: 'Decoration' },
   { id: 'card-datelines',  icon: Calendar,    label: 'Date Lines' },
   { id: 'card-hourlines',  icon: Clock,       label: 'Hour Lines' },
-  { id: 'card-linestyles', icon: PenLine,     label: 'Line Styles' },
-  { id: 'card-map',        icon: Map,         label: 'Recent Prints & Exports. Click to view.' },
-  { id: 'card-about',      icon: Info,        label: 'About' },
+  { id: 'card-linestyles',   icon: PenLine,      label: 'Line Styles' },
+  { id: 'card-corrections',  icon: FlaskConical, label: 'Components of Correction' },
+  { id: 'card-map',          icon: Map,          label: 'Recent Prints & Exports. Click to view.' },
+  { id: 'card-about',        icon: Info,         label: 'About' },
 ];
 
-const MobileTabBar: React.FC<{ onResetDefaults: () => void }> = ({ onResetDefaults }) => {
+const MobileTabBar: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState<string | null>(null);
 
   const handleTabClick = (id: string) => {
@@ -118,15 +119,6 @@ const MobileTabBar: React.FC<{ onResetDefaults: () => void }> = ({ onResetDefaul
           <Icon size={18} />
         </button>
       ))}
-      <button
-        type="button"
-        className="mobile-tab-btn"
-        onClick={onResetDefaults}
-        title="Reset to defaults"
-        aria-label="Reset to defaults"
-      >
-        <Undo size={18} />
-      </button>
     </div>
   );
 };
@@ -1546,7 +1538,7 @@ const App: React.FC = () => {
             Show Controls
           </button>
         )}
-        <MobileTabBar onResetDefaults={handleResetDefaults} />
+        <MobileTabBar />
       </div>
 
       {perfOverlayEnabled() && (
