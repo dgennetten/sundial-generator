@@ -927,9 +927,10 @@ const App: React.FC = () => {
       setDeclinationLines(config.declinationLines);
     }
 
-    // Background/Text
-    if (config.showBackground !== undefined) setShowBackground(config.showBackground);
-    if (config.backgroundColor !== undefined) setBackgroundColor(config.backgroundColor);
+    // Background/Text — restore deterministically so a prior dial's background
+    // never bleeds through when this config omits the field (e.g. World Tour).
+    setShowBackground(config.showBackground !== undefined ? config.showBackground : true);
+    setBackgroundColor(config.backgroundColor !== undefined ? config.backgroundColor : 'Cornsilk');
     if (config.dialTextBlock !== undefined) setDialTextBlock(config.dialTextBlock);
     if (config.dialTextBlockFontSize !== undefined) setDialTextBlockFontSize(config.dialTextBlockFontSize);
     if (config.dialTextBlockFontFamily !== undefined) setDialTextBlockFontFamily(config.dialTextBlockFontFamily);
@@ -953,7 +954,15 @@ const App: React.FC = () => {
       }
     }
 
-    // Partial restore for legacy records without config_json
+    // Partial restore for legacy records without config_json.
+    // These records carry no styling, so reset appearance state to defaults first —
+    // otherwise a prior stop's settings (background, quarter-hour lines, line styles)
+    // bleed through onto every following legacy dial during the World Tour.
+    setShowBackground(true);
+    setBackgroundColor('Cornsilk');
+    setHourlineIntervals(loadHourlineIntervals());
+    setLineStyles(loadLineStyles());
+    setDeclinationLines(loadDeclinationLines());
     setLatitude(print.latitude);
     setLongitude(print.longitude);
     // Estimate timezone standard meridian from longitude (nearest 15° = 1 hour)
