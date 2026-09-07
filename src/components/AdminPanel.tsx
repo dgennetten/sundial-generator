@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Trash2, X } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Search, Trash2, X } from 'lucide-react';
 import {
   DEFAULT_PIN_LIMIT,
   DEFAULT_TOUR_LENGTH,
@@ -106,6 +106,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [tourSpeed, setTourSpeed] = useState<TourSpeedMode>(() => getTourSpeedMode());
   const [pinLimitInput, setPinLimitInput] = useState(() => String(getAdminPinLimit()));
   const [prints, setPrints] = useState<SundialPrint[]>([]);
+  const [search, setSearch] = useState('');
   const [totalCount, setTotalCount] = useState(0);
   const [listLoading, setListLoading] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
@@ -159,6 +160,26 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     syncFormFromSettings(getGlobalAdminSettings());
     void loadPrints(getAdminPinLimit());
   }, [unlocked, loadPrints, syncFormFromSettings]);
+
+  // Client-side filter over the loaded prints: matches full location, the
+  // displayed short label, and the first line of the decoration text.
+  const filteredPrints = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return prints;
+    return prints.filter((print) => {
+      const label = shortLocationName(
+        print.location,
+        Number(print.latitude),
+        Number(print.longitude),
+      );
+      const decoration = getPrintDecorationFirstLine(print.config_json) ?? '';
+      return (
+        (print.location ?? '').toLowerCase().includes(term) ||
+        label.toLowerCase().includes(term) ||
+        decoration.toLowerCase().includes(term)
+      );
+    });
+  }, [prints, search]);
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
@@ -468,10 +489,55 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   </button>
                 </div>
 
+                <div style={{ position: 'relative', marginBottom: 8 }}>
+                  <Search
+                    size={15}
+                    style={{
+                      position: 'absolute',
+                      left: 10,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: '#94a3b8',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                  <input
+                    type="search"
+                    className="form-input"
+                    placeholder="Search location or decoration text…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    style={{ paddingLeft: 32, paddingRight: search ? 32 : undefined }}
+                  />
+                  {search && (
+                    <button
+                      type="button"
+                      onClick={() => setSearch('')}
+                      aria-label="Clear search"
+                      style={{
+                        position: 'absolute',
+                        right: 6,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 4,
+                        color: '#64748b',
+                        display: 'flex',
+                      }}
+                    >
+                      <X size={15} />
+                    </button>
+                  )}
+                </div>
+
                 <div style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>
                   {listLoading
                     ? 'Loading…'
-                    : `${prints.length} loaded · ${totalCount} total in database`}
+                    : search.trim()
+                      ? `${filteredPrints.length} of ${prints.length} loaded match · ${totalCount} total in database`
+                      : `${prints.length} loaded · ${totalCount} total in database`}
                   {statusMsg ? ` · ${statusMsg}` : ''}
                 </div>
                 {listError && (
@@ -486,10 +552,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     overflow: 'auto',
                   }}
                 >
-                  {prints.length === 0 && !listLoading ? (
-                    <div style={{ padding: 12, fontSize: 13, color: '#94a3b8' }}>No prints</div>
+                  {filteredPrints.length === 0 && !listLoading ? (
+                    <div style={{ padding: 12, fontSize: 13, color: '#94a3b8' }}>
+                      {search.trim() ? 'No matches' : 'No prints'}
+                    </div>
                   ) : (
-                    prints.map((print) => {
+                    filteredPrints.map((print) => {
                       const lat = Number(print.latitude);
                       const lng = Number(print.longitude);
                       const label = shortLocationName(print.location, lat, lng);
