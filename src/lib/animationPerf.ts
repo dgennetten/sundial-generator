@@ -1,3 +1,5 @@
+import { getAdminPerfOverride } from './adminPrefs';
+
 // Lightweight, dev-only performance sampling for the preview.
 //
 // The React.Profiler wrapping the preview reports how long each committed render
@@ -42,9 +44,11 @@ export function getRenderStats(windowMs = 1000): RenderStats {
   return { avg: count ? sum / count : 0, max, count };
 }
 
-/** Overlay is enabled in dev builds, or on any build when the URL carries ?perf=1. */
+/** Overlay: admin toggle overrides; else DEV or ?perf URL flag. */
 export function perfOverlayEnabled(): boolean {
   try {
+    const override = getAdminPerfOverride();
+    if (override !== null) return override;
     if (import.meta.env.DEV) return true;
     return new URLSearchParams(window.location.search).has('perf');
   } catch {

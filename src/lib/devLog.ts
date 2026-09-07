@@ -96,6 +96,11 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-09-02',
     content: "**Season labels now follow your language.** On a half-year dial the decoration text names the range — \"Summer - Fall\" or \"Winter - Spring\" — but it stayed stubbornly in English even after you switched languages. It's now translated along with everything else on the dial (e.g. \"Verano - Otoño\", \"Invierno - Primavera\", \"Sommer - Herbst\"). — KDG (v2.24.13)",
   },
+  {
+    id: 19,
+    date: '2026-09-07',
+    content: "**NEW: World Tour!** Fly around a 3D globe and watch sundials from around the world load into the preview at each stop. Follow the animated route, pause and resume along the way, or skip ahead to the next destination. — KDG (v2.24.17)",
+  },
 ]
 
 export type LogPref =

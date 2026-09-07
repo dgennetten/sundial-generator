@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS sundial_prints (
   notes_type        VARCHAR(100)   NOT NULL,
   date_range        VARCHAR(100)   NOT NULL,
   today_line_active TINYINT(1)     NOT NULL DEFAULT 0,
+  exclude_from_world_tour TINYINT(1) NOT NULL DEFAULT 0,
   config_json       MEDIUMTEXT     NULL,
   created_at        TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_created_at (created_at)
@@ -20,4 +21,5 @@ CREATE TABLE IF NOT EXISTS sundial_prints (
 
 -- Migration for existing tables: run these ALTER statements if the table already exists
 -- ALTER TABLE sundial_prints ADD COLUMN today_line_active TINYINT(1) NOT NULL DEFAULT 0;
+-- ALTER TABLE sundial_prints ADD COLUMN exclude_from_world_tour TINYINT(1) NOT NULL DEFAULT 0 AFTER today_line_active;
 -- ALTER TABLE sundial_prints ADD COLUMN config_json MEDIUMTEXT NULL;

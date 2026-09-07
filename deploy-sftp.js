@@ -55,6 +55,7 @@ if (!config.host || !config.username || !config.password) {
 const localPath = path.join(__dirname, 'dist');
 const phpFiles = [
   'export-logger.php', 'feedback.php', '.htaccess', 'email-config.php', 'sundial-prints-api.php',
+  'sundial-settings-api.php',
   // Photo gallery API
   'gallery-config.php', 'gallery-auth.php', 'gallery-request-otp.php', 'gallery-verify-otp.php',
   'gallery-session.php', 'gallery-photos.php', 'gallery-upload.php', 'gallery-moderate.php',

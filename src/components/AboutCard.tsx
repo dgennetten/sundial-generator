@@ -8,6 +8,7 @@ interface AboutCardProps {
   longitude: number;
   locationName: string;
   onShowDevLog?: () => void;
+  onAdminRequest?: () => void;
 }
 
 const FEEDBACK_PLACEHOLDER =
@@ -18,6 +19,7 @@ const AboutCard: React.FC<AboutCardProps> = ({
   longitude,
   locationName,
   onShowDevLog,
+  onAdminRequest,
 }) => {
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
@@ -223,7 +225,7 @@ algorithm which "enables it to be calculated for any epoch within 30 centuries o
             marginTop: '1rem',
           }}
         >
-          <BuildDate />
+          <BuildDate onAuthorClick={onAdminRequest} />
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <a
               href="https://buymeacoffee.com/dgennetten"

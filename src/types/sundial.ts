@@ -69,6 +69,11 @@ export function isTwoPagePopup(type: GnomonType): boolean {
   return type === 'glued-popup-base' || type === 'dual-dial-popup';
 }
 
+/** The one-shot gnomon-net hint is for interactive selection, not automated tour restores. */
+export function shouldAutoPreviewGnomonNet(type: GnomonType, isWorldTourActive: boolean): boolean {
+  return isTwoPagePopup(type) && !isWorldTourActive;
+}
+
 /**
  * Gnomon configuration
  */
@@ -178,6 +183,8 @@ export interface ExportOptions {
   declinationType?: DeclinationType;
   declinationDegrees?: number;
   todayLineActive?: boolean;
+  /** Opt this logged print/export out of World Tour candidates. */
+  excludeFromWorldTour?: boolean;
   configJson?: string;
   /** When gnomonType is 'glued-popup-base', whether to include the gnomon net page */
   exportGnomonNet?: boolean;
@@ -245,6 +252,7 @@ export interface SundialPrint {
   notes_type: string;
   date_range: string;
   today_line_active?: boolean;
+  exclude_from_world_tour?: boolean;
   config_json?: string;
   created_at?: string;
 }
@@ -255,6 +263,12 @@ export interface SundialPrint {
 export interface SundialPrintMapProps {
   onPinClick: (print: SundialPrint) => void;
   refreshTrigger?: number; // Increment to trigger refresh
+  /** Max prints to fetch/show on the map (admin-configurable). */
+  pinLimit?: number;
+  /** Fired when World Tour starts (true) or ends (false). */
+  onTourActiveChange?: (active: boolean) => void;
+  /** Increment to open a tour from elsewhere in the app. */
+  worldTourStartTrigger?: number;
 }
 
 /**

@@ -35,6 +35,7 @@ export default defineConfig({
           // Separate vendor libraries
           'react-vendor': ['react', 'react-dom'],
           'leaflet-vendor': ['leaflet', 'react-leaflet'],
+          'globe-vendor': ['react-globe.gl', 'three', 'globe.gl'],
           'icons-vendor': ['lucide-react'],
           'utils-vendor': ['html2canvas']
         }

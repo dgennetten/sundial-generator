@@ -241,6 +241,7 @@ async function logExportActivity(options: ExportOptions): Promise<void> {
           notes_type: options.sundialNotesMode || 'Unknown',
           date_range: options.dateRange || 'Unknown',
           today_line_active: options.todayLineActive ?? false,
+          exclude_from_world_tour: options.excludeFromWorldTour ?? false,
           config_json: options.configJson,
         });
       } catch (error) {
@@ -310,6 +311,7 @@ export async function logPrintActivity(options: {
   declinationType?: import('../types').DeclinationType;
   declinationDegrees?: number;
   todayLineActive?: boolean;
+  excludeFromWorldTour?: boolean;
   configJson?: string;
 }): Promise<void> {
   try {
@@ -388,6 +390,7 @@ export async function logPrintActivity(options: {
           notes_type: options.sundialNotesMode || 'Unknown',
           date_range: options.dateRange || 'Unknown',
           today_line_active: options.todayLineActive ?? false,
+          exclude_from_world_tour: options.excludeFromWorldTour ?? false,
           config_json: options.configJson,
         });
       } catch (error) {

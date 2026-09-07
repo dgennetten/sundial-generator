@@ -84,6 +84,7 @@ interface DesignExportProps {
   syncBelowHorizon?: boolean;
   onRestoreDial?: (config: SavedDialConfig['config']) => void;
   onSetTodayLineActive?: (active: boolean) => void;
+  onOpenWorldTour?: () => void;
   onResetDefaults: () => void;
   language?: string;
 }
@@ -100,6 +101,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   dialOrientation, showBelowHorizonHourLines, showBelowHorizonDateLines, syncBelowHorizon,
   onRestoreDial,
   onSetTodayLineActive,
+  onOpenWorldTour,
   onResetDefaults,
   language
 }) => {
@@ -115,6 +117,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
 
   const [pendingAction, setPendingAction] = useState<'print' | 'export' | null>(null);
   const [includeTodayLine, setIncludeTodayLine] = useState(false);
+  const [excludeFromWorldTour, setExcludeFromWorldTour] = useState(false);
 
   // Feedback nudge: after the user's *second* successful export/print this session, invite
   // feedback once. Firing on the second (not the first) gives them a chance to open and
@@ -267,7 +270,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
     }
   }, []);
 
-  const handlePrint = async () => {
+  const handlePrint = async (excludeTour = false) => {
     log.info('Starting print...');
 
     // Remove any leftover print elements from a previous call
@@ -389,6 +392,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       declinationType: declinationType as import('../types').DeclinationType | undefined,
       declinationDegrees,
       todayLineActive: hasTodayLineActive,
+      excludeFromWorldTour: excludeTour,
       configJson: JSON.stringify(collectCurrentConfig()),
     })
       .then(() => {
@@ -409,7 +413,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
     }, 1000);
   };
 
-  const handleExport = async () => {
+  const handleExport = async (excludeTour = false) => {
     if (isExporting) {
       log.debug('Export already in progress, ignoring click');
       return; // Prevent multiple simultaneous exports
@@ -444,6 +448,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         declinationType: declinationType as import('../types/sundial').DeclinationType | undefined,
         declinationDegrees,
         todayLineActive: hasTodayLineActive,
+        excludeFromWorldTour: excludeTour,
         configJson: JSON.stringify(collectCurrentConfig()),
         exportGnomonNet: isTwoPage ? exportGnomonNet : false,
         exportSundialFace: isTwoPage ? exportSundialFace : true,
@@ -467,6 +472,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
     if (hasTodayLineActive) {
       setPendingAction('print');
       setIncludeTodayLine(false);
+      setExcludeFromWorldTour(false);
     } else {
       handlePrint();
     }
@@ -492,6 +498,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
     if (hasTodayLineActive) {
       setPendingAction('export');
       setIncludeTodayLine(false);
+      setExcludeFromWorldTour(false);
     } else {
       handleExport();
     }
@@ -523,9 +530,9 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
 
     try {
       if (action === 'print') {
-        await handlePrint();
+        await handlePrint(excludeFromWorldTour);
       } else if (action === 'export') {
-        await handleExport();
+        await handleExport(excludeFromWorldTour);
       }
     } finally {
       if (shouldHideToday) {
@@ -845,6 +852,50 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
               />
               Include Today ({todayFormatted}) Date Line?
             </label>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                fontSize: '0.95rem',
+                color: '#374151',
+                userSelect: 'none',
+                marginTop: 14,
+              }}
+            >
+              <input
+                id="exclude-world-tour"
+                type="checkbox"
+                checked={excludeFromWorldTour}
+                onChange={e => setExcludeFromWorldTour(e.target.checked)}
+                style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#2563eb' }}
+              />
+              <span>
+                <label htmlFor="exclude-world-tour" style={{ cursor: 'pointer' }}>
+                  EXCLUDE my dial from the{' '}
+                </label>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenWorldTour?.();
+                  }}
+                  style={{
+                    appearance: 'none',
+                    background: 'none',
+                    border: 0,
+                    padding: 0,
+                    color: '#2563eb',
+                    font: 'inherit',
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                  }}
+                >
+                  World Tour
+                </button>
+              </span>
+            </div>
 
             {pendingAction === 'print' && (
               <p

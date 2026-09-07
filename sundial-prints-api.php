@@ -3,8 +3,9 @@
  * Sundial Prints API
  * MySQL-backed endpoint for logging and retrieving sundial print/export records.
  *
- * GET  /sundial-prints-api.php           → { prints: [...], totalCount: n }
- * POST /sundial-prints-api.php  + JSON   → { success: true }
+ * GET  /sundial-prints-api.php[?limit=N][&worldTour=1] → { prints: [...], totalCount: n }
+ * POST /sundial-prints-api.php  + JSON            → { success: true }  (insert)
+ * POST /sundial-prints-api.php  + { action:delete, id, password } → { success: true }
  *
  * Credentials are read from db-config.php (gitignored) or environment variables.
  */
@@ -15,6 +16,9 @@ header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate');
 header('Pragma: no-cache');
+
+/** Shared with the client Admin panel — required for delete. */
+define('SUNDIAL_ADMIN_PASSWORD', '752192');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -42,23 +46,56 @@ $pdo = new PDO("mysql:host=$host;dbname=$name;charset=utf8mb4", $user, $pass, [
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
 ]);
 
+// Idempotent migration: legacy rows remain tour-eligible via DEFAULT 0.
+$worldTourColumn = $pdo->query("SHOW COLUMNS FROM sundial_prints LIKE 'exclude_from_world_tour'");
+if (!$worldTourColumn->fetch()) {
+    try {
+        $pdo->exec(
+            'ALTER TABLE sundial_prints
+             ADD COLUMN exclude_from_world_tour TINYINT(1) NOT NULL DEFAULT 0
+             AFTER today_line_active'
+        );
+    } catch (Throwable $e) {
+        // A concurrent first request may have added it after our SHOW query.
+        $checkAgain = $pdo->query("SHOW COLUMNS FROM sundial_prints LIKE 'exclude_from_world_tour'");
+        if (!$checkAgain->fetch()) {
+            throw $e;
+        }
+    }
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
-    $countStmt = $pdo->query('SELECT COUNT(*) FROM sundial_prints');
+    $worldTourOnly = isset($_GET['worldTour']) && $_GET['worldTour'] === '1';
+    $whereClause = $worldTourOnly ? ' WHERE exclude_from_world_tour = 0' : '';
+
+    $countStmt = $pdo->query('SELECT COUNT(*) FROM sundial_prints' . $whereClause);
     $totalCount = (int) $countStmt->fetchColumn();
 
-    $stmt = $pdo->query(
+    $limit = isset($_GET['limit']) && is_numeric($_GET['limit']) ? (int) $_GET['limit'] : 200;
+    if ($limit < 1) {
+        $limit = 1;
+    }
+    if ($limit > 1000) {
+        $limit = 1000;
+    }
+
+    $stmt = $pdo->prepare(
         'SELECT id, location, latitude + 0 AS latitude, longitude + 0 AS longitude,
                 inclination + 0 AS inclination, declination + 0 AS declination,
                 gnomon_type, notes_type, date_range,
                 COALESCE(today_line_active, 0) AS today_line_active,
+                COALESCE(exclude_from_world_tour, 0) AS exclude_from_world_tour,
                 config_json,
                 created_at
          FROM sundial_prints
+         ' . $whereClause . '
          ORDER BY created_at DESC
-         LIMIT 200'
+         LIMIT :lim'
     );
+    $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+    $stmt->execute();
     $rows = $stmt->fetchAll();
 
     // Cast numeric columns to float
@@ -69,10 +106,11 @@ if ($method === 'GET') {
         $row['declination']       = (float) $row['declination'];
         $row['id']                = (int)   $row['id'];
         $row['today_line_active'] = (bool)  $row['today_line_active'];
+        $row['exclude_from_world_tour'] = (bool) $row['exclude_from_world_tour'];
     }
     unset($row);
 
-    echo json_encode(['prints' => $rows, 'totalCount' => $totalCount]);
+    echo json_encode(['prints' => $rows, 'totalCount' => $totalCount, 'limit' => $limit]);
     exit;
 }
 
@@ -86,6 +124,26 @@ if ($method === 'POST') {
         exit;
     }
 
+    // Admin delete: { action: "delete", id: N, password: "..." }
+    if (($data['action'] ?? '') === 'delete') {
+        $password = isset($data['password']) ? (string) $data['password'] : '';
+        if (!hash_equals(SUNDIAL_ADMIN_PASSWORD, $password)) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+            exit;
+        }
+        $id = isset($data['id']) && is_numeric($data['id']) ? (int) $data['id'] : 0;
+        if ($id < 1) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Missing or invalid id']);
+            exit;
+        }
+        $del = $pdo->prepare('DELETE FROM sundial_prints WHERE id = :id');
+        $del->execute([':id' => $id]);
+        echo json_encode(['success' => true, 'deleted' => $del->rowCount()]);
+        exit;
+    }
+
     $latitude          = isset($data['latitude'])          && is_numeric($data['latitude'])    ? (float) $data['latitude']    : null;
     $longitude         = isset($data['longitude'])         && is_numeric($data['longitude'])   ? (float) $data['longitude']   : null;
     $inclination       = isset($data['inclination'])       && is_numeric($data['inclination']) ? (float) $data['inclination'] : null;
@@ -95,6 +153,7 @@ if ($method === 'POST') {
     $date_range        = isset($data['date_range'])        ? (string) $data['date_range']      : null;
     $location          = isset($data['location'])          ? (string) $data['location']        : null;
     $today_line_active = isset($data['today_line_active']) ? (int) (bool) $data['today_line_active'] : 0;
+    $exclude_from_world_tour = isset($data['exclude_from_world_tour']) ? (int) (bool) $data['exclude_from_world_tour'] : 0;
     $config_json       = isset($data['config_json']) && is_string($data['config_json']) ? $data['config_json'] : null;
 
     if ($latitude === null || $longitude === null || $inclination === null ||
@@ -105,8 +164,8 @@ if ($method === 'POST') {
     }
 
     $stmt = $pdo->prepare(
-        'INSERT INTO sundial_prints (location, latitude, longitude, inclination, declination, gnomon_type, notes_type, date_range, today_line_active, config_json)
-         VALUES (:location, :latitude, :longitude, :inclination, :declination, :gnomon_type, :notes_type, :date_range, :today_line_active, :config_json)'
+        'INSERT INTO sundial_prints (location, latitude, longitude, inclination, declination, gnomon_type, notes_type, date_range, today_line_active, exclude_from_world_tour, config_json)
+         VALUES (:location, :latitude, :longitude, :inclination, :declination, :gnomon_type, :notes_type, :date_range, :today_line_active, :exclude_from_world_tour, :config_json)'
     );
     $stmt->execute([
         ':location'          => $location,
@@ -118,6 +177,7 @@ if ($method === 'POST') {
         ':notes_type'        => $notes_type,
         ':date_range'        => $date_range,
         ':today_line_active' => $today_line_active,
+        ':exclude_from_world_tour' => $exclude_from_world_tour,
         ':config_json'       => $config_json,
     ]);
 

@@ -30,7 +30,7 @@ import PerfOverlay from './components/PerfOverlay';
 import { recordRenderDuration, perfOverlayEnabled } from './lib/animationPerf';
 import GnomonNetSVG from './components/GnomonNetSVG';
 import DualDialPreview from './components/DualDialPreview';
-import { isTwoPagePopup } from './types/sundial';
+import { isTwoPagePopup, shouldAutoPreviewGnomonNet } from './types/sundial';
 import { useLocationShadowTime } from './hooks/useLocationShadowTime';
 import type { ShadowFrameUpdater } from './utils/gnomonShadowUtils';
 import HourlineSettings from './components/HourlineSettings';
@@ -51,7 +51,9 @@ import PrintedDialsMap from './components/PrintedDialsMap';
 import ComponentsOfCorrectionCard from './components/ComponentsOfCorrectionCard';
 import WelcomeDialog, { clearWelcomeDismissed } from './components/WelcomeDialog';
 import DevLogModal from './components/DevLogModal';
+import AdminPanel from './components/AdminPanel';
 import { shouldShowLog, clearLogPref } from './lib/devLog';
+import { getAdminPinLimit, getTourShadowVisible, loadGlobalAdminSettings } from './lib/adminPrefs';
 import type { SundialPrint } from './types/sundial';
 import { log } from './utils/logger';
 import { getControlsScrollerElement } from './utils/controlsScroller';
@@ -261,6 +263,46 @@ const App: React.FC = () => {
   const [sundialNotesOffsetHorizontal, setSundialNotesOffsetHorizontal] = useState<number>(0); // in mm
   const [locationName, setLocationName] = useState<string>('Fort Collins, CO USA');
   const [printedDialsMapRefreshTrigger, setPrintedDialsMapRefreshTrigger] = useState<number>(0);
+  const [worldTourStartTrigger, setWorldTourStartTrigger] = useState(0);
+  const [mapPinLimit, setMapPinLimit] = useState(() => getAdminPinLimit());
+  const [showPerfOverlay, setShowPerfOverlay] = useState(() => perfOverlayEnabled());
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const shadowBeforeTourRef = useRef(true);
+  const worldTourActiveRef = useRef(false);
+  const locationShadowPreviewRef = useRef(locationShadowPreview);
+  locationShadowPreviewRef.current = locationShadowPreview;
+
+  // Load Admin prefs from the server so all visitors share the same tour/map defaults.
+  useEffect(() => {
+    let cancelled = false;
+    void loadGlobalAdminSettings().then((s) => {
+      if (cancelled) return;
+      setMapPinLimit(s.pinLimit);
+      setShowPerfOverlay(perfOverlayEnabled());
+      setPrintedDialsMapRefreshTrigger((prev) => prev + 1);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleTourActiveChange = useCallback((active: boolean) => {
+    worldTourActiveRef.current = active;
+    if (active) {
+      shadowBeforeTourRef.current = locationShadowPreviewRef.current;
+      setLocationShadowPreview(getTourShadowVisible());
+    } else {
+      setLocationShadowPreview(shadowBeforeTourRef.current);
+    }
+  }, []);
+
+  const handleOpenWorldTour = useCallback(() => {
+    setWorldTourStartTrigger((value) => value + 1);
+    requestAnimationFrame(() => {
+      document.getElementById('card-map')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }, []);
+
   const [language, setLanguage] = useState<string>(
     () => (typeof window !== 'undefined' ? localStorage.getItem('sundial-welcome-language') : null) || 'en'
   );
@@ -525,6 +567,10 @@ const App: React.FC = () => {
   // Switching to any other gnomon just resets to Dial.
   useEffect(() => {
     if (!isTwoPagePopup(gnomonType)) {
+      setGnomonPreviewMode('Dial');
+      return;
+    }
+    if (!shouldAutoPreviewGnomonNet(gnomonType, worldTourActiveRef.current)) {
       setGnomonPreviewMode('Dial');
       return;
     }
@@ -1025,6 +1071,19 @@ const App: React.FC = () => {
         <DevLogModal onClose={() => setShowDevLog(false)} />
       )}
 
+      {showAdminPanel && (
+        <AdminPanel
+          onClose={() => setShowAdminPanel(false)}
+          onPinLimitChange={(limit) => {
+            setMapPinLimit(limit);
+            setPrintedDialsMapRefreshTrigger((prev) => prev + 1);
+          }}
+          onPerfChange={setShowPerfOverlay}
+          onPrintsChanged={() => setPrintedDialsMapRefreshTrigger((prev) => prev + 1)}
+          onPrintSelect={handlePinClick}
+        />
+      )}
+
       {highLatVerticalNudgeOpen &&
         createPortal(
           <div
@@ -1243,6 +1302,7 @@ const App: React.FC = () => {
           syncBelowHorizon={syncBelowHorizon}
           onRestoreDial={handleRestoreDial}
           onSetTodayLineActive={handleSetTodayLineActive}
+          onOpenWorldTour={handleOpenWorldTour}
           onResetDefaults={handleResetDefaults}
           language={language}
         /></div>
@@ -1467,9 +1527,18 @@ const App: React.FC = () => {
         <div id="card-map"><PrintedDialsMap
           onPinClick={handlePinClick}
           refreshTrigger={printedDialsMapRefreshTrigger}
+          pinLimit={mapPinLimit}
+          onTourActiveChange={handleTourActiveChange}
+          worldTourStartTrigger={worldTourStartTrigger}
         /></div>
         {/* <VisitorMap /> */}
-        <div id="card-about"><AboutCard latitude={latitude} longitude={longitude} locationName={locationName} onShowDevLog={() => { clearLogPref(); setShowDevLog(true); }} /></div>
+        <div id="card-about"><AboutCard
+          latitude={latitude}
+          longitude={longitude}
+          locationName={locationName}
+          onShowDevLog={() => { clearLogPref(); setShowDevLog(true); }}
+          onAdminRequest={() => setShowAdminPanel(true)}
+        /></div>
         </div>
       </div>
       )}
@@ -1541,7 +1610,7 @@ const App: React.FC = () => {
         <MobileTabBar />
       </div>
 
-      {perfOverlayEnabled() && (
+      {showPerfOverlay && (
         <PerfOverlay
           animating={locationShadowPreview && locationShadowAnimation && !locationShadowAnimationPaused}
         />
