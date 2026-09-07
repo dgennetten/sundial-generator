@@ -90,7 +90,16 @@
       "Bash(curl -s https://precisionsundial.com/)",
       "Bash(curl -s -o /dev/null -w \"gallery-photos.php: HTTP %{http_code}\\\\n\" https://precisionsundial.com/gallery-photos.php)",
       "Bash(curl -s -o /dev/null -w \"gallery-delete.php \\(POST no-auth\\): HTTP %{http_code}\\\\n\" -X POST https://precisionsundial.com/gallery-delete.php)",
-      "WebFetch(domain:precisionsundial.com)"
+      "WebFetch(domain:precisionsundial.com)",
+      "Bash(python -c \"import urllib.parse;print\\(urllib.parse.quote\\('1 Beccari Ln Southampton, MA 01073-9569'\\)\\)\")",
+      "Bash(curl -s -A \"sundial-generator-test\" \"https://nominatim.openstreetmap.org/search?format=json&q=$\\(python -c \"import urllib.parse;print\\(urllib.parse.quote\\('1 Beccari Ln Southampton, MA 01073-9569'\\)\\)\"\\)&limit=1\")",
+      "Bash(python -c \"import urllib.parse;print\\(urllib.parse.quote\\('1 Beccari Ln Southampton, MA 01073'\\)\\)\")",
+      "Bash(curl -s -A \"sundial-generator-test\" \"https://nominatim.openstreetmap.org/search?format=json&q=$\\(python -c \"import urllib.parse;print\\(urllib.parse.quote\\('1 Beccari Ln Southampton, MA 01073'\\)\\)\"\\)&limit=1\")",
+      "Bash(python -c \"import urllib.parse;print\\(urllib.parse.quote\\('1 Beccari Ln Southampton, MA'\\)\\)\")",
+      "Bash(curl -s -A \"sundial-generator-test\" \"https://nominatim.openstreetmap.org/search?format=json&q=$\\(python -c \"import urllib.parse;print\\(urllib.parse.quote\\('1 Beccari Ln Southampton, MA'\\)\\)\"\\)&limit=1\")",
+      "Bash(curl -s -A \"sundial-generator-test\" -G \"https://nominatim.openstreetmap.org/search\" --data-urlencode \"q=1 Beccari Ln Southampton, MA 01073-9569\" --data \"format=json&limit=3\")",
+      "Bash(curl -s -A \"sundial-generator-test\" -G \"https://nominatim.openstreetmap.org/search\" --data-urlencode \"q=1 Beccari Ln Southampton, MA 01073\" --data \"format=json&limit=3\")",
+      "Bash(curl -s -A \"sundial-generator-test\" -G \"https://nominatim.openstreetmap.org/search\" --data-urlencode \"q=1 Beccari Ln Southampton, MA\" --data \"format=json&limit=3\")"
     ]
   }
 }

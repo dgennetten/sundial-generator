@@ -67,7 +67,7 @@ const WorldTourGlobe: React.FC<WorldTourGlobeProps> = ({
   const [tourKey, setTourKey] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [stopIndex, setStopIndex] = useState(0);
-  const [phase, setPhase] = useState<'idle' | 'travel' | 'zoom' | 'hold' | 'done'>('idle');
+  const [phase, setPhase] = useState<'idle' | 'travel' | 'zoom' | 'hold' | 'zoomout' | 'done'>('idle');
 
   const tourStart = getTourStartMode();
   const tourOrder = getTourOrderMode();
@@ -209,7 +209,7 @@ const WorldTourGlobe: React.FC<WorldTourGlobeProps> = ({
         if (signal.cancelled || runId !== runIdRef.current) return;
 
         if (i < route.length - 1) {
-          setPhase('travel');
+          setPhase('zoomout');
           flyTo(stop, ALT_ORBIT, zoomOutMs);
           await waitOrSkip(zoomOutMs, signal);
         }
