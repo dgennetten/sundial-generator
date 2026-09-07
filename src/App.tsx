@@ -963,6 +963,10 @@ const App: React.FC = () => {
     setHourlineIntervals(loadHourlineIntervals());
     setLineStyles(loadLineStyles());
     setDeclinationLines(loadDeclinationLines());
+    // Reset the dial text block too, or a prior dial's custom caption
+    // (e.g. an event name) bleeds onto this one. The default template
+    // already contains {location}, so the prepend below becomes a no-op.
+    setDialTextBlock(DEFAULT_DIAL_TEXTBLOCK);
     setLatitude(print.latitude);
     setLongitude(print.longitude);
     // Estimate timezone standard meridian from longitude (nearest 15° = 1 hour)
