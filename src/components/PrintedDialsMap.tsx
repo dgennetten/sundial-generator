@@ -239,7 +239,7 @@ const PrintedDialsMap: React.FC<SundialPrintMapProps> = ({
         {!loading && !error && prints.length > 0 && !tourActive && (
           <button
             type="button"
-            className="btn btn-secondary"
+            className="btn btn-primary"
             onClick={() => void startWorldTour()}
             disabled={tourLoading}
             title="Animated globe tour of all recorded dials"
