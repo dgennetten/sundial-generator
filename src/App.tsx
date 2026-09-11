@@ -853,9 +853,11 @@ const App: React.FC = () => {
     if (config.tzMeridian !== undefined) setTzMeridian(config.tzMeridian);
     if (config.locationName !== undefined) setLocationName(config.locationName);
 
-    // Gnomon
-    if (config.gnomonMode !== undefined) setGnomonMode(config.gnomonMode);
-    if (config.gnomonHeight !== undefined) setGnomonHeight(config.gnomonHeight);
+    // Gnomon — restore mode/height deterministically so a prior dial's manual
+    // gnomon height never bleeds through when this config omits the field (e.g.
+    // World Tour records saved before gnomonMode was captured).
+    setGnomonMode(config.gnomonMode !== undefined ? config.gnomonMode : 'auto');
+    setGnomonHeight(config.gnomonHeight !== undefined ? config.gnomonHeight : 10);
     if (config.gnomonType !== undefined) setGnomonType(config.gnomonType);
     if (config.gnomonPosition !== undefined) setGnomonPosition(config.gnomonPosition);
     if (config.gnomonPositionMode !== undefined) setGnomonPositionMode(config.gnomonPositionMode);
@@ -963,6 +965,10 @@ const App: React.FC = () => {
     setHourlineIntervals(loadHourlineIntervals());
     setLineStyles(loadLineStyles());
     setDeclinationLines(loadDeclinationLines());
+    // Legacy records carry no gnomon-height data, so reset to auto. Otherwise a
+    // prior stop's manual gnomon height bleeds onto every following legacy dial.
+    setGnomonMode('auto');
+    setGnomonHeight(10);
     // Reset the dial text block too, or a prior dial's custom caption
     // (e.g. an event name) bleeds onto this one. The default template
     // already contains {location}, so the prepend below becomes a no-op.

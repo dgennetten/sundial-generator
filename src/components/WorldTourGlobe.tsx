@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Globe, { type GlobeMethods } from 'react-globe.gl';
-import { Pause, Play, SkipForward, Square, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pause, Play, SkipForward, Square, X } from 'lucide-react';
 import type { SundialPrint } from '../types/sundial';
 import {
   getTourDuplicatesMode,
@@ -23,6 +23,7 @@ const BASE_ZOOM_IN_MS = 1600;
 const BASE_HOLD_MS = 3200;
 const BASE_ZOOM_OUT_MS = 1100;
 const BASE_OPEN_MS = 900;
+const BASE_QUICK_STEP_MS = 600;
 
 export interface WorldTourGlobeProps {
   prints: SundialPrint[];
@@ -60,6 +61,8 @@ const WorldTourGlobe: React.FC<WorldTourGlobeProps> = ({
   const signalRef = useRef({ cancelled: false });
   const pausedRef = useRef(false);
   const skipRef = useRef(false);
+  const seekRef = useRef<number | null>(null);
+  const quickLandRef = useRef(false);
   const runIdRef = useRef(0);
 
   const [size, setSize] = useState({ width: 640, height: 480 });
@@ -79,6 +82,7 @@ const WorldTourGlobe: React.FC<WorldTourGlobeProps> = ({
   const holdMs = Math.round(BASE_HOLD_MS * speedScale);
   const zoomOutMs = Math.round(BASE_ZOOM_OUT_MS * speedScale);
   const openMs = Math.round(BASE_OPEN_MS * speedScale);
+  const quickStepMs = Math.round(BASE_QUICK_STEP_MS * speedScale);
 
   const route = useMemo(
     () => buildWorldTourRoute(prints, maxStops, {
@@ -142,7 +146,8 @@ const WorldTourGlobe: React.FC<WorldTourGlobeProps> = ({
   }, [ready]);
 
   const waitWhilePaused = useCallback(async (signal: { cancelled: boolean }) => {
-    while (pausedRef.current && !signal.cancelled) {
+    // A pending seek (single-step) must break the pause so the sequencer can act on it.
+    while (pausedRef.current && !signal.cancelled && seekRef.current === null) {
       await sleep(100, signal);
     }
   }, []);
@@ -150,9 +155,9 @@ const WorldTourGlobe: React.FC<WorldTourGlobeProps> = ({
   const waitOrSkip = useCallback(async (ms: number, signal: { cancelled: boolean }) => {
     const chunk = 80;
     let elapsed = 0;
-    while (elapsed < ms && !signal.cancelled && !skipRef.current) {
+    while (elapsed < ms && !signal.cancelled && !skipRef.current && seekRef.current === null) {
       await waitWhilePaused(signal);
-      if (signal.cancelled || skipRef.current) break;
+      if (signal.cancelled || skipRef.current || seekRef.current !== null) break;
       await sleep(Math.min(chunk, ms - elapsed), signal);
       elapsed += chunk;
     }
@@ -177,6 +182,8 @@ const WorldTourGlobe: React.FC<WorldTourGlobeProps> = ({
     const signal = { cancelled: false };
     signalRef.current = signal;
     skipRef.current = false;
+    seekRef.current = null;
+    quickLandRef.current = false;
     setPlaying(true);
     pausedRef.current = false;
     setStopIndex(0);
@@ -187,32 +194,48 @@ const WorldTourGlobe: React.FC<WorldTourGlobeProps> = ({
       flyTo(first, ALT_ORBIT, 0);
       await waitOrSkip(400, signal);
 
-      for (let i = 0; i < route.length; i++) {
+      let i = 0;
+      while (i < route.length) {
         if (signal.cancelled || runId !== runIdRef.current) return;
         skipRef.current = false;
+        seekRef.current = null;
         setStopIndex(i);
         const stop = route[i];
+        // A single-step (while paused) requests a quick landing straight into hold,
+        // skipping the travel/zoom animation and their pause-spins.
+        const quick = quickLandRef.current;
+        quickLandRef.current = false;
 
-        setPhase('travel');
-        flyTo(stop, ALT_ORBIT, i === 0 ? openMs : rotateMs);
-        await waitOrSkip(i === 0 ? openMs : rotateMs, signal);
-        if (signal.cancelled || runId !== runIdRef.current) return;
+        if (!quick) {
+          setPhase('travel');
+          flyTo(stop, ALT_ORBIT, i === 0 ? openMs : rotateMs);
+          await waitOrSkip(i === 0 ? openMs : rotateMs, signal);
+          if (signal.cancelled || runId !== runIdRef.current) return;
+          if (seekRef.current !== null) { i = seekRef.current; continue; }
 
-        setPhase('zoom');
-        flyTo(stop, ALT_CITY, zoomInMs);
-        await waitOrSkip(zoomInMs, signal);
-        if (signal.cancelled || runId !== runIdRef.current) return;
+          setPhase('zoom');
+          flyTo(stop, ALT_CITY, zoomInMs);
+          await waitOrSkip(zoomInMs, signal);
+          if (signal.cancelled || runId !== runIdRef.current) return;
+          if (seekRef.current !== null) { i = seekRef.current; continue; }
+        } else {
+          flyTo(stop, ALT_CITY, quickStepMs);
+        }
 
         setPhase('hold');
         onStopArriveRef.current(stop.print);
         await waitOrSkip(holdMs, signal);
         if (signal.cancelled || runId !== runIdRef.current) return;
+        if (seekRef.current !== null) { i = seekRef.current; continue; }
 
         if (i < route.length - 1) {
           setPhase('zoomout');
           flyTo(stop, ALT_ORBIT, zoomOutMs);
           await waitOrSkip(zoomOutMs, signal);
+          if (signal.cancelled || runId !== runIdRef.current) return;
+          if (seekRef.current !== null) { i = seekRef.current; continue; }
         }
+        i++;
       }
 
       if (!signal.cancelled && runId === runIdRef.current) {
@@ -226,7 +249,7 @@ const WorldTourGlobe: React.FC<WorldTourGlobeProps> = ({
     return () => {
       signal.cancelled = true;
     };
-  }, [ready, route, tourKey, flyTo, waitOrSkip, openMs, rotateMs, zoomInMs, holdMs, zoomOutMs]);
+  }, [ready, route, tourKey, flyTo, waitOrSkip, openMs, rotateMs, zoomInMs, holdMs, zoomOutMs, quickStepMs]);
 
   const handlePauseToggle = () => {
     if (phase === 'done') {
@@ -240,6 +263,15 @@ const WorldTourGlobe: React.FC<WorldTourGlobeProps> = ({
   const handleSkip = () => {
     skipRef.current = true;
   };
+
+  // Single-step to an adjacent stop while paused: jump straight there and stay paused.
+  const stepTo = (target: number) => {
+    if (target < 0 || target >= route.length) return;
+    quickLandRef.current = true;
+    seekRef.current = target;
+  };
+
+  const paused = !playing && phase !== 'done';
 
   const handleStop = () => {
     signalRef.current.cancelled = true;
@@ -358,7 +390,31 @@ const WorldTourGlobe: React.FC<WorldTourGlobeProps> = ({
         >
           {phase === 'done' ? <Play size={16} /> : playing ? <Pause size={16} /> : <Play size={16} />}
         </button>
-        {phase !== 'done' && (
+        {phase !== 'done' && paused && (
+          <>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => stepTo(stopIndex - 1)}
+              disabled={stopIndex <= 0}
+              title="Previous stop"
+              style={{ padding: '6px 10px', background: 'rgba(248,250,252,0.92)' }}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => stepTo(stopIndex + 1)}
+              disabled={stopIndex >= route.length - 1}
+              title="Next stop"
+              style={{ padding: '6px 10px', background: 'rgba(248,250,252,0.92)' }}
+            >
+              <ChevronRight size={16} />
+            </button>
+          </>
+        )}
+        {phase !== 'done' && !paused && (
           <button
             type="button"
             className="btn btn-secondary"
