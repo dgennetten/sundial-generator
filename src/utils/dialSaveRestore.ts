@@ -54,6 +54,8 @@ export interface SavedDialConfig {
     declinationNoonmarks: boolean;
     /** When date range is half-year, draw dotted noon analemma for the excluded half-year */
     showFullYearOnNoon?: boolean;
+    /** Full-Year only: draw the two half-year analemma branches in different line styles */
+    differentiateHalfYears?: boolean;
     showBelowHorizonHourLines?: boolean;
     showBelowHorizonDateLines?: boolean;
     syncBelowHorizon?: boolean;

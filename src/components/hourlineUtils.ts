@@ -2,6 +2,9 @@ export type HourlineInterval = {
   active: boolean;
   name: string;
   styleId: string;
+  /** Style for the summer→winter (descending) half-year branch when the
+   *  "Differentiate half-years" full-year mode is on. Falls back to styleId. */
+  secondStyleId?: string;
   id: string;
   fixed?: boolean;
 };
@@ -18,7 +21,7 @@ const BUILTIN_HOURLINE_INTERVALS: HourlineInterval[] = [
 const LOCAL_STORAGE_KEY = 'sundial-hourline-intervals';
 const OVERRIDES_KEY = 'sundial-hourline-overrides';
 
-type HourlineOverride = Partial<Pick<HourlineInterval, 'active' | 'styleId'>>;
+type HourlineOverride = Partial<Pick<HourlineInterval, 'active' | 'styleId' | 'secondStyleId'>>;
 
 type OverrideMap = { [id: string]: HourlineOverride };
 

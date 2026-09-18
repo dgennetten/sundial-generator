@@ -70,6 +70,9 @@ export type Props = {
   declinationNoonmarks?: boolean;
   /** Half-year modes only: dotted noon trace for days outside the selected range */
   showFullYearOnNoon?: boolean;
+  /** Full-Year only: draw each analemma's winter→summer and summer→winter branches
+   *  in different line styles (per-interval secondStyleId) so overlapping dates read apart. */
+  differentiateHalfYears?: boolean;
   originalLatitude?: number;
   dialInclination?: number;   // dial tilt from horizontal, degrees (0 = flat, 90 = vertical)
   dialDeclination?: number;   // dial rotation from poleward, degrees (+West / −East)
@@ -173,6 +176,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     declinationDegrees = 0,
     declinationNoonmarks = true,
     showFullYearOnNoon = false,
+    differentiateHalfYears = false,
     originalLatitude,
     dialInclination = 0,
     dialDeclination = 0,
@@ -1340,7 +1344,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       for (const h of hoursToDraw) {
         // Skip if a higher priority interval is already drawing at this time
         if (isTimeSlotCovered(h, interval.name, hourlineIntervals)) continue;
-        let points = getAnalemmaPointsProjected({
+        const basePoints = getAnalemmaPointsProjected({
           lat,
           lng: effectiveLng,
           tzMeridian,
@@ -1352,10 +1356,30 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           eotMinutes: eotMinutesOverride,
           applyRefraction,
         });
-        // Filter points by date range
-        const isNorthernHemisphere = isGeoNorthern;
-        const needsSplitting = (dateRange === 'WinterToSpring' && isNorthernHemisphere) ||
-          (dateRange === 'SummerToFall' && !isNorthernHemisphere);
+
+        // Full-year "differentiate half-years": render the winter→summer branch and the
+        // summer→winter branch as separate paths in different styles. Each branch reuses the
+        // partial-range renderer below (WinterToSpring / SummerToFall), which already handles
+        // the year-boundary wrap for whichever half wraps in this hemisphere.
+        const secondStyle = interval.secondStyleId
+          ? lineStyles.find(s => s.id === interval.secondStyleId || s.name === interval.secondStyleId)
+          : undefined;
+        const twoLineFullYear = dateRange === 'FullYear' && differentiateHalfYears && !!secondStyle;
+
+        const renderRange = (
+          effRange: 'FullYear' | 'SummerToFall' | 'WinterToSpring' | 'DualHalf',
+          rangeStyle: typeof style,
+          sfx: string,
+        ): void => {
+          if (!rangeStyle) return;
+          // Local shadows so the range-rendering body below reads unchanged across both passes.
+          const style = rangeStyle;
+          const dateRange = effRange;
+          let points = [...basePoints];
+          // Filter points by date range
+          const isNorthernHemisphere = isGeoNorthern;
+          const needsSplitting = (dateRange === 'WinterToSpring' && isNorthernHemisphere) ||
+            (dateRange === 'SummerToFall' && !isNorthernHemisphere);
 
         if (needsSplitting) {
           let segments: [{ day: number; x: number; y: number }[], { day: number; x: number; y: number }[]];
@@ -1410,7 +1434,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 const pathData = clipPathData(segment);
                 if (pathData) {
                   elements.push(
-                    <g key={`hourline-5-2-dash-${h}-${interval.id}-seg${idx}-dash-${segIdx}-${style.calculatedType}`}>
+                    <g key={`hourline-5-2-dash-${h}-${interval.id}-seg${idx}-dash-${segIdx}-${style.calculatedType}${sfx}`}>
                       <path
                         d={pathData}
                         stroke={style.color || 'black'}
@@ -1429,7 +1453,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 const pathData = clipPathData(segment);
                 if (pathData) {
                   elements.push(
-                    <g key={`hourline-2-5-dash-${h}-${interval.id}-seg${idx}-dash-${segIdx}-${style.calculatedType}`}>
+                    <g key={`hourline-2-5-dash-${h}-${interval.id}-seg${idx}-dash-${segIdx}-${style.calculatedType}${sfx}`}>
                       <path
                         d={pathData}
                         stroke={style.color || 'black'}
@@ -1448,7 +1472,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 const pathData = clipPathData(segment);
                 if (pathData) {
                   elements.push(
-                    <g key={`hourline-2-2-dash-${h}-${interval.id}-seg${idx}-dash-${segIdx}-${style.calculatedType}`}>
+                    <g key={`hourline-2-2-dash-${h}-${interval.id}-seg${idx}-dash-${segIdx}-${style.calculatedType}${sfx}`}>
                       <path
                         d={pathData}
                         stroke={style.color || 'black'}
@@ -1465,7 +1489,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               const pathData = clipPathData(orderedForSolidPath);
               if (pathData) {
                 elements.push(
-                  <g key={`${h}-${interval.id}-seg${idx}`}>
+                  <g key={`${h}-${interval.id}-seg${idx}${sfx}`}>
                     <path
                       d={pathData}
                       stroke={style.color || 'black'}
@@ -1489,7 +1513,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               style.calculatedType === 'hourline-2-2-day-dash')
           ) {
             elements.push(
-              <g key={`${h}-${interval.id}-year-bridge`}>
+              <g key={`${h}-${interval.id}-year-bridge${sfx}`}>
                 <path
                   d={yearBoundaryBridge}
                   stroke={style.color || 'black'}
@@ -1502,7 +1526,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           }
         } else {
           points = points.filter((p: { day: number }) => isDayInRange(p.day, dateRange));
-          if (points.length === 0) continue;
+          if (points.length === 0) return;
 
           // For full-year, sort strictly by day to ensure smooth loop and one vertex per day
           if (dateRange === 'FullYear') {
@@ -1526,7 +1550,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               const pathData = clipPathData(segment);
               if (pathData) {
                 elements.push(
-                  <g key={`${h}-${interval.id}-dash-${segIdx}`}>
+                  <g key={`${h}-${interval.id}-dash-${segIdx}${sfx}`}>
                     <path
                       d={pathData}
                       stroke={style.color || 'black'}
@@ -1545,7 +1569,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               const pathData = clipPathData(segment);
               if (pathData) {
                 elements.push(
-                  <g key={`${h}-${interval.id}-2-5-dash-${segIdx}`}>
+                  <g key={`${h}-${interval.id}-2-5-dash-${segIdx}${sfx}`}>
                     <path
                       d={pathData}
                       stroke={style.color || 'black'}
@@ -1564,7 +1588,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               const pathData = clipPathData(segment);
               if (pathData) {
                 elements.push(
-                  <g key={`${h}-${interval.id}-2-2-dash-${segIdx}`}>
+                  <g key={`${h}-${interval.id}-2-2-dash-${segIdx}${sfx}`}>
                     <path
                       d={pathData}
                       stroke={style.color || 'black'}
@@ -1586,7 +1610,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                 dOut = joinSegmentsForClosedLoop(segments.filter(Boolean));
               }
               elements.push(
-                <g key={`${h}-${interval.id}`}>
+                <g key={`${h}-${interval.id}${sfx}`}>
                   <path
                     d={dOut}
                     stroke={style.color || 'black'}
@@ -1600,6 +1624,14 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
               );
             }
           }
+        }
+        }; // end renderRange
+
+        if (twoLineFullYear) {
+          renderRange('WinterToSpring', style, '-asc');
+          renderRange('SummerToFall', secondStyle, '-desc');
+        } else {
+          renderRange(dateRange, style, '');
         }
       }
       return elements;

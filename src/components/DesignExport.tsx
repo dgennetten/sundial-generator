@@ -73,6 +73,7 @@ interface DesignExportProps {
   useDST?: boolean;
   declinationNoonmarks?: boolean;
   showFullYearOnNoon?: boolean;
+  differentiateHalfYears?: boolean;
   dialTextBlockFontSize?: number;
   dialTextBlockFontFamily?: string;
   sundialNotesPositionMode?: 'auto' | 'manual';
@@ -97,7 +98,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   tzMeridian, gnomonMode, gnomonPosition, gnomonPositionMode, gnomonHorizontalPosition, customUnits, declinationType, declinationDegrees,
   dialShape, borderStyle, borderMargin, hourlineIntervals, lineStyles, declinationLines,
   startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST,
-  declinationNoonmarks, showFullYearOnNoon, dialTextBlockFontSize, dialTextBlockFontFamily, sundialNotesPositionMode, sundialNotesOffset, sundialNotesOffsetHorizontal,
+  declinationNoonmarks, showFullYearOnNoon, differentiateHalfYears, dialTextBlockFontSize, dialTextBlockFontFamily, sundialNotesPositionMode, sundialNotesOffset, sundialNotesOffsetHorizontal,
   dialOrientation, showBelowHorizonHourLines, showBelowHorizonDateLines, syncBelowHorizon,
   onRestoreDial,
   onSetTodayLineActive,
@@ -201,6 +202,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       useDST: useDST ?? true,
       declinationNoonmarks: declinationNoonmarks ?? true,
       showFullYearOnNoon: showFullYearOnNoon ?? false,
+      differentiateHalfYears: differentiateHalfYears ?? false,
 
       // Lines
       lineStyles: lineStyles ?? [],
@@ -225,7 +227,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
     latitude, longitude, tzMeridian, locationName, gnomonMode, gnomonHeight, gnomonType, gnomonPosition, gnomonPositionMode, gnomonHorizontalPosition,
     pageSize, customWidth, customHeight, customUnits, orientation, inclineType, tiltAngle, declinationType, declinationDegrees,
     dialShape, borderStyle, borderMargin, dateRange, hourlineIntervals, startHour, stopHour, use24Hour,
-    labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks, showFullYearOnNoon, lineStyles,
+    labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks, showFullYearOnNoon, differentiateHalfYears, lineStyles,
     declinationLines, showBackground, backgroundColor, dialTextBlock, dialTextBlockFontSize, dialTextBlockFontFamily,
     sundialNotesMode, sundialNotesPositionMode, sundialNotesOffset, sundialNotesOffsetHorizontal,
     dialOrientation, showBelowHorizonHourLines, showBelowHorizonDateLines, syncBelowHorizon

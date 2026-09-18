@@ -27,6 +27,9 @@ interface HourlineSettingsProps {
   declinationNoonmarks: boolean;
   showFullYearOnNoon: boolean;
   setShowFullYearOnNoon: (v: boolean) => void;
+  // Full-Year only: draw the two half-year analemma branches in different styles
+  differentiateHalfYears: boolean;
+  setDifferentiateHalfYears: (v: boolean) => void;
   // Equation-of-Time correction — same flag as in About → Components of Correction
   equationOfTimeCorrection: boolean;
   setEquationOfTimeCorrection: (v: boolean) => void;
@@ -67,6 +70,8 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
   declinationNoonmarks,
   showFullYearOnNoon,
   setShowFullYearOnNoon,
+  differentiateHalfYears,
+  setDifferentiateHalfYears,
   equationOfTimeCorrection,
   setEquationOfTimeCorrection,
   showBelowHorizonHourLines,
@@ -86,9 +91,11 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
     setHourlineIntervals(updated);
     saveHourlineIntervals(updated);
     const it = updated[idx];
-    if (it.fixed && (field === 'active' || field === 'styleId')) {
+    if (it.fixed && (field === 'active' || field === 'styleId' || field === 'secondStyleId')) {
       if (field === 'active') {
         saveHourlineOverrides({ [it.id]: { active: !!value } });
+      } else if (field === 'secondStyleId') {
+        saveHourlineOverrides({ [it.id]: { secondStyleId: value as string } });
       } else {
         saveHourlineOverrides({ [it.id]: { styleId: value as string } });
       }
@@ -158,6 +165,9 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
               <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
                 <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Interval</th>
                 <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Line Style</th>
+                {dateRange === 'FullYear' && differentiateHalfYears && (
+                  <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }} title="Style for the summer→winter half">2nd Half</th>
+                )}
                 <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Active</th>
               </tr>
             </thead>
@@ -179,6 +189,20 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
                       ))}
                     </select>
                   </td>
+                  {dateRange === 'FullYear' && differentiateHalfYears && (
+                    <td style={{ padding: '0.3rem 0.3rem' }}>
+                      <select
+                        className="form-select"
+                        value={interval.secondStyleId || interval.styleId}
+                        onChange={e => handleChange(idx, 'secondStyleId', e.target.value)}
+                        style={{ fontSize: '0.9rem' }}
+                      >
+                        {lineStyles.filter(s => s.name && s.name.trim() && (!s.applicableToLines || s.applicableToLines.includes('hourline'))).map(style => (
+                          <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
+                        ))}
+                      </select>
+                    </td>
+                  )}
                   <td style={{ padding: '0.3rem 0.3rem' }}>
                     <input
                       type="checkbox"
@@ -219,6 +243,20 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
                   onChange={(e) => setShowFullYearOnNoon(e.target.checked)}
                 />
                 Full Year Noon
+              </label>
+            )}
+            {dateRange === 'FullYear' && (
+              <label
+                className="form-checkbox"
+                style={{ marginBottom: 0, whiteSpace: 'nowrap' }}
+                title="Draw the winter→summer and summer→winter halves of each analemma in different line styles"
+              >
+                <input
+                  type="checkbox"
+                  checked={differentiateHalfYears}
+                  onChange={(e) => setDifferentiateHalfYears(e.target.checked)}
+                />
+                Differentiate half-years
               </label>
             )}
           </div>

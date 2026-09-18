@@ -230,6 +230,8 @@ const App: React.FC = () => {
   const [useDST, setUseDST] = useState<boolean>(true);
   const [declinationNoonmarks, setDeclinationNoonmarks] = useState<boolean>(true);
   const [showFullYearOnNoon, setShowFullYearOnNoon] = useState<boolean>(false);
+  // Full-Year only: draw each analemma's two half-year branches in different line styles
+  const [differentiateHalfYears, setDifferentiateHalfYears] = useState<boolean>(false);
   const [showBelowHorizonHourLines, setShowBelowHorizonHourLines] = useState<boolean>(true);
   const [showBelowHorizonDateLines, setShowBelowHorizonDateLines] = useState<boolean>(true);
   const [showDatelineLabels, setShowDatelineLabels] = useState<boolean>(() => {
@@ -768,6 +770,7 @@ const App: React.FC = () => {
     declinationDegrees,
     declinationNoonmarks,
     showFullYearOnNoon,
+    differentiateHalfYears,
     originalLatitude: latitude,
     dialInclination,
     dialDeclination,
@@ -825,6 +828,7 @@ const App: React.FC = () => {
     declinationDegrees,
     declinationNoonmarks,
     showFullYearOnNoon,
+    differentiateHalfYears,
     activeHourlineIntervals,
     normalizedDeclinationLines,
     dialInclination,
@@ -917,6 +921,7 @@ const App: React.FC = () => {
     if (config.useDST !== undefined) setUseDST(config.useDST);
     if (config.declinationNoonmarks !== undefined) setDeclinationNoonmarks(config.declinationNoonmarks);
     if (config.showFullYearOnNoon !== undefined) setShowFullYearOnNoon(config.showFullYearOnNoon);
+    if (config.differentiateHalfYears !== undefined) setDifferentiateHalfYears(config.differentiateHalfYears);
     if (config.showBelowHorizonHourLines !== undefined) setShowBelowHorizonHourLines(config.showBelowHorizonHourLines);
     if (config.showBelowHorizonDateLines !== undefined) setShowBelowHorizonDateLines(config.showBelowHorizonDateLines);
     if (config.syncBelowHorizon !== undefined) setSyncBelowHorizon(config.syncBelowHorizon);
@@ -1310,6 +1315,7 @@ const App: React.FC = () => {
           useDST={useDST}
           declinationNoonmarks={declinationNoonmarks}
           showFullYearOnNoon={showFullYearOnNoon}
+          differentiateHalfYears={differentiateHalfYears}
           dialTextBlockFontSize={dialTextBlockFontSize}
           dialTextBlockFontFamily={dialTextBlockFontFamily}
           sundialNotesPositionMode={sundialNotesPositionMode}
@@ -1518,6 +1524,8 @@ const App: React.FC = () => {
             declinationNoonmarks={declinationNoonmarks}
             showFullYearOnNoon={showFullYearOnNoon}
             setShowFullYearOnNoon={setShowFullYearOnNoon}
+            differentiateHalfYears={differentiateHalfYears}
+            setDifferentiateHalfYears={setDifferentiateHalfYears}
             equationOfTimeCorrection={correctionFlags.equationOfTime}
             setEquationOfTimeCorrection={(v) => setCorrectionFlags(f => ({ ...f, equationOfTime: v }))}
             showBelowHorizonHourLines={showBelowHorizonHourLines}
