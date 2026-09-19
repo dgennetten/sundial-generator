@@ -134,3 +134,22 @@ export function shouldShowLog(): boolean {
   const latest = LOG_ENTRIES[LOG_ENTRIES.length - 1]
   return latest.id > pref.lastSeenId
 }
+
+/**
+ * Whether to auto-open the dev log on app load. Unlike shouldShowLog(), a
+ * brand-new visitor (no stored preference) is NOT shown the log — they are
+ * silently baselined to the latest entry so their first visit stays
+ * uninterrupted, and they only see the log when a genuinely newer entry ships
+ * on a later visit.
+ */
+export function shouldAutoShowLogOnLoad(): boolean {
+  const pref = getLogPref()
+  if (!pref) {
+    const latest = LOG_ENTRIES[LOG_ENTRIES.length - 1]
+    setLogPref({ mode: 'until-new', lastSeenId: latest.id })
+    return false
+  }
+  if (pref.mode === 'never') return false
+  const latest = LOG_ENTRIES[LOG_ENTRIES.length - 1]
+  return latest.id > pref.lastSeenId
+}

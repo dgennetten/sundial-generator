@@ -52,7 +52,7 @@ import ComponentsOfCorrectionCard from './components/ComponentsOfCorrectionCard'
 import WelcomeDialog, { clearWelcomeDismissed } from './components/WelcomeDialog';
 import DevLogModal from './components/DevLogModal';
 import AdminPanel from './components/AdminPanel';
-import { shouldShowLog, clearLogPref } from './lib/devLog';
+import { shouldShowLog, shouldAutoShowLogOnLoad, clearLogPref } from './lib/devLog';
 import { getAdminPinLimit, getTourShadowVisible, loadGlobalAdminSettings } from './lib/adminPrefs';
 import type { SundialPrint } from './types/sundial';
 import { log } from './utils/logger';
@@ -393,7 +393,7 @@ const App: React.FC = () => {
   }, []);
 
   const [showDevLog, setShowDevLog] = useState(() => {
-    if (!import.meta.env.DEV) return shouldShowLog();
+    if (!import.meta.env.DEV) return shouldAutoShowLogOnLoad();
     const resetFlag = sessionStorage.getItem('sundial-show-devlog-after-reset');
     if (resetFlag) {
       sessionStorage.removeItem('sundial-show-devlog-after-reset');
