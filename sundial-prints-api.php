@@ -64,6 +64,109 @@ if (!$worldTourColumn->fetch()) {
     }
 }
 
+/**
+ * Notify the site owner when a published dial is excluded from the World Tour.
+ * Best-effort: any failure is swallowed and never affects the insert response.
+ * SMTP setup mirrors export-logger.php (credentials from email-config.php / $_ENV).
+ *
+ * @param string $body Plain-text email body with the dial details.
+ * @return array{emailSent: bool, emailError: string}
+ */
+function sendDialExcludedEmail(string $body): array
+{
+    $result = ['emailSent' => false, 'emailError' => ''];
+
+    try {
+        // Credentials live only on the server (gitignored email-config.php sets $_ENV).
+        if (file_exists(__DIR__ . '/email-config.php')) {
+            require_once __DIR__ . '/email-config.php';
+        }
+
+        // Load PHPMailer from the usual hosting locations (same list as export-logger.php).
+        if (!class_exists('\\PHPMailer\\PHPMailer\\PHPMailer')) {
+            if (file_exists(__DIR__ . '/vendor/autoload.php')) {
+                require_once __DIR__ . '/vendor/autoload.php';
+            } elseif (file_exists(__DIR__ . '/PHPMailer/src/PHPMailer.php')) {
+                require_once __DIR__ . '/PHPMailer/src/Exception.php';
+                require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
+                require_once __DIR__ . '/PHPMailer/src/SMTP.php';
+            } else {
+                foreach ([
+                    '/home/' . get_current_user() . '/PHPMailer',
+                    '/home/' . get_current_user() . '/public_html/PHPMailer',
+                    __DIR__ . '/../PHPMailer',
+                    '/usr/share/php/PHPMailer',
+                ] as $basePath) {
+                    if (file_exists($basePath . '/src/PHPMailer.php')) {
+                        require_once $basePath . '/src/Exception.php';
+                        require_once $basePath . '/src/PHPMailer.php';
+                        require_once $basePath . '/src/SMTP.php';
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!class_exists('\\PHPMailer\\PHPMailer\\PHPMailer')) {
+            $result['emailError'] = 'PHPMailer library not found';
+            return $result;
+        }
+
+        $smtpHost          = trim($_ENV['SMTP_HOST']          ?? getenv('SMTP_HOST')          ?? 'smtp.dreamhost.com');
+        $smtpUsername      = trim($_ENV['SMTP_USERNAME']      ?? getenv('SMTP_USERNAME')      ?? 'info@precisionsundial.com');
+        $smtpPassword      = trim($_ENV['SMTP_PASSWORD']      ?? getenv('SMTP_PASSWORD')      ?? '');
+        $smtpFromEmail     = trim($_ENV['SMTP_FROM_EMAIL']    ?? getenv('SMTP_FROM_EMAIL')    ?? 'info@precisionsundial.com');
+        $notificationEmail = trim($_ENV['NOTIFICATION_EMAIL'] ?? getenv('NOTIFICATION_EMAIL') ?? 'douglas@gennetten.com');
+
+        if ($smtpFromEmail === '') {
+            $smtpFromEmail = 'info@precisionsundial.com';
+        }
+        if ($notificationEmail === '') {
+            $notificationEmail = 'douglas@gennetten.com';
+        }
+
+        if ($smtpPassword === '') {
+            $result['emailError'] = 'SMTP password not configured';
+            return $result;
+        }
+
+        $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+        $mail->SMTPDebug = 0;
+        $mail->isSMTP();
+        $mail->Host       = $smtpHost;
+        $mail->SMTPAuth   = true;
+        $mail->AuthType   = 'PLAIN'; // more reliable with Dreamhost
+        $mail->Username   = $smtpUsername;
+        $mail->Password   = $smtpPassword;
+        $mail->SMTPSecure = 'tls';
+        $mail->Port       = 587;
+
+        if (strpos($smtpHost, 'dreamhost') !== false) {
+            $mail->SMTPOptions = [
+                'ssl' => [
+                    'verify_peer'       => false,
+                    'verify_peer_name'  => false,
+                    'allow_self_signed' => true,
+                ],
+            ];
+        }
+
+        $mail->setFrom($smtpFromEmail, 'Sundial Generator');
+        $mail->addAddress($notificationEmail);
+        $mail->addReplyTo($smtpFromEmail, 'Sundial Generator');
+        $mail->isHTML(false);
+        $mail->Subject = 'DIAL EXCLUDED';
+        $mail->Body    = $body;
+        $mail->send();
+
+        $result['emailSent'] = true;
+    } catch (\Throwable $e) {
+        $result['emailError'] = $e->getMessage();
+    }
+
+    return $result;
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
@@ -181,7 +284,40 @@ if ($method === 'POST') {
         ':config_json'       => $config_json,
     ]);
 
-    echo json_encode(['success' => true]);
+    $response = ['success' => true];
+
+    // Someone excluded their published dial from the World Tour — email the owner
+    // with the details. Best-effort; a mail failure never fails the insert.
+    if ($exclude_from_world_tour === 1) {
+        $newId = (int) $pdo->lastInsertId();
+        $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR']
+            ?? $_SERVER['HTTP_CLIENT_IP']
+            ?? $_SERVER['REMOTE_ADDR']
+            ?? 'Unknown';
+        $now = date('Y-m-d H:i:s');
+
+        $body  = "A published dial was excluded from the World Tour.\n\n";
+        $body .= "Dial ID: $newId\n";
+        $body .= "Date/Time: $now\n";
+        $body .= 'Location: ' . ($location !== null && $location !== '' ? $location : 'Unknown') . "\n";
+        $body .= "Latitude: $latitude\n";
+        $body .= "Longitude: $longitude\n";
+        $body .= "Inclination: $inclination\n";
+        $body .= "Declination: $declination\n";
+        $body .= 'Gnomon Type: ' . ($gnomon_type ?? 'Unknown') . "\n";
+        $body .= 'Notes Type: ' . ($notes_type ?? 'Unknown') . "\n";
+        $body .= 'Date Range: ' . ($date_range ?? 'Unknown') . "\n";
+        $body .= 'Today Line Active: ' . ($today_line_active ? 'Yes' : 'No') . "\n";
+        $body .= "IP Address: $ipAddress\n";
+
+        $mailResult = sendDialExcludedEmail($body);
+        $response['excludedEmailSent'] = $mailResult['emailSent'];
+        if (!$mailResult['emailSent'] && $mailResult['emailError'] !== '') {
+            $response['excludedEmailError'] = $mailResult['emailError'];
+        }
+    }
+
+    echo json_encode($response);
     exit;
 }
 
