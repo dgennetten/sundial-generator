@@ -1,5 +1,6 @@
 import React from 'react';
 import { useIsMobile } from '../hooks/useIsMobile';
+import NumberField from './NumberField';
 import type { LineStyle } from './LineSettings';
 import { Clock } from 'lucide-react';
 import { saveHourlineIntervals, saveHourlineOverrides, type HourlineInterval } from './hourlineUtils';
@@ -136,23 +137,21 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
             <label className="form-label">Hour Range</label>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <input
-                type="number"
+              <NumberField
                 className="form-input"
                 min={0}
                 max={23}
                 value={startHour}
-                onChange={(e) => onUpdate(parseInt(e.target.value), stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
+                onValueChange={(val) => onUpdate(val, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
                 style={{ width: isMobile ? '40px' : '60px' }}
               />
               <span>to</span>
-              <input
-                type="number"
+              <NumberField
                 className="form-input"
                 min={startHour + 1}
                 max={24}
                 value={stopHour}
-                onChange={(e) => onUpdate(startHour, parseInt(e.target.value), use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
+                onValueChange={(val) => onUpdate(startHour, val, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, fontSize, useDST, declinationNoonmarks)}
                 style={{ width: isMobile ? '40px' : '60px' }}
               />
             </div>
@@ -329,27 +328,25 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
         >
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '0 0 auto' }}>
             <label className="form-label">Label offset (mm)</label>
-            <input
-              type="number"
+            <NumberField
               className="form-input"
               min={0}
               max={100}
               step={1}
               value={labelOffset}
-              onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, parseInt(e.target.value) || 0, fontFamily, fontSize, useDST, declinationNoonmarks)}
+              onValueChange={val => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, val, fontFamily, fontSize, useDST, declinationNoonmarks)}
               style={{ width: isMobile ? '50px' : '60px' }}
             />
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '0 0 auto' }}>
             <label className="form-label">Font size (pt)</label>
-            <input
-              type="number"
+            <NumberField
               className="form-input"
               min={6}
               max={48}
               step={1}
               value={fontSize}
-              onChange={e => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, parseInt(e.target.value) || 10, useDST, declinationNoonmarks)}
+              onValueChange={val => onUpdate(startHour, stopHour, use24Hour, labelWinterSide, labelSummerSide, labelOffset, fontFamily, val, useDST, declinationNoonmarks)}
               style={{ width: isMobile ? '60px' : '80px' }}
             />
           </div>

@@ -1,6 +1,7 @@
 // src/components/GnomonSettings.tsx
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useIsMobile } from '../hooks/useIsMobile';
+import NumberField from './NumberField';
 import { getAnalemmaPointsProjected } from '../utils/sundialMath';
 import { calculateAutoGnomonHeight as calcAutoHeight } from '../utils/sundialMath';
 import { MoveUpRight, Pause, Play, ArrowLeft } from 'lucide-react';
@@ -479,17 +480,16 @@ const GnomonSettings: React.FC<Props> = ({
           >
             <div className="form-group" style={{ flex: '1 1 0', minWidth: 0 }}>
               <label className="form-label">Height (mm)</label>
-              <input
-                type="number"
+              <NumberField
                 className="form-input"
                 min={1}
                 max={300}
                 step={1}
                 value={height}
-                onChange={(e) =>
+                onValueChange={(val) =>
                   onChange({
                     mode,
-                    height: parseFloat(e.target.value),
+                    height: val,
                     gnomonType,
                     positionMode,
                     position: manualPosition,
@@ -501,15 +501,13 @@ const GnomonSettings: React.FC<Props> = ({
             </div>
             <div className="form-group" style={{ flex: '1 1 0', minWidth: 0 }}>
               <label className="form-label">Vertical Pos. (mm)</label>
-              <input
-                type="number"
+              <NumberField
                 className="form-input"
                 min={0}
                 max={pageHeight}
                 step={1}
                 value={manualPosition}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value) || 0;
+                onValueChange={(val) => {
                   setManualPosition(val);
                   onChange({
                     mode,
@@ -525,15 +523,13 @@ const GnomonSettings: React.FC<Props> = ({
             </div>
             <div className="form-group" style={{ flex: '1 1 0', minWidth: 0 }}>
               <label className="form-label">Horizontal Pos. (mm)</label>
-              <input
-                type="number"
+              <NumberField
                 className="form-input"
                 min={0}
                 max={pageWidth}
                 step={1}
                 value={manualHorizontalPosition}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value) || 0;
+                onValueChange={(val) => {
                   setManualHorizontalPosition(val);
                   onChange({
                     mode,
@@ -552,17 +548,16 @@ const GnomonSettings: React.FC<Props> = ({
         {mode === 'manual' && positionMode !== 'manual' && (
           <div className="form-group">
             <label className="form-label">Height (mm)</label>
-            <input
-              type="number"
+            <NumberField
               className="form-input"
               min={1}
               max={300}
               step={1}
               value={height}
-              onChange={(e) =>
+              onValueChange={(val) =>
                 onChange({
                   mode,
-                  height: parseFloat(e.target.value),
+                  height: val,
                   gnomonType,
                   positionMode,
                   position: manualPosition,
@@ -584,15 +579,13 @@ const GnomonSettings: React.FC<Props> = ({
           >
             <div className="form-group" style={{ flex: '1 1 0', minWidth: 0 }}>
               <label className="form-label">Vertical Pos. (mm)</label>
-              <input
-                type="number"
+              <NumberField
                 className="form-input"
                 min={0}
                 max={pageHeight}
                 step={1}
                 value={manualPosition}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value) || 0;
+                onValueChange={(val) => {
                   setManualPosition(val);
                   onChange({
                     mode,
@@ -608,15 +601,13 @@ const GnomonSettings: React.FC<Props> = ({
             </div>
             <div className="form-group" style={{ flex: '1 1 0', minWidth: 0 }}>
               <label className="form-label">Horizontal Pos. (mm)</label>
-              <input
-                type="number"
+              <NumberField
                 className="form-input"
                 min={0}
                 max={pageWidth}
                 step={1}
                 value={manualHorizontalPosition}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value) || 0;
+                onValueChange={(val) => {
                   setManualHorizontalPosition(val);
                   onChange({
                     mode,

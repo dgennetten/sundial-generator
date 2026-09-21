@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text } from 'lucide-react';
+import NumberField from './NumberField';
 import { languages } from './WelcomeDialog';
 
 interface Props {
@@ -160,22 +161,20 @@ const DialTextBlockSettings: React.FC<Props> = ({
                 <>
                   <div className="form-group" style={{ flex: '0 0 auto' }}>
                     <label className="form-label">Vertical (mm)</label>
-                    <input
-                      type="number"
+                    <NumberField
                       className="form-input"
                       value={sundialNotesOffset}
-                      onChange={(e) => setSundialNotesOffset(Number(e.target.value))}
+                      onValueChange={(val) => setSundialNotesOffset(val)}
                       step={1}
                       style={{ width: '80px' }}
                     />
                   </div>
                   <div className="form-group" style={{ flex: '0 0 auto' }}>
                     <label className="form-label">Horizontal (mm)</label>
-                    <input
-                      type="number"
+                    <NumberField
                       className="form-input"
                       value={sundialNotesOffsetHorizontal}
-                      onChange={(e) => setSundialNotesOffsetHorizontal(Number(e.target.value))}
+                      onValueChange={(val) => setSundialNotesOffsetHorizontal(val)}
                       step={1}
                       style={{ width: '80px' }}
                     />
@@ -192,13 +191,12 @@ const DialTextBlockSettings: React.FC<Props> = ({
           <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end' }}>
             <div className="form-group" style={{ flex: '0 0 auto' }}>
               <label className="form-label">Font Size (pt)</label>
-              <input
-                type="number"
+              <NumberField
                 className="form-input"
                 min={4}
                 max={24}
                 value={dialTextBlockFontSize}
-                onChange={(e) => setDialTextBlockFontSize(Number(e.target.value))}
+                onValueChange={(val) => setDialTextBlockFontSize(val)}
                 style={{ width: '80px' }}
               />
             </div>
@@ -260,13 +258,12 @@ const DialTextBlockSettings: React.FC<Props> = ({
             <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-end' }}>
               <div className="form-group" style={{ flex: '0 0 auto' }}>
                 <label className="form-label">Font Size (pt)</label>
-                <input
-                  type="number"
+                <NumberField
                   className="form-input"
                   min={4}
                   max={24}
                   value={dialTextBlockFontSize}
-                  onChange={(e) => setDialTextBlockFontSize(Number(e.target.value))}
+                  onValueChange={(val) => setDialTextBlockFontSize(val)}
                   style={{ width: '80px' }}
                 />
               </div>

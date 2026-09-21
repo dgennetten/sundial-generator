@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ReactDOM, { flushSync } from 'react-dom';
 import { useIsMobile } from '../hooks/useIsMobile';
+import NumberField from './NumberField';
 import { Download, Save, FolderUp, Undo, Camera, Printer } from 'lucide-react';
 import type { Language } from './WelcomeDialog';
 import { galleryTranslations } from './gallery/galleryTranslations';
@@ -718,14 +719,13 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
               {format === 'PNG' && (
                 <div className="form-group" style={{ flex: '0 0 auto' }}>
                   <label className="form-label">DPI</label>
-                  <input
-                    type="number"
+                  <NumberField
                     className="form-input"
                     min={72}
                     max={2400}
                     step={1}
                     value={dpi}
-                    onChange={e => setDpi(parseInt(e.target.value) || 600)}
+                    onValueChange={val => setDpi(val)}
                     style={{ width: '64px' }}
                   />
                 </div>

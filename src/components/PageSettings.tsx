@@ -2,6 +2,7 @@
 import { getDisplayTiltAngle, getWallDeclinationForPreset } from '../utils/sundialMath';
 import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useIsMobile } from '../hooks/useIsMobile';
+import NumberField from './NumberField';
 import { StickyNote } from 'lucide-react';
 import type { LineStyle } from './LineSettings';
 
@@ -261,8 +262,8 @@ const PageSettings: React.FC<PageSettingsProps> = ({
   const presetInclineDegrees = (type: InclineType): number =>
     getDisplayTiltAngle(type, latitude, 0);
 
-  const handleInclineDegreesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = Math.min(90, Math.max(0, parseFloat(e.target.value) || 0));
+  const handleInclineDegreesChange = (raw: number) => {
+    const val = Math.min(90, Math.max(0, raw));
     setTiltAngle(val);
     // Same ~0° threshold as declination disable: flat dial → default declination for when tilt increases again
     if (Math.abs(val) < 0.05) {
@@ -405,11 +406,10 @@ const PageSettings: React.FC<PageSettingsProps> = ({
           >
             <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
               <label className="form-label">Width</label>
-              <input
-                type="number"
+              <NumberField
                 className="form-input"
                 value={getDisplayValue(customWidth)}
-                onChange={(e) => handleDimensionChange(parseFloat(e.target.value) || 0, setCustomWidth)}
+                onValueChange={(val) => handleDimensionChange(val, setCustomWidth)}
                 min={0.1}
                 step={0.1}
                 style={{ width: isMobile ? '60px' : '80px' }}
@@ -417,11 +417,10 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             </div>
             <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
               <label className="form-label">Height</label>
-              <input
-                type="number"
+              <NumberField
                 className="form-input"
                 value={getDisplayValue(customHeight)}
-                onChange={(e) => handleDimensionChange(parseFloat(e.target.value) || 0, setCustomHeight)}
+                onValueChange={(val) => handleDimensionChange(val, setCustomHeight)}
                 min={0.1}
                 step={0.1}
                 style={{ width: isMobile ? '60px' : '80px' }}
@@ -499,11 +498,11 @@ const PageSettings: React.FC<PageSettingsProps> = ({
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
             <label className="form-label">Degrees</label>
-            <input
-              type="number"
+            <NumberField
               className="form-input"
-              value={tiltAngle.toFixed(1)}
-              onChange={handleInclineDegreesChange}
+              value={tiltAngle}
+              format={(n) => n.toFixed(1)}
+              onValueChange={handleInclineDegreesChange}
               min={0}
               max={90}
               step={inclinationStep}
@@ -595,18 +594,15 @@ const PageSettings: React.FC<PageSettingsProps> = ({
             >
               Degrees
             </label>
-            <input
-              type="number"
+            <NumberField
               className="form-input"
               disabled={declinationControlsDisabled}
-              value={declinationDegrees.toFixed(1)}
-              onChange={(e) => {
-                const val = parseFloat(e.target.value);
-                if (!isNaN(val)) {
-                  setDeclinationDegrees(val);
-                  if (declinationType !== 'Manual') setDeclinationType('Manual');
-                  switchInclineToManualWhenDeclinationChanges();
-                }
+              value={declinationDegrees}
+              format={(n) => n.toFixed(1)}
+              onValueChange={(val) => {
+                setDeclinationDegrees(val);
+                if (declinationType !== 'Manual') setDeclinationType('Manual');
+                switchInclineToManualWhenDeclinationChanges();
               }}
               min={-180}
               max={180}
@@ -768,14 +764,13 @@ const PageSettings: React.FC<PageSettingsProps> = ({
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : 'auto' }}>
             <label className="form-label">Margin (mm)</label>
-            <input
-              type="number"
+            <NumberField
               className="form-input"
               min={1}
               max={50}
               step={1}
               value={margin}
-              onChange={(e) => handleMarginChange(parseFloat(e.target.value) || 6)}
+              onValueChange={(val) => handleMarginChange(val)}
               style={{ width: isMobile ? '60px' : '60px' }}
             />
           </div>
