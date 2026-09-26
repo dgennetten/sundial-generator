@@ -87,6 +87,7 @@ node scripts/test-notification.js    # Smoke-test the export notification email
 | `email-config.php` | SMTP credentials for export notifications — gitignored, lives only on server |
 | `db-config.php` | MySQL credentials — gitignored, lives only on server |
 | `gallery-uploads/` | User-submitted gallery photos — **never in git; the server copy is the only copy** |
+| `logs/` | `export.log` and `feedback.log` — preserved so deploys do not wipe funnel metrics |
 | `config.php` | Another app sharing the directory |
 | `notify.php` | Another app sharing the directory |
 | `client-snippet-php.js` | Another app sharing the directory |
@@ -132,3 +133,18 @@ preserved by `deploy-sftp.js` and is **not** in git — there is no backup other
 ### Export notification system
 
 Exports and prints POST to `export-logger.php` on the production server, which logs to `./logs/export.log` and sends an email via PHPMailer/SMTP. Credentials come from `email-config.php` (loaded by the PHP script at runtime). If that file is missing, email silently fails — use `node scripts/test-notification.js` to diagnose.
+
+### Export / print feedback follow-up
+
+After the first successful export or print, a one-click rating sheet appears (3s delay, once per session, 14-day cooldown if dismissed). Ratings and comments go to `feedback.php`. An optional email queues a day-5 “how did it turn out?” message.
+
+| File | Role |
+|------|------|
+| `src/utils/feedbackNudge.ts` | localStorage trigger, delay, cooldown |
+| `feedback.php` | Owner email + `logs/feedback.log` events (`nudge_shown`, `nudge_rated`, …) |
+| `feedback-optin.php` | Queue follow-up (throttled; one pending/sent row per email) |
+| `feedback-schema.sql` | One-time DDL — `mysql … sundials < feedback-schema.sql` (PHP also creates the table) |
+| `feedback-followup-cron.php` | Dreamhost cron, hourly: `php /home/dgennetten/precisionsundial.com/feedback-followup-cron.php` |
+| `feedback-followup.php` | Rating / unsubscribe confirmation page (POST to act — mail scanners GET every link) |
+
+`?photos=1` opens the existing photo gallery so the follow-up email can land on upload.

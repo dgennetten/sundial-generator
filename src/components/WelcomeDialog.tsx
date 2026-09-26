@@ -240,7 +240,8 @@ const WelcomeDialog: React.FC<WelcomeDialogProps> = ({ onClose, language: langua
     }
     // Check if user has dismissed the welcome dialog
     const dismissed = localStorage.getItem(WELCOME_DISMISSED_KEY);
-    if (!dismissed) {
+    const openPhotos = new URLSearchParams(window.location.search).get('photos') === '1';
+    if (!dismissed && !openPhotos) {
       setShowDialog(true);
     }
     // Load saved language preference

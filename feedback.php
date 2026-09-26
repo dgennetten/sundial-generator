@@ -2,8 +2,9 @@
 /**
  * Sundial Generator Feedback
  *
- * Accepts user feedback via POST and sends it directly by email.
- * Uses the same SMTP configuration as export-logger.php (email-config.php / env vars).
+ * Accepts user feedback via POST and emails the site owner.
+ * Optional structured fields: source, rating, email (Reply-To), format, event.
+ * Event-only posts (nudge_shown) are logged and do not send mail.
  */
 
 ini_set('display_errors', 0);
@@ -25,65 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-if (file_exists(__DIR__ . '/email-config.php')) {
-    require_once __DIR__ . '/email-config.php';
-}
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-if (file_exists(__DIR__ . '/vendor/autoload.php')) {
-    require_once __DIR__ . '/vendor/autoload.php';
-} elseif (file_exists(__DIR__ . '/PHPMailer/src/PHPMailer.php')) {
-    require_once __DIR__ . '/PHPMailer/src/Exception.php';
-    require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
-    require_once __DIR__ . '/PHPMailer/src/SMTP.php';
-} else {
-    $phpmailerPaths = [
-        '/home/' . get_current_user() . '/PHPMailer',
-        '/home/' . get_current_user() . '/public_html/PHPMailer',
-        __DIR__ . '/../PHPMailer',
-        '/usr/share/php/PHPMailer',
-    ];
-
-    $found = false;
-    foreach ($phpmailerPaths as $basePath) {
-        if (file_exists($basePath . '/src/PHPMailer.php')) {
-            require_once $basePath . '/src/Exception.php';
-            require_once $basePath . '/src/PHPMailer.php';
-            require_once $basePath . '/src/SMTP.php';
-            $found = true;
-            break;
-        }
-    }
-
-    if (!$found) {
-        echo json_encode([
-            'success' => false,
-            'error' => 'PHPMailer library not found.',
-        ]);
-        exit;
-    }
-}
-
-function getClientIpAddress(): string {
-    $ipAddress = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
-    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $parts = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-        $ipAddress = trim($parts[0]);
-    } elseif (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-        $ipAddress = $_SERVER['HTTP_CLIENT_IP'];
-    }
-    return $ipAddress;
-}
-
-function isPublicIp(string $ip): bool {
-    return filter_var(
-        $ip,
-        FILTER_VALIDATE_IP,
-        FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
-    ) !== false;
-}
+require_once __DIR__ . '/feedback-config.php';
 
 function getApproximateLocationFromCoordinates(?float $lat, ?float $lon): ?string {
     if ($lat === null || $lon === null) {
@@ -140,7 +83,7 @@ function getApproximateLocationFromCoordinates(?float $lat, ?float $lon): ?strin
 }
 
 function getApproximateLocationFromIp(string $ip): ?string {
-    if (!isPublicIp($ip)) {
+    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
         return null;
     }
 
@@ -177,11 +120,32 @@ if (!is_array($data)) {
     $data = [];
 }
 
-$message = trim($data['message'] ?? '');
-if ($message === '') {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Feedback message is required.']);
-    exit;
+$allowedSources = ['export-nudge', 'about', 'followup'];
+$allowedRatings = ['worked', 'problem'];
+$allowedEvents = ['nudge_shown', 'nudge_rated', 'nudge_commented', 'followup_opted_in'];
+
+$message = trim((string) ($data['message'] ?? ''));
+$source = trim((string) ($data['source'] ?? ''));
+$rating = trim((string) ($data['rating'] ?? ''));
+$event = trim((string) ($data['event'] ?? ''));
+$email = strtolower(trim((string) ($data['email'] ?? '')));
+$format = trim((string) ($data['format'] ?? ''));
+$followUp = !empty($data['followUp']);
+
+if ($source !== '' && !in_array($source, $allowedSources, true)) {
+    $source = '';
+}
+if ($rating !== '' && !in_array($rating, $allowedRatings, true)) {
+    $rating = '';
+}
+if ($event !== '' && !in_array($event, $allowedEvents, true)) {
+    $event = '';
+}
+if ($email !== '' && !feedback_valid_email($email)) {
+    $email = '';
+}
+if (mb_strlen($format) > 20) {
+    $format = substr($format, 0, 20);
 }
 
 if (mb_strlen($message) > 5000) {
@@ -190,21 +154,58 @@ if (mb_strlen($message) > 5000) {
     exit;
 }
 
-$locationName = trim($data['locationName'] ?? 'Unknown');
+$locationName = trim((string) ($data['locationName'] ?? 'Unknown'));
 $latitude = isset($data['latitude']) && is_numeric($data['latitude']) ? floatval($data['latitude']) : null;
 $longitude = isset($data['longitude']) && is_numeric($data['longitude']) ? floatval($data['longitude']) : null;
+$ipAddress = gallery_client_ip();
 
-$ipAddress = getClientIpAddress();
+feedback_log_event($event !== '' ? $event : 'feedback', [
+    'source' => $source,
+    'rating' => $rating,
+    'format' => $format,
+    'location' => $locationName,
+    'email' => $email !== '' ? 'yes' : '',
+    'commented' => $message !== '' ? 'yes' : '',
+    'followUp' => $followUp ? 'yes' : '',
+    'ip' => $ipAddress,
+]);
+
+if ($event === 'nudge_shown' && $message === '' && $rating === '') {
+    echo json_encode(['success' => true, 'logged' => true]);
+    exit;
+}
+
+if ($message === '' && $rating === '') {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Feedback message or rating is required.']);
+    exit;
+}
+
 $date = date('Y-m-d');
 $time = date('H:i:s');
-
 $locationFromCoordinates = getApproximateLocationFromCoordinates($latitude, $longitude);
 $locationFromIp = getApproximateLocationFromIp($ipAddress);
 
 $emailBody = "Sundial Generator Feedback\n\n";
 $emailBody .= "Date: $date\n";
 $emailBody .= "Time: $time\n";
-$emailBody .= "IP Address: $ipAddress\n\n";
+$emailBody .= "IP Address: $ipAddress\n";
+if ($source !== '') {
+    $emailBody .= "Source: $source\n";
+}
+if ($event !== '') {
+    $emailBody .= "Event: $event\n";
+}
+if ($rating !== '') {
+    $emailBody .= "Rating: $rating\n";
+}
+if ($format !== '') {
+    $emailBody .= "Format: $format\n";
+}
+if ($email !== '') {
+    $emailBody .= "Reply email: $email\n";
+}
+$emailBody .= 'Follow-up requested: ' . ($followUp ? 'yes' : 'no') . "\n\n";
 
 $emailBody .= "Estimated sender location:\n";
 $emailBody .= "Dial location name: $locationName\n";
@@ -220,72 +221,38 @@ if ($locationFromIp !== null) {
 
 $emailBody .= "\nFeedback:\n";
 $emailBody .= str_repeat('-', 50) . "\n";
-$emailBody .= $message . "\n";
+$emailBody .= ($message !== '' ? $message : '(no comment)') . "\n";
 $emailBody .= str_repeat('-', 50) . "\n";
 
-$mail = new PHPMailer(true);
-$emailSent = false;
-$emailError = '';
-
-try {
-    $smtpHost = trim($_ENV['SMTP_HOST'] ?? getenv('SMTP_HOST') ?? 'smtp.dreamhost.com');
-    $smtpUsername = trim($_ENV['SMTP_USERNAME'] ?? getenv('SMTP_USERNAME') ?? 'info@precisionsundial.com');
-    $smtpPassword = trim($_ENV['SMTP_PASSWORD'] ?? getenv('SMTP_PASSWORD') ?? '');
-    $smtpFromEmail = trim($_ENV['SMTP_FROM_EMAIL'] ?? getenv('SMTP_FROM_EMAIL') ?? 'info@precisionsundial.com');
-    $notificationEmail = trim($_ENV['NOTIFICATION_EMAIL'] ?? getenv('NOTIFICATION_EMAIL') ?? 'douglas@gennetten.com');
-
-    if (empty($smtpFromEmail)) {
-        $smtpFromEmail = 'info@precisionsundial.com';
-    }
-    if (empty($notificationEmail)) {
-        $notificationEmail = 'douglas@gennetten.com';
-    }
-
-    if (empty($smtpPassword)) {
-        $emailError = 'SMTP password not configured.';
-    } else {
-        $mail->SMTPDebug = 0;
-        $mail->isSMTP();
-        $mail->Host = $smtpHost;
-        $mail->SMTPAuth = true;
-        $mail->AuthType = 'PLAIN';
-        $mail->Username = $smtpUsername;
-        $mail->Password = trim($smtpPassword);
-        $mail->SMTPSecure = 'tls';
-        $mail->Port = 587;
-
-        if (strpos($smtpHost, 'dreamhost') !== false) {
-            $mail->SMTPOptions = [
-                'ssl' => [
-                    'verify_peer' => false,
-                    'verify_peer_name' => false,
-                    'allow_self_signed' => true,
-                ],
-            ];
-        }
-
-        $mail->setFrom($smtpFromEmail, 'Sundial Generator');
-        $mail->addAddress($notificationEmail);
-        $mail->addReplyTo($smtpFromEmail, 'Sundial Generator');
-
-        $mail->isHTML(false);
-        $mail->Subject = 'Sundial Generator Feedback';
-        $mail->Body = $emailBody;
-
-        $mail->send();
-        $emailSent = true;
-    }
-} catch (Exception $e) {
-    $emailError = (isset($mail) ? $mail->ErrorInfo : '') . ' | Exception: ' . $e->getMessage();
+$ratingLabel = $rating !== '' ? $rating : 'note';
+$sourceLabel = $source !== '' ? $source : 'feedback';
+$subjectLocation = $locationName !== '' ? $locationName : 'Unknown';
+$subject = "Feedback [$ratingLabel] $subjectLocation";
+if ($sourceLabel !== 'export-nudge') {
+    $subject = "Feedback [$ratingLabel/$sourceLabel] $subjectLocation";
 }
+
+$emailSent = feedback_send_owner_mail($subject, $emailBody, $email !== '' ? $email : null);
 
 if (!$emailSent) {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => $emailError ?: 'Failed to send feedback email.',
+        'error' => 'Failed to send feedback email.',
     ]);
     exit;
+}
+
+if ($followUp && $email !== '') {
+    feedback_queue_followup([
+        'email' => $email,
+        'rating' => $rating !== '' ? $rating : null,
+        'comment' => $message !== '' ? $message : null,
+        'location_name' => $locationName,
+        'format' => $format !== '' ? $format : null,
+        'latitude' => $latitude,
+        'longitude' => $longitude,
+    ]);
 }
 
 echo json_encode([

@@ -38,6 +38,7 @@ const AboutCard: React.FC<AboutCardProps> = ({
       latitude,
       longitude,
       locationName,
+      source: 'about',
     });
 
     if (result.success) {

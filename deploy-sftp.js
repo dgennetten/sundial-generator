@@ -54,7 +54,9 @@ if (!config.host || !config.username || !config.password) {
 
 const localPath = path.join(__dirname, 'dist');
 const phpFiles = [
-  'export-logger.php', 'feedback.php', '.htaccess', 'email-config.php', 'sundial-prints-api.php',
+  'export-logger.php', 'feedback.php', 'feedback-config.php', 'feedback-optin.php',
+  'feedback-followup-cron.php', 'feedback-followup.php',
+  '.htaccess', 'email-config.php', 'sundial-prints-api.php',
   'sundial-settings-api.php',
   // Photo gallery API
   'gallery-config.php', 'gallery-auth.php', 'gallery-request-otp.php', 'gallery-verify-otp.php',
@@ -185,7 +187,7 @@ async function deployWithSFTP() {
 
     // Files/directories to preserve on the server during cleanup.
     // gallery-uploads holds user-submitted photos — deleting it would destroy them.
-    const preserveOnServer = new Set(['.', '..', 'docs', 'config.php', 'notify.php', 'client-snippet-php.js', 'email-config.php', 'db-config.php', 'gallery-uploads', '.htaccess']);
+    const preserveOnServer = new Set(['.', '..', 'docs', 'config.php', 'notify.php', 'client-snippet-php.js', 'email-config.php', 'db-config.php', 'gallery-uploads', '.htaccess', 'logs']);
 
     // Delete existing files (except preserved files)
     for (const file of existingFiles) {

@@ -19,6 +19,12 @@ import { saveDialConfig, loadAllSavedConfigs, deleteSavedConfig, hasSavedConfigs
 import SaveDialDialog from './SaveDialDialog';
 import RestoreDialDialog from './RestoreDialDialog';
 import FeedbackNudgeModal from './FeedbackNudgeModal';
+import { logFeedbackEvent } from '../utils/feedbackUtils';
+import {
+  markFeedbackNudgeDismissed,
+  markFeedbackNudgeSubmitted,
+  startFeedbackNudge,
+} from '../utils/feedbackNudge';
 import type { HourlineInterval } from './hourlineUtils';
 import type { LineStyle } from './LineSettings';
 import type { DeclinationLine } from './DeclinationLineOptions';
@@ -121,17 +127,43 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   const [includeTodayLine, setIncludeTodayLine] = useState(false);
   const [excludeFromWorldTour, setExcludeFromWorldTour] = useState(false);
 
-  // Feedback nudge: after the user's *second* successful export/print this session, invite
-  // feedback once. Firing on the second (not the first) gives them a chance to open and
-  // review a printout before we ask how it went. The counter is only ever exactly 2 one
-  // time, so this is naturally once-per-session.
   const [showFeedbackNudge, setShowFeedbackNudge] = useState(false);
-  const maybeShowFeedbackNudge = () => {
-    const FEEDBACK_NUDGE_COUNT_KEY = 'sundial-export-count';
-    const count = Number(sessionStorage.getItem(FEEDBACK_NUDGE_COUNT_KEY) || '0') + 1;
-    sessionStorage.setItem(FEEDBACK_NUDGE_COUNT_KEY, String(count));
-    if (count === 2) setShowFeedbackNudge(true);
-  };
+  const [nudgeFormat, setNudgeFormat] = useState<string>('PDF');
+  const nudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleFeedbackNudge = useCallback((exportFormat: string) => {
+    setNudgeFormat(exportFormat);
+    if (nudgeTimerRef.current) {
+      clearTimeout(nudgeTimerRef.current);
+      nudgeTimerRef.current = null;
+    }
+    nudgeTimerRef.current = startFeedbackNudge(() => {
+      logFeedbackEvent({
+        event: 'nudge_shown',
+        source: 'export-nudge',
+        format: exportFormat,
+        locationName,
+        latitude,
+        longitude,
+      });
+      setShowFeedbackNudge(true);
+    });
+  }, [locationName, latitude, longitude]);
+
+  useEffect(() => {
+    return () => {
+      if (nudgeTimerRef.current) {
+        clearTimeout(nudgeTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('photos') === '1') {
+      setShowGallery(true);
+    }
+  }, []);
 
   // Glued Popup Base export options
   const [exportGnomonNet, setExportGnomonNet] = useState(true);
@@ -406,7 +438,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       })
       .finally(() => onLogComplete?.());
 
-    maybeShowFeedbackNudge();
+    scheduleFeedbackNudge('PRINT');
 
     // Clean up after the print dialog closes
     setTimeout(() => {
@@ -461,7 +493,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         cubeSideMm,
       }, () => onLogComplete?.()); // Map refresh fires when background logging settles
       log.info('Export completed successfully');
-      maybeShowFeedbackNudge();
+      scheduleFeedbackNudge(format);
     } catch (error) {
       log.error('Export failed:', error);
       // You could add user-facing error handling here, like showing a toast notification
@@ -964,7 +996,15 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
           latitude={latitude}
           longitude={longitude}
           locationName={locationName}
+          format={nudgeFormat}
           onClose={() => setShowFeedbackNudge(false)}
+          onDismiss={markFeedbackNudgeDismissed}
+          onSubmitted={markFeedbackNudgeSubmitted}
+          onOpenPhotos={() => {
+            markFeedbackNudgeSubmitted();
+            setShowFeedbackNudge(false);
+            setShowGallery(true);
+          }}
         />
       )}
     </div>
