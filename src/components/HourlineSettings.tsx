@@ -10,7 +10,7 @@ type DateRange = 'FullYear' | 'SummerToFall' | 'WinterToSpring' | 'DualHalf';
 interface HourlineSettingsProps {
   dateRange: DateRange;
   setDateRange: (range: DateRange) => void;
-  /** When true, the Date Range is fixed to "Dual-Half" and the control is disabled. */
+  /** When true, the Date Range is fixed to "Dual Half Year" (the only time that option is shown) and the control is disabled. */
   dateRangeLocked?: boolean;
   lineStyles: LineStyle[];
   hourlineIntervals: HourlineInterval[];
@@ -131,7 +131,7 @@ const HourlineSettings: React.FC<HourlineSettingsProps> = React.memo(({
               <option value="FullYear">Full Year</option>
               <option value="SummerToFall">Summer - Fall</option>
               <option value="WinterToSpring">Winter - Spring</option>
-              <option value="DualHalf" disabled>Dual-Half Year</option>
+              {dateRangeLocked && <option value="DualHalf" disabled>Dual Half Year</option>}
             </select>
           </div>
           <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
