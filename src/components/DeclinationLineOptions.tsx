@@ -310,8 +310,8 @@ const DeclinationLineOptions: React.FC<{
               <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
                 <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Date</th>
                 <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Line Style</th>
-                <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Active</th>
-                <th style={{ textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}></th>
+                <th style={{ width: '1%', whiteSpace: 'nowrap', textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}>Active</th>
+                <th style={{ width: '1%', textAlign: 'left', padding: '0.3rem 0.3rem', fontSize: '0.9rem', fontWeight: '600', color: '#4a5568' }}></th>
               </tr>
             </thead>
             <tbody>
@@ -325,7 +325,7 @@ const DeclinationLineOptions: React.FC<{
                 return (
                   <tr key={`decl-${idx}`}>
                     <td style={{ padding: '0.3rem 0.3rem' }}>
-                      <div style={{ position: 'relative', display: 'inline-block' }}>
+                      <div style={{ position: 'relative' }}>
                         <input
                           ref={isLastRow && isBlankRow ? lastInputRef : null}
                           type="text"
@@ -334,7 +334,7 @@ const DeclinationLineOptions: React.FC<{
                           onChange={e => handleChange(idx, 'date', e.target.value)}
                           disabled={!!isFixed}
                             placeholder="Month Day or Month Day-Day (e.g. July 1-5)"
-                          style={{ width: '130px', fontSize: '0.9rem', paddingRight: '20px' }}
+                          style={{ width: '100%', minWidth: '120px', fontSize: '0.9rem', paddingRight: '20px' }}
                           title={
                             !isDateStringInRange(line.date)
                               ? `${rangeHelp}. Date not within selected date range.`
@@ -364,7 +364,7 @@ const DeclinationLineOptions: React.FC<{
                         className="form-select"
                         value={line.id === '' ? draftStyle : ((line.styleId && lineStyles.some(s => s.id === line.styleId || s.name === line.styleId)) ? line.styleId : 'red-dashed-hairline')}
                         onChange={e => handleChange(idx, 'styleId', e.target.value)}
-                        style={{ fontSize: '0.9rem' }}
+                        style={{ width: '100%', minWidth: '140px', fontSize: '0.9rem' }}
                       >
                         {lineStyles.filter(s => s.name && s.name.trim() && (!s.applicableToLines || s.applicableToLines.includes('declination'))).map(style => (
                           <option key={style.id || style.name} value={style.id || style.name}>{style.name}</option>
