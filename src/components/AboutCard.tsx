@@ -257,10 +257,10 @@ algorithm which "enables it to be calculated for any epoch within 30 centuries o
               <Github size={22} color="#2563eb" style={{ verticalAlign: 'middle' }} />
             </a>
             <a
-              href="https://douglas.gennetten.com"
+              href="https://douglas.gennetten.org"
               target="_blank"
               rel="noopener noreferrer"
-              title="Douglas Gennetten — douglas.gennetten.com"
+              title="Douglas Gennetten — douglas.gennetten.org"
               style={{
                 color: '#2563eb',
                 textDecoration: 'none',
