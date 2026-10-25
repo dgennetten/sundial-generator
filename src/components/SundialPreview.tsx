@@ -1181,7 +1181,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   x={x}
                   y={y}
                   fontSize={fontSizeMm}
-                  fill={style.color || 'black'}
+                  fill="black"
                   textAnchor="middle"
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
@@ -1207,7 +1207,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   x={x}
                   y={y}
                   fontSize={fontSizeMm}
-                  fill={style.color || 'black'}
+                  fill="black"
                   textAnchor="middle"
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
@@ -1242,7 +1242,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   x={x}
                   y={y}
                   fontSize={fontSizeMm}
-                  fill={style.color || 'black'}
+                  fill="black"
                   textAnchor="middle"
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
@@ -1267,7 +1267,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   x={x}
                   y={y}
                   fontSize={fontSizeMm}
-                  fill={style.color || 'black'}
+                  fill="black"
                   textAnchor="middle"
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
@@ -1315,7 +1315,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
                   x={x}
                   y={y}
                   fontSize={fontSizeMm}
-                  fill={style.color || 'black'}
+                  fill="black"
                   textAnchor="middle"
                   alignmentBaseline="middle"
                   style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
@@ -2362,7 +2362,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       }
     }
 
-    function pushDatelineLabel(decl: number, labelText: string, key: string, color: string) {
+    function pushDatelineLabel(decl: number, labelText: string, key: string) {
       const info = computeDeclinationLabelInfo(decl);
       if (!info) return;
       const perpOffset = labelFontSize * 0.7;
@@ -2385,7 +2385,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           x={labelColX}
           y={labelY}
           fontSize={labelFontSize}
-          fill={color}
+          fill="black"
           textAnchor="end"
           alignmentBaseline="middle"
           transform={`rotate(${labelAngle} ${labelColX} ${labelY})`}
@@ -2401,7 +2401,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     // Counter for alternating noon mark label sides (half-year only); resets each render pass.
     const noonmarkCounter = { value: 0 };
 
-    function pushNoonmarkLabel(decl: number, ip: { x: number; y: number }, labelText: string, key: string, color: string) {
+    function pushNoonmarkLabel(decl: number, ip: { x: number; y: number }, labelText: string, key: string) {
       const noonX = scale * ip.x;
       const info = computeDeclinationLabelInfo(decl, noonX);
       if (!info) return;
@@ -2428,7 +2428,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           x={lx}
           y={labelY}
           fontSize={labelFontSize}
-          fill={color}
+          fill="black"
           textAnchor={anchor}
           alignmentBaseline="middle"
           transform={`rotate(${labelAngle} ${lx} ${labelY})`}
@@ -2439,11 +2439,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       );
     }
 
-    function pushLabel(decl: number, ip: { x: number; y: number } | null, labelText: string, key: string, color: string) {
+    function pushLabel(decl: number, ip: { x: number; y: number } | null, labelText: string, key: string) {
       if (useNoonmarkLabels && ip) {
-        pushNoonmarkLabel(decl, ip, labelText, key, color);
+        pushNoonmarkLabel(decl, ip, labelText, key);
       } else if (!useNoonmarkLabels) {
-        pushDatelineLabel(decl, labelText, key, color);
+        pushDatelineLabel(decl, labelText, key);
       }
     }
 
@@ -2452,8 +2452,6 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     effectiveDeclinationLines.forEach((line, idx) => {
       if (!line.active) return;
       if (!isDateStringInRange(line.date)) return;
-      const style = lineStyles.find(s => s.id === line.styleId || s.name === line.styleId);
-      const color = style?.color || 'black';
 
       if (line.date === '1st of the Month') {
         getMonthBoundaryDeclinations().forEach((boundary, boundaryIdx) => {
@@ -2461,7 +2459,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           if (mi < 0) return;
           const labelText = formatDateLabel(new Date(2000, mi, 1));
           const ip = useNoonmarkLabels ? findDeclinationAnalemmaIntersection(boundary.decl) : null;
-          pushLabel(boundary.decl, ip, labelText, `dlabel-${idx}-${boundary.month}-${boundaryIdx}`, color);
+          pushLabel(boundary.decl, ip, labelText, `dlabel-${idx}-${boundary.month}-${boundaryIdx}`);
         });
         return;
       }
@@ -2472,7 +2470,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           if (mi < 0) return;
           const labelText = formatDateLabel(new Date(2000, mi, day.dayOfMonth));
           const ip = useNoonmarkLabels ? findDeclinationAnalemmaIntersection(day.decl) : null;
-          pushLabel(day.decl, ip, labelText, `dlabel-${idx}-${day.month}-${day.dayOfMonth}-${dayIdx}`, color);
+          pushLabel(day.decl, ip, labelText, `dlabel-${idx}-${day.month}-${day.dayOfMonth}-${dayIdx}`);
         });
         return;
       }
@@ -2503,7 +2501,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       }
 
       const ip = useNoonmarkLabels ? findDeclinationAnalemmaIntersection(decl) : null;
-      pushLabel(decl, ip, formatDateLabel(labelDate), `dlabel-${idx}-${line.id}`, color);
+      pushLabel(decl, ip, formatDateLabel(labelDate), `dlabel-${idx}-${line.id}`);
     });
   }
 
