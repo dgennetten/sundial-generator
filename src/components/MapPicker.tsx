@@ -14,6 +14,16 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+/** Nominatim reverse result → "Town, Region, Country" (falls back to its display name). */
+function shortPlaceName(result: { display_name?: string; address?: Record<string, string> } | null): string | null {
+  if (!result) return null;
+  const a = result.address ?? {};
+  const place = a.city || a.town || a.village || a.hamlet || a.municipality || a.suburb || a.county;
+  const parts = [place, a.state || a.region || a.province, a.country].filter(Boolean);
+  if (parts.length) return [...new Set(parts)].join(', ');
+  return result.display_name ?? null;
+}
+
 interface MapPickerProps {
   open: boolean;
   onClose: () => void;
@@ -41,6 +51,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
+  const [locateError, setLocateError] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>(
     initialLat && initialLng ? [initialLat, initialLng] : [0, 0]
   );
@@ -124,45 +135,64 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
     }
   }, [searchQuery]);
 
-  // Use the browser's Geolocation API to select the user's current position
+  // Use the browser's Geolocation API to select the user's current position.
+  // A sundial only needs town-level accuracy, so a quick fix (or a recent cached one) is
+  // tried first; if GPS can't get a fix in time, retry with network-based location.
   const handleUseCurrentLocation = useCallback(() => {
+    setLocateError(null);
     if (!navigator.geolocation) {
-      log.error('Geolocation is not supported by this browser.');
+      setLocateError('Your browser can’t share its location. Search for your town or tap the map instead.');
+      return;
+    }
+    if (!window.isSecureContext) {
+      setLocateError('Location is only available over a secure (https) connection. Search for your town or tap the map instead.');
       return;
     }
 
-    setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
+    const onPosition = async (position: GeolocationPosition) => {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
 
-        setSelected({ lat, lng });
-        setSelectedPlaceName(null);
-        setMapCenter([lat, lng]);
-        setMapZoom(12);
+      setSelected({ lat, lng });
+      setSelectedPlaceName(null);
+      setMapCenter([lat, lng]);
+      setMapZoom(11);
 
-        // Best-effort reverse geocode to get a friendly place name
-        try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-          );
+      // Best-effort reverse geocode at town level, for a short name like the search results
+      // ("Fort Collins, Colorado, United States") rather than a full street address.
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&zoom=10&addressdetails=1&lat=${lat}&lon=${lng}`
+        );
+        const contentType = response.headers.get('content-type') || '';
+        if (response.ok && contentType.includes('json')) {
           const result = await response.json();
-          if (result && result.display_name) {
-            setSelectedPlaceName(result.display_name);
-          }
-        } catch (error) {
-          log.error('Reverse geocode failed:', error);
-        } finally {
-          setIsLocating(false);
+          const name = shortPlaceName(result);
+          if (name) setSelectedPlaceName(name);
         }
-      },
-      (error) => {
-        log.error('Geolocation failed:', error);
+      } catch (error) {
+        log.error('Reverse geocode failed:', error);
+      } finally {
         setIsLocating(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+      }
+    };
+
+    const onError = (error: GeolocationPositionError, retried: boolean) => {
+      log.error('Geolocation failed:', error);
+      if (!retried && error.code !== error.PERMISSION_DENIED) {
+        navigator.geolocation.getCurrentPosition(onPosition, (e) => onError(e, true),
+          { enableHighAccuracy: false, timeout: 15000, maximumAge: 10 * 60 * 1000 });
+        return;
+      }
+      setIsLocating(false);
+      setLocateError(error.code === error.PERMISSION_DENIED
+        ? 'Location access is blocked. Allow it for this site in your browser settings, or search for your town instead.'
+        : 'Couldn’t find your location. Search for your town or tap the map instead.');
+    };
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(onPosition, (e) => onError(e, false),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 5 * 60 * 1000 });
   }, []);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
@@ -310,6 +340,11 @@ const MapPicker: React.FC<MapPickerProps> = ({ open, onClose, onSelect, initialL
               <LocateFixed size={16} />
               {isLocating ? 'Locating...' : 'Use current location'}
             </button>
+            {locateError && (
+              <div role="alert" style={{ marginTop: 6, fontSize: '13px', color: '#b45309' }}>
+                {locateError}
+              </div>
+            )}
           </div>
 
           {/* Map — shrinks on short viewports so the footer stays reachable */}
