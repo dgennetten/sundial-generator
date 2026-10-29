@@ -1296,10 +1296,10 @@ const App: React.FC = () => {
 
   return (
     <div className={`app-container${isPreviewFullscreen ? ' preview-fullscreen' : ''}`}>
-      {/* Welcome Dialog */}
-      <WelcomeDialog language={language} onLanguageChange={setLanguage} />
+      {/* How-to-Build popup and Developer's Log are Advanced-only; Basic mode is its own guide. */}
+      {uiMode === 'advanced' && <WelcomeDialog language={language} onLanguageChange={setLanguage} />}
 
-      {showDevLog && (
+      {showDevLog && uiMode === 'advanced' && (
         <DevLogModal onClose={() => setShowDevLog(false)} />
       )}
 
@@ -1479,6 +1479,8 @@ const App: React.FC = () => {
         {uiMode === 'basic' && (
           <BasicPanel
             locationName={locationName}
+            latitude={latitude}
+            longitude={longitude}
             onOpenMap={() => setOpenMapSignal(n => n + 1)}
             basicStyle={basicStyle}
             onStyleChange={setBasicStyle}

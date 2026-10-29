@@ -96,7 +96,7 @@ const FOLDS: P2[][] = [
 const BRACE_ANGLE = (Math.acos(976.5625 / 1250) * 180) / Math.PI;
 
 const FRAMES = [
-  { title: 'Cut', caption: 'Cut along the solid red lines — the triangle\'s two outer edges, the short slit, and around the rounded brace tab.' },
+  { title: 'Cut', caption: 'Cut along the solid red lines; Lightly score the dashed lines.' },
   { title: 'Fold up', caption: 'Fold the triangle straight up along its dashed edge so it stands at 90° to the page.' },
   { title: 'Brace', caption: 'Fold the rounded tab up along its dashed line until the slit in its tip slides onto the triangle’s notch, locking it upright.' },
   { title: 'Enjoy', caption: 'Lay the dial flat and level, turn its North Point arrow to true north, and read the time from the shadow.' },
@@ -194,12 +194,17 @@ const GnomonAssemblyGuide: React.FC<Props> = ({ restartSignal }) => {
   const uid = `ag${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const [dial, setDial] = useState<DialSnapshot | null>(null);
 
-  // Re-copy the dial at each step so it follows location / style / size changes.
+  // Re-copy the dial at each step so it follows location / style / size changes. The short
+  // delay lets the preview catch up first — on load, Basic mode's preset is still being
+  // applied when this mounts, and copying immediately would show the pre-preset dial.
   useEffect(() => {
-    setDial((prev) => {
-      const next = snapshotDial(`${uid}-`);
-      return next && prev && next.html === prev.html && next.matrix === prev.matrix ? prev : next;
-    });
+    const t = setTimeout(() => {
+      setDial((prev) => {
+        const next = snapshotDial(`${uid}-`);
+        return next && prev && next.html === prev.html && next.matrix === prev.matrix ? prev : next;
+      });
+    }, 400);
+    return () => clearTimeout(t);
   }, [frame, restartSignal, uid]);
 
   useEffect(() => {

@@ -16,6 +16,8 @@ const OUT_OF_RANGE_NOTE = 'Not in this half-year — won’t print. Pick the oth
 
 interface Props {
   locationName: string;
+  latitude: number;
+  longitude: number;
   onOpenMap: () => void;
   basicStyle: BasicStyle;
   onStyleChange: (style: BasicStyle) => void;
@@ -43,7 +45,7 @@ const Step: React.FC<{ n: number; title: string; id?: string; children: React.Re
 );
 
 const BasicPanel: React.FC<Props> = ({
-  locationName, onOpenMap, basicStyle, onStyleChange, currentHalfLabel, otherHalfLabel,
+  locationName, latitude, longitude, onOpenMap, basicStyle, onStyleChange, currentHalfLabel, otherHalfLabel,
   pageSize, onPageSizeChange, todayActive, todayOutOfRange, onTodayChange, customDates, onAddDate, onRemoveDate,
   onPrint, onOpenGallery, onSwitchToAdvanced,
 }) => {
@@ -66,6 +68,11 @@ const BasicPanel: React.FC<Props> = ({
     setAddingDate(false);
   };
 
+  // A spot picked on the map (not a named search result) has no name, so show its coordinates.
+  const locationLabel = locationName === 'Custom Lat/Long'
+    ? `${locationName} ${latitude.toFixed(3)}, ${longitude.toFixed(3)}`
+    : locationName;
+
   const styleOptions: { value: BasicStyle; label: string; hint: string; badge?: string }[] = [
     { value: 'current', label: 'Current half-year', hint: currentHalfLabel, badge: 'Easiest to Use' },
     { value: 'other', label: 'Other half-year', hint: otherHalfLabel },
@@ -83,7 +90,7 @@ const BasicPanel: React.FC<Props> = ({
         <button type="button" className="btn btn-primary basic-map-btn" onClick={onOpenMap}>
           <Map size={18} /> Open Map
         </button>
-        <div className="basic-location" title={locationName}>{locationName}</div>
+        <div className="basic-location" title={locationLabel}>{locationLabel}</div>
       </Step>
 
       <Step n={2} title="Style">
@@ -158,11 +165,11 @@ const BasicPanel: React.FC<Props> = ({
         </div>
       </Step>
 
-      <Step n={5} title="Enjoy" id="basic-step-enjoy">
+      <Step n={5} title="Cut, Fold, and Enjoy!" id="basic-step-enjoy">
         <GnomonAssemblyGuide restartSignal={printSignal} />
         <div className="basic-enjoy-links">
           <button type="button" className="basic-link-btn" onClick={onOpenGallery}>
-            <Camera size={14} /> Share a photo of your dial
+            <Camera size={14} /> Share a photo of your dial!
           </button>
           <button type="button" className="basic-link-btn" onClick={onSwitchToAdvanced}>
             Want more control? Advanced →
