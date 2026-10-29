@@ -2478,7 +2478,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       const decl = getDeclinationForLine(line);
       if (decl === null) return;
 
-      if (line.date === 'Today') return;
+      if (line.date === 'Today') {
+        const ip = useNoonmarkLabels ? findDeclinationAnalemmaIntersection(decl) : null;
+        pushLabel(decl, ip, formatDateLabel(new Date()), `dlabel-${idx}-today`);
+        return;
+      }
 
       if (line.date === 'Summer Solstice' || line.date === 'Winter Solstice') return;
 
