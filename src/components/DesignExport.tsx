@@ -336,7 +336,11 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       case 'Custom':        if (customWidth && customHeight)
                               pageSizeStr = `${customWidth}mm ${customHeight}mm`;         break;
     }
-    const orientationStr = isLandscape ? 'landscape' : 'portrait';
+    // Phone browsers (and Safari/Firefox) ignore the @page orientation and print portrait.
+    // A Basic-mode print sidesteps that: the landscape dial is turned 90° onto a portrait
+    // page, which every browser prints as-is — the sheet that comes out is identical.
+    const rotateOntoPortrait = basicMode && isLandscape;
+    const orientationStr = isLandscape && !rotateOntoPortrait ? 'landscape' : 'portrait';
 
     const pageStyle = document.createElement('style');
     pageStyle.id = 'dynamic-print-styles';
@@ -378,6 +382,15 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         const page = document.createElement('div');
         // Strip XML declaration so it parses cleanly as innerHTML
         page.innerHTML = svgStr.replace(/^<\?xml[^>]+\?>\s*/, '');
+        const svgEl = page.querySelector('svg');
+        if (rotateOntoPortrait && svgEl) {
+          // The SVG is W×H points (landscape). The page box becomes H wide × W tall; the SVG
+          // is rotated 90° about its top-left corner, then shifted right by H to land on it.
+          const w = parseFloat(svgEl.getAttribute('width') || '0');
+          const h = parseFloat(svgEl.getAttribute('height') || '0');
+          page.style.cssText = `position:relative;width:${h}pt;height:${w}pt;overflow:hidden;`;
+          svgEl.style.cssText = `position:absolute;top:0;left:0;transform-origin:0 0;transform:translateX(${h}pt) rotate(90deg);`;
+        }
         printContainer.appendChild(page);
         firstPage = false;
       }
