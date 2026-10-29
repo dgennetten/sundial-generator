@@ -7,6 +7,7 @@
 //   (p < 0 is the triangle side). In GnomonSVG's x/y: d = -(x+y)/√2, p = (y-x)/√2.
 // Solid red = cut, dashed red = fold, as printed on the dial.
 import React, { useEffect, useId, useRef, useState } from 'react';
+import type { BasicStrings } from './basicTranslations';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 
 type P2 = [number, number];
@@ -95,12 +96,8 @@ const FOLDS: P2[][] = [
 // (radius 20 about d = 45), so the gnomon seats in the slit: cos θ = 976.6 / 1250.
 const BRACE_ANGLE = (Math.acos(976.5625 / 1250) * 180) / Math.PI;
 
-const FRAMES = [
-  { title: 'Cut', caption: 'Cut along the solid red lines; Lightly score the dashed lines.' },
-  { title: 'Fold up', caption: 'Fold the triangle straight up along its dashed edge so it stands at 90° to the page.' },
-  { title: 'Brace', caption: 'Fold the rounded tab up along its dashed line until the slit in its tip slides onto the triangle’s notch, locking it upright.' },
-  { title: 'Enjoy', caption: 'Lay the dial flat and level, turn its North Point arrow to true north, and read the time from the shadow.' },
-];
+// Number of steps in the guide; titles and captions come from the localized strings.
+const FRAME_COUNT = 4;
 const FRAME_MS = 3600;
 // The sun's run through the day gets twice as long as the folding steps.
 const frameMs = (frame: number) => (frame === 3 ? FRAME_MS * 2 : FRAME_MS);
@@ -181,11 +178,14 @@ const prefersReducedMotion = () =>
   typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 interface Props {
+  /** Localized step titles/captions and control labels. */
+  strings: BasicStrings;
   /** Bump to restart the animation from the first frame (e.g. right after Print). */
   restartSignal?: number;
 }
 
-const GnomonAssemblyGuide: React.FC<Props> = ({ restartSignal }) => {
+const GnomonAssemblyGuide: React.FC<Props> = ({ restartSignal, strings }) => {
+  const frames = [strings.guideCut, strings.guideFold, strings.guideBrace, strings.guideEnjoy];
   const reduced = useRef(prefersReducedMotion());
   const [frame, setFrame] = useState(0);
   const [progress, setProgress] = useState(reduced.current ? 1 : 0);
@@ -225,7 +225,7 @@ const GnomonAssemblyGuide: React.FC<Props> = ({ restartSignal }) => {
       if (t >= 1 + 0.35 * FRAME_MS / ms) { // hold the finished frame briefly before moving on
         startRef.current = now;
         setProgress(0);
-        setFrame((f) => (f + 1) % FRAMES.length);
+        setFrame((f) => (f + 1) % FRAME_COUNT);
       } else {
         setProgress(Math.min(1, t));
       }
@@ -237,7 +237,7 @@ const GnomonAssemblyGuide: React.FC<Props> = ({ restartSignal }) => {
   }, [playing, frame]);
 
   const goTo = (f: number) => {
-    setFrame((f + FRAMES.length) % FRAMES.length);
+    setFrame((f + FRAME_COUNT) % FRAME_COUNT);
     setProgress(playing ? 0 : 1);
     startRef.current = null;
   };
@@ -292,7 +292,7 @@ const GnomonAssemblyGuide: React.FC<Props> = ({ restartSignal }) => {
   return (
     <div className="assembly-guide">
       <svg viewBox={VIEWBOX} className="assembly-guide-svg" role="img"
-        aria-label={`Step ${frame + 1} of ${FRAMES.length}: ${FRAMES[frame].caption}`}>
+        aria-label={`${frame + 1}/${FRAME_COUNT}: ${frames[frame][1]}`}>
         <defs>
           <clipPath id={`${uid}-face`}>
             <path d={facePath} />
@@ -330,22 +330,22 @@ const GnomonAssemblyGuide: React.FC<Props> = ({ restartSignal }) => {
         )}
       </svg>
       <div className="assembly-guide-caption">
-        <strong>{frame + 1}. {FRAMES[frame].title}</strong> — {FRAMES[frame].caption}
+        <strong>{frame + 1}. {frames[frame][0]}</strong> — {frames[frame][1]}
       </div>
       <div className="assembly-guide-controls">
-        <button type="button" className="assembly-guide-btn" onClick={() => goTo(frame - 1)} aria-label="Previous step">
+        <button type="button" className="assembly-guide-btn" onClick={() => goTo(frame - 1)} aria-label={strings.previous}>
           <ChevronLeft size={16} />
         </button>
         <button type="button" className="assembly-guide-btn" onClick={() => { setPlaying((p) => !p); if (!playing && progress >= 1) goTo(frame + 1); }}
-          aria-label={playing ? 'Pause' : 'Play'}>
+          aria-label={playing ? strings.pause : strings.play}>
           {playing ? <Pause size={14} /> : <Play size={14} />}
         </button>
-        <button type="button" className="assembly-guide-btn" onClick={() => goTo(frame + 1)} aria-label="Next step">
+        <button type="button" className="assembly-guide-btn" onClick={() => goTo(frame + 1)} aria-label={strings.next}>
           <ChevronRight size={16} />
         </button>
         <span className="assembly-guide-dots" aria-hidden="true">
-          {FRAMES.map((f, i) => (
-            <span key={f.title} className={`assembly-guide-dot${i === frame ? ' active' : ''}`} />
+          {frames.map((_, i) => (
+            <span key={i} className={`assembly-guide-dot${i === frame ? ' active' : ''}`} />
           ))}
         </span>
       </div>

@@ -1537,3 +1537,78 @@ body {
   margin-left: auto;
 }
 
+
+/* Basic mode: language picker, right-aligned in step 1's title row */
+.basic-step-aside {
+  margin-inline-start: auto;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.basic-lang {
+  position: relative;
+}
+
+.basic-lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 1.6rem;
+  padding: 0 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #4a5568;
+  font: inherit;
+  cursor: pointer;
+}
+
+.basic-lang-btn:hover {
+  background: #f7fafc;
+}
+
+.basic-lang-flag {
+  width: 18px;
+  height: 13.5px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  flex: 0 0 auto;
+}
+
+.basic-lang-menu {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% + 4px);
+  z-index: 50;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  min-width: 10rem;
+  max-height: 18rem;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.basic-lang-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: #2d3748;
+  font: inherit;
+  font-size: 0.88rem;
+  text-align: start;
+  cursor: pointer;
+}
+
+.basic-lang-item:hover,
+.basic-lang-item.active {
+  background: #f3f4fe;
+}

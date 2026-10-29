@@ -27,6 +27,7 @@ import GnomonSettings from './components/GnomonSettings';
 import DesignExport, { type DesignExportHandle } from './components/DesignExport';
 import BasicPanel, { type BasicStyle } from './components/BasicPanel';
 import ModeToggle, { type UiMode } from './components/ModeToggle';
+import { basicStrings } from './components/basicTranslations';
 import SundialPreview from './components/SundialPreview';
 import PerfOverlay from './components/PerfOverlay';
 import { recordRenderDuration, perfOverlayEnabled } from './lib/animationPerf';
@@ -118,11 +119,6 @@ function basicStyleRange(style: BasicStyle, latitude: number): DateRange {
   if (style === 'current') return current;
   return current === 'SummerToFall' ? 'WinterToSpring' : 'SummerToFall';
 }
-
-const HALF_YEAR_LABELS: Record<'SummerToFall' | 'WinterToSpring', string> = {
-  SummerToFall: 'Summer → Fall',
-  WinterToSpring: 'Winter → Spring',
-};
 
 // Basic mode's date lines: solstices, equinox, 1st of the Month (instead of 1st & 15th).
 // "Today" and the user's own dates are carried over from the current lines.
@@ -388,6 +384,11 @@ const App: React.FC = () => {
   const [language, setLanguage] = useState<string>(
     () => (typeof window !== 'undefined' ? localStorage.getItem('sundial-welcome-language') : null) || 'en'
   );
+  // Saved like the welcome dialog's picker, so the choice sticks across visits.
+  const handleLanguageChange = useCallback((v: string) => {
+    setLanguage(v);
+    try { localStorage.setItem('sundial-welcome-language', v); } catch { /* ignore */ }
+  }, []);
   const [correctionFlags, setCorrectionFlags] = useState<CorrectionFlags>(DEFAULT_CORRECTION_FLAGS);
 
   const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false);
@@ -1474,7 +1475,8 @@ const App: React.FC = () => {
           </div>
         )}
         <div className="mobile-controls-scroll" ref={isPreviewFullscreen ? floatingScrollRef : undefined}>
-        <ModeToggle mode={uiMode} onChange={handleUiModeChange} />
+        <ModeToggle mode={uiMode} onChange={handleUiModeChange}
+          labels={{ basic: basicStrings(language).modeBasic, advanced: basicStrings(language).modeAdvanced }} />
 
         {uiMode === 'basic' && (
           <BasicPanel
@@ -1484,8 +1486,10 @@ const App: React.FC = () => {
             onOpenMap={() => setOpenMapSignal(n => n + 1)}
             basicStyle={basicStyle}
             onStyleChange={setBasicStyle}
-            currentHalfLabel={HALF_YEAR_LABELS[currentHalf]}
-            otherHalfLabel={HALF_YEAR_LABELS[otherHalf]}
+            currentHalf={currentHalf}
+            otherHalf={otherHalf}
+            language={language}
+            onLanguageChange={handleLanguageChange}
             pageSize={pageSize}
             onPageSizeChange={setPageSize}
             todayActive={declinationLines.some(l => l.id === 'today' && l.active)}

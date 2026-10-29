@@ -15,7 +15,7 @@ interface WelcomeDialogProps {
   onLanguageChange?: (lang: string) => void;
 }
 
-export type Language = 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'zh' | 'ja' | 'ko' | 'ru' | 'ar';
+export type Language = 'en' | 'es' | 'fr' | 'de' | 'nl' | 'it' | 'pt' | 'zh' | 'ja' | 'ko' | 'ru' | 'ar';
 
 interface Translations {
   title: string;
@@ -187,6 +187,20 @@ const translations: Record<Language, Translations> = {
     sendFeedback: 'إرسال الملاحظات!',
     overviewLink: 'نظرة عامة مصوّرة على الساعات الشمسية المنبثقة ←',
   },
+  nl: {
+    title: 'Zo bouw je je eigen zonnewijzer',
+    steps: {
+      location: { label: 'Locatie:', text: ' Gebruik het keuzemenu of de interactieve kaart, of voer de breedte- en lengtegraad rechtstreeks in.' },
+      gnomon: { label: 'Gnomonstijl:', text: ' Mis de vernieuwende pop-up-gnomonen niet, vooral de nieuwe wenskaart-pop-up, ideaal voor papieren zonnewijzers (zie de foto’s in de galerij).' },
+      dateRange: { label: 'Heel/half jaar:', text: ': Kies Winter–Lente of Zomer–Herfst voor een rustiger, beter leesbare indeling.' },
+      specialDates: { label: 'Bijzondere datums:', text: ': Toon bijzondere datums. Vink ‘Vandaag’ uit om de rode lijn met de datum van vandaag te verwijderen.' },
+      reset: { label: 'Standaardwaarden herstellen:', text: 'Klik op de knop Herstellen om de standaardwaarden terug te zetten en dit venster weer te tonen.' },
+    },
+    dontShowAgain: 'Niet meer tonen',
+    gotIt: 'Begrepen',
+    sendFeedback: 'stuur feedback!',
+    overviewLink: 'Geïllustreerd overzicht van de pop-up-zonnewijzers →',
+  },
 };
 
 export const languages: { code: Language; countryCode: string; flag: string; name: string }[] = [
@@ -194,6 +208,7 @@ export const languages: { code: Language; countryCode: string; flag: string; nam
   { code: 'es', countryCode: 'es', flag: '🇪🇸', name: 'Español' },
   { code: 'fr', countryCode: 'fr', flag: '🇫🇷', name: 'Français' },
   { code: 'de', countryCode: 'de', flag: '🇩🇪', name: 'Deutsch' },
+  { code: 'nl', countryCode: 'nl', flag: '🇳🇱', name: 'Nederlands' },
   { code: 'it', countryCode: 'it', flag: '🇮🇹', name: 'Italiano' },
   { code: 'pt', countryCode: 'pt', flag: '🇵🇹', name: 'Português' },
   { code: 'zh', countryCode: 'cn', flag: '🇨🇳', name: '中文' },
@@ -208,6 +223,7 @@ export const DIAL_LABELS: Record<Language, { latitude: string; longitude: string
   es: { latitude: 'Latitud',    longitude: 'Longitud',    height: 'altura',    spring: 'Primavera', summer: 'Verano', fall: 'Otoño', winter: 'Invierno' },
   fr: { latitude: 'Latitude',   longitude: 'Longitude',   height: 'hauteur',   spring: 'Printemps', summer: 'Été',  fall: 'Automne', winter: 'Hiver'    },
   de: { latitude: 'Breite',     longitude: 'Länge',       height: 'Höhe',      spring: 'Frühling', summer: 'Sommer', fall: 'Herbst', winter: 'Winter'   },
+  nl: { latitude: 'Breedte',    longitude: 'Lengte',      height: 'hoogte',    spring: 'Lente', summer: 'Zomer', fall: 'Herfst', winter: 'Winter'      },
   it: { latitude: 'Latitudine', longitude: 'Longitudine', height: 'altezza',   spring: 'Primavera', summer: 'Estate', fall: 'Autunno', winter: 'Inverno' },
   pt: { latitude: 'Latitude',   longitude: 'Longitude',   height: 'altura',    spring: 'Primavera', summer: 'Verão', fall: 'Outono', winter: 'Inverno'  },
   zh: { latitude: '纬度',        longitude: '经度',         height: '高度',       spring: '春', summer: '夏', fall: '秋', winter: '冬'                      },

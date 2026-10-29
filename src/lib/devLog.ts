@@ -104,7 +104,7 @@ export const LOG_ENTRIES: LogEntry[] = [
   {
     id: 20,
     date: '2026-10-29',
-    content: "**NEW: Basic mode!** First-time visitors now start with a few simple steps — pick your location, a half-year or full-year style, Letter or A4, any special dates — then one big **Print!** button and an animated guide to cutting and folding the pop-up gnomon. Everything you know is still here: flip the **Basic | Advanced** switch at the top of the controls. — KDG (v3.0.0)",
+    content: "**NEW: Basic mode!** First-time visitors now start with a few simple steps — pick your location, a half-year or full-year style, Letter or A4, any special dates — then one big **Print!** button and an animated guide to cutting and folding the pop-up gnomon. Everything you know is still here: flip the **Basic | Advanced** switch at the top of the controls. Added Dutch. — KDG (v3.0.0)",
   },
 ]
 

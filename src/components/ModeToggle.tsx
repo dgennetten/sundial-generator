@@ -6,9 +6,11 @@ export type UiMode = 'basic' | 'advanced';
 interface Props {
   mode: UiMode;
   onChange: (mode: UiMode) => void;
+  /** Localized labels — the toggle stays in the visitor's language in both modes. */
+  labels?: { basic: string; advanced: string };
 }
 
-const ModeToggle: React.FC<Props> = ({ mode, onChange }) => (
+const ModeToggle: React.FC<Props> = ({ mode, onChange, labels = { basic: 'Basic', advanced: 'Advanced' } }) => (
   <div className="mode-toggle" role="radiogroup" aria-label="Interface mode">
     {(['basic', 'advanced'] as const).map((m) => (
       <button
@@ -19,7 +21,7 @@ const ModeToggle: React.FC<Props> = ({ mode, onChange }) => (
         className={`mode-toggle-btn${mode === m ? ' active' : ''}`}
         onClick={() => mode !== m && onChange(m)}
       >
-        {m === 'basic' ? 'Basic' : 'Advanced'}
+        {labels[m]}
       </button>
     ))}
   </div>
