@@ -163,6 +163,8 @@ const BasicPanel: React.FC<Props> = ({
             <Printer size={22} /> Print!
           </button>
         </div>
+        {/* Chrome/Edge take landscape from the @page rule; Safari and Firefox ignore it. */}
+        <div className="basic-print-note">Prints in landscape — if your print dialog shows Portrait, switch it to Landscape.</div>
       </Step>
 
       <Step n={5} title="Cut, Fold, and Enjoy!" id="basic-step-enjoy">
