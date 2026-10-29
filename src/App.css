@@ -520,13 +520,13 @@ body {
   color: #2d3748;
 }
 
-/* App Header */
-.app-header {
+/* Basic mode hero (formerly the app header) */
+.basic-hero {
   margin-bottom: 2rem;
   text-align: center;
 }
 
-.app-title {
+.basic-hero-title {
   font-size: 2.5rem;
   font-weight: 700;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -536,7 +536,7 @@ body {
   margin: 0 0 0.5rem 0;
 }
 
-.app-subtitle {
+.basic-hero-sub {
   color: #718096;
   font-size: 1rem;
   margin: 0;
@@ -555,7 +555,7 @@ body {
     flex: 0 0 420px;
   }
   
-  .app-title {
+  .basic-hero-title {
     font-size: 2rem;
   }
 }
@@ -579,7 +579,7 @@ body {
     align-items: stretch;
   }
 
-  .app-title {
+  .basic-hero-title {
     font-size: 1.75rem;
   }
 }
@@ -852,15 +852,15 @@ body {
     align-items: flex-start;
   }
 
-  .app-header {
+  .basic-hero {
     margin-bottom: 1rem;
   }
 
-  .app-title {
+  .basic-hero-title {
     font-size: 1.5rem;
   }
 
-  .app-subtitle {
+  .basic-hero-sub {
     font-size: 0.85rem;
   }
 
@@ -871,11 +871,11 @@ body {
 }
 
 @media (max-width: 900px) and (orientation: landscape) and (max-height: 499px) {
-  .app-title {
+  .basic-hero-title {
     font-size: 1.25rem;
   }
 
-  .app-subtitle {
+  .basic-hero-sub {
     font-size: 0.8rem;
   }
 
@@ -1037,7 +1037,7 @@ body {
 
   /* Hide any remaining UI elements */
   .btn,
-  .app-header,
+  .basic-hero,
   .form-group,
   .form-row,
   .lucide,
@@ -1170,4 +1170,369 @@ body {
 
 .custom-marker:hover {
   transform: scale(1.1);
+}
+
+/* ============================================================
+   Basic / Advanced mode
+   ============================================================ */
+.mode-toggle {
+  display: flex;
+  width: max-content;
+  margin: 0 auto 1rem;
+  padding: 3px;
+  border-radius: 999px;
+  background: #eef0f6;
+  border: 1px solid #dfe3ee;
+}
+
+.mode-toggle-btn {
+  border: none;
+  background: transparent;
+  color: #4a5568;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.35rem 1.1rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.mode-toggle-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(102, 126, 234, 0.4);
+}
+
+.basic-panel .basic-hero {
+  margin-bottom: 1rem;
+}
+
+.basic-step {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e1e5e9;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.basic-step-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 0.65rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.basic-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-size: 0.85rem;
+  flex: 0 0 auto;
+}
+
+.basic-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.basic-map-btn {
+  align-self: flex-start;
+  padding: 0.55rem 1.1rem;
+}
+
+.basic-location {
+  color: #4a5568;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.basic-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.basic-choice {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.92rem;
+}
+
+.basic-choice.active {
+  border-color: #667eea;
+  background: #f3f4fe;
+}
+
+.basic-choice input {
+  accent-color: #667eea;
+  margin: 0;
+}
+
+.basic-choice-hint {
+  color: #718096;
+  font-size: 0.8rem;
+}
+
+.basic-segment {
+  display: inline-flex;
+  align-self: flex-start;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.basic-segment-btn {
+  border: none;
+  background: #fff;
+  font: inherit;
+  font-size: 0.92rem;
+  padding: 0.45rem 1.4rem;
+  cursor: pointer;
+  color: #4a5568;
+}
+
+.basic-segment-btn + .basic-segment-btn {
+  border-left: 1px solid #e2e8f0;
+}
+
+.basic-segment-btn.active {
+  background: #667eea;
+  color: #fff;
+}
+
+.basic-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.basic-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: #667eea;
+}
+
+.basic-date-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+}
+
+.basic-date-row .form-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.basic-small-btn {
+  padding: 0.4rem 0.8rem;
+}
+
+.basic-icon-btn {
+  display: inline-flex;
+  border: none;
+  background: transparent;
+  color: #718096;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.basic-icon-btn:hover {
+  background: #edf2f7;
+  color: #2d3748;
+}
+
+.basic-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: #5a67d8;
+  font: inherit;
+  font-size: 0.88rem;
+  padding: 0.15rem 0;
+  cursor: pointer;
+}
+
+.basic-link-btn:hover {
+  text-decoration: underline;
+}
+
+.basic-print-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  font: inherit;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.basic-print-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.45);
+}
+
+
+.basic-enjoy-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.assembly-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.assembly-guide-svg {
+  width: 100%;
+  height: auto;
+  max-height: 260px;
+  background: #fbfaf5;
+  border-radius: 8px;
+}
+
+.assembly-guide-caption {
+  font-size: 0.88rem;
+  color: #2d3748;
+  min-height: 2.6em;
+  line-height: 1.3;
+}
+
+.assembly-guide-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.assembly-guide-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #4a5568;
+  cursor: pointer;
+}
+
+.assembly-guide-btn:hover {
+  background: #edf2f7;
+}
+
+.assembly-guide-dots {
+  display: inline-flex;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.assembly-guide-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #cbd5e0;
+}
+
+.assembly-guide-dot.active {
+  background: #667eea;
+}
+
+.basic-date-row select.form-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.basic-date-row select.basic-day-select {
+  flex: 0 0 4.5rem;
+}
+
+.basic-date-note {
+  flex: 1 1 auto;
+  font-size: 0.75rem;
+  color: #b45309;
+  line-height: 1.25;
+}
+
+.basic-check .basic-date-note {
+  margin-left: 0.25rem;
+}
+
+.basic-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.7rem;
+  font-weight: 600;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+/* Print step: paper size toggle beside the Print! button */
+.basic-print-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.6rem;
+}
+
+.basic-print-row .basic-segment {
+  align-self: stretch;
+  flex: 0 0 auto;
+}
+
+.basic-print-row .basic-segment-btn {
+  padding: 0 0.9rem;
+}
+
+.basic-print-row .basic-print-btn {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+
+.basic-date-row > span:first-child {
+  white-space: nowrap;
+}
+
+.basic-date-row > .basic-icon-btn:last-child {
+  margin-left: auto;
 }

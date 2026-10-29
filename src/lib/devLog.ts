@@ -101,6 +101,11 @@ export const LOG_ENTRIES: LogEntry[] = [
     date: '2026-09-07',
     content: "**NEW: World Tour!** Fly around a 3D globe and watch sundials from around the world load into the preview at each stop. Follow the animated route, pause and resume along the way, or skip ahead to the next destination. — KDG (v2.24.17)",
   },
+  {
+    id: 20,
+    date: '2026-10-29',
+    content: "**NEW: Basic mode!** First-time visitors now start with a few simple steps — pick your location, a half-year or full-year style, Letter or A4, any special dates — then one big **Print!** button and an animated guide to cutting and folding the pop-up gnomon. Everything you know is still here: flip the **Basic | Advanced** switch at the top of the controls. — KDG (v3.0.0)",
+  },
 ]
 
 export type LogPref =

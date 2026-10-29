@@ -135,6 +135,8 @@ $dialTextBlock = $data['dialTextBlock'] ?? '';
 $dialTextBlockInterpreted = $data['dialTextBlockInterpreted'] ?? '';
 $latitude = isset($data['latitude']) && is_numeric($data['latitude']) ? floatval($data['latitude']) : null;
 $longitude = isset($data['longitude']) && is_numeric($data['longitude']) ? floatval($data['longitude']) : null;
+// Printed from Basic mode's step-by-step flow rather than the full (Advanced) UI.
+$isBasicModePrint = !empty($data['basicMode']) && $exportFormat === 'PRINT';
 
 $sundialNotesDisplay = formatSundialNotesMode($sundialNotesMode);
 
@@ -273,7 +275,8 @@ $debugInfo = [
 ];
 
 // Prepare email body
-$emailBody = "Sundial Export Activity\n\n";
+$emailBody = $isBasicModePrint ? "BASIC MODE PRINT\n\n" : '';
+$emailBody .= "Sundial Export Activity\n\n";
 $emailBody .= "Date: $date\n";
 $emailBody .= "Time: $time\n";
 $emailBody .= "Location: $locationName\n";
@@ -362,7 +365,7 @@ try {
         $mail->addReplyTo($smtpFromEmail, 'Sundial Generator');
 
         $mail->isHTML(false);
-        $mail->Subject = "Sundial Export: $exportFormat - $pageSize - $dateRange - $locationName";
+        $mail->Subject = ($isBasicModePrint ? 'BASIC MODE PRINT: ' : '') . "Sundial Export: $exportFormat - $pageSize - $dateRange - $locationName";
         $mail->Body = $emailBody;
 
         $mail->send();

@@ -24,7 +24,9 @@ import { Download, MapPin, StickyNote, MoveUpRight, Text, Calendar, Clock, PenLi
 import PageSettings, { type InclineType, type DeclinationType, type DialShape } from './components/PageSettings';
 import LocationInputs from './components/LocationInputs';
 import GnomonSettings from './components/GnomonSettings';
-import DesignExport from './components/DesignExport';
+import DesignExport, { type DesignExportHandle } from './components/DesignExport';
+import BasicPanel, { type BasicStyle } from './components/BasicPanel';
+import ModeToggle, { type UiMode } from './components/ModeToggle';
 import SundialPreview from './components/SundialPreview';
 import PerfOverlay from './components/PerfOverlay';
 import { recordRenderDuration, perfOverlayEnabled } from './lib/animationPerf';
@@ -34,12 +36,12 @@ import { isTwoPagePopup, shouldAutoPreviewGnomonNet } from './types/sundial';
 import { useLocationShadowTime } from './hooks/useLocationShadowTime';
 import type { ShadowFrameUpdater } from './utils/gnomonShadowUtils';
 import HourlineSettings from './components/HourlineSettings';
-import { loadHourlineIntervals, type HourlineInterval, saveHourlineOverrides } from './components/hourlineUtils';
+import { loadHourlineIntervals, type HourlineInterval, saveHourlineOverrides, BUILTIN_HOURLINE_INTERVALS } from './components/hourlineUtils';
 import LineSettings from './components/LineSettings';
-import { loadLineStyles } from './components/lineStyleUtils';
+import { loadLineStyles, DEFAULT_LINE_STYLES } from './components/lineStyleUtils';
 import type { LineStyle } from './components/LineSettings';
 import DeclinationLineOptions from './components/DeclinationLineOptions';
-import { loadDeclinationLines } from './components/declinationLineUtils';
+import { loadDeclinationLines, saveDeclinationLines, BUILTIN_DECLINATION_LINES } from './components/declinationLineUtils';
 import type { DeclinationLine } from './components/DeclinationLineOptions';
 import { getDisplayTiltAngle, calculateAutoGnomonHeight, getWallDeclinationForPreset, getCancerInclineWithDeclination, getCapricornInclineWithDeclination } from './utils/sundialMath';
 import { getAnalemmaPointsProjected } from './utils/sundialMath';
@@ -75,6 +77,84 @@ function currentHalfYear(latitude: number): 'SummerToFall' | 'WinterToSpring' {
     : day >= summerSolsticeDay || day <= winterSolsticeDay;
   return inSummerToFall ? 'SummerToFall' : 'WinterToSpring';
 }
+
+const UI_MODE_KEY = 'sundial-ui-mode';
+
+// Brand-new visitors start in Basic. Anyone with existing sundial-* localStorage has used
+// the full (Advanced) UI before, so they keep it until they choose otherwise.
+function initialUiMode(): UiMode {
+  try {
+    const stored = localStorage.getItem(UI_MODE_KEY);
+    if (stored === 'basic' || stored === 'advanced') return stored;
+    for (let i = 0; i < localStorage.length; i++) {
+      if (localStorage.key(i)?.startsWith('sundial-')) return 'advanced';
+    }
+  } catch { /* storage unavailable — fall through */ }
+  return 'basic';
+}
+
+type DateRange = 'FullYear' | 'SummerToFall' | 'WinterToSpring' | 'DualHalf';
+
+// Whether a date line ("Today" or "Jul 4") is drawn on a dial of this range — the same
+// half-year rule SundialPreview applies when it skips out-of-range date lines.
+function isDateLineInRange(date: string, range: DateRange, latitude: number): boolean {
+  if (range === 'FullYear' || range === 'DualHalf') return true;
+  const when = date === 'Today' ? new Date() : new Date(`${date} 2000`);
+  if (isNaN(when.getTime())) return true;
+  const day = Math.floor((when.getTime() - new Date(when.getFullYear(), 0, 1).getTime()) / 86400000) + 1;
+  const isNorthern = latitude >= 0;
+  const summerSolsticeDay = isNorthern ? 172 : 355;
+  const winterSolsticeDay = isNorthern ? 355 : 172;
+  const inSummerToFall = isNorthern
+    ? day >= summerSolsticeDay && day <= winterSolsticeDay
+    : day >= summerSolsticeDay || day <= winterSolsticeDay;
+  const onSolstice = day === summerSolsticeDay || day === winterSolsticeDay;
+  return onSolstice || (range === 'SummerToFall') === inSummerToFall;
+}
+
+function basicStyleRange(style: BasicStyle, latitude: number): DateRange {
+  if (style === 'full') return 'FullYear';
+  const current = currentHalfYear(latitude);
+  if (style === 'current') return current;
+  return current === 'SummerToFall' ? 'WinterToSpring' : 'SummerToFall';
+}
+
+const HALF_YEAR_LABELS: Record<'SummerToFall' | 'WinterToSpring', string> = {
+  SummerToFall: 'Summer → Fall',
+  WinterToSpring: 'Winter → Spring',
+};
+
+// Basic mode's date lines: solstices, equinox, 1st of the Month (instead of 1st & 15th).
+// "Today" and the user's own dates are carried over from the current lines.
+function basicDeclinationLines(prev: DeclinationLine[]): DeclinationLine[] {
+  const today = prev.find(l => l.id === 'today');
+  const custom = prev.filter(l => !l.fixed && l.id !== 'today' && l.id !== '');
+  return [
+    ...BUILTIN_DECLINATION_LINES.map(l => {
+      if (l.id === 'today') return today ?? l;
+      if (l.id === 'month-boundaries') return { ...l, active: true };
+      if (l.id === 'first-and-fifteenth') return { ...l, active: false };
+      return l;
+    }),
+    ...custom,
+  ];
+}
+
+const DEFAULT_CORRECTION_FLAGS: CorrectionFlags = {
+  latitude: true,
+  longitude: true,
+  equationOfTime: true,
+  solarDeclination: true,
+  // Declination Drift defaults ON for half-year dials, OFF for full year. The initial
+  // date range (currentHalfYear) is always a half-year, so it starts ON here;
+  // handleDateRangeChange keeps it in sync when the range changes.
+  declinationDrift: true,
+  // Anchor date-line declinations to this specific year (default). Uncheck to average over
+  // the 4-year leap cycle for a dial that stays accurate across all four years.
+  currentYearAnchoring: true,
+  refraction: true,
+  mysteryError: false,
+};
 
 const MOBILE_TABS = [
   { id: 'card-export',     icon: Download,    label: 'Export' },
@@ -308,21 +388,7 @@ const App: React.FC = () => {
   const [language, setLanguage] = useState<string>(
     () => (typeof window !== 'undefined' ? localStorage.getItem('sundial-welcome-language') : null) || 'en'
   );
-  const [correctionFlags, setCorrectionFlags] = useState<CorrectionFlags>({
-    latitude: true,
-    longitude: true,
-    equationOfTime: true,
-    solarDeclination: true,
-    // Declination Drift defaults ON for half-year dials, OFF for full year. The initial
-    // date range (currentHalfYear) is always a half-year, so it starts ON here;
-    // handleDateRangeChange keeps it in sync when the range changes.
-    declinationDrift: true,
-    // Anchor date-line declinations to this specific year (default). Uncheck to average over
-    // the 4-year leap cycle for a dial that stays accurate across all four years.
-    currentYearAnchoring: true,
-    refraction: true,
-    mysteryError: false,
-  });
+  const [correctionFlags, setCorrectionFlags] = useState<CorrectionFlags>(DEFAULT_CORRECTION_FLAGS);
 
   const [isPreviewFullscreen, setIsPreviewFullscreen] = useState(false);
   const [showFloatingControls, setShowFloatingControls] = useState(true);
@@ -1041,6 +1107,148 @@ const App: React.FC = () => {
     ));
   }, []);
 
+  // ── Basic / Advanced mode ────────────────────────────────────────────────
+  const [uiMode, setUiMode] = useState<UiMode>(initialUiMode);
+  const [basicStyle, setBasicStyle] = useState<BasicStyle>('current');
+  const [openMapSignal, setOpenMapSignal] = useState(0);
+  const designExportRef = useRef<DesignExportHandle>(null);
+
+  useEffect(() => {
+    try { localStorage.setItem(UI_MODE_KEY, uiMode); } catch { /* ignore */ }
+  }, [uiMode]);
+
+  // Reset the dial (in memory only — Advanced's saved customizations are untouched) to the
+  // simple popup-with-brace dial that Basic mode's steps describe.
+  const applyBasicPreset = useCallback((style: BasicStyle) => {
+    const southDefault = latitude >= 0;
+    setGnomonType('popup-with-brace');
+    setGnomonMode('auto');
+    setGnomonPositionMode('auto');
+    setGnomonHorizontalPosition(undefined);
+    setInclineType('Horizontal');
+    setTiltAngle(0);
+    setDeclinationType(southDefault ? 'South' : 'North');
+    setDeclinationDegrees(0);
+    setDialOrientation(southDefault ? 'North' : 'South');
+    setOrientation('Landscape');
+    setPageSize(prev => (prev === 'Letter' || prev === 'A4' ? prev : 'Letter'));
+    setDialShape('Rectangle');
+    setBorderStyle('default-hairline');
+    setBorderMargin(0.236);
+    setShowBackground(true);
+    setBackgroundColor('Cornsilk');
+    setStartHour(5);
+    setStopHour(19);
+    setUse24Hour(false);
+    setLabelWinterSide(true);
+    setLabelSummerSide(true);
+    setLabelOffset(1.5);
+    setFontFamily('sans-serif');
+    setFontSize(20);
+    setDeclinationNoonmarks(true);
+    setShowFullYearOnNoon(false);
+    setDifferentiateHalfYears(false);
+    setShowBelowHorizonHourLines(true);
+    setShowBelowHorizonDateLines(true);
+    setSyncBelowHorizon(true);
+    setSundialNotesMode('northPoint');
+    setCorrectionFlags(DEFAULT_CORRECTION_FLAGS);
+    setLineStyles(DEFAULT_LINE_STYLES);
+    setHourlineIntervals(BUILTIN_HOURLINE_INTERVALS);
+    setDeclinationLines(basicDeclinationLines);
+    // Applies the half-year hour-line dash styling and the drift flag on top of the builtins.
+    handleDateRangeChange(basicStyleRange(style, latitude));
+  }, [latitude, handleDateRangeChange]);
+
+  const isAtBasicPreset = useCallback(() => {
+    const builtinActive = Object.fromEntries(BUILTIN_HOURLINE_INTERVALS.map(i => [i.id, i.active]));
+    const lineActive = (id: string) => declinationLines.find(l => l.id === id)?.active;
+    return gnomonType === 'popup-with-brace'
+      && inclineType === 'Horizontal'
+      && declinationType === (latitude >= 0 ? 'South' : 'North')
+      && Math.abs(declinationDegrees) < 1e-6
+      && orientation === 'Landscape'
+      && (pageSize === 'Letter' || pageSize === 'A4')
+      && dialShape === 'Rectangle'
+      && borderStyle === 'default-hairline'
+      && showBackground && backgroundColor === 'Cornsilk'
+      && startHour === 5 && stopHour === 19 && !use24Hour
+      && sundialNotesMode === 'northPoint'
+      && hourlineDateRange === basicStyleRange(basicStyle, latitude)
+      && JSON.stringify(lineStyles) === JSON.stringify(DEFAULT_LINE_STYLES)
+      && hourlineIntervals.every(i => !i.fixed || i.active === builtinActive[i.id])
+      && lineActive('month-boundaries') === true
+      && lineActive('first-and-fifteenth') === false
+      && lineActive('summer-solstice') === true
+      && lineActive('equinox') === true
+      && lineActive('winter-solstice') === true
+      && lineActive('cross-quarter-days') === false;
+  }, [gnomonType, inclineType, declinationType, declinationDegrees, orientation, pageSize, dialShape, borderStyle,
+    showBackground, backgroundColor, startHour, stopHour, use24Hour, sundialNotesMode, hourlineDateRange,
+    basicStyle, latitude, lineStyles, hourlineIntervals, declinationLines]);
+
+  const handleUiModeChange = useCallback((mode: UiMode) => {
+    if (mode === 'basic' && !isAtBasicPreset()) {
+      if (!confirm('Basic mode prints a simple pop-up dial. Switching will reset your Advanced settings for this dial (gnomon, lines, decoration…). Continue?')) return;
+      applyBasicPreset(basicStyle);
+    }
+    setUiMode(mode);
+    getControlsScrollerElement()?.scrollTo(0, 0);
+    // Leaflet maps mounted while hidden need a resize to lay out their tiles.
+    if (mode === 'advanced') requestAnimationFrame(() => window.dispatchEvent(new Event('resize')));
+  }, [isAtBasicPreset, applyBasicPreset, basicStyle]);
+
+  // Loading straight into Basic: start from the preset once.
+  const didInitBasicRef = useRef(false);
+  useEffect(() => {
+    if (didInitBasicRef.current) return;
+    didInitBasicRef.current = true;
+    if (uiMode === 'basic') applyBasicPreset(basicStyle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keep the Basic style's date range in step with the hemisphere (current/other half-year).
+  useEffect(() => {
+    if (uiMode !== 'basic') return;
+    const range = basicStyleRange(basicStyle, latitude);
+    if (range !== hourlineDateRange) handleDateRangeChange(range);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uiMode, basicStyle, latitude]);
+
+  const basicCustomDates = useMemo(
+    () => declinationLines.filter(l => !l.fixed && l.id && l.id !== 'today').map(l => ({
+      id: l.id,
+      date: l.date,
+      outOfRange: !isDateLineInRange(l.date, hourlineDateRange, latitude),
+    })),
+    [declinationLines, hourlineDateRange, latitude]
+  );
+  const handleBasicAddDate = useCallback((monthDay: string) => {
+    setDeclinationLines(prev => {
+      const updated = [...prev.filter(l => l.id !== ''), {
+        active: true, date: monthDay, styleId: 'red-dashed-hairline', fixed: false, id: `basic-${Date.now()}`,
+      }];
+      saveDeclinationLines(updated);
+      return updated;
+    });
+  }, []);
+  const handleBasicRemoveDate = useCallback((id: string) => {
+    setDeclinationLines(prev => {
+      const updated = prev.filter(l => l.id !== id);
+      saveDeclinationLines(updated);
+      return updated;
+    });
+  }, []);
+  const handleBasicTodayChange = useCallback((active: boolean) => {
+    setDeclinationLines(prev => {
+      const updated = prev.map(l => (l.id === 'today' ? { ...l, active } : l));
+      saveDeclinationLines(updated);
+      return updated;
+    });
+  }, []);
+  const currentHalf = currentHalfYear(latitude);
+  const otherHalf = currentHalf === 'SummerToFall' ? 'WinterToSpring' : 'SummerToFall';
+
   const [highLatVerticalNudgeOpen, setHighLatVerticalNudgeOpen] = useState(false);
   const suppressHighLatVerticalNudgeRef = useRef(false);
 
@@ -1203,7 +1411,7 @@ const App: React.FC = () => {
         {isPreviewFullscreen && (
           <div className="floating-controls-titlebar" onMouseDown={handleFloatingDragStart}>
             <div className="floating-controls-icons">
-              {MOBILE_TABS.map(({ id, icon: Icon, label }) => (
+              {uiMode === 'advanced' && MOBILE_TABS.map(({ id, icon: Icon, label }) => (
                 <button
                   key={id}
                   className="floating-tab-icon"
@@ -1241,7 +1449,7 @@ const App: React.FC = () => {
             </button>
           </div>
         )}
-        {!isPreviewFullscreen && controlsScrolled && (
+        {!isPreviewFullscreen && controlsScrolled && uiMode === 'advanced' && (
           <div className="controls-sticky-iconbar">
             {MOBILE_TABS.map(({ id, icon: Icon, label }) => (
               <button
@@ -1266,12 +1474,35 @@ const App: React.FC = () => {
           </div>
         )}
         <div className="mobile-controls-scroll" ref={isPreviewFullscreen ? floatingScrollRef : undefined}>
-        <div className="app-header">
-          <h1 className="app-title">Precision Sundial</h1>
-          <p className="app-subtitle">Create beautiful, accurate sundials for any location</p>
-        </div>
+        <ModeToggle mode={uiMode} onChange={handleUiModeChange} />
 
+        {uiMode === 'basic' && (
+          <BasicPanel
+            locationName={locationName}
+            onOpenMap={() => setOpenMapSignal(n => n + 1)}
+            basicStyle={basicStyle}
+            onStyleChange={setBasicStyle}
+            currentHalfLabel={HALF_YEAR_LABELS[currentHalf]}
+            otherHalfLabel={HALF_YEAR_LABELS[otherHalf]}
+            pageSize={pageSize}
+            onPageSizeChange={setPageSize}
+            todayActive={declinationLines.some(l => l.id === 'today' && l.active)}
+            todayOutOfRange={!isDateLineInRange('Today', hourlineDateRange, latitude)}
+            onTodayChange={handleBasicTodayChange}
+            customDates={basicCustomDates}
+            onAddDate={handleBasicAddDate}
+            onRemoveDate={handleBasicRemoveDate}
+            onPrint={() => designExportRef.current?.printNow()}
+            onOpenGallery={() => designExportRef.current?.openGallery()}
+            onSwitchToAdvanced={() => handleUiModeChange('advanced')}
+          />
+        )}
+
+        {/* Advanced cards stay mounted in Basic mode (hidden) so print, map and gallery keep working. */}
+        <div className="advanced-cards" style={uiMode === 'basic' ? { display: 'none' } : undefined}>
         <div id="card-export"><DesignExport
+          controlRef={designExportRef}
+          basicMode={uiMode === 'basic'}
           pageSize={pageSize}
           orientation={orientation}
           customWidth={customWidth}
@@ -1333,6 +1564,7 @@ const App: React.FC = () => {
         /></div>
 
         <div id="card-location"><LocationInputs
+          openMapSignal={openMapSignal}
           latitude={latitude}
           longitude={longitude}
           tzMeridian={tzMeridian}
@@ -1567,6 +1799,7 @@ const App: React.FC = () => {
           onAdminRequest={() => setShowAdminPanel(true)}
         /></div>
         </div>
+        </div>
       </div>
       )}
 
@@ -1634,7 +1867,7 @@ const App: React.FC = () => {
             Show Controls
           </button>
         )}
-        <MobileTabBar />
+        {uiMode === 'advanced' && <MobileTabBar />}
       </div>
 
       {showPerfOverlay && (

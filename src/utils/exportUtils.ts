@@ -313,6 +313,8 @@ export async function logPrintActivity(options: {
   todayLineActive?: boolean;
   excludeFromWorldTour?: boolean;
   configJson?: string;
+  /** Printed from Basic mode's Print! button — flagged in the notification email. */
+  basicMode?: boolean;
 }): Promise<void> {
   try {
     const dialTextBlockInterpreted = interpretDialTextBlockForEmail(options.dialTextBlock || '', {
@@ -330,6 +332,7 @@ export async function logPrintActivity(options: {
 
     const logData = {
       exportFormat: 'PRINT', // Use 'PRINT' to distinguish from file exports
+      basicMode: options.basicMode ?? false,
       pageSize: options.pageSize,
       dateRange: options.dateRange || 'Unknown',
       gnomonType: options.gnomonType || 'Unknown',

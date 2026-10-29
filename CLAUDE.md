@@ -52,6 +52,14 @@ All state flows down to `SundialPreview.tsx` as individual props. SundialPreview
 | `src/components/gallery/` | Photo gallery — fullscreen grid + lightbox, OTP sign-in, upload (see below) |
 | `src/services/galleryApi.ts` / `galleryAuth.ts` | Gallery fetch/upload and OTP session handling |
 
+### Basic / Advanced mode
+
+A `Basic | Advanced` toggle (`ModeToggle.tsx`) sits at the top of the controls panel. Advanced is the full card UI. Basic (`BasicPanel.tsx`) offers five steps for a popup-with-brace dial: map, style (current/other half-year or full year), special dates, Print! (with the Letter/A4 toggle beside it), and an animated cut-and-fold guide (`GnomonAssemblyGuide.tsx`).
+
+- In Basic mode the Advanced cards **stay mounted, hidden with `display:none`**. Basic drives their state, and prints through `DesignExport`'s `controlRef.printNow()`. It opens the map through `LocationInputs`' `openMapSignal`.
+- `applyBasicPreset()` in `App.tsx` resets the dial in memory only, without persisting. It sets North Point, 1st of the Month on, and 1st & 15th off. It runs when the page loads in Basic, and when switching Advanced → Basic (with a confirm, if the dial differs from the preset).
+- The mode is stored in `sundial-ui-mode`. With no stored mode, a visitor who has any other `sundial-*` key starts in Advanced; everyone else starts in Basic.
+
 ### Persistence
 
 - **localStorage**: User-saved dial configurations via `dialSaveRestore.ts`

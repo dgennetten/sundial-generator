@@ -1,5 +1,5 @@
 // src/components/DesignExport.tsx
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useImperativeHandle } from 'react';
 import ReactDOM, { flushSync } from 'react-dom';
 import { useIsMobile } from '../hooks/useIsMobile';
 import NumberField from './NumberField';
@@ -95,9 +95,17 @@ interface DesignExportProps {
   onOpenWorldTour?: () => void;
   onResetDefaults: () => void;
   language?: string;
+  /** Imperative hooks for Basic mode, which drives print/gallery without showing this card. */
+  controlRef?: React.Ref<DesignExportHandle>;
+  /** The app is in Basic mode — prints are flagged "BASIC MODE PRINT" in the notification email. */
+  basicMode?: boolean;
 }
 
-
+export interface DesignExportHandle {
+  /** Print immediately, skipping the "include today's line?" prompt. */
+  printNow: () => void;
+  openGallery: () => void;
+}
 
 const DesignExport: React.FC<DesignExportProps> = React.memo(({
   pageSize, orientation, customWidth, customHeight, dateRange, gnomonType, cubeSideMm, locationName, showBackground, backgroundColor,
@@ -111,7 +119,9 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
   onSetTodayLineActive,
   onOpenWorldTour,
   onResetDefaults,
-  language
+  language,
+  controlRef,
+  basicMode = false
 }) => {
   const galleryLang: Language = (language && language in galleryTranslations ? language : 'en') as Language;
   const [showGallery, setShowGallery] = useState(false);
@@ -429,6 +439,7 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       todayLineActive: hasTodayLineActive,
       excludeFromWorldTour: excludeTour,
       configJson: JSON.stringify(collectCurrentConfig()),
+      basicMode,
     })
       .then(() => {
         log.info('Print activity logged successfully');
@@ -502,6 +513,11 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
       setIsExporting(false);
     }
   };
+
+  useImperativeHandle(controlRef, () => ({
+    printNow: () => { void handlePrint(false); },
+    openGallery: () => setShowGallery(true),
+  }));
 
   const handlePrintClick = () => {
     if (hasTodayLineActive) {

@@ -34,6 +34,8 @@ interface Props {
   longitude: number;
   tzMeridian: number;
   onChange: (values: { lat: number; lng: number; tz: number; useDST?: boolean; timezoneName?: string; locationName?: string }) => void;
+  /** Bump to open the map picker from outside the card (Basic mode's "Open Map"). */
+  openMapSignal?: number;
 }
 
 // Simple DST detection for common timezones
@@ -161,9 +163,12 @@ const calculateTzMeridian = (rawOffsetSeconds: number): number => {
   return (rawOffsetSeconds / 3600) * 15;
 };
 
-const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onChange }) => {
+const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onChange, openMapSignal }) => {
   const [timezoneName, setTimezoneName] = useState<string>('Mountain Time Zone');
   const [mapOpen, setMapOpen] = useState(false);
+  useEffect(() => {
+    if (openMapSignal) setMapOpen(true);
+  }, [openMapSignal]);
   const [loadingTz, setLoadingTz] = useState(false);
   const [foundLocationName, setFoundLocationName] = useState<string | null>(null);
   const tzFetchGeneration = useRef(0);
