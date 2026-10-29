@@ -384,12 +384,27 @@ const DesignExport: React.FC<DesignExportProps> = React.memo(({
         page.innerHTML = svgStr.replace(/^<\?xml[^>]+\?>\s*/, '');
         const svgEl = page.querySelector('svg');
         if (rotateOntoPortrait && svgEl) {
-          // The SVG is W×H points (landscape). The page box becomes H wide × W tall; the SVG
-          // is rotated 90° about its top-left corner, then shifted right by H to land on it.
+          // The SVG is W×H points (landscape). Rotate it inside a new H×W (portrait) SVG rather
+          // than with a CSS transform: a CSS-rotated element still lays out W wide, and phone
+          // browsers shrink the whole printout to fit that overflow (~77% on Letter).
           const w = parseFloat(svgEl.getAttribute('width') || '0');
           const h = parseFloat(svgEl.getAttribute('height') || '0');
-          page.style.cssText = `position:relative;width:${h}pt;height:${w}pt;overflow:hidden;`;
-          svgEl.style.cssText = `position:absolute;top:0;left:0;transform-origin:0 0;transform:translateX(${h}pt) rotate(90deg);`;
+          const ns = 'http://www.w3.org/2000/svg';
+          const portrait = document.createElementNS(ns, 'svg');
+          portrait.setAttribute('width', `${h}pt`);
+          portrait.setAttribute('height', `${w}pt`);
+          portrait.setAttribute('viewBox', `0 0 ${h} ${w}`);
+          portrait.style.display = 'block';
+          const turn = document.createElementNS(ns, 'g');
+          // (x, y) → (h − y, x): the landscape page lands exactly on the portrait one.
+          turn.setAttribute('transform', `translate(${h} 0) rotate(90)`);
+          svgEl.setAttribute('x', '0');
+          svgEl.setAttribute('y', '0');
+          svgEl.setAttribute('width', String(w));
+          svgEl.setAttribute('height', String(h));
+          turn.appendChild(svgEl);
+          portrait.appendChild(turn);
+          page.replaceChildren(portrait);
         }
         printContainer.appendChild(page);
         firstPage = false;
