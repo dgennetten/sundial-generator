@@ -1252,6 +1252,28 @@ const App: React.FC = () => {
 
   const [highLatVerticalNudgeOpen, setHighLatVerticalNudgeOpen] = useState(false);
   const suppressHighLatVerticalNudgeRef = useRef(false);
+  // Vertical chosen through the high-latitude suggestion (not by hand) is tied to that location.
+  const verticalFromNudgeRef = useRef(false);
+  useEffect(() => {
+    if (inclineType !== 'Vertical') verticalFromNudgeRef.current = false;
+  }, [inclineType]);
+
+  // A new location (moved ≥ 1°, so typing digits doesn't count) starts back at Horizontal if
+  // Vertical only came from the suggestion, and re-arms the suggestion for the new spot.
+  // Declared before the nudge effect so the re-arm is seen in the same commit.
+  const locationAnchorRef = useRef({ lat: latitude, lng: longitude });
+  useEffect(() => {
+    const anchor = locationAnchorRef.current;
+    if (Math.abs(latitude - anchor.lat) < 1 && Math.abs(longitude - anchor.lng) < 1) return;
+    locationAnchorRef.current = { lat: latitude, lng: longitude };
+    if (isRestoringRef.current) return;
+    suppressHighLatVerticalNudgeRef.current = false;
+    if (verticalFromNudgeRef.current) {
+      verticalFromNudgeRef.current = false;
+      setInclineType('Horizontal');
+      setGnomonPositionMode('auto');
+    }
+  }, [latitude, longitude]);
 
   const highLatFlatHorizontalEligible =
     Math.abs(latitude) >= 55 &&
@@ -1273,6 +1295,7 @@ const App: React.FC = () => {
   const confirmHighLatVertical = useCallback(() => {
     setInclineType('Vertical');
     setGnomonPositionMode('auto');
+    verticalFromNudgeRef.current = true;
     suppressHighLatVerticalNudgeRef.current = true;
     setHighLatVerticalNudgeOpen(false);
   }, []);
@@ -1483,6 +1506,7 @@ const App: React.FC = () => {
             locationName={locationName}
             latitude={latitude}
             longitude={longitude}
+            verticalDial={inclineType === 'Vertical'}
             onOpenMap={() => setOpenMapSignal(n => n + 1)}
             basicStyle={basicStyle}
             onStyleChange={setBasicStyle}
@@ -1571,6 +1595,7 @@ const App: React.FC = () => {
 
         <div id="card-location"><LocationInputs
           openMapSignal={openMapSignal}
+          verticalNote={inclineType === 'Vertical'}
           latitude={latitude}
           longitude={longitude}
           tzMeridian={tzMeridian}

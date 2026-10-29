@@ -36,6 +36,8 @@ interface Props {
   onChange: (values: { lat: number; lng: number; tz: number; useDST?: boolean; timezoneName?: string; locationName?: string }) => void;
   /** Bump to open the map picker from outside the card (Basic mode's "Open Map"). */
   openMapSignal?: number;
+  /** The dial is set to Vertical — remind the user how to mount it. */
+  verticalNote?: boolean;
 }
 
 // Simple DST detection for common timezones
@@ -163,7 +165,7 @@ const calculateTzMeridian = (rawOffsetSeconds: number): number => {
   return (rawOffsetSeconds / 3600) * 15;
 };
 
-const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onChange, openMapSignal }) => {
+const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onChange, openMapSignal, verticalNote }) => {
   const [timezoneName, setTimezoneName] = useState<string>('Mountain Time Zone');
   const [mapOpen, setMapOpen] = useState(false);
   useEffect(() => {
@@ -609,6 +611,9 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
               </button>
             </div>
           </div>
+          {verticalNote && (
+            <div className="location-vertical-note">Dial must be oriented vertically.</div>
+          )}
         </div>
       </div>
       <Suspense fallback={<div style={{ textAlign: 'center', padding: 32 }}>Loading map…</div>}>

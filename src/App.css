@@ -1612,3 +1612,11 @@ body {
 .basic-lang-item.active {
   background: #f3f4fe;
 }
+
+/* Reminder shown with the location when the dial is set to Vertical */
+.basic-vertical-note,
+.location-vertical-note {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #b45309;
+}

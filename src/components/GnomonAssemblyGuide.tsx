@@ -178,14 +178,20 @@ const prefersReducedMotion = () =>
   typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 interface Props {
+  /** Vertical dial: the last step says to mount it on an equator-facing wall instead of laying it flat. */
+  vertical?: boolean;
+  southernHemisphere?: boolean;
   /** Localized step titles/captions and control labels. */
   strings: BasicStrings;
   /** Bump to restart the animation from the first frame (e.g. right after Print). */
   restartSignal?: number;
 }
 
-const GnomonAssemblyGuide: React.FC<Props> = ({ restartSignal, strings }) => {
-  const frames = [strings.guideCut, strings.guideFold, strings.guideBrace, strings.guideEnjoy];
+const GnomonAssemblyGuide: React.FC<Props> = ({ restartSignal, strings, vertical = false, southernHemisphere = false }) => {
+  const enjoy: [string, string] = vertical
+    ? [strings.guideEnjoy[0], southernHemisphere ? strings.guideEnjoyVerticalSouth : strings.guideEnjoyVerticalNorth]
+    : strings.guideEnjoy;
+  const frames = [strings.guideCut, strings.guideFold, strings.guideBrace, enjoy];
   const reduced = useRef(prefersReducedMotion());
   const [frame, setFrame] = useState(0);
   const [progress, setProgress] = useState(reduced.current ? 1 : 0);

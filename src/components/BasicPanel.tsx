@@ -44,6 +44,8 @@ interface Props {
   locationName: string;
   latitude: number;
   longitude: number;
+  /** The dial is set to Vertical (e.g. accepted the high-latitude suggestion). */
+  verticalDial: boolean;
   onOpenMap: () => void;
   basicStyle: BasicStyle;
   onStyleChange: (style: BasicStyle) => void;
@@ -113,7 +115,7 @@ const LanguagePicker: React.FC<{ language: string; label: string; onChange: (lan
 };
 
 const BasicPanel: React.FC<Props> = ({
-  language, onLanguageChange, locationName, latitude, longitude, onOpenMap, basicStyle, onStyleChange,
+  language, onLanguageChange, locationName, latitude, longitude, verticalDial, onOpenMap, basicStyle, onStyleChange,
   currentHalf, otherHalf, pageSize, onPageSizeChange, todayActive, todayOutOfRange, onTodayChange,
   customDates, onAddDate, onRemoveDate, onPrint, onOpenGallery, onSwitchToAdvanced,
 }) => {
@@ -161,6 +163,7 @@ const BasicPanel: React.FC<Props> = ({
           <Map size={18} /> {t.openMap}
         </button>
         <div className="basic-location" title={locationLabel}>{locationLabel}</div>
+        {verticalDial && <div className="basic-vertical-note">{t.verticalNote}</div>}
       </Step>
 
       <Step n={2} title={t.stepStyle}>
@@ -237,7 +240,7 @@ const BasicPanel: React.FC<Props> = ({
       </Step>
 
       <Step n={5} title={t.stepEnjoy} id="basic-step-enjoy">
-        <GnomonAssemblyGuide restartSignal={printSignal} strings={t} />
+        <GnomonAssemblyGuide restartSignal={printSignal} strings={t} vertical={verticalDial} southernHemisphere={latitude < 0} />
         <div className="basic-enjoy-links">
           <button type="button" className="basic-link-btn" onClick={onOpenGallery}>
             <Camera size={14} /> {t.sharePhoto}
