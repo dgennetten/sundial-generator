@@ -53,7 +53,7 @@ export const BASIC_STRINGS: Record<Language, BasicStrings> = {
   en: {
     subtitle: 'Print a pop-up sundial for your location in a few easy steps.',
     modeBasic: 'Basic', modeAdvanced: 'Advanced', language: 'Language',
-    stepWhere: 'Where', stepStyle: 'Style', stepDates: 'Special Dates', stepPrint: 'Print', stepEnjoy: 'Cut, Fold, and Enjoy!',
+    stepWhere: 'Location', stepStyle: 'Style', stepDates: 'Special Dates', stepPrint: 'Print', stepEnjoy: 'Cut, Fold, and Enjoy!',
     openMap: 'Open Map', customLatLong: 'Custom Lat/Long',
     verticalNote: 'Dial must be oriented vertically.',
     currentHalf: 'Current half-year', otherHalf: 'Other half-year', fullYear: 'Full year',
@@ -74,7 +74,7 @@ export const BASIC_STRINGS: Record<Language, BasicStrings> = {
   es: {
     subtitle: 'Imprime un reloj de sol desplegable para tu ubicación en unos pocos pasos sencillos.',
     modeBasic: 'Básico', modeAdvanced: 'Avanzado', language: 'Idioma',
-    stepWhere: 'Dónde', stepStyle: 'Estilo', stepDates: 'Fechas especiales', stepPrint: 'Imprimir', stepEnjoy: '¡Recorta, dobla y disfruta!',
+    stepWhere: 'Ubicación', stepStyle: 'Estilo', stepDates: 'Fechas especiales', stepPrint: 'Imprimir', stepEnjoy: '¡Recorta, dobla y disfruta!',
     openMap: 'Abrir mapa', customLatLong: 'Lat/Long personalizada',
     verticalNote: 'El reloj debe colocarse en vertical.',
     currentHalf: 'Semestre actual', otherHalf: 'Otro semestre', fullYear: 'Año completo',
@@ -95,7 +95,7 @@ export const BASIC_STRINGS: Record<Language, BasicStrings> = {
   fr: {
     subtitle: 'Imprimez un cadran solaire pop-up pour votre lieu en quelques étapes simples.',
     modeBasic: 'Simple', modeAdvanced: 'Avancé', language: 'Langue',
-    stepWhere: 'Où', stepStyle: 'Style', stepDates: 'Dates spéciales', stepPrint: 'Imprimer', stepEnjoy: 'Découpez, pliez et profitez !',
+    stepWhere: 'Lieu', stepStyle: 'Style', stepDates: 'Dates spéciales', stepPrint: 'Imprimer', stepEnjoy: 'Découpez, pliez et profitez !',
     openMap: 'Ouvrir la carte', customLatLong: 'Lat/Long personnalisée',
     verticalNote: 'Le cadran doit être orienté verticalement.',
     currentHalf: 'Semestre en cours', otherHalf: 'Autre semestre', fullYear: 'Année complète',
@@ -116,7 +116,7 @@ export const BASIC_STRINGS: Record<Language, BasicStrings> = {
   de: {
     subtitle: 'Drucken Sie in wenigen einfachen Schritten eine Pop-up-Sonnenuhr für Ihren Standort.',
     modeBasic: 'Einfach', modeAdvanced: 'Erweitert', language: 'Sprache',
-    stepWhere: 'Wo', stepStyle: 'Stil', stepDates: 'Besondere Daten', stepPrint: 'Drucken', stepEnjoy: 'Ausschneiden, falten und genießen!',
+    stepWhere: 'Standort', stepStyle: 'Stil', stepDates: 'Besondere Daten', stepPrint: 'Drucken', stepEnjoy: 'Ausschneiden, falten und genießen!',
     openMap: 'Karte öffnen', customLatLong: 'Eigene Breite/Länge',
     verticalNote: 'Die Sonnenuhr muss senkrecht ausgerichtet werden.',
     currentHalf: 'Aktuelles Halbjahr', otherHalf: 'Anderes Halbjahr', fullYear: 'Ganzes Jahr',
@@ -137,7 +137,7 @@ export const BASIC_STRINGS: Record<Language, BasicStrings> = {
   nl: {
     subtitle: 'Print in een paar eenvoudige stappen een pop-up-zonnewijzer voor jouw locatie.',
     modeBasic: 'Eenvoudig', modeAdvanced: 'Geavanceerd', language: 'Taal',
-    stepWhere: 'Waar', stepStyle: 'Stijl', stepDates: 'Bijzondere datums', stepPrint: 'Printen', stepEnjoy: 'Knippen, vouwen en genieten!',
+    stepWhere: 'Locatie', stepStyle: 'Stijl', stepDates: 'Bijzondere datums', stepPrint: 'Printen', stepEnjoy: 'Knippen, vouwen en genieten!',
     openMap: 'Kaart openen', customLatLong: 'Eigen breedte/lengte',
     verticalNote: 'De zonnewijzer moet verticaal worden geplaatst.',
     currentHalf: 'Huidig halfjaar', otherHalf: 'Ander halfjaar', fullYear: 'Heel jaar',
@@ -158,7 +158,7 @@ export const BASIC_STRINGS: Record<Language, BasicStrings> = {
   it: {
     subtitle: 'Stampa una meridiana pop-up per la tua località in pochi semplici passaggi.',
     modeBasic: 'Base', modeAdvanced: 'Avanzato', language: 'Lingua',
-    stepWhere: 'Dove', stepStyle: 'Stile', stepDates: 'Date speciali', stepPrint: 'Stampa', stepEnjoy: 'Ritaglia, piega e divertiti!',
+    stepWhere: 'Località', stepStyle: 'Stile', stepDates: 'Date speciali', stepPrint: 'Stampa', stepEnjoy: 'Ritaglia, piega e divertiti!',
     openMap: 'Apri mappa', customLatLong: 'Lat/Long personalizzata',
     verticalNote: 'La meridiana va posizionata in verticale.',
     currentHalf: 'Semestre attuale', otherHalf: 'Altro semestre', fullYear: 'Anno intero',
@@ -179,7 +179,7 @@ export const BASIC_STRINGS: Record<Language, BasicStrings> = {
   pt: {
     subtitle: 'Imprima um relógio de sol pop-up para o seu local em poucos passos simples.',
     modeBasic: 'Básico', modeAdvanced: 'Avançado', language: 'Idioma',
-    stepWhere: 'Onde', stepStyle: 'Estilo', stepDates: 'Datas especiais', stepPrint: 'Imprimir', stepEnjoy: 'Recorte, dobre e aproveite!',
+    stepWhere: 'Localização', stepStyle: 'Estilo', stepDates: 'Datas especiais', stepPrint: 'Imprimir', stepEnjoy: 'Recorte, dobre e aproveite!',
     openMap: 'Abrir mapa', customLatLong: 'Lat/Long personalizada',
     verticalNote: 'O relógio deve ser colocado na vertical.',
     currentHalf: 'Semestre atual', otherHalf: 'Outro semestre', fullYear: 'Ano inteiro',
@@ -200,7 +200,7 @@ export const BASIC_STRINGS: Record<Language, BasicStrings> = {
   zh: {
     subtitle: '只需几个简单步骤，即可为您所在的位置打印一个立体日晷。',
     modeBasic: '基础', modeAdvanced: '高级', language: '语言',
-    stepWhere: '地点', stepStyle: '样式', stepDates: '特别日期', stepPrint: '打印', stepEnjoy: '剪下、折叠，尽情享用！',
+    stepWhere: '位置', stepStyle: '样式', stepDates: '特别日期', stepPrint: '打印', stepEnjoy: '剪下、折叠，尽情享用！',
     openMap: '打开地图', customLatLong: '自定义经纬度',
     verticalNote: '日晷必须竖直放置。',
     currentHalf: '当前半年', otherHalf: '另一半年', fullYear: '全年',
@@ -263,7 +263,7 @@ export const BASIC_STRINGS: Record<Language, BasicStrings> = {
   ru: {
     subtitle: 'Распечатайте объёмные солнечные часы для вашего места за несколько простых шагов.',
     modeBasic: 'Простой', modeAdvanced: 'Расширенный', language: 'Язык',
-    stepWhere: 'Где', stepStyle: 'Стиль', stepDates: 'Особые даты', stepPrint: 'Печать', stepEnjoy: 'Вырежьте, сложите и пользуйтесь!',
+    stepWhere: 'Местоположение', stepStyle: 'Стиль', stepDates: 'Особые даты', stepPrint: 'Печать', stepEnjoy: 'Вырежьте, сложите и пользуйтесь!',
     openMap: 'Открыть карту', customLatLong: 'Своя широта/долгота',
     verticalNote: 'Часы нужно установить вертикально.',
     currentHalf: 'Текущее полугодие', otherHalf: 'Другое полугодие', fullYear: 'Весь год',
@@ -284,7 +284,7 @@ export const BASIC_STRINGS: Record<Language, BasicStrings> = {
   ar: {
     subtitle: 'اطبع مزولة شمسية منبثقة لموقعك في بضع خطوات سهلة.',
     modeBasic: 'أساسي', modeAdvanced: 'متقدم', language: 'اللغة',
-    stepWhere: 'المكان', stepStyle: 'النمط', stepDates: 'تواريخ خاصة', stepPrint: 'الطباعة', stepEnjoy: 'قصّ واطوِ واستمتع!',
+    stepWhere: 'الموقع', stepStyle: 'النمط', stepDates: 'تواريخ خاصة', stepPrint: 'الطباعة', stepEnjoy: 'قصّ واطوِ واستمتع!',
     openMap: 'افتح الخريطة', customLatLong: 'خط عرض/طول مخصص',
     verticalNote: 'يجب تثبيت المزولة بشكل عمودي.',
     currentHalf: 'نصف السنة الحالي', otherHalf: 'النصف الآخر', fullYear: 'السنة كاملة',
