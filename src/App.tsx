@@ -1134,7 +1134,7 @@ const App: React.FC = () => {
     setDeclinationDegrees(0);
     setDialOrientation(southDefault ? 'North' : 'South');
     setOrientation('Landscape');
-    setPageSize(prev => (prev === 'Letter' || prev === 'A4' ? prev : 'Letter'));
+    setPageSize(prev => (prev === 'Letter' || prev === 'A4' || prev === '10x15cm Postcard' ? prev : 'Letter'));
     setDialShape('Rectangle');
     setBorderStyle('default-hairline');
     setBorderMargin(0.236);
@@ -1171,7 +1171,7 @@ const App: React.FC = () => {
       && declinationType === (latitude >= 0 ? 'South' : 'North')
       && Math.abs(declinationDegrees) < 1e-6
       && orientation === 'Landscape'
-      && (pageSize === 'Letter' || pageSize === 'A4')
+      && (pageSize === 'Letter' || pageSize === 'A4' || pageSize === '10x15cm Postcard')
       && dialShape === 'Rectangle'
       && borderStyle === 'default-hairline'
       && showBackground && backgroundColor === 'Cornsilk'

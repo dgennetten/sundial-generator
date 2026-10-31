@@ -2934,22 +2934,26 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           fill={showBackground ? backgroundColor : '#fff'}
         />
       )}
-          {/* Define clipping paths for dial shapes */}
+          {/* Define clipping paths for dial shapes. The clip is resolved in the
+              user space of the main content group, which already applies
+              scale(viewBoxScaleFactor), so it is given in unscaled mm — scaled
+              units would double it on small pages (e.g. Postcard) and nothing
+              would be clipped at the border. */}
           <defs>
             <clipPath id={dialClipId}>
               {dialShape === 'Oval' ? (
                 <ellipse
                   cx={0}
                   cy={0}
-                  rx={(scaledWidth - 2 * scaledBorderMargin) / 2}
-                  ry={(scaledHeight - 2 * scaledBorderMargin) / 2}
+                  rx={(width - 2 * borderMarginMm) / 2}
+                  ry={(height - 2 * borderMarginMm) / 2}
                 />
               ) : (
                 <rect
-                  x={-scaledWidth / 2 + scaledBorderMargin}
-                  y={-scaledHeight / 2 + scaledBorderMargin}
-                  width={scaledWidth - 2 * scaledBorderMargin}
-                  height={scaledHeight - 2 * scaledBorderMargin}
+                  x={-width / 2 + borderMarginMm}
+                  y={-height / 2 + borderMarginMm}
+                  width={width - 2 * borderMarginMm}
+                  height={height - 2 * borderMarginMm}
                 />
               )}
             </clipPath>

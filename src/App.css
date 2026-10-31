@@ -1536,6 +1536,7 @@ body {
 /* Print step: paper size toggle beside the Print! button */
 .basic-print-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: stretch;
   gap: 0.6rem;
 }

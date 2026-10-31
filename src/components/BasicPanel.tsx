@@ -51,7 +51,7 @@ interface Props {
   currentHalf: HalfYear;
   otherHalf: HalfYear;
   pageSize: string;
-  onPageSizeChange: (size: 'Letter' | 'A4') => void;
+  onPageSizeChange: (size: 'Letter' | 'A4' | '10x15cm Postcard') => void;
   todayActive: boolean;
   /** Today falls outside the selected half-year, so its line won't be printed. */
   todayOutOfRange: boolean;
@@ -199,10 +199,10 @@ const BasicPanel: React.FC<Props> = ({
       <Step n={4} title={t.stepPrint}>
         <div className="basic-print-row">
           <div className="basic-segment" role="radiogroup" aria-label={t.paperSize}>
-            {(['Letter', 'A4'] as const).map((s) => (
+            {(['Letter', 'A4', '10x15cm Postcard'] as const).map((s) => (
               <button key={s} type="button" role="radio" aria-checked={pageSize === s}
                 className={`basic-segment-btn${pageSize === s ? ' active' : ''}`} onClick={() => onPageSizeChange(s)}>
-                {s}
+                {s === '10x15cm Postcard' ? t.postcard : s}
               </button>
             ))}
           </div>
