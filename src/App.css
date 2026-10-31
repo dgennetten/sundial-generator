@@ -1175,10 +1175,20 @@ body {
 /* ============================================================
    Basic / Advanced mode
    ============================================================ */
+/* Basic/Advanced toggle with the language picker to its right */
+.mode-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0 auto 1rem;
+  font-size: 0.85rem;
+}
+
 .mode-toggle {
   display: flex;
   width: max-content;
-  margin: 0 auto 1rem;
   padding: 3px;
   border-radius: 999px;
   background: #eef0f6;

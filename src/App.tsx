@@ -27,6 +27,7 @@ import GnomonSettings from './components/GnomonSettings';
 import DesignExport, { type DesignExportHandle } from './components/DesignExport';
 import BasicPanel, { type BasicStyle } from './components/BasicPanel';
 import ModeToggle, { type UiMode } from './components/ModeToggle';
+import LanguagePicker from './components/LanguagePicker';
 import { basicStrings } from './components/basicTranslations';
 import SundialPreview from './components/SundialPreview';
 import PerfOverlay from './components/PerfOverlay';
@@ -1498,8 +1499,11 @@ const App: React.FC = () => {
           </div>
         )}
         <div className="mobile-controls-scroll" ref={isPreviewFullscreen ? floatingScrollRef : undefined}>
-        <ModeToggle mode={uiMode} onChange={handleUiModeChange}
-          labels={{ basic: basicStrings(language).modeBasic, advanced: basicStrings(language).modeAdvanced }} />
+        <div className="mode-bar">
+          <ModeToggle mode={uiMode} onChange={handleUiModeChange}
+            labels={{ basic: basicStrings(language).modeBasic, advanced: basicStrings(language).modeAdvanced }} />
+          <LanguagePicker language={language} label={basicStrings(language).language} onChange={handleLanguageChange} />
+        </div>
 
         {uiMode === 'basic' && (
           <BasicPanel
@@ -1513,7 +1517,6 @@ const App: React.FC = () => {
             currentHalf={currentHalf}
             otherHalf={otherHalf}
             language={language}
-            onLanguageChange={handleLanguageChange}
             pageSize={pageSize}
             onPageSizeChange={setPageSize}
             todayActive={declinationLines.some(l => l.id === 'today' && l.active)}
@@ -1724,11 +1727,6 @@ const App: React.FC = () => {
           setSundialNotesOffset={setSundialNotesOffset}
           sundialNotesOffsetHorizontal={sundialNotesOffsetHorizontal}
           setSundialNotesOffsetHorizontal={setSundialNotesOffsetHorizontal}
-          language={language}
-          setLanguage={(v) => {
-            setLanguage(v);
-            localStorage.setItem('sundial-welcome-language', v);
-          }}
         /></div>
 
         <React.Profiler id="HourlineSettings" onRender={(id, phase, actualDuration) => {
