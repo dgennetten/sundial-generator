@@ -1831,6 +1831,7 @@ const App: React.FC = () => {
           locationName={locationName}
           onShowDevLog={() => { clearLogPref(); setShowDevLog(true); }}
           onAdminRequest={() => setShowAdminPanel(true)}
+          onTryAdvanced={uiMode === 'basic' ? () => handleUiModeChange('advanced') : undefined}
         /></div>
         </div>
       </div>

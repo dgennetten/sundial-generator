@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Info, Instagram, Mail, Coffee, Github, Globe, Send, Rss } from 'lucide-react';
+import { Info, Instagram, Mail, Coffee, Github, Globe, Send, Rss, SlidersHorizontal } from 'lucide-react';
 import BuildDate from './BuildDate';
 import { sendFeedback } from '../utils/feedbackUtils';
 
@@ -9,6 +9,8 @@ interface AboutCardProps {
   locationName: string;
   onShowDevLog?: () => void;
   onAdminRequest?: () => void;
+  /** Basic mode only: shows a "Try Advanced mode" link beside the Developer's Log. */
+  onTryAdvanced?: () => void;
 }
 
 const FEEDBACK_PLACEHOLDER =
@@ -20,6 +22,7 @@ const AboutCard: React.FC<AboutCardProps> = ({
   locationName,
   onShowDevLog,
   onAdminRequest,
+  onTryAdvanced,
 }) => {
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
@@ -213,6 +216,28 @@ algorithm which "enables it to be calculated for any epoch within 30 centuries o
                 <Rss size={14} color="#2563eb" />
                 Developer's Log
               </button>
+              {onTryAdvanced && (
+                <button
+                  type="button"
+                  onClick={onTryAdvanced}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    marginLeft: 'auto',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 0,
+                    fontSize: '13px',
+                    color: '#2563eb',
+                    textDecoration: 'underline',
+                  }}
+                >
+                  <SlidersHorizontal size={14} color="#2563eb" />
+                  Try Advanced mode
+                </button>
+              )}
             </div>
           </div>
         )}
