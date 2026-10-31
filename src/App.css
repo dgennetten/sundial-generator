@@ -1425,9 +1425,10 @@ body {
   text-decoration: underline;
 }
 
-/* Same size as the Open Map button */
+/* Same size as the Open Map button, at the far end of the row */
 .basic-print-btn {
   padding: 0.55rem 1.1rem;
+  margin-inline-start: auto;
 }
 
 
