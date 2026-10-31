@@ -4,6 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { Map, Printer, Plus, X, Camera } from 'lucide-react';
 import GnomonAssemblyGuide from './GnomonAssemblyGuide';
+import { locations } from '../utils/presetLocations';
 import { basicStrings } from './basicTranslations';
 
 export type BasicStyle = 'current' | 'other' | 'full';
@@ -43,6 +44,8 @@ interface Props {
   /** The dial is set to Vertical (e.g. accepted the high-latitude suggestion). */
   verticalDial: boolean;
   onOpenMap: () => void;
+  /** A preset city from the dropdown beside Open Map. */
+  onSelectLocation: (name: string) => void;
   basicStyle: BasicStyle;
   onStyleChange: (style: BasicStyle) => void;
   currentHalf: HalfYear;
@@ -72,7 +75,7 @@ const Step: React.FC<{ n: number; title: string; id?: string; aside?: React.Reac
 );
 
 const BasicPanel: React.FC<Props> = ({
-  language, locationName, latitude, longitude, verticalDial, onOpenMap, basicStyle, onStyleChange,
+  language, locationName, latitude, longitude, verticalDial, onOpenMap, onSelectLocation, basicStyle, onStyleChange,
   currentHalf, otherHalf, pageSize, onPageSizeChange, todayActive, todayOutOfRange, onTodayChange,
   customDates, onAddDate, onRemoveDate, onPrint, onOpenGallery, onSwitchToAdvanced,
 }) => {
@@ -96,10 +99,11 @@ const BasicPanel: React.FC<Props> = ({
     setAddingDate(false);
   };
 
-  // A spot picked on the map (not a named search result) has no name, so show its coordinates.
-  const locationLabel = locationName === 'Custom Lat/Long'
-    ? `${t.customLatLong} ${latitude.toFixed(3)}, ${longitude.toFixed(3)}`
-    : locationName;
+  // A spot picked on the map (not a named search result) has no name; the coordinates beside it say where.
+  const locationLabel = locationName === 'Custom Lat/Long' ? t.customLatLong : locationName;
+  // A searched or map-picked spot isn't a preset, so the dropdown shows it as a disabled extra entry.
+  const locationSelectValue = locationName in locations ? locationName : (locationName || 'Custom Lat/Long');
+  const coordsLabel =`Lat: ${latitude.toFixed(3)} Long: ${longitude.toFixed(3)}`;
 
   const halfLabel = (half: HalfYear) => (half === 'SummerToFall' ? t.summerFall : t.winterSpring);
   const styleOptions: { value: BasicStyle; label: string; hint: string; badge?: string }[] = [
@@ -116,10 +120,22 @@ const BasicPanel: React.FC<Props> = ({
       </div>
 
       <Step n={1} title={t.stepWhere}>
-        <button type="button" className="btn btn-primary basic-map-btn" onClick={onOpenMap}>
-          <Map size={18} /> {t.openMap}
-        </button>
-        <div className="basic-location" title={locationLabel}>{locationLabel}</div>
+        <div className="basic-map-row">
+          <button type="button" className="btn btn-primary basic-map-btn" onClick={onOpenMap}>
+            <Map size={18} /> {t.openMap}
+          </button>
+          <select className="form-select basic-location-select" aria-label={t.stepWhere}
+            value={locationSelectValue}
+            onChange={(e) => (e.target.value === 'Use Map' ? onOpenMap() : onSelectLocation(e.target.value))}>
+            <option value="Use Map">{t.openMap}…</option>
+            {Object.keys(locations).map((name) => <option key={name} value={name}>{name}</option>)}
+            {!(locationSelectValue in locations) && <option value={locationSelectValue} disabled>{locationLabel}</option>}
+          </select>
+        </div>
+        <div className="basic-location-row">
+          <div className="basic-location" title={locationLabel}>{locationLabel}</div>
+          <div className="basic-coords" dir="ltr">{coordsLabel}</div>
+        </div>
         {verticalDial && <div className="basic-vertical-note">{t.verticalNote}</div>}
       </Step>
 
@@ -190,8 +206,8 @@ const BasicPanel: React.FC<Props> = ({
               </button>
             ))}
           </div>
-          <button type="button" className="basic-print-btn" onClick={() => { onPrint(); setPrintSignal((n) => n + 1); }}>
-            <Printer size={22} /> {t.print}
+          <button type="button" className="btn btn-primary basic-print-btn" onClick={() => { onPrint(); setPrintSignal((n) => n + 1); }}>
+            <Printer size={18} /> {t.print}
           </button>
         </div>
       </Step>

@@ -1113,6 +1113,7 @@ const App: React.FC = () => {
   const [uiMode, setUiMode] = useState<UiMode>(initialUiMode);
   const [basicStyle, setBasicStyle] = useState<BasicStyle>('current');
   const [openMapSignal, setOpenMapSignal] = useState(0);
+  const [selectLocationRequest, setSelectLocationRequest] = useState<{ name: string; n: number } | null>(null);
   const designExportRef = useRef<DesignExportHandle>(null);
 
   useEffect(() => {
@@ -1512,6 +1513,7 @@ const App: React.FC = () => {
             longitude={longitude}
             verticalDial={inclineType === 'Vertical'}
             onOpenMap={() => setOpenMapSignal(n => n + 1)}
+            onSelectLocation={(name) => setSelectLocationRequest(r => ({ name, n: (r?.n ?? 0) + 1 }))}
             basicStyle={basicStyle}
             onStyleChange={setBasicStyle}
             currentHalf={currentHalf}
@@ -1598,6 +1600,7 @@ const App: React.FC = () => {
 
         <div id="card-location"><LocationInputs
           openMapSignal={openMapSignal}
+          selectLocationRequest={selectLocationRequest}
           verticalNote={inclineType === 'Vertical'}
           latitude={latitude}
           longitude={longitude}

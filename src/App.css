@@ -1256,15 +1256,49 @@ body {
 }
 
 .basic-map-btn {
-  align-self: flex-start;
+  flex: 0 0 auto;
   padding: 0.55rem 1.1rem;
 }
 
+/* Open Map on the left, preset-city dropdown at the far end */
+.basic-map-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.basic-location-select {
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 0;
+  max-width: 60%;
+  margin-inline-start: auto;
+  font-size: 0.9rem;
+}
+
+.basic-location-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
 .basic-location {
+  flex: 1 1 auto;
+  min-width: 0;
   color: #4a5568;
   font-size: 0.9rem;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Coordinates, always shown at the far end of the location line */
+.basic-coords {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  color: #718096;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
@@ -1391,28 +1425,9 @@ body {
   text-decoration: underline;
 }
 
+/* Same size as the Open Map button */
 .basic-print-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  width: 100%;
-  border: none;
-  border-radius: 12px;
-  padding: 0.9rem 1rem;
-  font: inherit;
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: #fff;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35);
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.basic-print-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.45);
+  padding: 0.55rem 1.1rem;
 }
 
 
@@ -1531,12 +1546,6 @@ body {
 
 .basic-print-row .basic-segment-btn {
   padding: 0 0.9rem;
-}
-
-.basic-print-row .basic-print-btn {
-  flex: 1 1 auto;
-  width: auto;
-  min-width: 0;
 }
 
 .basic-date-row > span:first-child {

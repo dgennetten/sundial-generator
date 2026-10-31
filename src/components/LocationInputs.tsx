@@ -4,22 +4,7 @@ import { MapPin, Map } from 'lucide-react';
 import { log } from '../utils/logger';
 const MapPicker = lazy(() => import('./MapPicker'));
 
-// Location data
-const locations: { [key: string]: { lat: number; lng: number } } = {
-  'Biggleswade, England': { lat: 52.0873, lng: -0.2641 },
-  'Chicago, IL USA': { lat: 41.8781, lng: -87.6298 },
-  'Cocoa Beach, FL USA': { lat: 28.3200, lng: -80.6076 },
-  'Dallas, TX USA': { lat: 32.7767, lng: -96.7970 },
-  'Fort Collins, CO USA': { lat: 40.5853, lng: -105.0844 },
-  'Honolulu, Hawaii': { lat: 21.3069, lng: -157.8583 },
-  'Spartanburg, SC USA': { lat: 34.9496, lng: -81.9321 },
-  'Tucson, AZ USA': { lat: 32.2226, lng: -110.9747 },
-  'Recife, Brazil': { lat: -8.0476, lng: -34.8770 },
-  'Sydney, Australia': { lat: -33.8688, lng: 151.2093 },
-  'Falkenstein, Saxony, Germany': { lat: 50.4777, lng: 12.3649 },
-  'Luxembourg City, Luxembourg': { lat: 49.6116, lng: 6.1319 },
-  'St Petersburg, Russia': { lat: 59.8761, lng: 30.4339 }
-};
+import { locations } from '../utils/presetLocations';
 
 interface TimezoneResult {
   timeZoneId: string | null;
@@ -36,6 +21,8 @@ interface Props {
   onChange: (values: { lat: number; lng: number; tz: number; useDST?: boolean; timezoneName?: string; locationName?: string }) => void;
   /** Bump to open the map picker from outside the card (Basic mode's "Open Map"). */
   openMapSignal?: number;
+  /** A preset picked from Basic mode's location dropdown; `n` changes on every pick. */
+  selectLocationRequest?: { name: string; n: number } | null;
   /** The dial is set to Vertical — remind the user how to mount it. */
   verticalNote?: boolean;
 }
@@ -165,7 +152,7 @@ const calculateTzMeridian = (rawOffsetSeconds: number): number => {
   return (rawOffsetSeconds / 3600) * 15;
 };
 
-const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onChange, openMapSignal, verticalNote }) => {
+const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onChange, openMapSignal, selectLocationRequest, verticalNote }) => {
   const [timezoneName, setTimezoneName] = useState<string>('Mountain Time Zone');
   const [mapOpen, setMapOpen] = useState(false);
   useEffect(() => {
@@ -329,6 +316,12 @@ const LocationInputs: React.FC<Props> = ({ latitude, longitude, tzMeridian, onCh
       await lookupAndApplyTimezone(locationData.lat, locationData.lng, true, locationName);
     }
   };
+
+  useEffect(() => {
+    if (selectLocationRequest) handleLocationChange(selectLocationRequest.name);
+    // Only a new request should act, not a re-created handler.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectLocationRequest]);
 
   // Keep the detected zone label in sync with coordinates (does not change parent tz meridian)
   useEffect(() => {
