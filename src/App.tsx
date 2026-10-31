@@ -1823,6 +1823,8 @@ const App: React.FC = () => {
           worldTourStartTrigger={worldTourStartTrigger}
         /></div>
         {/* <VisitorMap /> */}
+        </div>
+        {/* About closes out both modes, so it sits outside the Advanced-only cards. */}
         <div id="card-about"><AboutCard
           latitude={latitude}
           longitude={longitude}
@@ -1830,7 +1832,6 @@ const App: React.FC = () => {
           onShowDevLog={() => { clearLogPref(); setShowDevLog(true); }}
           onAdminRequest={() => setShowAdminPanel(true)}
         /></div>
-        </div>
         </div>
       </div>
       )}
