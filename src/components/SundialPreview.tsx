@@ -2637,6 +2637,32 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
       </g>
     ) : null;
 
+  // Site credit just inside the bottom-left border, at the date-line label size. Drawn
+  // in the unrotated page frame so it stays bottom-left on North-facing dials. Skipped
+  // in group mode — DualDialPreview draws one credit for the whole card.
+  const creditFontSize = (fontSizeMm / 3) * viewBoxScaleFactor;
+  const creditPad = creditFontSize * 0.6;
+  const innerHalfW = scaledWidth / 2 - scaledBorderMargin;
+  const innerHalfH = scaledHeight / 2 - scaledBorderMargin;
+  // An oval has no corner: put the baseline at 75% of the half-height, where the
+  // ellipse still leaves room on the left.
+  const creditY = dialShape === 'Oval' ? innerHalfH * 0.75 : innerHalfH - creditPad;
+  const creditX = dialShape === 'Oval'
+    ? -innerHalfW * Math.sqrt(1 - 0.75 * 0.75) + creditPad
+    : -innerHalfW + creditPad;
+  const siteCredit = !renderAsGroup ? (
+    <text
+      x={creditX}
+      y={creditY}
+      fontSize={creditFontSize}
+      fill="black"
+      textAnchor="start"
+      style={{ pointerEvents: 'none', userSelect: 'none', fontFamily }}
+    >
+      PrecisionSundial.com
+    </text>
+  ) : null;
+
   // --- Text Block Logic ---
   let locationString = locationName || '';
   const displayLat = typeof originalLatitude === 'number' ? originalLatitude : lat;
@@ -2931,6 +2957,7 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
           {borderRect}
           {clippingBoundary}
           {gnomonHeightGuideDots}
+          {siteCredit}
           {/* Main content group — North-facing dials rotate 180° so noon shadow points up */}
           <g
             transform={`${effectiveDialOrientation === 'North' ? 'rotate(180) ' : ''}scale(${viewBoxScaleFactor})`}

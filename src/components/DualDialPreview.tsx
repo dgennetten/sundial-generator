@@ -144,6 +144,9 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
   const innerY = -H / 2 + borderMm;
   const innerW = W - 2 * borderMm;
   const innerH = H - 2 * borderMm;
+  // Site credit inside the card's bottom-left corner, at the halves' date-line label size.
+  const creditFontSize = ((config.fontSize ?? 20) * fontReduction * 0.3528) / 3;
+  const creditPad = creditFontSize * 0.6;
 
   // Location-shadow animation: each half is only valid for its own half-year, so
   // show the shadow on the half whose season contains the current shadow date.
@@ -220,6 +223,15 @@ const DualDialPreview: React.FC<DualDialPreviewProps> = ({
             <line x1={0} y1={innerY} x2={0} y2={innerY + innerH} stroke="#999" strokeOpacity={0.5} strokeWidth={0.3} strokeDasharray="2,2" />
             {/* One border surrounding both dials */}
             <rect x={innerX} y={innerY} width={innerW} height={innerH} fill="none" stroke="black" strokeWidth={0.5} />
+            <text
+              x={innerX + creditPad}
+              y={innerY + innerH - creditPad}
+              fontSize={creditFontSize}
+              fill="black"
+              style={{ pointerEvents: 'none', userSelect: 'none', fontFamily: config.fontFamily ?? 'sans-serif' }}
+            >
+              PrecisionSundial.com
+            </text>
           </g>
         </svg>
       </div>
