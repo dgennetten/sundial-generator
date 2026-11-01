@@ -331,6 +331,8 @@ const PageSettings: React.FC<PageSettingsProps> = ({
     setter(toMillimeters(value, customUnits ?? 'in'));
   };
 
+  const isLandscape = orientation === 'Landscape';
+
   // Get display value in current units
   const getDisplayValue = (value: number | undefined): number => {
     if (!value) return 0;
@@ -406,10 +408,12 @@ const PageSettings: React.FC<PageSettingsProps> = ({
           >
             <div className="form-group" style={{ flex: isMobile ? '0 0 auto' : '1' }}>
               <label className="form-label">Width</label>
+              {/* customWidth/customHeight are stored portrait-wise and swapped for Landscape when
+                  rendered, so show (and edit) them swapped too — Width is always the page's width. */}
               <NumberField
                 className="form-input"
-                value={getDisplayValue(customWidth)}
-                onValueChange={(val) => handleDimensionChange(val, setCustomWidth)}
+                value={getDisplayValue(isLandscape ? customHeight : customWidth)}
+                onValueChange={(val) => handleDimensionChange(val, isLandscape ? setCustomHeight : setCustomWidth)}
                 min={0.1}
                 step={0.1}
                 style={{ width: isMobile ? '60px' : '80px' }}
@@ -419,8 +423,8 @@ const PageSettings: React.FC<PageSettingsProps> = ({
               <label className="form-label">Height</label>
               <NumberField
                 className="form-input"
-                value={getDisplayValue(customHeight)}
-                onValueChange={(val) => handleDimensionChange(val, setCustomHeight)}
+                value={getDisplayValue(isLandscape ? customWidth : customHeight)}
+                onValueChange={(val) => handleDimensionChange(val, isLandscape ? setCustomWidth : setCustomHeight)}
                 min={0.1}
                 step={0.1}
                 style={{ width: isMobile ? '60px' : '80px' }}
