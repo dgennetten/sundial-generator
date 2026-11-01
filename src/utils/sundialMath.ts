@@ -534,21 +534,16 @@ export function computeShadowPoint(
   const shadowUp    = styleHeight * nZ - factor * sZ;
 
   // --- Dial 2D basis vectors ---
-  // xDialAxis: West direction (−1, 0, 0) projected onto the dial plane.
+  // xDialAxis: the dial face's horizontal (level) line, (−cos D, hemi·sin D, 0). It is
+  // perpendicular to the normal for every inclination, and equals West when D = 0.
   // Positive x = West on the dial face as seen by the viewer.
-  const dotWN = -nX; // dot(dialNormal, West) = dot((nX,nY,nZ),(−1,0,0)) = −nX
-  let xX = -1.0 - dotWN * nX;
-  let xY =      - dotWN * nY;
-  let xZ =      - dotWN * nZ;
-  let xLen = Math.sqrt(xX * xX + xY * xY + xZ * xZ);
-
-  if (xLen < 1e-6) {
-    // Fallback for East/West-facing dials (n ≈ ±East): use n × Up = (nY, −nX, 0)
-    xX = nY; xY = -nX; xZ = 0;
-    xLen = Math.sqrt(xX * xX + xY * xY);
-    if (xLen < 1e-6) { xX = 1; xY = 0; xZ = 0; xLen = 1; }
-  }
-  xX /= xLen; xY /= xLen; xZ /= xLen;
+  // (Projecting West onto the plane instead is NOT level on an inclined + declined face:
+  // it rotated the whole drawing by an angle growing with D and flipped it past |D| = 90°.)
+  // Flat dials keep West: there the preview applies declination as a plate rotation.
+  const isFlat = Math.abs(Math.sin(t)) < 1e-9;
+  const xX = isFlat ? -1 : -Math.cos(D);
+  const xY = isFlat ? 0 : hemisphereSign * Math.sin(D);
+  const xZ = 0;
 
   // yDialAxis = xDialAxis × dialNormal  (positive y = poleward / up on dial face)
   const yX = xY * nZ - xZ * nY;

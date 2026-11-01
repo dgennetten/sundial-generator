@@ -112,3 +112,32 @@ describe('calculateShadowAtTime — golden master (Fort Collins, horizontal dial
     }
   });
 });
+
+describe('computeShadowPoint — declined dials keep a level x-axis', () => {
+  // Equinox-line angle (degrees) between the noon point and another hour.
+  const equinoxAngle = (inc: number, dd: number, hour: number) => {
+    const a = calculateShadowAtTime(41, 0, 12, GNOMON, inc, dd, false).coords!;
+    const b = calculateShadowAtTime(41, 0, hour, GNOMON, inc, dd, false).coords!;
+    return radiansToDegrees(Math.atan2(b.y - a.y, b.x - a.x));
+  };
+
+  it('tilts the equinox line of a vertical declining dial by atan(sin D / tan φ)', () => {
+    // Textbook value; matches Shadows Pro. Projecting West onto the plane gave ~26° here.
+    const expected = radiansToDegrees(Math.atan(Math.sin(degreesToRadians(51)) / Math.tan(degreesToRadians(41))));
+    expect(Math.abs(equinoxAngle(90, -51, 9))).toBeCloseTo(expected, 6);
+  });
+
+  it('mirrors East and West declinations exactly', () => {
+    for (const inc of [30, 80, 90]) {
+      for (const dd of [15, 51]) {
+        for (const hour of [9, 11, 13, 15]) {
+          const w = calculateShadowAtTime(41, 10, hour, GNOMON, inc, dd, false).coords;
+          const e = calculateShadowAtTime(41, 10, 24 - hour, GNOMON, inc, -dd, false).coords;
+          if (!w || !e) continue;
+          expect(e.x).toBeCloseTo(-w.x, 9);
+          expect(e.y).toBeCloseTo(w.y, 9);
+        }
+      }
+    }
+  });
+});
