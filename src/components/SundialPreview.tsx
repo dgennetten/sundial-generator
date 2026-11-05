@@ -665,10 +665,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const dotWidth = getStrokeWidth(style.width);
 
     // Account for the transform applied to the sundial content group (same as clipPathData)
+    const transformX = (gnomonHorizontalPosition ?? width / 2) - (width / 2);
     const transformY = (gnomonPosition ?? 0) - (height / 2);
-    const left = -width / 2 + borderMarginMm;
+    const left = -width / 2 + borderMarginMm - transformX;
     const top = -height / 2 + borderMarginMm - transformY;
-    const right = width / 2 - borderMarginMm;
+    const right = width / 2 - borderMarginMm - transformX;
     const bottom = height / 2 - borderMarginMm - transformY;
 
     const altLimit = showBelowHorizonDateLines ? -45 * Math.PI / 180 : 0;
@@ -717,10 +718,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const dotWidth = getStrokeWidth(style.width);
 
     // Account for the transform applied to the sundial content group (same as clipPathData)
+    const transformX = (gnomonHorizontalPosition ?? width / 2) - (width / 2);
     const transformY = (gnomonPosition ?? 0) - (height / 2);
-    const left = -width / 2 + borderMarginMm;
+    const left = -width / 2 + borderMarginMm - transformX;
     const top = -height / 2 + borderMarginMm - transformY;
-    const right = width / 2 - borderMarginMm;
+    const right = width / 2 - borderMarginMm - transformX;
     const bottom = height / 2 - borderMarginMm - transformY;
 
     const altLimit = showBelowHorizonDateLines ? -45 * Math.PI / 180 : 0;
@@ -777,10 +779,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
     const ALT_LIMIT = showBelowHorizonDateLines ? -45 * Math.PI / 180 : 0;
 
     // Precompute bounds once (same logic as dots)
+    const transformX = (gnomonHorizontalPosition ?? width / 2) - (width / 2);
     const transformY = (gnomonPosition ?? 0) - (height / 2);
-    const left = -width / 2 + borderMarginMm;
+    const left = -width / 2 + borderMarginMm - transformX;
     const top = -height / 2 + borderMarginMm - transformY;
-    const right = width / 2 - borderMarginMm;
+    const right = width / 2 - borderMarginMm - transformX;
     const bottom = height / 2 - borderMarginMm - transformY;
 
     // Phase-shift the loop so dash boundaries align with civil-time hour line intersections.
@@ -855,10 +858,11 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
     const ALT_LIMIT = showBelowHorizonDateLines ? -45 * Math.PI / 180 : 0;
 
+    const transformX = (gnomonHorizontalPosition ?? width / 2) - (width / 2);
     const transformY = (gnomonPosition ?? 0) - (height / 2);
-    const left = -width / 2 + borderMarginMm;
+    const left = -width / 2 + borderMarginMm - transformX;
     const top = -height / 2 + borderMarginMm - transformY;
-    const right = width / 2 - borderMarginMm;
+    const right = width / 2 - borderMarginMm - transformX;
     const bottom = height / 2 - borderMarginMm - transformY;
 
     const dotInterval = 5 / 60;
@@ -1043,11 +1047,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   // Helper function to check if a text element is within the border bounds
   function isTextWithinBounds(x: number, y: number): boolean {
     // Account for the transform applied to the sundial content group
+    const transformX = (gnomonHorizontalPosition ?? width / 2) - (width / 2);
     const transformY = (gnomonPosition ?? 0) - (height / 2);
 
-    const left = -width / 2 + borderMarginMm;
+    const left = -width / 2 + borderMarginMm - transformX;
     const top = -height / 2 + borderMarginMm - transformY;
-    const right = width / 2 - borderMarginMm;
+    const right = width / 2 - borderMarginMm - transformX;
     const bottom = height / 2 - borderMarginMm - transformY;
 
     // Add some padding for text size (approximate text bounds)
@@ -2291,9 +2296,10 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
   if (showDatelineLabels && effectiveDeclinationLines.length > 0) {
     const lang = language || 'en';
     const labelFontSize = fontSizeMm / 3;
+    const transformX = (gnomonHorizontalPosition ?? width / 2) - (width / 2);
     const transformY = (gnomonPosition ?? 0) - (height / 2);
-    const rightBound = width / 2 - borderMarginMm;
-    const leftBound = -width / 2 + borderMarginMm;
+    const rightBound = width / 2 - borderMarginMm - transformX;
+    const leftBound = -width / 2 + borderMarginMm - transformX;
     const topBound = -height / 2 + borderMarginMm - transformY;
     const bottomBound = height / 2 - borderMarginMm - transformY;
     const maxRadius = Math.sqrt(width * width + height * height);
@@ -3085,11 +3091,12 @@ const SundialPreview = React.memo((props: SundialPreviewProps) => {
 
                   // Simple approach: filter out points that are far outside the visible area
                   // This avoids clipping artifacts while keeping the analemma shape intact
+                  const transformX = (gnomonHorizontalPosition ?? width / 2) - (width / 2);
                   const transformY = (gnomonPosition ?? 0) - (height / 2);
                   const margin = Math.max(width, height) * 0.1; // 10% margin for safety
-                  const left = -width / 2 - margin;
+                  const left = -width / 2 - margin - transformX;
                   const top = -height / 2 - margin - transformY;
-                  const right = width / 2 + margin;
+                  const right = width / 2 + margin - transformX;
                   const bottom = height / 2 + margin - transformY;
 
                   // Filter points that are reasonably within the extended bounds
